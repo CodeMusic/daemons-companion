@@ -73,6 +73,7 @@ struct Play : Page {
     Bytes s;
     if (emu.settledSave(s) && writeFileAtomic(savePath(), s)) {
       savedAt = Clock::now();
+      savedSinceSync = true;  // C-397: back on HOME, a SYNC, as the app's after each save (C-261)
       mirror::pushLater(s);   // C-380: to the hub (sent only in Send mode; pushLater says how it went)
     }
   }

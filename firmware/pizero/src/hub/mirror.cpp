@@ -4,6 +4,7 @@
 
 #include <ArduinoJson.h>
 
+#include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <cstdlib>
@@ -51,28 +52,10 @@ static std::string errorOf(const Reply &r) {
   return !r.error.empty() ? r.error : "the hub said " + std::to_string(r.status);   // DRAFT
 }
 
-bool follows(std::string *why) {
-  auto say = [&](const std::string &w) { if (why) *why = w; return false; };
-  Game g;
-  if (!heldGame(g)) return say("no game is kept here");   // DRAFT
-  if (g.testing) return say("a testing build's save stays on this device");   // DRAFT
-  std::string ed = hub::view().edition;
-  if (ed.empty()) {   // not asked yet: asked now, as every board asks
-    Reply r = hub::get("/api/device/state", 6000);
-    JsonDocument d;
-    if (r.ok() && !deserializeJson(d, (const char *)r.body.data(), r.body.size())) ed = d["edition"] | "";
-  }
-  for (auto &c : ed) c = (char)toupper((unsigned char)c);
-  if (ed.empty()) return say("the hub did not say which game it follows: kept on this device");   // DRAFT
-  if (ed != g.edition) return say("the hub follows " + ed + ": this save stays on this device");   // DRAFT
-  return true;
-}
-
 In pull(const Bytes &mine) {
   In in;
   if (current == Mode::Off) { in.why = "the mirror is off here"; return in; }   // DRAFT
   if (!hub::paired()) { in.why = "not paired with a hub"; return in; }   // DRAFT
-  if (!follows(&in.why)) return in;   // C-395
   Reply r = hub::get("/api/save/mirror", 8000);
   if (r.status == 404) { in.why = "the hub keeps no mirror yet"; return in; }   // DRAFT
   if (!r.ok()) { in.why = "the hub is away: " + errorOf(r); return in; }   // DRAFT
@@ -115,7 +98,6 @@ Out push(const Bytes &save) {
   Out out;
   if (current != Mode::Send) { out.why = current == Mode::Read ? "read only here: kept on this device" : "the mirror is off here"; return out; }   // DRAFT
   if (!hub::paired()) { out.why = "not paired: kept on this device"; return out; }   // DRAFT
-  if (!follows(&out.why)) return out;   // C-395
   const std::string id = sha1Hex(save), last = agreed();
   if (id == last) { out.sent = true; out.why = "the hub already holds it"; return out; }   // DRAFT
   std::string body = "{\"b64\":\"" + base64(save) + "\"";
@@ -174,7 +156,6 @@ Synced syncNow(const Bytes &mine) {
   Synced s;
   if (current != Mode::Send) { s.why = current == Mode::Read ? "read only here: a SYNC writes the hub's save" : "the mirror is off here"; return s; }   // DRAFT
   if (!hub::paired()) { s.why = "not paired with a hub"; return s; }   // DRAFT
-  if (!follows(&s.why)) return s;   // C-395
   // the save the game has made goes first, so the SYNC is written over it and nothing of it is lost
   for (int i = 0; i < 50 && pushing(); i++) std::this_thread::sleep_for(std::chrono::milliseconds(100));
   if (!mine.empty() && sha1Hex(mine) != agreed()) {
@@ -196,6 +177,36 @@ Synced syncNow(const Bytes &mine) {
   JsonDocument d;
   if (!deserializeJson(d, (const char *)r.body.data(), r.body.size())) {
     s.arrived = d["arrivals"].size(); s.received = d["received"].size(); s.returned = d["returned"].size();
+    s.player = d["player"] | "";
+    for (JsonObject a : d["arrivals"].as<JsonArray>()) {
+      Arrival x;
+      x.kind = a["kind"] | ""; x.nickname = a["nickname"] | ""; x.where = a["where"] | ""; x.from = a["from"] | "";
+      x.species = a["species"] | 0; x.slot = a["slot"] | -1; x.count = a["count"] | 0;
+      s.arrivals.push_back(x);
+    }
+    for (JsonVariant w : d["refused"].as<JsonArray>()) if (w.is<const char *>()) s.refused.push_back(w.as<const char *>());
+  }
+  // C-397: a daemon SENT from the game goes into this device when it carries none -- as a device that asks and has none
+  // takes one (carry.ts), but by name, so the board that happens to ask first in the next thirty seconds does not
+  if (std::any_of(s.arrivals.begin(), s.arrivals.end(), [](const Arrival &a) { return a.kind == "sent"; })) {
+    Reply dv = hub::get("/api/devices", 8000);
+    JsonDocument dd;
+    if (dv.ok() && !deserializeJson(dd, (const char *)dv.body.data(), dv.body.size())) {
+      const std::string me = hub::deviceId();
+      bool empty = true;
+      for (JsonObject x : dd["devices"].as<JsonArray>())
+        if (me == std::string(x["id"] | "") && !x["daemon"].isNull()) empty = false;
+      for (const Arrival &a : s.arrivals) {
+        if (!empty || a.kind != "sent") continue;
+        for (JsonObject u : dd["unplaced"].as<JsonArray>()) {
+          if ((u["slot"] | -2) != a.slot) continue;
+          const std::string body = "{\"id\":\"" + me + "\",\"personality\":" + std::to_string(u["personality"].as<uint32_t>()) + "}";
+          if (hub::call("POST", "/api/devices/carry", &body, 8000).ok()) { s.carried = a.nickname; empty = false; }
+          break;
+        }
+      }
+    }
+    hub::refresh();   // the daemon this device carries, asked for at once
   }
   // and what it wrote, taken back into the game
   Bytes now = mine;

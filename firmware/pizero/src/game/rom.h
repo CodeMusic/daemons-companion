@@ -5,9 +5,11 @@
 // player's file is only read; a copy of it, untouched, is kept on this device (never sent anywhere) so a new release is
 // made from it with one key. Nothing of Nintendo's is in this program.
 // C-395 (the user, 2026-11-17): both games are kept -- CONTENT from FireRed, CONTEXT from LeafGreen -- each as the
-// newest release, or as the TESTING build made with the DEBUG patch the paired hub holds (C-216, the app's way), and
-// each with a save of its own. One is chosen; PLAY plays it.
-//   <data>/games/<key>.gba and .json   the games made        <data>/saves/<key>.sav   each one's save
+// newest release, or as the TESTING build made with the DEBUG patch the paired hub holds (C-216, the app's way). One is
+// chosen; PLAY plays it. C-397 (the user, the same day: "a single unified save like others where it syncs to and from the
+// hub (like all devices)"): every game plays the ONE save, the device's, which the hub mirrors -- as the app's testing
+// build plays the companion's save.
+//   <data>/games/<key>.gba and .json   the games made        <data>/daemons.sav       the one save
 //   <data>/originals/<sha1>.gba        the player's own       <data>/playing          the key PLAY plays
 #include <functional>
 #include <string>
@@ -22,8 +24,7 @@ struct Game {
 struct Original { std::string path, sha1, edition, name; };
 
 std::string romPath();                   // the game chosen
-std::string savePath();                  // its save
-std::string savePathOf(const Game &g);
+std::string savePath();                  // the one save every game plays (C-397)
 bool heldGame(Game &g);                  // the game chosen, if there is one
 std::vector<Game> heldGames();           // every game kept here, CONTENT first, each release before its testing build
 bool chooseGame(const std::string &key); // PLAY plays it now; keep the running game's save and unload it first

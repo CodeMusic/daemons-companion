@@ -1,5 +1,5 @@
 // C-379, C-395: GAMES -- both editions, each as the newest release or as the TESTING build, made here from the
-// player's own ROM, each with a save of its own; one chosen, and PLAY plays it. What is kept, the originals, the newest
+// player's own ROM; one chosen, and PLAY plays it on the one save (C-397). What is kept, the originals, the newest
 // release (GitHub's list, read now, as the app reads it) and what the hub holds for testing are looked up on a thread of
 // their own, and so is each making (the fetch takes a while), each step said as it happens.
 // Up and down choose; ENTER plays the one chosen, or makes it first (or anew, when a newer one is out); TAB looks again
@@ -175,7 +175,7 @@ struct Games : Page {
       canvas.print("ENTER PLAYS IT   ESC: THE LIST");   // DRAFT
       if (made.testing) {
         canvas.setTextColor(dim);
-        wrap("A testing build keeps a save of its own on this device, apart from the game's.", 6, 80, 51, 3, 10);   // DRAFT
+        wrap("It plays your one save, as every game here does, kept in step with the hub.", 6, 80, 51, 3, 10);   // DRAFT (C-397)
       }
       return;
     }

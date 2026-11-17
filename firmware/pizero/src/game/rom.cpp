@@ -1,6 +1,6 @@
 // C-379: patches.json -- the list as published now (fetched from the companion's repository on GitHub, kept for when
 // it is offline), never one older than the copy this program carries -- then the patch, the checks and the game.
-// C-395: both editions, each a release or a TESTING build, each with its own save; see rom.h for where each lives.
+// C-395: both editions, each a release or a TESTING build; C-397: all of them on one save. rom.h says where each lives.
 #include "game/rom.h"
 
 #include <ArduinoJson.h>
@@ -31,7 +31,6 @@ std::string Game::key() const { return lower(edition) + (testing ? "-testing" : 
 
 static std::string gamePath(const std::string &key) { return dataSub("games") + "/" + key + ".gba"; }
 static std::string gameInfo(const std::string &key) { return dataSub("games") + "/" + key + ".json"; }
-static std::string savePathFor(const std::string &key) { return dataSub("saves") + "/" + key + ".sav"; }
 static std::string originalPath(const std::string &sha1) { return dataSub("originals") + "/" + sha1 + ".gba"; }
 static std::string playingPath() { return inData("playing"); }
 
@@ -135,8 +134,9 @@ static void keepOriginal(const Bytes &rom, const std::string &sha1) {
   if (!exists(originalPath(sha1))) writeFileAtomic(originalPath(sha1), rom);   // the player's own, untouched
 }
 
-// Before C-395 there was one game (daemons.gba, game.json), one save (daemons.sav) and one original (original.gba):
-// each moved once to where it lives now, the game it was chosen
+// Before C-395 there was one game (daemons.gba, game.json) and one original (original.gba): each moved once to where it
+// lives now, the game it was chosen. The save stays daemons.sav. C-395's own saves (saves/<key>.sav, a morning's worth):
+// one becomes the one save when there is none yet -- the hub's agreed copy first -- and every one of them is left where it is
 static void moveOnce() {
   static std::once_flag once;
   std::call_once(once, [] {
@@ -146,9 +146,30 @@ static void moveOnce() {
       if (!exists(gamePath(k))) {
         rename(inData("daemons.gba").c_str(), gamePath(k).c_str());
         rename(inData("game.json").c_str(), gameInfo(k).c_str());
-        if (exists(inData("daemons.sav")) && !exists(savePathFor(k))) rename(inData("daemons.sav").c_str(), savePathFor(k).c_str());
         if (!exists(playingPath())) writeTextAtomic(playingPath(), k + "\n");
       }
+    }
+    if (!exists(inData("daemons.sav"))) {
+      // the one the hub agrees with first (mirror.json: a save the hub has never seen never goes out as the real one), then
+      // the newest of the releases', then the newest of any
+      std::string agreed, t;
+      JsonDocument m;
+      if (readText(inData("mirror.json"), t) && !deserializeJson(m, t)) agreed = m["sha1"] | "";
+      std::string pick, newestRelease, newestAny;
+      time_t atRelease = 0, atAny = 0;
+      for (const char *k : { "content", "context", "content-testing", "context-testing" }) {
+        struct stat st;
+        const std::string p = inData(std::string("saves/") + k + ".sav");
+        if (stat(p.c_str(), &st) != 0) continue;
+        Bytes b;
+        if (pick.empty() && !agreed.empty() && readFile(p, b) && sha1Hex(b) == agreed) pick = p;
+        const bool testing = std::string(k).find("-testing") != std::string::npos;
+        if (!testing && st.st_mtime >= atRelease) { atRelease = st.st_mtime; newestRelease = p; }
+        if (st.st_mtime >= atAny) { atAny = st.st_mtime; newestAny = p; }
+      }
+      if (pick.empty()) pick = !newestRelease.empty() ? newestRelease : newestAny;
+      Bytes b;
+      if (!pick.empty() && readFile(pick, b)) writeFileAtomic(inData("daemons.sav"), b);
     }
     Bytes o;
     if (exists(inData("original.gba")) && readFile(inData("original.gba"), o)) {
@@ -167,8 +188,7 @@ static std::string playingKey() {
 }
 
 std::string romPath() { return gamePath(playingKey()); }
-std::string savePath() { return savePathFor(playingKey()); }
-std::string savePathOf(const Game &g) { return savePathFor(g.key()); }
+std::string savePath() { moveOnce(); return inData("daemons.sav"); }
 
 bool heldGame(Game &g) {
   const std::string k = playingKey();

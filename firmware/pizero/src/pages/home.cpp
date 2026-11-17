@@ -20,7 +20,10 @@ const uint16_t SOFT = 0xC639, DIM = 0x8432;   // rgb(c8,c8,d0) and rgb(80,84,90)
 struct Home : Page {
   Choices choices;
   Game game;
-  bool hasGame = false, followed = false;
+  bool hasGame = false;
+  // C-397: what the last SYNC brought, shown one at a time as the app's RECEIVED shows it (C-261)
+  std::vector<mirror::Arrival> received;
+  std::string receivedBy, carriedHere;
   std::string lastSeen;
   // C-380: a SYNC asked here, the game paused; C-215: the hub refused this game's save -- keep it there as its own?
   std::future<mirror::Synced> syncing;
@@ -41,8 +44,8 @@ struct Home : Page {
     items.push_back({ "PARTY", PageId::Party });
     items.push_back({ "SAY", PageId::Say });
     items.push_back({ hasGame ? "GAMES" : "MAKE THE GAME", PageId::Make });   // C-395
-    // C-380: a SYNC, for the release of the game the hub follows only (C-395: a testing build's save stays here)
-    if (hub::paired() && mirror::mode() == mirror::Mode::Send && followed) items.push_back({ "SYNC", PageId::Home });
+    // C-380: a SYNC (C-397: of the one save, whichever game is played)
+    if (hub::paired() && mirror::mode() == mirror::Mode::Send && hasGame) items.push_back({ "SYNC", PageId::Home });
     if (!hub::paired()) items.push_back({ "LINK", PageId::Pair });   // C-380
     items.push_back({ "LEAVE", PageId::Home });
     choices.items.clear();
@@ -52,15 +55,30 @@ struct Home : Page {
   }
   void enter() override {
     hasGame = heldGame(game);
-    const std::string ed = hub::view().edition;   // the edition the hub follows, as it last said (C-395)
-    followed = hasGame && !game.testing && (ed.empty() || ed == game.edition);
     build();
     offer = mirror::mode() == mirror::Mode::Send && mirror::offered();
+    // C-397: back from a game that saved, the SYNC the app makes after each save (C-261) -- here, with the game paused,
+    // so what it writes is safely the game's next start
+    if (savedSinceSync && hasGame && hub::paired() && mirror::mode() == mirror::Mode::Send && !busy(syncing)) {
+      savedSinceSync = false;
+      startSync();
+    }
+  }
+  void startSync() {
+    keepSave();   // the game's save as it stands, the game paused here
+    Bytes mine;
+    readFile(savePath(), mine);
+    told = "SYNCING...";   // DRAFT
+    syncing = std::async(std::launch::async, [mine] { return mirror::syncNow(mine); });
   }
   static bool busy(const std::future<mirror::Synced> &f) { return f.valid() && f.wait_for(std::chrono::seconds(0)) != std::future_status::ready; }
   static bool busy(const std::future<mirror::Out> &f) { return f.valid() && f.wait_for(std::chrono::seconds(0)) != std::future_status::ready; }
   void key(const KeyEvent &e) override {
     if (!e.down || busy(syncing) || busy(keepingIt)) return;
+    if (!received.empty()) {   // C-397: RECEIVED, one at a time; ENTER or ESC puts it away
+      if (e.key == Key::Enter || e.key == Key::Esc) { received.erase(received.begin()); lastSeen.clear(); }
+      return;
+    }
     if (offer) {   // C-215's question, until it is answered
       if (e.key == Key::Enter) {
         offer = false;
@@ -77,13 +95,8 @@ struct Home : Page {
       const Item &it = items[choices.sel];
       std::string w = it.word;
       if (w == "LEAVE") quitting = true;
-      else if (w == "SYNC") {
-        keepSave();   // the game's save as it stands, the game paused here
-        Bytes mine;
-        readFile(savePath(), mine);
-        told = "SYNCING...";   // DRAFT
-        syncing = std::async(std::launch::async, [mine] { return mirror::syncNow(mine); });
-      } else go(it.to);
+      else if (w == "SYNC") { savedSinceSync = false; startSync(); }
+      else go(it.to);
     }
   }
   void tick() override {
@@ -95,6 +108,10 @@ struct Home : Page {
       }
       told = s.why;
       if (s.ok && s.arrived) told += " (" + std::to_string(s.arrived) + " arrived)";   // DRAFT
+      if (!s.refused.empty()) told = s.refused.front();   // the hub's own words: who stays, and why
+      for (auto &a : s.arrivals) received.push_back(a);
+      if (!s.arrivals.empty()) { receivedBy = s.player; carriedHere = s.carried; }
+      hub::refresh();
       lastSeen.clear();
     }
     if (keepingIt.valid() && !busy(keepingIt)) { mirror::Out o = keepingIt.get(); told = o.kept ? "Kept on the hub as a save of its own." : o.why; lastSeen.clear(); }   // DRAFT
@@ -180,6 +197,54 @@ struct Home : Page {
       canvas.setTextColor(SOFT);
       canvas.setCursor(6, 128);
       canvas.print(upper(told).substr(0, 51).c_str());
+    }
+    if (!received.empty()) {   // C-397: RECEIVED, as the app's card (app/ui/received.tsx): who, what, where it is, from whom
+      const mirror::Arrival &a = received.front();
+      const uint16_t paper = rgb(0xfb, 0xfa, 0xf6), ink = rgb(0x1d, 0x20, 0x29), rule = rgb(0x2b, 0x2f, 0x3a);
+      canvas.fillRoundRect(40, 18, hal::W - 80, 140, 6, rule);
+      canvas.fillRoundRect(43, 21, hal::W - 86, 134, 5, day);
+      canvas.fillRoundRect(46, 24, hal::W - 92, 128, 4, paper);
+      canvas.setTextColor(ink);
+      canvas.setTextSize(1);
+      std::string who = upper(receivedBy.empty() ? "YOU" : receivedBy) + " RECEIVED";   // DRAFT
+      canvas.setCursor((hal::W - 6 * (int)who.size()) / 2, 30);
+      canvas.print(who.c_str());
+      // the daemon itself when it is the one this device now carries, its picture come with the state
+      const bool here = a.kind == "sent" && !carriedHere.empty() && a.nickname == carriedHere;
+      std::shared_ptr<const Sprite> art = here && v.reached && v.carrying ? hub::art(v.artKey) : nullptr;
+      std::string what = a.kind == "item" ? std::to_string(a.count ? a.count : 1) + " " + a.nickname : a.nickname;
+      std::string where = a.kind == "sent" ? (here ? "IN THIS DEVICE NOW" : "WITH YOUR COMPANION NOW")   // DRAFT
+                        : a.where == "party" ? "IN YOUR PARTY" : "IN YOUR PC";                          // DRAFT
+      std::string from = "FROM " + upper(a.kind == "sent" ? (receivedBy.empty() ? "you" : receivedBy) : a.from.empty() ? "your companion" : a.from);   // DRAFT
+      what = upper(what);
+      if (art) {   // the picture on the left, the words beside it
+        const int scale = art->h <= 40 ? 2 : 1, ax = 52 + (80 - art->w * scale) / 2, ay = 42 + (88 - art->h * scale) / 2;
+        drawSprite(*art, ax, ay, scale);
+        const int tx = 140, cols = (hal::W - 50 - tx) / 6;
+        canvas.setTextSize(what.size() * 12 <= (size_t)(hal::W - 50 - tx) ? 2 : 1);
+        canvas.setCursor(tx, 58);
+        canvas.print(what.substr(0, canvas.getTextSizeX() > 1 ? cols / 2 : cols).c_str());
+        canvas.setTextSize(1);
+        canvas.setTextColor(rule);
+        wrap(where, tx, 82, cols, 2, 10);
+        wrap(from, tx, 104, cols, 2, 10);
+      } else {
+        canvas.setTextSize(2);
+        what = what.substr(0, 17);
+        canvas.setCursor((hal::W - 12 * (int)what.size()) / 2, 62);
+        canvas.print(what.c_str());
+        canvas.setTextSize(1);
+        canvas.setTextColor(rule);
+        canvas.setCursor((hal::W - 6 * (int)where.size()) / 2, 88);
+        canvas.print(where.c_str());
+        canvas.setCursor((hal::W - 6 * (int)from.size()) / 2, 100);
+        canvas.print(from.c_str());
+      }
+      canvas.setTextColor(day);
+      std::string more = received.size() > 1 ? "ENTER: NEXT" : "ENTER";   // DRAFT
+      canvas.setCursor((hal::W - 6 * (int)more.size()) / 2, 140);
+      canvas.print(more.c_str());
+      return;
     }
     if (offer) {   // C-215, the app's question
       canvas.fillRoundRect(16, 30, hal::W - 32, 96, 4, rgb(0x10, 0x12, 0x18));

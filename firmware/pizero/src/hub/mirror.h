@@ -11,6 +11,7 @@
 // `agreed` is kept in <data>/mirror.json. On a computer the mirror is read only by default: the window takes the hub's
 // copy to play on, and never writes the hub's save (--mirror send if it should).
 #include <string>
+#include <vector>
 #include "game/hash.h"
 
 namespace mirror {
@@ -22,9 +23,6 @@ Mode modeByName(const std::string &name, Mode otherwise);
 
 std::string agreed();
 
-// C-395: only the release of the edition the hub follows is mirrored. Another edition's save, or a testing build's,
-// stays on this device: pull, push and SYNC each say so and do nothing
-bool follows(std::string *why = nullptr);
 
 struct In {
   std::string choice;     // "same", "take", "replace", "keep", or "" when nothing came (no mirror yet, away, not paired)
@@ -47,7 +45,17 @@ Out keepThere(const Bytes &save);       // POST /api/saves/keep {b64, label}
 
 // C-380: a SYNC asked on the device, the game paused: this device's save to the hub first, the hub's SYNC, and what it
 // wrote taken back (the game then starts again from it)
-struct Synced { bool ok = false, took = false; Bytes save; std::string why; size_t arrived = 0, received = 0, returned = 0; };
+// C-397: and what it brought, as the app's RECEIVED shows it (C-261): a daemon the game SENT, or what a trade or a gift
+// brought; a daemon SENT goes into this device when it carries none (C-80), and `carried` names it
+struct Arrival { std::string kind, nickname, where, from; int species = 0, slot = -1, count = 0; };
+struct Synced {
+  bool ok = false, took = false;
+  Bytes save;
+  std::string why, player, carried;
+  std::vector<Arrival> arrivals;
+  std::vector<std::string> refused;   // what the SYNC would not do, in its own words (one daemon always stays home)
+  size_t arrived = 0, received = 0, returned = 0;
+};
 Synced syncNow(const Bytes &mine);
 
 // push on a thread of its own: the newest save waiting is sent, one at a time; `lastOut` says how the last one went

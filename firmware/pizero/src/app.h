@@ -24,6 +24,7 @@ extern Emu emu;
 extern bool held[(size_t)Key::Count];
 extern volatile bool quitting;
 extern bool headless;
+extern bool savedSinceSync;                     // C-397: the game saved since the last SYNC (HOME SYNCs then)
 void keepSave();                                // the game's save into its own file (savePath), if it moved since kept
 
 // drawing shared by the pages

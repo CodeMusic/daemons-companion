@@ -9,6 +9,7 @@
 //   daemons-zero --make-testing content|context  its TESTING build, from the paired hub's DEBUG patch (C-216, C-395)
 //   daemons-zero --game KEY            choose the game PLAY plays: content, context, content-testing, context-testing
 //   daemons-zero --games               say every game kept here and every original found, and stop
+//   daemons-zero --saved               as if the game had just saved: HOME SYNCs as it is entered (C-397; for checks)
 //   daemons-zero --rom FILE.gba        play any ROM as it is (a DEBUG build: testing)
 //   daemons-zero --page care           start on a page (home, play, games, link, care, step, party, say)
 //   daemons-zero --headless --frames N [--press 300:ENTER,420:L] [--shot out.bmp] [--every 100]
@@ -55,6 +56,7 @@ Emu emu;
 bool held[(size_t)Key::Count];
 volatile bool quitting;
 bool headless;
+bool savedSinceSync;
 static PageId now = PageId::Home;
 static bool switched = true;
 
@@ -158,6 +160,7 @@ int main(int argc, char **argv) {
     else if (a == "--make-testing") makeTestingOf = val();
     else if (a == "--game") gameKey = val();
     else if (a == "--games") listGames = true;
+    else if (a == "--saved") savedSinceSync = true;   // as if the game had just saved: HOME SYNCs on entering
     else if (a == "--hub") hubArg = val();
     else if (a == "--bench") benchFrames = atoi(val().c_str());
     else if (a == "--pair") pairCode = val();
@@ -267,6 +270,9 @@ int main(int argc, char **argv) {
       mirror::Synced s = mirror::syncNow(mine);
       if (s.took) writeFileAtomic(savePath(), s.save);
       printf("sync: %s -- %s (arrived %zu, received %zu, returned %zu)\n", s.ok ? "ran" : "did not run", s.why.c_str(), s.arrived, s.received, s.returned);
+      for (auto &a : s.arrivals) printf("  received (%s) %s, species %d, from %s\n", a.kind.c_str(), a.nickname.c_str(), a.species, a.from.empty() ? "-" : a.from.c_str());
+      if (!s.carried.empty()) printf("  %s is carried by this device now\n", s.carried.c_str());
+      for (auto &w : s.refused) printf("  refused: %s\n", w.c_str());
       if (s.took) printf("this device's save is now %s\n", sha1Hex(s.save).c_str());
       if (!s.ok) rc = 1;
     }

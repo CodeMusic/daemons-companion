@@ -26,9 +26,15 @@ Needs CMake, a C++17 compiler, SDL2 and libcurl (macOS: `brew install sdl2`; cur
 - **Both games (C-395)**: **GAMES** on HOME keeps CONTENT (from FireRed) and CONTEXT (from LeafGreen), each as the newest
   release or as the **TESTING** build. The testing build is made with the DEBUG patch the paired hub holds (C-216: at home only;
   `./syncCompanion.sh debug` sends the newest). ENTER plays the game chosen, or makes it first, or remakes it when a newer one is
-  out. Each game has a save of its own. Only the release of the edition the hub follows is mirrored; another edition's save
-  and a testing build's save stay on the device. From the command line: `--make content|context`, `--make-testing
-  content|context`, `--game content-testing` (choose), `--games` (list).
+  out. From the command line: `--make content|context`, `--make-testing content|context`, `--game content-testing`
+  (choose), `--games` (list).
+- **One save (C-397)**: every game plays the ONE save (`~/.local/share/daemons/daemons.sav`), which the hub mirrors, as the
+  app's testing build plays the companion's save.
+- **A daemon sent from the game (C-397)**: SEND it in the game's party menu and save. Back on HOME, the Zero SYNCs, as
+  the app does after each save (C-261), and shows **RECEIVED** for each arrival: who, the daemon, where it is now, and
+  from whom (ENTER puts each away). A daemon sent goes into the Zero when it carries none. If the hub refuses (one daemon
+  always stays in the party), HOME says so in the hub's words. The game then goes on from the SYNC's save (CONTINUE).
+  `--saved` starts HOME as if the game had just saved, for checks.
 - **A testing build**: `--rom engineGba/daemonsContent_debug.gba` plays any ROM as it is.
 - **The hub**: `--hub http://<hub>:4730`, or one line in `~/.config/daemons/hub`. `none` asks nothing.
 - **Never on your own save**: `DAEMONS_HOME=/some/scratch` moves everything it keeps (the game, the save, settings).

@@ -215,7 +215,10 @@
    "something to the south.",
    "something to the east.",
    "something to the west.",
-   "the room is thinking one thought."
+   "the room is thinking one thought.",
+   "two ripples, one pond. Where is the line?",
+   "TOUCH: this was held a long time before it was given.",
+   "TOUCH: rain on stone. It is dry in here."
   ],
   "day_shift": 12,
   "day_mask": 7,

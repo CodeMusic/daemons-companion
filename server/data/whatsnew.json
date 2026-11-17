@@ -1,6 +1,35 @@
 {
- "latest": 985,
+ "latest": 986,
  "builds": [
+  {
+   "build": 986,
+   "commit": "e1c16fe",
+   "date": "2026-11-16",
+   "sections": [
+    {
+     "ticket": "C-393",
+     "title": "THE CARDPUTERS: a manual for the Cardputer, the Cardputer ADV and the Cardputer Zero",
+     "lines": [
+      "THE CARDPUTERS on the MANUALS shelf: the Cardputer, the ADV and the Zero, and their caps; LISTEN reads it in its own voice. (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.384.1 (T-565)",
+      "and 3 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Each widget named for its phone in YOUR DEVICES (C-394)"
+     ]
+    }
+   ]
+  },
   {
    "build": 985,
    "commit": "a1535d4",

@@ -8,6 +8,7 @@ import { networkInterfaces } from "node:os";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { ADMIN_DIR } from "../src/admin.js";
+import { TASK_KINDS } from "../src/ai/tasks.js";
 
 const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: null });
 let port = 0;
@@ -48,9 +49,13 @@ describe("THE ENGINE ROOM's files (C-330)", () => {
     const week = JSON.parse(readFileSync(join(ADMIN_DIR, "../data/week.json"), "utf8")).days as { chakra: string; colour: string }[];
     const steps = [...js.slice(js.indexOf("const STEPS = ")).split(";")[0].matchAll(/\["(#[0-9A-Fa-f]{6})", "([A-Z ]+)"\]/g)].map((m) => [m[1], m[2]]);
     expect(steps).toEqual(week.map((d) => [d.colour, d.chakra.toUpperCase()]));
-    const kinds = [...js.slice(js.indexOf("const KIND = ")).split(";")[0].matchAll(/\["(#[0-9a-fA-F]{6})"/g)].map((m) => m[1].toLowerCase());
+    // C-400: the one table (TASK_KINDS) and THE ENGINE ROOM's copy for an older hub -- both off the spectrum, the copy the same
+    const kinds = [...js.slice(js.indexOf("let KIND = ")).split(";")[0].matchAll(/(\w+): \["(#[0-9a-fA-F]{6})"/g)].map((m) => [m[1], m[2].toLowerCase()]);
     expect(kinds.length).toBeGreaterThan(8);
-    for (const k of kinds) expect(week.map((d) => d.colour.toLowerCase())).not.toContain(k);
+    for (const [, c] of [...kinds, ...Object.entries(TASK_KINDS).map(([k, x]) => [k, x.colour.toLowerCase()])])
+      expect(week.map((d) => d.colour.toLowerCase())).not.toContain(c);
+    for (const [k, c] of kinds) expect((TASK_KINDS as Record<string, { colour: string }>)[k]?.colour.toLowerCase()).toBe(c);
+    expect(new Set(Object.values(TASK_KINDS).map((x) => x.colour.toLowerCase())).size).toBe(Object.keys(TASK_KINDS).length);
   });
 
   it("is served at /admin/, always asked again, and /admin is /admin/", async () => {

@@ -4,10 +4,10 @@
 // when (each week on a day and hour, or each day at an hour, the hub's own clock); the hub runs it when it falls due and
 // opens a task for it then; until then the plan's next time is shown in LATER as a "scheduled" task, never kept in the
 // ledger. A plan can be switched off, or run now. Every word DRAFT.
-import type { Task } from "./tasks.js";
+import type { Task, TaskKind } from "./tasks.js";
 
 export type Plan = {
-  id: string; kind: string; title: string; said: string;      // said: what it does, for its row in LATER
+  id: string; kind: TaskKind; title: string; said: string;      // said: what it does, for its row in LATER
   every: "week" | "day"; day?: number; hour: number; minute: number;   // day: 0 = Sunday (week plans)
   on: boolean; last?: string;                                 // last: when it last ran
 };

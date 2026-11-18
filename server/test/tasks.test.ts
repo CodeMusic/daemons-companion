@@ -24,9 +24,9 @@ describe("tasks", () => {
   });
   it("never forgets a live task, and clears one user's settled", () => {
     const s = mem(), tasks = new Tasks(s.get, s.set);
-    const live = tasks.open({ kind: "a", title: "live", user: "A", state: "thinking" });
-    const a = tasks.open({ kind: "a", title: "done", user: "A" }); tasks.update(a.id, { state: "done" });
-    const b = tasks.open({ kind: "b", title: "done", user: "B" }); tasks.update(b.id, { state: "done" });
+    const live = tasks.open({ kind: "talk", title: "live", user: "A", state: "thinking" });
+    const a = tasks.open({ kind: "talk", title: "done", user: "A" }); tasks.update(a.id, { state: "done" });
+    const b = tasks.open({ kind: "dream", title: "done", user: "B" }); tasks.update(b.id, { state: "done" });
     expect(tasks.forget(live.id)).toBe(false);
     tasks.clear("A");
     expect(tasks.all().map((t) => t.title + t.user).sort()).toEqual(["doneB", "liveA"]);

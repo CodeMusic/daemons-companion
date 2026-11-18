@@ -8,6 +8,24 @@
 // read in as tasks too, so nothing that thinks is missing. Only titles, names and times -- never what was said.
 
 // "scheduled" is never kept in the ledger: it is a plan's next time (ai/schedule.ts), shown in LATER
+// C-400 (the user, 2026-11-18, the Engine Room's goal loop; C-363): every kind of work THE MIND shows, with its colour and
+// its name -- the one table THE ENGINE ROOM (from /api/mind/tasks) and the phone (by import) draw from, so a new kind
+// cannot be drawn grey: Tasks.open and the hub's ledgered work take a TaskKind, and the compiler refuses one not here.
+// Every colour is off the seven steps' spectrum (the week's chakras, data/week.json): a step's colour only ever means a
+// step (test/admin.test.ts holds this). Every name DRAFT.
+export const TASK_KINDS = {
+  talk: { colour: "#c9d1e0", said: "TALK" }, guide: { colour: "#3fc7d6", said: "THE GUIDE" },
+  dream: { colour: "#e07aa8", said: "DREAMS" }, whatsnew: { colour: "#d9a74a", said: "WHAT'S NEW" },
+  journal: { colour: "#b08d64", said: "JOURNAL" }, meeting: { colour: "#e8dcb5", said: "MEETINGS" },
+  voice: { colour: "#d64fbf", said: "VOICES" }, chatter: { colour: "#7d8aa6", said: "CHATTER" },
+  persona: { colour: "#2fa39a", said: "PERSONA" }, painting: { colour: "#f2a7a0", said: "THE EASEL" },
+  signs: { colour: "#a1887f", said: "SIGNS" }, memory: { colour: "#b9a99a", said: "MEMORY" },
+  processing: { colour: "#8fa3bf", said: "PROCESSING" }, song: { colour: "#5fd3b3", said: "SONGS" },
+  dialogue: { colour: "#c7a2c9", said: "DIALOGUE" }, work: { colour: "#7a7f8a", said: "WORK" },
+} as const satisfies Record<string, { colour: string; said: string }>;
+export type TaskKind = keyof typeof TASK_KINDS;
+export const kindSaid = (k: string) => (TASK_KINDS as Record<string, { colour: string; said: string }>)[k] ?? { colour: TASK_KINDS.work.colour, said: k.toUpperCase() };
+
 export type TaskState = "waiting" | "thinking" | "done" | "failed" | "stopped" | "scheduled";
 // C-319 later: each mind a task was given to, in order -- a hand-off when one failed or was slow
 export type Hop = { mind: string; at: string; error?: string };
@@ -46,7 +64,7 @@ export class Tasks {
     const live = ts.filter((t) => LIVE.includes(t.state)), settled = ts.filter((t) => !LIVE.includes(t.state));
     this.set(KEY, JSON.stringify([...live, ...settled].sort((a, b) => b.at.localeCompare(a.at)).slice(0, Math.max(MOST_TASKS, live.length))));
   }
-  open(o: { kind: string; title: string; user?: string; device?: string; mind?: string; state?: TaskState; can?: Task["can"];
+  open(o: { kind: TaskKind; title: string; user?: string; device?: string; mind?: string; state?: TaskState; can?: Task["can"];
             parent?: string; plan?: string }): Task {
     const at = this.now().toISOString();
     const t: Task = { id: `t${Date.now().toString(36)}${(this.n++).toString(36)}`, kind: clip(o.kind, 20) ?? "work",

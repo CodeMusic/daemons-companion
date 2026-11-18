@@ -18,7 +18,7 @@
 // task shows its pipeline, each step of it opening in turn.
 import { useEffect, useMemo, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import type { Task } from "../../../server/src/ai/tasks";
+import { TASK_KINDS, kindSaid, type Task } from "../../../server/src/ai/tasks";   // C-400: the kinds' one table
 import { api } from "../../platform/net";
 import { me, whoAmI } from "../../state/me";
 import { Action, Card, Eyebrow, Pending, Small } from "../../ui/ui";
@@ -27,20 +27,13 @@ import week from "../../../server/data/week.json";   // C-363: the steps' colour
 
 type Plan = { id: string; kind: string; title: string; said: string; on: boolean; last: string | null; next: string };
 type View = { tasks: Task[]; users: string[]; minds: { name: string; ok: boolean }[]; load: { running: number; waiting: number }; at: string; plans?: Plan[] };
-// C-363: off the seven steps' spectrum, so a step's colour only ever means a step (the same as THE ENGINE ROOM's) -- DRAFT
-const KIND: Record<string, { colour: string; said: string }> = {
-  talk: { colour: "#c9d1e0", said: "TALK" }, guide: { colour: "#3fc7d6", said: "THE GUIDE" },
-  dream: { colour: "#e07aa8", said: "DREAMS" }, whatsnew: { colour: "#d9a74a", said: "WHAT'S NEW" },
-  journal: { colour: "#b08d64", said: "JOURNAL" }, meeting: { colour: "#e8dcb5", said: "MEETINGS" },   // C-319 next
-  voice: { colour: "#d64fbf", said: "VOICES" }, chatter: { colour: "#7d8aa6", said: "CHATTER" },
-  persona: { colour: "#2fa39a", said: "PERSONA" }, painting: { colour: "#f2a7a0", said: "THE EASEL" },
-  signs: { colour: "#a1887f", said: "SIGNS" }, memory: { colour: "#b9a99a", said: "MEMORY" }, processing: { colour: "#8fa3bf", said: "PROCESSING" },
-};
+// C-363: off the seven steps' spectrum, so a step's colour only ever means a step; C-400: from the hub's one table
+const KIND: Record<string, { colour: string; said: string }> = TASK_KINDS;
 // how much a task was given and gave back, and its tokens when the mind counted them -- DRAFT
 const kb = (n?: number) => (n === undefined ? "?" : n < 1000 ? `${n} chars` : `${(n / 1000).toFixed(1)}k chars`);
 const sizeSaid = (t: Task) => [t.size ? `${kb(t.size.in)} in, ${t.size.out !== undefined ? kb(t.size.out) : "nothing yet"} out` : "",
                                t.tokens ? `${t.tokens.in ?? "?"} → ${t.tokens.out ?? "?"} tokens` : ""].filter(Boolean).join(" · ");
-const kindOf = (k: string) => KIND[k] ?? { colour: "#7a7f8a", said: k.toUpperCase() };
+const kindOf = kindSaid;
 const STATE_SAID: Record<Task["state"], string> = { waiting: "waiting", thinking: "thinking", done: "done", failed: "failed", stopped: "stopped", scheduled: "planned" };
 // C-319 later: when a plan comes next, in words -- DRAFT
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

@@ -139,7 +139,7 @@ import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicen
 import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
-import { Tasks, tasksView, usersOf } from "./ai/tasks.js";   // C-319
+import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
 import { isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later
 import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
 import { readSubtle } from "./save/subtle.js";   // C-204
@@ -875,7 +875,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
   // The work is given `write` (house.write, counted) and says how it ended with `end`.
   const RUNNING = new Map<string, AbortController>();
-  const ledgered = (o: { kind: string; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string;
+  const ledgered = (o: { kind: TaskKind; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string;
                          quick?: boolean }) => {   // C-338: quick -- someone stands waiting: the quick thinker, thinking off
     const ctl = new AbortController();
     const task = TASKS.open({ kind: o.kind, title: o.title, user: o.user, device: o.device, mind: o.mind ?? writerNow() ?? undefined,
@@ -1939,6 +1939,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const now = new Date(), ps = plans((k) => store.getSetting(k));   // C-319 later: LATER -- each plan's next time
         const later = ps.filter((p) => p.on).map((p) => planTask(p, now, writerNow() ?? undefined));
         return send(res, 200, { tasks: [...(user ? all.filter((t) => t.user === user) : all).slice(0, 150), ...later], users: usersOf(all), minds,
+                                kinds: TASK_KINDS,   // C-400: every kind's colour and name, from the one table
                                 load: talkJobs.load, at: now.toISOString(),
                                 plans: ps.map((p) => ({ id: p.id, kind: p.kind, title: p.title, said: p.said, on: p.on, last: p.last ?? null, next: nextDue(p, now).toISOString() })) });
       }

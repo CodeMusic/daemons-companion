@@ -194,8 +194,10 @@ const BEYOND = "#e6ebf5";                                   // an eighth step an
 const stepColour = (n) => (n >= 1 && n <= STEPS.length ? STEPS[n - 1][0] : BEYOND);
 // the chakras' colours are deep; a line or a ring on the night page is drawn lighter, toward white
 const lift = (hex, f) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - f) + 255 * f).toString(16).padStart(2, "0")).join("");
-// every other colour on the page is off that spectrum, so a colour that is a step always means a step (C-363) -- DRAFT
-const KIND = { talk: ["#c9d1e0", "TALK"], guide: ["#3fc7d6", "THE GUIDE"], dream: ["#e07aa8", "DREAMS"], whatsnew: ["#d9a74a", "WHAT'S NEW"],
+// every other colour on the page is off that spectrum, so a colour that is a step always means a step (C-363) -- DRAFT.
+// C-400: the hub sends the one table (server/src/ai/tasks.ts TASK_KINDS) with every view; this copy is only for a hub
+// older than it
+let KIND = { talk: ["#c9d1e0", "TALK"], guide: ["#3fc7d6", "THE GUIDE"], dream: ["#e07aa8", "DREAMS"], whatsnew: ["#d9a74a", "WHAT'S NEW"],
                journal: ["#b08d64", "JOURNAL"], meeting: ["#e8dcb5", "MEETINGS"], voice: ["#d64fbf", "VOICES"], chatter: ["#7d8aa6", "CHATTER"],
                persona: ["#2fa39a", "PERSONA"], painting: ["#f2a7a0", "THE EASEL"], signs: ["#a1887f", "SIGNS"], memory: ["#b9a99a", "MEMORY"],
                processing: ["#8fa3bf", "PROCESSING"] };
@@ -338,6 +340,7 @@ const fSaid = (f, ts) => f.type === "hub" ? "THE HUB" : f.type === "task" ? (ts.
 
 async function drawMind() {
   const v = await api("/api/mind/tasks"), who = ui.who ?? "all", now = Date.now();
+  if (v.kinds) KIND = Object.fromEntries(Object.entries(v.kinds).map(([k, x]) => [k, [x.colour, x.said]]));   // C-400
   const shown = v.tasks.filter((t) => t.state !== "scheduled" && (who === "all" || t.user === who));
   const live = shown.filter(LIVE), done = shown.filter((t) => !LIVE(t)).slice(0, 30);
   const known = new Map((v.minds ?? []).map((m) => [m.name, m.ok]));

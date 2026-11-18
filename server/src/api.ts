@@ -2127,6 +2127,27 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         return send(res, 200, { gone, kept });
       }
+      // C-404: a failed creation asked again -- the same request, mode and style, by the daemon that made it (found among
+      // those away by its species and nickname); the failed one forgotten once the new one is asked for. A song or a painting.
+      if (req.method === "POST" && path === "/api/creations/again") {
+        const b = await body(req), c = creationsNow().find((x) => x.uid === String(b.uid ?? ""));
+        if (!c || c.state !== "failed") return send(res, 404, { error: "no such failed creation" });   // DRAFT
+        if (c.kind !== "song" && c.kind !== "painting") return send(res, 400, { error: "only a song or a painting is asked again" });   // DRAFT
+        const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) }, away = awayNow(ecfg);
+        const d = away.find((x) => x.species === c.daemon.species && (x.nickname || x.name) === c.daemon.nickname)
+               ?? away.find((x) => x.species === c.daemon.species);
+        if (!d) return send(res, 409, { error: `${c.daemon.nickname || "That daemon"} is not away from the game now` });   // DRAFT
+        const m = c.meta, request = String(m.request ?? "");
+        const r = c.kind === "painting" ? paint(d.personality, request, phone?.name ?? c.by ?? undefined)
+          : sing(d.personality, (m.mode === "lyrics" || m.mode === "own" ? m.mode : "prompt") as SingMode,
+                 m.mode === "lyrics" ? String(m.lyrics ?? request) : request, String(m.style ?? ""),
+                 (namedRecipe(ecfg, store, deviceId, "daemon") ?? "a small bright voice").replace(/\s+/g, " ").slice(0, 160),
+                 phone?.name ?? c.by ?? undefined);
+        if ("error" in r) return send(res, 409, r);
+        if (c.kind === "song") songs().forget(c.id);
+        else { store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== c.id))); if (existsSync(paintingFile(c.id))) unlinkSync(paintingFile(c.id)); }
+        return send(res, 200, { asked: c.kind === "song" ? songCreation(r as Song, homeName()) : paintingCreation(r as PaintingRow, homeName()) });
+      }
       if (req.method === "GET" && path === "/api/creations") {
         const kind = url.searchParams.get("kind");
         return send(res, 200, { home: homeName(), creations: creationsNow().filter((c) => !kind || c.kind === kind) });

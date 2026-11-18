@@ -176,6 +176,19 @@ describe("the hub's easel (C-338)", () => {
     expect((await post("/api/paintings/forget", { id: p.id })).status).toBe(200);
     expect((await fetch(`${base}/art/paintings/${p.id}.png`)).status).toBe(404);
   });
+  it("C-404: a failed painting says why in CREATIONS, and is asked again by the daemon that painted it", async () => {
+    const id = "f".repeat(16);
+    store.setSetting("easel.paintings", JSON.stringify([{ id, at: "2026-11-11T15:48:00Z", personality: 4242, species: 25, nickname: "SPARK",
+      name: "PIKA", types: [], title: "", about: "", request: "the view from my window", state: "failed", error: "ComfyUI did not answer" }]));
+    const failed = (await fetch(`${base}/api/creations`).then((x) => x.json())).creations.find((c: any) => c.id === id);
+    expect(failed).toMatchObject({ state: "failed", meta: { request: "the view from my window", error: "ComfyUI did not answer" } });
+    expect((await post("/api/creations/again", { uid: "painting:nothing@x" })).status).toBe(404);
+    const r = await post("/api/creations/again", { uid: failed.uid }).then((x) => x.json());
+    expect(r.asked).toMatchObject({ kind: "painting", state: "making", daemon: { nickname: "SPARK" }, meta: { request: "the view from my window" } });
+    const now = (await fetch(`${base}/api/creations`).then((x) => x.json())).creations;
+    expect(now.some((c: any) => c.id === id)).toBe(false);              // the failed one let go
+    for (let i = 0; i < 100; i++) { const p = (await fetch(`${base}/api/paintings/${r.asked.id}`).then((x) => x.json())).painting; if (p.state !== "painting") break; await new Promise((x) => setTimeout(x, 30)); }
+  });
   it("says what is missing", async () => {
     expect((await post("/api/paint", { prompt: "  " })).status).toBe(400);
     expect((await post("/api/paint", { prompt: "x", personality: 1 })).status).toBe(409);

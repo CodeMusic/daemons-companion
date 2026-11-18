@@ -54,7 +54,8 @@ export function sleepCreation(t: SleepRow, home: string, beats: string, carrierH
 
 // a painting (THE EASEL's row) as a creation
 export type PaintingRow = { id: string; at: string; species: number; nickname: string; types?: string[]; title: string;
-                            about: string; request: string; state: "painting" | "done" | "failed"; by?: string };
+                            about: string; request: string; state: "painting" | "done" | "failed"; by?: string;
+                            error?: string };   // C-404: why it failed, as the easel kept it
 export function paintingCreation(p: PaintingRow, home: string): Creation {
   const png = `/art/paintings/${p.id}.png`;
   return {
@@ -65,7 +66,7 @@ export function paintingCreation(p: PaintingRow, home: string): Creation {
     by: p.by ?? null,
     cover: p.state === "done" ? png : null,
     files: p.state === "done" ? { "painting.png": png } : {},
-    meta: { request: p.request },
+    meta: { request: p.request, error: p.state === "failed" ? p.error ?? null : null },   // C-404
   };
 }
 

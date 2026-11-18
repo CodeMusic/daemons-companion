@@ -455,16 +455,21 @@ async function drawCreations() {
   const shared = new Set((c.creations ?? []).map((x) => x.uid));
   ui.kind ??= "all"; ui.daemon ??= "all"; ui.ticked ??= new Set();
   const daemons = [...new Set(h.creations.map((x) => x.daemon.nickname || "?"))].sort();
-  const shown = h.creations.filter((x) => (ui.kind === "all" || x.kind === ui.kind) && (ui.daemon === "all" || (x.daemon.nickname || "?") === ui.daemon));
+  // C-404: FAILED is a filter of its own, each failure with its reason and TRY AGAIN
+  const failed = h.creations.filter((x) => x.state === "failed");
+  if (ui.kind === "failed" && !failed.length) ui.kind = "all";
+  const shown = h.creations.filter((x) => (ui.kind === "all" || (ui.kind === "failed" ? x.state === "failed" : x.kind === ui.kind)) && (ui.daemon === "all" || (x.daemon.nickname || "?") === ui.daemon));
   for (const u of [...ui.ticked]) if (!h.creations.some((x) => x.uid === u)) ui.ticked.delete(u);
+  if (ui.tickFailed) { for (const x of failed) ui.ticked.add(x.uid); ui.tickFailed = false; }
   const total = h.creations.reduce((s, x) => s + (x.bytes ?? 0), 0);
   const chip = (act, val, on, label) => `<button class="btn ${on ? "" : "quiet"}" data-act="${act}" data-v="${esc(val)}">${esc(label)}</button>`;
   $page.innerHTML = `<h1>CREATIONS</h1>
     <p class="lede">What the daemons made that this hub keeps: ${h.creations.length} in all${total ? `, about ${mb(total)} of music` : ""}. A phone that downloaded one keeps its own copy.</p>
-    <div class="row">${chip("ckind", "all", ui.kind === "all", "ALL")}${chip("ckind", "sleep", ui.kind === "sleep", "SLEEP SOUNDS")}${chip("ckind", "painting", ui.kind === "painting", "PAINTINGS")}</div>
+    <div class="row">${chip("ckind", "all", ui.kind === "all", "ALL")}${chip("ckind", "sleep", ui.kind === "sleep", "SLEEP SOUNDS")}${chip("ckind", "painting", ui.kind === "painting", "PAINTINGS")}${chip("ckind", "song", ui.kind === "song", "SONGS")}${failed.length ? chip("ckind", "failed", ui.kind === "failed", `FAILED (${failed.length})`) : ""}</div>
     <div class="row" style="margin-top:8px">${chip("cdaemon", "all", ui.daemon === "all", "EVERY DAEMON")}${daemons.map((d) => chip("cdaemon", d, ui.daemon === d, d)).join("")}</div>
     <div class="row" style="margin:12px 0">
       <button class="btn quiet" data-act="ctickall">${shown.every((x) => ui.ticked.has(x.uid)) && shown.length ? "UNTICK ALL" : "TICK ALL SHOWN"}</button>
+      ${failed.length && !failed.every((x) => ui.ticked.has(x.uid)) ? `<button class="btn quiet" data-act="ctickfailed">TICK THE ${failed.length} FAILED</button>` : ""}
       ${ui.ticked.size ? (ui.sure
         ? `<span class="grow">Let ${ui.ticked.size} go from the hub, their exports and covers with them${c.linked ? ", and from THE COMMONS if shared" : ""}?</span>
            <button class="btn danger" data-act="cforget">YES, LET ${ui.ticked.size} GO</button><button class="btn quiet" data-act="sure">NO</button>`
@@ -476,11 +481,22 @@ async function drawCreations() {
           <input type="checkbox" data-act="ctick" data-uid="${esc(x.uid)}" ${ui.ticked.has(x.uid) ? "checked" : ""} aria-label="tick ${esc(x.title)}">
           <span class="grow">
             ${x.cover ? `<img src="${esc(x.cover)}" alt="" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:${x.kind === "sleep" ? "50%" : "6px"};margin-bottom:6px">` : ""}
-            <span class="eyebrow">${x.kind === "sleep" ? "SLEEP SOUNDS" : "PAINTING"} · ${esc(x.daemon.nickname || "?")}${shared.has(x.uid) ? " · SHARED" : ""}</span><br>
+            <span class="eyebrow">${CKIND[x.kind] ?? esc(x.kind.toUpperCase())} · ${esc(x.daemon.nickname || "?")}${shared.has(x.uid) ? " · SHARED" : ""}</span><br>
             <b>${esc(x.title)}</b><br>
             <span class="small">${esc(ago(x.made))}${x.by ? ` · asked on ${esc(x.by)}` : ""}${x.bytes ? ` · ${mb(x.bytes)}` : ""}${x.state !== "ready" ? ` · ${esc(x.state)}` : ""}</span>
-          </span></label></div>`).join("") || `<p class="small">Nothing here.</p>`}</div>`;
+          </span></label>
+        ${x.state === "failed" ? `<div class="small warm" style="margin-top:6px">${esc(x.meta?.error || "No reason was kept.")}</div>
+          ${x.meta?.request ? `<div class="small faint">asked: ${esc(String(x.meta.request).slice(0, 120))}</div>` : ""}
+          ${x.kind === "song" || x.kind === "painting" ? `<button class="btn" data-act="cagain" data-uid="${esc(x.uid)}" style="margin-top:6px">TRY AGAIN</button>` : ""}` : ""}
+        </div>`).join("") || `<p class="small">Nothing here.</p>`}</div>`;
 }
+const CKIND = { sleep: "SLEEP SOUNDS", painting: "PAINTING", song: "SONG" };   // C-404: songs were said to be paintings
+ACTS.ctickfailed = () => { ui.kind = "failed"; ui.ticked = new Set(); ui.tickFailed = true; ui.sure = false; };   // C-404: then LET N GO
+ACTS.cagain = async (d) => {
+  const r = await api("/api/creations/again", { uid: d.uid });
+  ui.ticked.delete(d.uid);
+  said(`Asked again: ${r.asked.daemon.nickname || "the daemon"} ${r.asked.kind === "song" ? "sings it" : "paints it"} -- it appears here when it is made.`);
+};
 ACTS.ckind = (d) => { ui.kind = d.v; };
 ACTS.cdaemon = (d) => { ui.daemon = d.v; };
 ACTS.ctick = (d) => { ui.ticked.has(d.uid) ? ui.ticked.delete(d.uid) : ui.ticked.add(d.uid); ui.sure = false; };

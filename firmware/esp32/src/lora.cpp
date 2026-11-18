@@ -116,8 +116,55 @@ static String msgFrom, msgText; static bool msgShown = false;
 static uint16_t ourId = 0;
 static std::deque<uint64_t> seen;                                    // FROM<<16 | ID of frames already handled
 
-// C-136: the band this board's antenna can use -- the site's, unless it is below what the antenna is made for
-static int bandFor(int asked) { return board.loraMinMhz && asked < board.loraMinMhz ? 868 : asked; }
+// C-175: what each chip can tune, in MHz -- the SX1268 and the SX1278 only the lower bands, the SX1280 only 2.4 GHz
+static void chipRange(LoraChip c, int &lo, int &hi) {
+  switch (c) {
+    case LoraChip::SX1268: lo = 410; hi = 810; break;
+    case LoraChip::SX1278: lo = 137; hi = 525; break;
+    case LoraChip::SX1276: lo = 137; hi = 1020; break;
+    case LoraChip::SX1280: lo = 2400; hi = 2500; break;
+    default:               lo = 150; hi = 960; break;     // the SX1262, the LLCC68
+  }
+}
+// C-136, C-175: the band this board can use -- the site's, unless its chip or its antenna cannot reach it; then the
+// nearest band it can, so a mixed set of boards still hears what it can (and the site says who cannot hear whom)
+static int bandFor(int asked) {
+  if (board.loraChip == LoraChip::SX1280) return 2400;    // 2.4 GHz: heard only by another SX1280
+  int lo, hi; chipRange(board.loraChip, lo, hi);
+  if (board.loraMinMhz) lo = max(lo, board.loraMinMhz);
+  if (board.loraMaxMhz) hi = min(hi, board.loraMaxMhz);
+  if (asked >= lo && asked <= hi) return asked;
+  int best = 0;
+  for (int b : { 433, 868, 915, 920 }) if (b >= lo && b <= hi && (!best || abs(b - asked) < abs(best - asked))) best = b;
+  return best ? best : asked;
+}
+static const char *chipName(LoraChip c) {
+  switch (c) {
+    case LoraChip::SX1262: return "SX1262"; case LoraChip::SX1268: return "SX1268"; case LoraChip::LLCC68: return "LLCC68";
+    case LoraChip::SX1276: return "SX1276"; case LoraChip::SX1278: return "SX1278"; case LoraChip::SX1280: return "SX1280";
+    default: return "none";
+  }
+}
+// THE RADIO's settings on every chip: 125 kHz, SF9, 4/5, sync 0x12, 10 dBm, a preamble of 12. The SX1280 cannot be
+// heard by the others whatever it is set to, so it takes 2.4 GHz's own: 812.5 kHz, SF9, 4/5 -- the same frame.
+static PhysicalLayer *makeRadio(LoraChip c, int &st) {
+  const float f = (float)bandMhz;
+  const uint32_t busy = board.loraBusy >= 0 ? (uint32_t)board.loraBusy : RADIOLIB_NC;
+  switch (c) {
+    case LoraChip::SX1262: { auto *r = new SX1262(new Module(board.loraCs, board.loraDio1, board.loraRst, busy, *bus));
+                             st = r->begin(f, 125.0, 9, 5, 0x12, 10, 12, 1.8); return r; }   // LilyGO's: a TCXO at 1.8 V on DIO3
+    case LoraChip::SX1268: { auto *r = new SX1268(new Module(board.loraCs, board.loraDio1, board.loraRst, busy, *bus));
+                             st = r->begin(f, 125.0, 9, 5, 0x12, 10, 12, 1.8); return r; }
+    case LoraChip::LLCC68: { auto *r = new LLCC68(new Module(board.loraCs, board.loraDio1, board.loraRst, busy, *bus));
+                             st = r->begin(f, 125.0, 9, 5, 0x12, 10, 12, 1.8); return r; }
+    case LoraChip::SX1276: { auto *r = new SX1276(new Module(board.loraCs, board.loraDio1, board.loraRst, RADIOLIB_NC, *bus));
+                             st = r->begin(f, 125.0, 9, 5, 0x12, 10, 12); return r; }
+    case LoraChip::SX1280: { auto *r = new SX1280(new Module(board.loraCs, board.loraDio1, board.loraRst, busy, *bus));
+                             st = r->begin(f, 812.5, 9, 5, 0x12, 10, 12); return r; }
+    default:               { auto *r = new SX1278(new Module(board.loraCs, board.loraDio1, board.loraRst, RADIOLIB_NC, *bus));
+                             st = r->begin(f, 125.0, 9, 5, 0x12, 10, 12); return r; }
+  }
+}
 static bool radioOn() {
   if (ready) return true;
   if (board.loraChip == LoraChip::None || (triedAt && millis() - triedAt < 60000)) return false;
@@ -145,24 +192,25 @@ static bool radioOn() {
   }
   int st;
   radioBus();
-  if (board.loraChip == LoraChip::SX1262) {
-    SX1262 *r = new SX1262(new Module(board.loraCs, board.loraDio1, board.loraRst, board.loraBusy, *bus));
-    st = r->begin((float)bandMhz, 125.0, 9, 5, 0x12, 10, 12, 1.8);   // LilyGO's modules: a TCXO at 1.8 V on DIO3
-    radio = r;
-  } else {
-    SX1278 *r = new SX1278(new Module(board.loraCs, board.loraDio1, board.loraRst, RADIOLIB_NC, *bus));
-    st = r->begin((float)bandMhz, 125.0, 9, 5, 0x12, 10, 12);
-    radio = r;
+  radio = makeRadio(board.loraChip, st);
+#if defined(BOARD_TWATCH_ULTRA)
+  // C-175: the Ultra is sold with an SX1262 or an SX1280 on the same pins -- not the one declared, then the other
+  if (st == RADIOLIB_ERR_CHIP_NOT_FOUND && board.loraChip == LoraChip::SX1262) {
+    board.loraChip = LoraChip::SX1280; bandMhz = bandFor(cfg.band);
+    radioBus(); radio = makeRadio(board.loraChip, st);
   }
-  if (st != RADIOLIB_ERR_NONE) { Serial.printf("lora: the radio did not start (%d)\n", st); radio = nullptr; return false; }
+#endif
+  if (st != RADIOLIB_ERR_NONE) { Serial.printf("lora: the %s did not start (%d)\n", chipName(board.loraChip), st); radio = nullptr; return false; }
   radio->setPacketReceivedAction(onFrame);
   radioBus(); radio->startReceive();
   ready = true;
-  Serial.printf("lora: listening at %d MHz\n", bandMhz);
+  Serial.printf("lora: %s listening at %d MHz\n", chipName(board.loraChip), bandMhz);
   return true;
 }
 
 bool loraReady() { return ready; }
+// C-175: the chip and the band, for the site ("SX1262 868"), so it can say which boards cannot hear each other
+String loraRadio() { return board.loraChip == LoraChip::None ? String() : String(chipName(board.loraChip)) + " " + String(ready ? bandMhz : bandFor(cfg.band)); }
 
 // DIAG (C-123, the Fire's LoRa433): the version register read three ways on the running board -- as it is, with the
 // host set back to full duplex, and with GPIO 19 attached again as the host's MISO
@@ -302,7 +350,7 @@ void loraLoop(uint32_t now, bool on, int species) {
   relayOut();                                              // C-175
   if (!radioOn()) return;
   if (slept) { tft.waitDMA(); radioBus(); radio->startReceive(); slept = false; }
-  if (bandFor(cfg.band) != bandMhz && (cfg.band == 433 || cfg.band == 868 || cfg.band == 915)) {   // the site moved the band
+  if (bandFor(cfg.band) != bandMhz && (cfg.band == 433 || cfg.band == 868 || cfg.band == 915 || cfg.band == 920)) {   // the site moved the band
     bandMhz = bandFor(cfg.band); tft.waitDMA(); radioBus(); radio->setFrequency((float)bandMhz); radio->startReceive();
   }
   pump();
@@ -313,7 +361,7 @@ void loraLoop(uint32_t now, bool on, int species) {
 
 String loraStatus() {
   Nearby n[NEARBY_MAX]; int k = loraNearby(n, NEARBY_MAX);
-  String s = String(ready ? "ready" : "no radio") + " band " + String(bandMhz) + " tag " + hex8(meetTag()) + " nearby " + String(k);
+  String s = String(ready ? "ready" : "no radio") + " chip " + chipName(board.loraChip) + " band " + String(bandMhz) + " tag " + hex8(meetTag()) + " nearby " + String(k);
   for (int i = 0; i < k; i++) s += " " + n[i].name + "/" + String(n[i].species) + "/" + hex8(n[i].tag) + "/" + String(n[i].rssi) + "dBm/" + String(n[i].relayed);
   return s;
 }
@@ -440,6 +488,7 @@ String runCallOut() {
 
 #else   // a board with no LoRa radio: every call does nothing, and the MESH type is not offered (routines.cpp)
 bool loraReady() { return false; }
+String loraRadio() { return String(); }
 void loraBegin() {}
 void loraLoop(uint32_t, bool, int) {}
 bool loraSend(uint8_t, uint32_t, const String &) { return false; }

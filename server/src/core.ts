@@ -199,7 +199,7 @@ function checkPower(p: any): Power | string {
 // that links picks them up whichever way it links. Kept by the server; the board keeps its own copy in flash.
 export const DEVICE_SETTINGS = { home: "daemon", sleepAfter: 120, sound: true, volume: 40, ring: 33, meet: true,   // meet: C-15
                                  palette: "checkpoint" as Palette,                                                // C-90
-                                 band: 433,     // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868 or 915 MHz)
+                                 band: 433,     // C-72: the LoRa band the watch and the T-Deck were bought with (433, 868, 915 or, C-175, 920 MHz)
                                  wakeSound: "power" as "power" | "every",     // C-159: the jingle at power-up, or on every wake
                                  face: "daemon" as Face,                      // C-162: the round face a watch shows first
                                  faceSky: true,                               // C-163: the season behind its daemon, the weather in front
@@ -245,7 +245,7 @@ export function checkSettings(b: any): DeviceSettings | string {
   if (!Number.isInteger(s.ring) || s.ring < 0 || s.ring > 100) return "ring is 0 to 100";
   if (typeof s.meet !== "boolean") return "meet is on or off";
   if (!PALETTES.includes(s.palette)) return "palette is checkpoint or rainbow";
-  if (![433, 868, 915].includes(s.band)) return "band is 433, 868 or 915";
+  if (![433, 868, 915, 920].includes(s.band)) return "band is 433, 868, 915 or 920";   // C-175: 920, AS923
   if (!["power", "every"].includes(s.wakeSound)) return "wakeSound is power or every";   // C-159
   if (!FACES.includes(s.face)) return `face is one of ${FACES.join(", ")}`;                 // C-162
   if (typeof s.faceSky !== "boolean") return "faceSky is on or off";                      // C-163

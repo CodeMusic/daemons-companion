@@ -16,7 +16,8 @@ type Hub = { hub: false } | {
   hub: true; server: string; onHub: boolean;
   mirror: { on: boolean; at: string | null };
   ai: { provider: string; modules: { name: string; llm: string | null; answering: boolean }[] };
-  lora: { boards: { id: string; kind: string; here: boolean }[]; heard: string | null };
+  lora: { boards: { id: string; kind: string; here: boolean; radio?: { chip: string; band: number } | null }[]; heard: string | null;
+          apart?: string | null };   // C-175: each board's chip and band, and a sentence when they differ
 };
 
 // C-211 (the user, 2026-10-28: "configure the primary source (module or n8n ... green/red health indicator dots"): who
@@ -129,10 +130,11 @@ export function HubCard({ ink, onOpenDevice }: { ink?: string; onOpenDevice?: (i
             {h.lora.boards.map((b) => (
               <Pressable key={b.id} onPress={() => onOpenDevice?.(b.id)} disabled={!onOpenDevice} aria-label={`open its settings`}>
                 <Text fontFamily="$mono" fontSize={12} letterSpacing={1} color="$color9">
-                  {`${kindName(b.kind)}${b.here ? "" : " (away)"}${onOpenDevice ? " ›" : ""}`}</Text>
+                  {`${kindName(b.kind)}${b.radio ? ` ${b.radio.band === 2400 ? "2.4 GHZ" : `${b.radio.band} MHZ`}` : ""}${b.here ? "" : " (away)"}${onOpenDevice ? " ›" : ""}`}</Text>
               </Pressable>
             ))}
           </XStack>
+          {h.lora.apart ? <Small>{h.lora.apart}</Small> : null}
           {onOpenDevice ? <Small color="$color10">A tap opens its own settings, under YOUR DEVICES.</Small> : null}
         </YStack>
       ) : <Small>LORA: no board with LoRa has been in touch.</Small>}

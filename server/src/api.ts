@@ -32,6 +32,7 @@
 //                                /api/goal/milestone {title}, /api/goal/remove {step | milestone}; /api/steps/:id/undo
 //   POST /api/device/interact    C-13: {kind, detail?} -- the device was used (a ROUTINE run); kept as tending the daemon
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
+import { parseLoraRadio, loraApart } from "./lorabands.js";
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import { copyFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
@@ -1850,7 +1851,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         hub.routines = b.types.map((t: any) => ({ name: String(t.name), radio: String(t.radio),
                                                    routines: (t.routines ?? []).map(String) }));
         hub.firmware = String(b.firmware ?? "");
-        if (validDeviceId(deviceId) && b.firmware) devices.note(deviceId, { firmware: String(b.firmware) });
+        if (validDeviceId(deviceId) && b.firmware)
+          devices.note(deviceId, { firmware: String(b.firmware), ...(parseLoraRadio(b.lora) ? { lora: String(b.lora).trim() } : {}) });   // C-175
         return send(res, 200, { ok: true });
       }
       // ---- the site's side (this machine only): what the link is, and the commands it sends ----
@@ -1862,6 +1864,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       if (req.method === "GET" && path === "/api/devices") return send(res, 200, devicesView());   // C-80
       // C-190: what this companion gives the one app beyond a phone alone -- the save it mirrors, its AI, its LoRa
+      // C-175: the boards with LoRa, each with its chip and band, and a sentence when they are not all on one band
+      const loraView = (heard: string | null) => {
+        const boards = devices.list().filter((d) => LORA_KINDS.test(d.kind) || parseLoraRadio(d.lora))
+          .map((d) => ({ id: d.id, kind: d.kind, here: d.here, radio: parseLoraRadio(d.lora) }));
+        return { boards, heard, apart: loraApart(boards, (id) => id.toUpperCase()) };
+      };
       if (req.method === "GET" && path === "/api/hub") {
         const mirrored = store.getSetting("save.mirror") === "on" && existsSync(mirrorPath(ecfg));
         const modules = (await house.view()).map((m) => ({ name: m.name, llm: m.llm, answering: !m.error && !!m.llm }));
@@ -1870,7 +1878,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, { hub: true, server: REPO_COMMIT, onHub: process.platform === "linux",
                                 mirror: { on: mirrored, at: mirrored ? statSync(mirrorPath(ecfg)).mtime.toISOString() : null },
                                 ai: { provider: talkProvider(), modules },
-                                lora: { boards: devices.list().filter((d) => LORA_KINDS.test(d.kind)).map((d) => ({ id: d.id, kind: d.kind, here: d.here })), heard },
+                                lora: loraView(heard),
                                 // the hub on the tailnet, home or away: where the app opens THE ENGINE ROOM when home does not answer
                                 tailnet: tailnetName() ? `http://${tailnetName()}:${cfg.port}` : null });
       }

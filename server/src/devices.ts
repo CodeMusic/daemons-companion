@@ -11,7 +11,8 @@ import type { Via } from "./device.js";
 
 export type Battery = { percent: number; mv: number | null; charging: boolean; full: boolean; usb: boolean; at: string };
 export type DeviceRow = { id: string; kind: string; via: Via | null; firstSeen: string; lastSeen: string;
-                          firmware: string | null; battery: Battery | null };
+                          firmware: string | null; battery: Battery | null;
+                          lora?: string | null };   // C-175: its LoRa chip and band, "SX1262 868"
 
 const KEY = "devices", KEYS = "device.keys";
 export const FRESH_MS = 60_000;
@@ -34,15 +35,16 @@ export class Devices {
     // written at most every ten seconds a device, so a board polling every second does not rewrite the store each time
     if (row && row.via === via && now.getTime() - Date.parse(row.lastSeen) < 10_000) return;
     rows[id] = { id, kind: kindOf(id), via, firstSeen: row?.firstSeen ?? at, lastSeen: at,
-                 firmware: row?.firmware ?? null, battery: row?.battery ?? null };
+                 firmware: row?.firmware ?? null, battery: row?.battery ?? null, lora: row?.lora ?? null };
     this.save(rows);
   }
 
-  note(id: string, what: { firmware?: string; battery?: Battery }) {
+  note(id: string, what: { firmware?: string; battery?: Battery; lora?: string }) {
     if (!validDeviceId(id)) return;
     const rows = this.all(), at = new Date().toISOString(), row = rows[id];
     rows[id] = { id, kind: kindOf(id), via: row?.via ?? null, firstSeen: row?.firstSeen ?? at, lastSeen: row?.lastSeen ?? at,
-                 firmware: what.firmware ?? row?.firmware ?? null, battery: what.battery ?? row?.battery ?? null };
+                 firmware: what.firmware ?? row?.firmware ?? null, battery: what.battery ?? row?.battery ?? null,
+                 lora: what.lora ?? row?.lora ?? null };
     this.save(rows);
   }
 

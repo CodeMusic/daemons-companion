@@ -51,7 +51,7 @@ export function DeviceSettingsCard({ ink }: { ink: string }) {
           <Choice value={s.meet} options={[[true, "On"], [false, "Off"]]} onPick={(meet) => set({ meet })} ink={ink} />
       </Row>
         <Row label="LORA BAND -- THE WATCH AND THE T-DECK, AS BOUGHT">
-          <Choice value={s.band ?? 433} options={[[433, "433 MHz"], [868, "868 MHz"], [915, "915 MHz"]]} onPick={(band) => set({ band })} ink={ink} />
+          <Choice value={s.band ?? 433} options={[[433, "433 MHz"], [868, "868 MHz"], [915, "915 MHz"], [920, "920 MHz"]]} onPick={(band) => set({ band })} ink={ink} />
       </Row>
     </Card>
   );

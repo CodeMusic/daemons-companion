@@ -15,7 +15,8 @@ enum class Power { None, GaugeBQ27220, AdcDivider, PmuAXP2101, PmuM5PM1, PmuIP53
 enum class Mic { None, Pdm, Es7210, Es8311, Es7210Shared, Analog };   // Shared: the CoreS3's, on the speaker's clocks;
                                                                      // Analog: the M5GO base's, read by the ADC
 enum class Panel { ST7789, ILI9342C, ILI9342E, ST7796 };       // C-75: the CoreS3 has shipped with either ILI9342; C-105 the T-Display-S3 Pro's ST7796
-enum class LoraChip { None, SX1262, SX1278 };                  // C-72: the watch's and the T-Deck's, or an M5 LoRa433 module's
+enum class LoraChip { None, SX1262, SX1278, SX1268, SX1276, LLCC68, SX1280 };   // C-72: the watch's and the T-Deck's, or an M5 LoRa433
+                                                                              // module's; C-175: every chip RadioLib knows
 
 struct Board {
   BoardKind kind = BoardKind::TEmbedCC1101;
@@ -56,6 +57,7 @@ struct Board {
   // C-136: the lowest band its LoRa antenna is made for (the Cardputer ADV's Cap LoRa-1262: 868-923 MHz) -- a lower band
   // chosen on the site is taken as 868 on this board, so a mixed set of boards still hears what it can
   int loraMinMhz = 0;
+  int loraMaxMhz = 0;                                // C-175: and the highest (0: what the chip can tune)
   // C-148: a HAT's own I2C pins, where the board has a HAT header (the StickC-Plus: SDA 0, SCL 26) -- the Thermal HAT's
   // MLX90640 is asked there (glow.cpp), on the second I2C port, only while a GLOW routine runs
   int hatSda = -1, hatScl = -1;

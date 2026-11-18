@@ -396,6 +396,7 @@ void bridge(const String &line) { if (usbLive()) Serial.println(line); else link
 String routinesJson() {
   JsonDocument d;
   d["firmware"] = String(board.id) + " 3 " + COMPANION_BUILD;   // C-91: which build, for the site
+  if (loraRadio().length()) d["lora"] = loraRadio();             // C-175: its chip and band, for the site
   JsonArray list = d["types"].to<JsonArray>();
   for (int i = 0; i < typeCount; i++) {
     JsonObject t = list.add<JsonObject>();

@@ -3,9 +3,32 @@
 // it wrote one, otherwise the companion's own words), how long and how still the night was, and whether it was tucked in.
 import { useEffect, useState } from "react";
 import { Button, Text, XStack, YStack } from "tamagui";
+import { View } from "react-native";
 import { api } from "../../platform/net";
 import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { useDark } from "../../state/look";
+
+// C-412 (the user, 2026-11-18, by multiple choice: "which centre"): the stage the dream took place at -- a spine of seven
+// dots through the day's ring, root at the foot and crown at the top, in the page's ink, the dream's own centre lit larger
+// in the day's colour. Drawn over the symbol's picture in its own units (the picture is 84 wide, the ring's radius 30;
+// the spine runs from 24 below the line to 24 above, as the sheet the user picked drew it).
+const CENTRE_NAMES = ["ROOT", "SACRAL", "SOLAR PLEXUS", "HEART", "THROAT", "THIRD EYE", "CROWN"];
+function DreamSymbol({ day, centre, colour, size, dark }: { day: string; centre?: number; colour?: string; size: number; dark: boolean }) {
+  const u = size / 84, ink = dark ? "#EDE7DA" : "#1C1B1A";
+  const dot = (j: number, r: number, fill: string) => {
+    const y = 42 + 24 - j * 8;
+    return <View key={`${j}-${r}`} pointerEvents="none" style={{ position: "absolute", left: (42 - r) * u, top: (y - r) * u,
+                 width: 2 * r * u, height: 2 * r * u, borderRadius: r * u, backgroundColor: fill }} />;
+  };
+  const lit = centre !== undefined && centre >= 0 && centre < 7;
+  return (
+    <View style={{ width: size, height: size }} accessibilityLabel={lit ? `the dream's centre: ${CENTRE_NAMES[centre!]}` : undefined}>
+      <Art path={`/art/daysymbol/${day}_${dark ? "dark" : "light"}.png`} size={size} smooth />
+      {lit ? [0, 1, 2, 3, 4, 5, 6].map((j) => (j === centre ? null : dot(j, 1.4, ink))) : null}
+      {lit ? dot(centre!, 3.6, colour ?? ink) : null}
+    </View>
+  );
+}
 import { VoiceButton } from "../../ui/voiceButton";
 import { SleepSoundsCard } from "./SleepSounds";   // C-334
 import { useFresh } from "../../platform/useApi";   // C-344
@@ -13,7 +36,8 @@ import { useFresh } from "../../platform/useApi";   // C-344
 type Dream = { id: number; at: string; to: string; hours: number; stirs: number; tucked: boolean;
                quality: "vivid" | "quiet" | "broken"; text: string; by: "module" | "words"; nickname: string;
                title?: string; left?: string; right?: string;     // C-308
-               day?: string };   // DAEMONS T-531: the night's day, for its symbol (ring and horizon, bible 9.21)
+               day?: string;      // DAEMONS T-531: the night's day, for its symbol (ring and horizon, bible 9.21)
+               centre?: number; dayColour?: string };   // C-412: the centre the dream lived in, 0 root .. 6 crown
 const NIGHT = { vivid: "A deep night", quiet: "A quiet night", broken: "A restless night" };   // DRAFT
 
 // C-308 (the user, 2026-11-08): a dream made of two tellings is read through two lenses -- red the one told in order,
@@ -68,7 +92,7 @@ export function DreamsScreen({ ink }: { ink?: string }) {
           {d.title || d.day ? (
             <XStack gap={10} alignItems="center">
               {/* DAEMONS T-531: the dream's symbol, its day's -- the virtue over its shadow, the centre's ring in ink; no words */}
-              {d.day ? <Art path={`/art/daysymbol/${d.day}_${dark ? "dark" : "light"}.png`} size={64} smooth /> : null}
+              {d.day ? <DreamSymbol day={d.day} centre={d.centre} colour={d.dayColour} size={64} dark={dark} /> : null}
               {d.title ? <Text flexShrink={1} fontFamily="$mono" fontSize={14} letterSpacing={1.5} fontWeight="700" color={view.ink ?? "$color12"}>{d.title}</Text> : null}
             </XStack>
           ) : null}

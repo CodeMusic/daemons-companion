@@ -27,3 +27,21 @@ describe("T-531: the dream's day symbol", () => {
     }
   });
 });
+
+import { CENTRES, centreNamed, centreOf, mergeAsk, readMerged } from "../src/dreams.js";
+describe("C-412: the stage the dream took place at -- its centre", () => {
+  it("asks the writer for one of the seven, and reads it however it is said", () => {
+    expect(mergeAsk("I dreamt a.", "I dreamt b.")).toMatch(/"centre"/);
+    expect(readMerged('{"title": "the glass stair", "centre": "Heart", "dream": "I dreamt a stair."}')?.centre).toBe(3);
+    expect(readMerged('{"title": "x", "centre": "third eye", "dream": "I dreamt it."}')?.centre).toBe(5);
+    expect(readMerged("TITLE: Rain\nCENTRE: Crown\nI dreamt the rain.")).toEqual({ title: "RAIN", dream: "I dreamt the rain.", centre: 6 });
+    expect(readMerged('{"title": "x", "dream": "I dreamt it."}')).toEqual({ title: "X", dream: "I dreamt it." });   // none named: no key
+    expect(centreNamed("solar")).toBe(2); expect(centreNamed("a feeling")).toBeUndefined();
+    expect(CENTRES).toHaveLength(7);
+  });
+  it("falls back to the day's own centre, Sunday's root to Saturday's crown", () => {
+    for (let i = 0; i < 7; i++) expect(centreOf({ from: new Date(2026, 10, 15 + i, 23).toISOString(), at: "" })).toBe(i);
+    expect(centreOf({ centre: 4, from: new Date(2026, 10, 15, 23).toISOString(), at: "" })).toBe(4);
+    expect(centreOf({ centre: 9, from: new Date(2026, 10, 15, 23).toISOString(), at: "" })).toBe(0);
+  });
+});

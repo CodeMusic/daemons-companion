@@ -14,7 +14,8 @@ export type Night = { from: string; to: string; hours: number; stirs: number; tu
 export type Quality = "vivid" | "quiet" | "broken";
 export type Dream = Night & { id: number; at: string; quality: Quality; text: string; by: "module" | "words";
                               nickname: string; species: number; personality: number | null; device: string;
-                              title?: string; left?: string; right?: string };   // C-308: its title, and the two tellings it was made from
+                              title?: string; left?: string; right?: string;   // C-308: its title, and the two tellings it was made from
+                              centre?: number };   // C-412: the body centre the dream lived in, 0 root .. 6 crown, named by its writer
 
 // the night as the watch tells it: two times, an hour or more apart and at most sixteen; its stirs; tucked in or not
 export function checkNight(b: any): Night | string {
@@ -81,6 +82,18 @@ export const titleOf = (d: Dream): string => d.title || DREAM_TITLES[dreamImage(
 // first as week.json is. The seven are drawn by DAEMONS tools/gendaysymbol.py: /art/daysymbol/<day>_<light|dark>.png.
 export const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 export const dayOfDream = (d: { from?: string; at: string }): string => DAY_KEYS[new Date(d.from || d.at).getDay()];
+// C-412 (the user, 2026-11-18, by multiple choice: "which centre"): the stage the dream took place at -- one of the seven
+// centres, root to crown (week.json's order: Sunday's Root .. Saturday's Crown), drawn as the lit dot on a spine through
+// the day's ring. Named by the dream's writer when it is asked twice (mergeAsk); otherwise the day's own centre.
+export const CENTRES = ["ROOT", "SACRAL", "SOLAR PLEXUS", "HEART", "THROAT", "THIRD EYE", "CROWN"] as const;
+export const centreOf = (d: { centre?: number; from?: string; at: string }): number =>
+  Number.isInteger(d.centre) && d.centre! >= 0 && d.centre! < 7 ? d.centre! : new Date(d.from || d.at).getDay();
+export function centreNamed(said: unknown): number | undefined {
+  const w = String(said ?? "").toUpperCase().replace(/[^A-Z ]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!w) return undefined;
+  const i = CENTRES.findIndex((c) => w === c || w.includes(c));
+  return i >= 0 ? i : /SOLAR|PLEXUS|NAVEL|GUT/.test(w) ? 2 : /THIRD|BROW|EYE/.test(w) ? 5 : /SACRUM|BELLY/.test(w) ? 1 : undefined;
+}
 // the dream's day, as the game counts it: days since 2026-01-01 by the local date the night ended
 export function dreamDay(d: { to: string }): number {
   const t = new Date(d.to);
@@ -186,7 +199,7 @@ const LENS: Record<Lens, string> = {
   right: "Tell it as it arrived: all at once, the whole of it before any part. No clock and no order -- one image becoming " +
          "another, things that rhyme with each other, the feeling first and then what it was like.",
 };
-export type Lenses = { title: string; left: string; right: string; text: string };
+export type Lenses = { title: string; left: string; right: string; text: string; centre?: number };
 export type Write = (system: string, user: string, most: number) => Promise<string | null>;
 export function mergeAsk(left: string, right: string, w: Dreamer | null = null): string {
   const trainer = w?.trainer || "your trainer";
@@ -195,25 +208,28 @@ export function mergeAsk(left: string, right: string, w: Dreamer | null = null):
     "telling knows of images and feeling, and let each correct the other. Begin with the words \"I dreamt\", first person, " +
     `past tense, four or five sentences, under 420 characters, told to ${trainer} in your own voice. Then give it a title: ` +
     "two to five words that are the dream itself -- an image from it, not a summary and not a moral. " +
-    'Answer with JSON only: {"title": "...", "dream": "I dreamt ..."}';
+    "And name the one body centre the dream lived in, the one it was most about: ROOT (safety, ground, home), SACRAL " +
+    "(feeling, pleasure, making), SOLAR PLEXUS (will, nerve, doing), HEART (love, grief, the people), THROAT (saying, " +
+    "being heard), THIRD EYE (seeing, knowing, the strange) or CROWN (the whole, the vast, what is beyond). " +
+    'Answer with JSON only: {"title": "...", "centre": "...", "dream": "I dreamt ..."}';
 }
 // the joined telling and its title, from JSON or, failing that, a "TITLE:" line; null with no dream in it
-export function readMerged(raw: string | null | undefined): { title: string; dream: string } | null {
+export function readMerged(raw: string | null | undefined): { title: string; dream: string; centre?: number } | null {
   const t = String(raw ?? "").replace(/<think>[\s\S]*?<\/think>/g, "").trim();
   if (!t) return null;
-  let title = "", dream = "";
+  let title = "", dream = "", centre: number | undefined;
   for (const m of t.match(/\{[\s\S]*?\}/g) ?? []) {
-    try { const j = JSON.parse(m); if (typeof j?.dream === "string") { dream = j.dream; title = String(j.title ?? ""); break; } } catch { /* the next */ }
+    try { const j = JSON.parse(m); if (typeof j?.dream === "string") { dream = j.dream; title = String(j.title ?? ""); centre = centreNamed(j.centre); break; } } catch { /* the next */ }
   }
   if (!dream) {
-    const tl = t.match(/^\s*\**TITLE\**\s*:\s*(.+)$/im);
-    title = tl ? tl[1] : "";
-    dream = t.replace(/^\s*\**TITLE\**\s*:.*$/im, "").replace(/^\s*\**DREAM\**\s*:\s*/im, "").trim();
+    const tl = t.match(/^\s*\**TITLE\**\s*:\s*(.+)$/im), cl = t.match(/^\s*\**CENTRE\**\s*:\s*(.+)$/im);
+    title = tl ? tl[1] : ""; centre = centreNamed(cl?.[1]);
+    dream = t.replace(/^\s*\**TITLE\**\s*:.*$/im, "").replace(/^\s*\**CENTRE\**\s*:.*$/im, "").replace(/^\s*\**DREAM\**\s*:\s*/im, "").trim();
     if (/^\s*[{\[]/.test(dream)) return null;
   }
   dream = asDreamt(dream, 480);
   title = title.replace(/["'“”*.]+/g, " ").replace(/\s+/g, " ").trim().toUpperCase().slice(0, 40).trim();
-  return dream ? { title, dream } : null;
+  return dream ? { title, dream, ...(centre !== undefined ? { centre } : {}) } : null;
 }
 // The two tellings at once, then the one made of them -- null when any of the three does not come (the written dream
 // stays, and the night may be told the old way). Never throws.
@@ -226,7 +242,7 @@ export async function dreamTwice(n: Night, day: string | null, w: Dreamer, write
   if (!left || !right) return null;
   const made = readMerged(await write(self, mergeAsk(left, right, w), 500).catch(() => null));
   if (!made) return null;
-  return { left, right, text: made.dream, title: made.title };   // no title: titleOf gives the game's for its image
+  return { left, right, text: made.dream, title: made.title, ...(made.centre !== undefined ? { centre: made.centre } : {}) };   // no title: titleOf gives the game's for its image
 }
 // C-293: a telling kept as the daemon telling it -- "I dreamt ..." -- whatever the talker began with, cut at a sentence
 export function asDreamt(text: string, most = 360): string {
@@ -267,7 +283,8 @@ export function keepNight(store: Store, n: Night, who: { nickname: string; speci
 export function keepLenses(store: Store, id: number, l: Lenses): Dream | null {
   const list = dreamsOf(store), d = list.find((x) => x.id === id);
   if (!d || !l.text) return null;
-  Object.assign(d, { text: l.text, left: l.left, right: l.right, by: "module" }, l.title ? { title: l.title } : {});
+  Object.assign(d, { text: l.text, left: l.left, right: l.right, by: "module" }, l.title ? { title: l.title } : {},
+                l.centre !== undefined ? { centre: l.centre } : {});   // C-412
   keep(store, list);
   return d;
 }

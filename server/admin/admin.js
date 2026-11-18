@@ -33,6 +33,14 @@ async function api(path, body) {
 }
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+// C-405: devices by their names, as the app says them -- learned from /api/devices, at most once a minute
+let NAMES = {}, namesAt = 0;
+async function learnNames() {
+  if (Date.now() - namesAt < 60000) return;
+  namesAt = Date.now();
+  try { NAMES = Object.fromEntries((await api("/api/devices")).devices.map((d) => [d.id, d.name || d.id])); } catch { namesAt = 0; }
+}
+const dn = (id) => (id && NAMES[id]) || id;
 const $page = document.getElementById("page"), $nav = document.getElementById("nav");
 const ago = (iso, now = Date.now()) => {
   if (!iso) return "never";
@@ -86,7 +94,7 @@ async function show(again = false) {
   if (!again) { ui = {}; drawNav(); $page.innerHTML = `<p class="small">Asking the hub…</p>`; }
   // a redraw waits while something is being typed into the page (a home's id, an address)
   const typing = again && document.activeElement?.matches?.("input") && $page.contains(document.activeElement);
-  try { if (!typing) { await p.draw(again && !ui.waiting); markAway(false); } }
+  try { if (!typing) { await learnNames(); await p.draw(again && !ui.waiting); markAway(false); } }
   catch (e) {
     if (e instanceof Refused) { markAway(false); return drawPair(e.message); }
     if (e instanceof Away) {
@@ -274,7 +282,7 @@ function meshSvg(v, ts, minds, devices, focus) {
     const [x, y] = devAt.get(d);
     s += `<g class="node" data-act="focus" data-f="device:${esc(d)}" tabindex="0" role="button" aria-label="device ${esc(d)}">
       <rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="2" fill="#0f1420" stroke="#9aa6c4" stroke-width="${isOn("device", d) ? 4 : 1.6}"/>
-      <text x="${x}" y="${y + 22}" class="lbl dim" text-anchor="middle">${esc(d.length > 18 ? d.slice(0, 17) + "…" : d)}</text></g>`;
+      <text x="${x}" y="${y + 22}" class="lbl dim" text-anchor="middle">${esc(dn(d).length > 18 ? dn(d).slice(0, 17) + "…" : dn(d))}</text></g>`;
   }
   // a spark for each task thinking now, from its device to its mind (waiting: held at the device), in its step's colour
   live.forEach((t, i) => {
@@ -323,7 +331,7 @@ function opened(f, v, ts, now) {
   return `<div class="card" style="border-color:${lift(c, 0.3)}">
     <div class="row">${stepDot(t, ts)}<div class="big grow" style="font-size:16px">${esc(t.title)}</div></div>
     <div class="small">${kindOf(t.kind)[1]}${n ? ` · step ${n}${n <= 7 ? ` (${STEPS[n - 1][1]})` : ""}${parent ? ` of ${stepsOf(parent.id, ts).length}` : ""}` : ""} · ${STATE[t.state]}${t.ms !== undefined ? ` in ${took(t.ms)}` : ""} · ${ago(t.at, now)}</div>
-    <div class="small">for ${esc(t.user)}, from <a role="button" tabindex="0" class="link" data-act="into" data-f="device:${esc(t.device)}">${esc(t.device)}</a>${t.mind ? `, on <a role="button" tabindex="0" class="link" data-act="into" data-f="mind:${esc(t.mind)}">${esc(t.mind)}</a>` : ""}${t.source === "trace" ? " (reported by the phone)" : t.source === "queue" ? " (the hub's talk queue)" : ""}</div>
+    <div class="small">for ${esc(t.user)}, from <a role="button" tabindex="0" class="link" data-act="into" data-f="device:${esc(t.device)}">${esc(dn(t.device))}</a>${t.mind ? `, on <a role="button" tabindex="0" class="link" data-act="into" data-f="mind:${esc(t.mind)}">${esc(t.mind)}</a>` : ""}${t.source === "trace" ? " (reported by the phone)" : t.source === "queue" ? " (the hub's talk queue)" : ""}</div>
     ${t.size || t.tokens ? `<div class="small">${t.size ? `${t.size.in ?? "?"} chars in, ${t.size.out ?? "nothing yet"} out` : ""}${t.tokens ? ` · ${t.tokens.in ?? "?"} → ${t.tokens.out ?? "?"} tokens` : ""}</div>` : ""}
     ${(t.hops?.length ?? 0) > 1 ? `<div class="small warm">handed on: ${t.hops.map((h) => esc(h.mind + (h.error ? ` ✕ (${h.error})` : ""))).join(" → ")}</div>` : ""}
     ${t.error ? `<div class="small warm">✕ ${esc(t.error)}</div>` : ""}
@@ -410,12 +418,12 @@ async function drawHouse() {
     ${k ? `<div class="card tap" data-act="open" data-o="keeps"><p class="eyebrow">${k.kept < 0 ? "THE HOUSE OWES" : "THE HOUSE KEEPS"}</p>
       <div class="big">${Math.abs(k.kept).toLocaleString()}</div>
       <div class="small">${k.pending > 0 ? `${k.pending.toLocaleString()} more at the next SYNC` : k.pending < 0 ? `${(-k.pending).toLocaleString()} back at the next SYNC` : "nothing waits for a SYNC"} · ${k.spins.toLocaleString()} pulls in all</div>
-      ${open === "keeps" ? `<div class="reasons">${k.devices.map((d) => `<div><b class="${d.take > 0 ? "bad" : d.take < 0 ? "good" : "faint"}" style="width:80px">${d.take.toLocaleString()}</b><span>${esc(d.device)} · ${d.spins.toLocaleString()} pulls</span></div>`).join("")}</div>` : k.devices.length ? `<div class="small gold">By board ›</div>` : ""}</div>` : ""}
+      ${open === "keeps" ? `<div class="reasons">${k.devices.map((d) => `<div><b class="${d.take > 0 ? "bad" : d.take < 0 ? "good" : "faint"}" style="width:80px">${d.take.toLocaleString()}</b><span>${esc(dn(d.device))} · ${d.spins.toLocaleString()} pulls</span></div>`).join("")}</div>` : k.devices.length ? `<div class="small gold">By board ›</div>` : ""}</div>` : ""}
     <p class="eyebrow" style="margin-top:16px">AT THE REELS</p>
     ${h.players.length ? "" : `<p class="small">Nobody is playing just now.</p>`}
     ${h.players.map((p) => `<div class="card tap" data-act="open" data-o="${esc(p.device)}"><div class="row">
         ${p.species ? `<img class="art" alt="" src="/art/species/${encodeURIComponent(p.species)}.png">` : ""}
-        <div class="grow"><div class="mono"><b>${esc(p.name)}</b></div><div class="small">${esc(p.device)} · ${p.odds ? back(p.odds.rtp) : "the day's odds"}</div></div></div>
+        <div class="grow"><div class="mono"><b>${esc(p.name)}</b></div><div class="small">${esc(dn(p.device))} · ${p.odds ? back(p.odds.rtp) : "the day's odds"}</div></div></div>
       ${open === p.device ? `${p.odds ? `<div class="small">${p.odds.dry} pulls since a win · ${p.odds.streak} wins running · the string at ${p.odds.reach > 0 ? "+" : ""}${p.odds.reach.toFixed(2)}</div>` : ""}${reasons(p.reasons)}` : ""}</div>`).join("")}
     <div class="card"><p class="eyebrow">THE WEATHER'S CITY</p>
       <p class="small">The real weather moves the day's luck. ${w?.place ? `Now: ${esc(w.place.name)}${w.place.country ? `, ${esc(w.place.country)}` : ""}.` : "None set."}</p>
@@ -483,7 +491,7 @@ async function drawCreations() {
             ${x.cover ? `<img src="${esc(x.cover)}" alt="" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:${x.kind === "sleep" ? "50%" : "6px"};margin-bottom:6px">` : ""}
             <span class="eyebrow">${CKIND[x.kind] ?? esc(x.kind.toUpperCase())} · ${esc(x.daemon.nickname || "?")}${shared.has(x.uid) ? " · SHARED" : ""}</span><br>
             <b>${esc(x.title)}</b><br>
-            <span class="small">${esc(ago(x.made))}${x.by ? ` · asked on ${esc(x.by)}` : ""}${x.bytes ? ` · ${mb(x.bytes)}` : ""}${x.state !== "ready" ? ` · ${esc(x.state)}` : ""}</span>
+            <span class="small">${esc(ago(x.made))}${x.by ? ` · asked on ${esc(dn(x.by))}` : ""}${x.bytes ? ` · ${mb(x.bytes)}` : ""}${x.state !== "ready" ? ` · ${esc(x.state)}` : ""}</span>
           </span></label>
         ${x.state === "failed" ? `<div class="small warm" style="margin-top:6px">${esc(x.meta?.error || "No reason was kept.")}</div>
           ${x.meta?.request ? `<div class="small faint">asked: ${esc(String(x.meta.request).slice(0, 120))}</div>` : ""}
@@ -522,7 +530,8 @@ async function drawDevices() {
     ${v.devices.length ? "" : `<p class="small">No device has said hello yet.</p>`}
     ${v.devices.map((d) => `<div class="card"><div class="row">
         ${d.daemon ? `<img class="art" alt="" src="${esc(d.daemon.art)}">` : ""}
-        <div class="grow"><div class="mono"><b>${esc(d.id)}</b> <span class="${d.here ? "good" : "faint"}">●</span></div>
+        <div class="grow"><div><b>${esc(d.name || d.id)}</b> <span class="${d.here ? "good" : "faint"}">●</span></div>
+          ${d.name && d.name !== d.id ? `<div class="small faint mono">${esc(d.id)}</div>` : ""}
           <div class="small">${esc(d.kind)}${d.via ? ` · ${esc(d.via)}` : ""} · ${esc(ago(d.lastSeen, now))}${d.firmware ? ` · ${esc(d.firmware)}` : ""}${d.battery ? ` · ${d.battery.percent}%${d.battery.charging ? " charging" : ""}` : ""}</div>
           <div class="small">${d.daemon ? `carries ${esc(d.daemon.nickname || d.daemon.name)} · LV ${d.daemon.level}` : "carries nobody"}</div></div>
         ${ui.forget === d.id ? `<button class="btn danger" data-act="forget" data-id="${esc(d.id)}">YES, FORGET IT</button><button class="btn quiet" data-act="forgetask" data-id="">NO</button>`
@@ -532,7 +541,7 @@ async function drawDevices() {
     ${note()}`;
 }
 ACTS.forgetask = (d) => { ui.forget = d.id || null; };
-ACTS.forget = async (d) => { await api("/api/devices/forget", { id: d.id }); ui.forget = null; said(`${d.id} forgotten.`); };
+ACTS.forget = async (d) => { await api("/api/devices/forget", { id: d.id }); ui.forget = null; said(`${dn(d.id)} forgotten.`); };
 
 // ---- EXCHANGE (C-218) ----
 async function drawExchange() {

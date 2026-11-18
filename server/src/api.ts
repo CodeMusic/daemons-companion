@@ -61,7 +61,8 @@ import { isSitePath, serveSite } from "./site.js";
 import { LINK_PAGE, linkHost, linkRoute, seatOk, seatSave, takeSave } from "./linkcable.js";   // C-221: THE LINK CABLE
 import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
 import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
-import { siteNow, siteUpdate, siteView } from "./sitefetch.js";           // C-342: the site, built on every push
+import { siteNow, siteUpdate, siteView } from "./sitefetch.js";
+import { deviceName } from "./devicenames.js";                           // C-405: a device by its name           // C-342: the site, built on every push
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
 import { keepSave, listSaves } from "./saves.js";   // C-215
 import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
@@ -1520,7 +1521,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // a widget has no firmware or battery of its own: what a board's report filed under it before C-392 is not shown
         const widget = (r: ReturnType<typeof devices.list>[number]) => r.kind === "iphone-widget"
           ? { firmware: null, battery: null, owner: store.getSetting(`widget.owner.${r.id}`), mine: r.id === deviceId } : {};
-        return { devices: devices.list().map((r) => ({ ...r, ...widget(r), daemon: byDevice[r.id] ? brief(byDevice[r.id]) : null })),
+        // C-405: and its name as the app says it, for THE ENGINE ROOM
+        return { devices: devices.list().map((r) => ({ ...r, ...widget(r), name: deviceName({ id: r.id, kind: r.kind, owner: store.getSetting(`widget.owner.${r.id}`) }),
+                                                       daemon: byDevice[r.id] ? brief(byDevice[r.id]) : null })),
                  away: away.map(brief), unplaced: unplaced.map(brief) };
       };
       // ---- C-142: Home Assistant's way in, by the key in its address (never through the relay) ----

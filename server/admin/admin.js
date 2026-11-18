@@ -17,10 +17,15 @@ const keyNow = () => { try { return localStorage.getItem(KEY); } catch { return 
 const keep = (k) => { try { k ? localStorage.setItem(KEY, k) : localStorage.removeItem(KEY); } catch { /* a private window */ } };
 
 class Refused extends Error {}
+// C-401: the hub not answering at all -- a deploy restarts it for a few seconds -- is not an error to show, only a wait
+class Away extends Error {}
 async function api(path, body) {
   const headers = { "content-type": "application/json" }, k = keyNow();
   if (k) headers.authorization = `Bearer ${k}`;
-  const r = await fetch(path, body === undefined ? { headers } : { method: "POST", headers, body: JSON.stringify(body) });
+  let r;
+  try { r = await fetch(path, body === undefined ? { headers } : { method: "POST", headers, body: JSON.stringify(body) }); }
+  catch { throw new Away("the hub is not answering"); }
+  if (r.status === 502 || r.status === 503 || r.status === 504) throw new Away(`the hub said ${r.status}`);
   const j = await r.json().catch(() => ({}));
   if (r.status === 401 || (r.status === 403 && /pair this phone/.test(j.error ?? ""))) throw new Refused(j.error ?? "not paired");
   if (!r.ok) throw new Error(j.error ?? `the hub said ${r.status}`);
@@ -60,6 +65,20 @@ function drawNav() {
   $nav.innerHTML = PAGES.map((p) => `<a href="#${p.id}" class="${p === now ? "on" : ""}" ${p === now ? 'aria-current="page"' : ""}>` +
     `<span class="glyph" aria-hidden="true">${p.glyph}</span><span class="long">${p.label}</span><span class="short">${p.short}</span></a>`).join("");
 }
+// C-401 (the user, 2026-11-14: "I noticed that /admin/ isnt running"): while the hub does not answer, a band under the
+// header says so, the page keeps what it last drew, and it asks again every two seconds until the hub is back
+const $away = document.createElement("div");
+$away.className = "away"; $away.setAttribute("role", "status"); $away.hidden = true;
+document.querySelector(".top").after($away);
+let awaySince = null;
+function markAway(on) {
+  if (!on) { if (awaySince !== null) { awaySince = null; $away.hidden = true; } return; }
+  awaySince ??= Date.now();
+  const s = Math.round((Date.now() - awaySince) / 1000);
+  $away.hidden = false;
+  $away.innerHTML = s < 90 ? `<b>THE HUB IS RESTARTING</b> · back in a moment${s >= 5 ? ` (${s}s)` : ""}`
+                           : `<b>THE HUB ISN'T ANSWERING</b> · ${Math.round(s / 60)}m · still asking every two seconds`;
+}
 async function show(again = false) {
   clearTimeout(timer);
   const p = pageNow();
@@ -67,11 +86,20 @@ async function show(again = false) {
   if (!again) { ui = {}; drawNav(); $page.innerHTML = `<p class="small">Asking the hub…</p>`; }
   // a redraw waits while something is being typed into the page (a home's id, an address)
   const typing = again && document.activeElement?.matches?.("input") && $page.contains(document.activeElement);
-  try { if (!typing) await p.draw(again); }
+  try { if (!typing) { await p.draw(again && !ui.waiting); markAway(false); } }
   catch (e) {
-    if (e instanceof Refused) return drawPair(e.message);
-    if (!again) $page.innerHTML = `<h1>${esc(p.label)}</h1><div class="card bad">${esc(e.message)}</div>`;
+    if (e instanceof Refused) { markAway(false); return drawPair(e.message); }
+    if (e instanceof Away) {
+      markAway(true);
+      // nothing drawn yet: say why the page is empty; drawn already: leave it as it was
+      if (!again || ui.waiting) { ui.waiting = true; $page.innerHTML = `<h1>${esc(p.label)}</h1><p class="small">Waiting for the hub to answer…</p>`; }
+      if (pageNow() === p) timer = setTimeout(() => show(true), 2000);
+      return;
+    }
+    markAway(false);
+    if (!again || ui.waiting) $page.innerHTML = `<h1>${esc(p.label)}</h1><div class="card bad">${esc(e.message)}</div>`;
   }
+  ui.waiting = false;
   if (p.every && pageNow() === p) timer = setTimeout(() => show(true), p.every);
 }
 window.addEventListener("hashchange", () => show());
@@ -83,7 +111,11 @@ $page.addEventListener("click", async (ev) => {
   if (!fn) return;
   el.disabled = true;
   try { await fn(el.dataset, el); }
-  catch (e) { if (e instanceof Refused) return drawPair(e.message); ui.note = e.message; }
+  catch (e) {
+    if (e instanceof Refused) return drawPair(e.message);
+    if (e instanceof Away) { markAway(true); ui.note = "The hub is restarting -- nothing was done. Try again when it is back."; }
+    else ui.note = e.message;
+  }
   await show(true);
 });
 const ACTS = {};

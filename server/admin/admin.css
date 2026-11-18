@@ -112,3 +112,9 @@ a.link { color: var(--gold); cursor: pointer; text-decoration: underline; text-u
 .legend i.x { color: var(--ink); border: 1.5px dashed var(--ink); }
 @media (max-width: 720px) { svg.mesh .lbl { font-size: 13px; } svg.mesh .lbl.dim { font-size: 12px; } }
 @media (prefers-reduced-motion: reduce) { .chip.live { animation: none; } }
+
+/* C-401: the band that says the hub is restarting, under the header, while it does not answer */
+.away { position: sticky; top: 52px; z-index: 2; padding: 8px 16px; background: #3a2c12; color: var(--gold);
+        border-bottom: 1px solid var(--gold); font: 12px var(--mono); letter-spacing: .5px; text-align: center; }
+.away b { letter-spacing: 1.5px; }
+.away[hidden] { display: none; }

@@ -12,8 +12,8 @@ seconds; no job asked since 2026-11-11), the site built at every push and served
 CREATIONS says "failed" with no reason, eleven times; devices go by raw ids. Worked top down: build, test, deploy the
 hub, commit by path, push, strike it here.
 
-1. **C-404 a failed creation says why** -- CREATIONS shows each failure's reason, TRY AGAIN, FORGET, and CLEAR THE FAILED.
-2. **C-405 devices by name** -- THE ENGINE ROOM names a device as the app does, the id small beneath.
+1. ~~**C-404 a failed creation says why**~~ -- CREATIONS shows each failure's reason, TRY AGAIN, FORGET, and CLEAR THE FAILED. ***Done*** *(7d9f511; live: FAILED (11), each with its reason -- three paintings were too long for the house's module, one met a restart; songs were said PAINTING, now SONG, with a SONGS filter).*
+2. ~~**C-405 devices by name**~~ -- THE ENGINE ROOM names a device as the app does, the id small beneath. ***Done*** *(593669f; KIND_NAMES now one table for the app and the hub; live: DEVICES reads T-Embed CC1101, Fire, Tab5, Dial).*
 3. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-11: "not yet").
 
 ## Today's goals -- 2026-11-15, the Tiiny's update

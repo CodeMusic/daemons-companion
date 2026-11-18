@@ -1343,6 +1343,22 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     if (!sleepKept) { sleepKept = new SleepTracks(join(dirname(cfg.database), "sleep"), () => sleepDoor((k) => store.getSetting(k))); sleepKept.ready = (t) => paintCover(t); }
     return sleepKept;
   };
+  // C-413: every cover's small copy made ahead, in the background -- ffmpeg takes seconds just to start on the hub, so a
+  // page that asked for 35 at once would wait minutes; a minute after start, then every half hour for covers painted
+  // since (one already made costs a look at two files)
+  let warming = false;
+  const warmSmallCovers = async () => {
+    if (warming) return;
+    warming = true;
+    try {
+      const fulls = [...sleepTracks().list().map((t) => sleepTracks().coverFile(t.id)), ...songs().list().map((x) => songs().file(x.id, "cover.png")),
+                     ...paintings().filter((x) => x.state === "done").map((x) => paintingFile(x.id))];
+      for (const f of fulls) if (f) await smallCover(f);
+    } catch { /* the next sweep tries again */ }
+    finally { warming = false; }
+  };
+  setTimeout(() => { void warmSmallCovers(); }, 60_000).unref();
+  setInterval(() => { void warmSmallCovers(); }, 30 * 60_000).unref();
   const meetEnded = new Map<number, Date>();                     // C-316: a memo's end, until its length is known
   // C-298: a journal's chapter, written by the background thinker (the Tiiny, thinking on; then the boards) -- minutes,
   // nobody waiting; with no thinker at all, laid out plainly. One at a time per chapter.

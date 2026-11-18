@@ -39,7 +39,7 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
 };
 // the recording each book is heard in (DAEMONS docs/books/audio); the TEXTBOOK's is CALLOW SCHOOL's own (Library.tsx)
 const HEARD: Partial<Record<Which, Recorded>> = { player: "manual", quick: "quick", companion: "companion", social: "social",
-  tiiny: "tiiny", word: "word", watch: "watch", cardputer: "cardputer" };
+  tiiny: "tiiny", word: "word", watch: "watch", glass: "glass", cardputer: "cardputer" };
 export const manualAbout = (w: Which = "player") => {
   const r = keptManual(w)?.release;
   return `${BOOK[w].about}${r ? ` For v${r}.` : ""}`;   // DRAFT

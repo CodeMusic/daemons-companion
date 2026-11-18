@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api, TOKEN } from "../../platform/net";
-import { adoptOld, coverUri, exportFile, keep, letGo, mine, mineSet, onMine, type Creation, type Kept } from "../../platform/creations";
+import { adoptOld, coverUri, thumbUri, exportFile, keep, letGo, mine, mineSet, onMine, type Creation, type Kept } from "../../platform/creations";
 import { driftOf, stageAt } from "../../sound/binaural";
 import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../../sound/sleepSession";
 import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../../sound/song";   // C-362
@@ -26,7 +26,7 @@ const source = (uri: string | null) => (uri ? { uri, ...(uri.startsWith("http") 
 // beat stage that minute is in, lit up to where the night has reached (clockwise from the top)
 export function RecordCover({ c, size, progress = 0, onPress, children }:
     { c: Creation | Kept; size: number; progress?: number; onPress?: () => void; children?: React.ReactNode }) {
-  const ticks = 60, uri = coverUri(c), inner = size - 22;
+  const ticks = 60, uri = size <= 160 ? thumbUri(c) : coverUri(c), inner = size - 22;   // C-413: a small record, the small cover
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={c.title}>
       <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
@@ -267,7 +267,7 @@ function Tile({ c, have, onPress }: { c: Creation; have: boolean; onPress: () =>
     <YStack width={150} alignItems="center" gap={4} cursor="pointer" onPress={onPress} opacity={c.state === "failed" ? 0.4 : 1}>
       <View>
         {c.kind !== "painting" ? <RecordCover c={c} size={140} onPress={onPress} />
-          : <Pressable onPress={onPress}><Image source={source(coverUri(c)) ?? undefined} style={{ width: 140, height: 140, borderRadius: 3, backgroundColor: "#2b2620" }} /></Pressable>}
+          : <Pressable onPress={onPress}><Image source={source(thumbUri(c)) ?? undefined} style={{ width: 140, height: 140, borderRadius: 3, backgroundColor: "#2b2620" }} /></Pressable>}
         {have ? <View style={{ position: "absolute", top: 4, right: 4, width: 26, height: 26, borderRadius: 13, backgroundColor: "#2f7d4f",
                                alignItems: "center", justifyContent: "center" }}><Text color="#fff" fontWeight="800">{"✓"}</Text></View> : null}
       </View>

@@ -492,7 +492,7 @@ async function drawCreations() {
         <label class="row" style="align-items:flex-start;cursor:pointer">
           <input type="checkbox" data-act="ctick" data-uid="${esc(x.uid)}" ${ui.ticked.has(x.uid) ? "checked" : ""} aria-label="tick ${esc(x.title)}">
           <span class="grow">
-            ${x.cover ? `<img src="${esc(x.cover)}" alt="" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:${x.kind === "sleep" ? "50%" : "6px"};margin-bottom:6px">` : ""}
+            ${x.cover ? `<img src="${esc(x.thumb ?? x.cover)}" alt="" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:${x.kind === "sleep" ? "50%" : "6px"};margin-bottom:6px">` : ""}
             <span class="eyebrow">${CKIND[x.kind] ?? esc(x.kind.toUpperCase())} · ${esc(x.daemon.nickname || "?")}${shared.has(x.uid) ? " · SHARED" : ""}</span><br>
             <b>${esc(x.title)}</b><br>
             <span class="small">${esc(ago(x.made))}${x.by ? ` · asked on ${esc(dn(x.by))}` : ""}${x.bytes ? ` · ${mb(x.bytes)}` : ""}${x.state !== "ready" ? ` · ${esc(x.state)}` : ""}</span>

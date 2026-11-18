@@ -20,6 +20,7 @@ export type Creation = {
   daemon: { nickname: string; species: number; types?: string[] };
   by: string | null;                               // the device that asked: a phone's own name, or a device's id
   cover: string | null;                            // the picture's path on the hub (null while it is painted)
+  thumb?: string | null;                           // C-413: its small copy (256px JPEG), for a page that shows many
   files: Record<string, string>;                   // name -> path on the hub
   meta: Record<string, string | number | boolean | null>;   // what the kind has to say (a sleep piece: key, bpm, beats)
   bytes?: number;
@@ -43,7 +44,7 @@ export function sleepCreation(t: SleepRow, home: string, beats: string, carrierH
     made: t.made ?? t.asked, state: t.state,
     daemon: { nickname: t.nickname, species: t.species, ...(t.types ? { types: t.types } : {}) },
     by: t.by ?? null,
-    cover: t.cover === "ready" ? `${base}/cover.png` : null,
+    cover: t.cover === "ready" ? `${base}/cover.png` : null, thumb: t.cover === "ready" ? `${base}/cover-small.jpg` : null,
     files: t.state === "ready" ? { "phone.m4a": `${base}/phone.m4a`, "export.mp3": `${base}/export.mp3`,
                                     "export-drift.mp3": `${base}/export-drift.mp3`, "export.imedx": `${base}/export.imedx` } : {},
     meta: { keyscale: t.keyscale, bpm: t.bpm, seconds: t.seconds ?? null, carrierHz, beats, caption: t.caption,
@@ -64,7 +65,7 @@ export function paintingCreation(p: PaintingRow, home: string): Creation {
     state: p.state === "done" ? "ready" : p.state === "painting" ? "making" : "failed",
     daemon: { nickname: p.nickname, species: p.species, ...(p.types ? { types: p.types } : {}) },
     by: p.by ?? null,
-    cover: p.state === "done" ? png : null,
+    cover: p.state === "done" ? png : null, thumb: p.state === "done" ? `/art/paintings/${p.id}-small.jpg` : null,
     files: p.state === "done" ? { "painting.png": png } : {},
     meta: { request: p.request, error: p.state === "failed" ? p.error ?? null : null },   // C-404
   };
@@ -82,7 +83,7 @@ export function songCreation(x: SongRow, home: string): Creation {
     made: x.made ?? x.asked, state: x.state === "ready" ? "ready" : x.state === "failed" ? "failed" : "making",
     daemon: { nickname: x.nickname, species: x.species, ...(x.types ? { types: x.types } : {}) },
     by: x.by ?? null,
-    cover: x.cover === "ready" ? `${base}/cover.png` : null,
+    cover: x.cover === "ready" ? `${base}/cover.png` : null, thumb: x.cover === "ready" ? `${base}/cover-small.jpg` : null,
     files: x.state === "ready" ? { "phone.m4a": `${base}/phone.m4a`, "export.mp3": `${base}/export.mp3` } : {},
     meta: { lyrics: x.lyrics, style: x.style, mode: x.mode, request: x.request, seconds: x.seconds ?? null,
             stage: x.state, painting: x.cover === "painting", error: x.error ?? null },

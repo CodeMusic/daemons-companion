@@ -121,3 +121,5 @@ export async function exportFile(path: string, name: string): Promise<void> {
 }
 
 export const coverUri = (c: Creation | Kept) => ("local" in c && c.local.cover) || (c.cover ? hubUrl(c.cover) : null);
+// C-413: for a small picture (a gallery tile) the hub's small copy, not the whole painting; one kept here is already here
+export const thumbUri = (c: Creation | Kept) => ("local" in c && c.local.cover) || (c.thumb ? hubUrl(c.thumb) : coverUri(c));

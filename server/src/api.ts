@@ -85,6 +85,7 @@ import { hemisphereOf } from "./months.js";   // C-386
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
 import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./sleepexport.js";   // C-358
 import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
+import { dropSmall, smallCover } from "./thumbs.js";   // C-413: a cover's small copy
 import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
 import { readIndex } from "./save/index.js";
 import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
@@ -556,6 +557,14 @@ const reply = (res: ServerResponse, r: Reply) => send(res, r.status, r.body);
 // of its body, and a GET that sends the one it already holds (If-None-Match) is answered 304 with no body -- so a device
 // that asks again and again for what has not changed moves a few hundred bytes, not the INDEX's 110 KB.
 export const etagOf = (body: string) => `"${createHash("sha1").update(body).digest("base64url").slice(0, 16)}"`;
+// C-413: a cover's small copy, made the first time it is asked for (thumbs.ts); the painting itself when it cannot be
+async function sendSmallCover(res: ServerResponse, full: string) {
+  const small = await smallCover(full);
+  const [f, type] = small ? [small, "image/jpeg"] : [full, "image/png"];
+  res.writeHead(200, { "content-type": type, "content-length": statSync(f).size, "access-control-allow-origin": "*",
+                       "cache-control": "max-age=86400" });
+  return createReadStream(f).pipe(res);
+}
 function send(res: ServerResponse, status: number, data: unknown) {
   const body = JSON.stringify(data);
   const head: Record<string, string> = { "content-type": "application/json", "access-control-allow-origin": "*" };
@@ -2130,7 +2139,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (c?.kind === "song") ok = songs().forget(c.id);   // C-362
           if (c?.kind === "painting" && c.state !== "making") {
             store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== c.id)));
-            if (existsSync(paintingFile(c.id))) unlinkSync(paintingFile(c.id));
+            if (existsSync(paintingFile(c.id))) unlinkSync(paintingFile(c.id)); dropSmall(paintingFile(c.id));
             ok = true;
           }
           (ok ? gone : kept).push(uid);
@@ -2157,7 +2166,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                  phone?.name ?? c.by ?? undefined);
         if ("error" in r) return send(res, 409, r);
         if (c.kind === "song") songs().forget(c.id);
-        else { store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== c.id))); if (existsSync(paintingFile(c.id))) unlinkSync(paintingFile(c.id)); }
+        else { store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== c.id))); if (existsSync(paintingFile(c.id))) unlinkSync(paintingFile(c.id)); dropSmall(paintingFile(c.id)); }
         return send(res, 200, { asked: c.kind === "song" ? songCreation(r as Song, homeName()) : paintingCreation(r as PaintingRow, homeName()) });
       }
       if (req.method === "GET" && path === "/api/creations") {
@@ -2184,6 +2193,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return "error" in r ? send(res, 409, r) : send(res, 200, { song: r });
       }
       if (req.method === "GET" && path === "/api/songs") return send(res, 200, { songs: songs().list() });
+      // C-413: a song's small cover (256px JPEG), for a page that shows many -- the painting itself when none can be made
+      const songSmall = req.method === "GET" && path.match(/^\/api\/song\/([0-9a-f]{32})\/cover-small\.jpg$/);
+      if (songSmall) {
+        const full = songs().file(songSmall[1], "cover.png");
+        if (!full) return send(res, 404, { error: "no cover yet" });
+        return sendSmallCover(res, full);
+      }
       const songFile = req.method === "GET" && path.match(/^\/api\/song\/([0-9a-f]{32})\/(phone\.m4a|cover\.png|export\.mp3)$/);
       if (songFile) {
         const f = songs().file(songFile[1], songFile[2] as "phone.m4a");
@@ -2289,12 +2305,17 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       }
       // C-358: a sleep piece's cover, and its exports -- the night as an MP3 (with DRIFT DOWN or without) and as
       // PulseEntrain's .imedx; each made on the hub the first time it is asked for, then kept
-      const sleepExtra = req.method === "GET" && path.match(/^\/api\/sleep\/track\/([0-9a-f]{32})\/(cover\.png|exports|export\.mp3|export-drift\.mp3|export\.imedx)$/);
+      const sleepExtra = req.method === "GET" && path.match(/^\/api\/sleep\/track\/([0-9a-f]{32})\/(cover\.png|cover-small\.jpg|exports|export\.mp3|export-drift\.mp3|export\.imedx)$/);
       if (sleepExtra) {
         const [, id, name] = sleepExtra, t = sleepTracks().byId(id), folder = sleepTracks().folder(id);
-        if (!t || !folder || (name !== "cover.png" && t.state !== "ready")) return send(res, 404, { error: "no such piece" });
+        if (!t || !folder || (!name.startsWith("cover") && t.state !== "ready")) return send(res, 404, { error: "no such piece" });
         const fileName = (ext: string) => `${(t.title || `${t.nickname} sleep sounds`).replace(/[^A-Za-z0-9 '-]/g, "").trim().slice(0, 60) || "sleep sounds"}${ext}`;
         try {
+          if (name === "cover-small.jpg") {   // C-413
+            const f = sleepTracks().coverFile(id);
+            if (!f) return send(res, 404, { error: "no cover yet" });
+            return sendSmallCover(res, f);
+          }
           if (name === "cover.png") {
             const f = sleepTracks().coverFile(id);
             if (!f) return send(res, 404, { error: "no cover yet" });
@@ -3441,6 +3462,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(readFileSync(file));
       }
+      // C-413: a painting's small copy, for a page that shows many
+      const paintingSmall = path.match(/^\/art\/paintings\/([0-9a-f]{16})-small\.jpg$/);
+      if (req.method === "GET" && paintingSmall) {
+        const file = paintingFile(paintingSmall[1]);
+        if (!existsSync(file)) return send(res, 404, { error: "no such painting" });
+        return sendSmallCover(res, file);
+      }
       // C-338: a painting, by an id nobody can guess
       const paintingArt = path.match(/^\/art\/paintings\/([0-9a-f]{16})\.png$/);
       if (req.method === "GET" && paintingArt) {
@@ -3470,7 +3498,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const id = String((await body(req)).id ?? "");
         if (!paintings().some((p) => p.id === id)) return send(res, 404, { error: "no such painting" });
         store.setSetting("easel.paintings", JSON.stringify(paintings().filter((p) => p.id !== id)));
-        if (existsSync(paintingFile(id))) unlinkSync(paintingFile(id));
+        if (existsSync(paintingFile(id))) unlinkSync(paintingFile(id)); dropSmall(paintingFile(id));   // C-413
         return send(res, 200, { ok: true });
       }
       // C-338: the persona of the day, as talk, voices and paintings read it -- {personality?}: the daemon carried

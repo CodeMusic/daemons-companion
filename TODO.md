@@ -4,6 +4,18 @@ Work that has been **decided and not done**, kept the way DAEMONS keeps its own 
 permanent, a closed ticket is struck through with its commit, never deleted. Questions live in `docs/PLAN.md` as
 **OPEN** until the user answers them; a ticket waits on one by naming it.
 
+## Today's goals -- 2026-11-18, THE ENGINE ROOM
+
+*The user, 2026-11-18: "run your goal loop".* The Engine Room lane's sweep first: THE HANDS answering (last seen within
+seconds; no job asked since 2026-11-11), the site built at every push and served by the hub (GitHub's d235c5b, then
+061ae92, each the newest), every page loaded with live data (a deploy mid-walk was the only failure). What it found:
+CREATIONS says "failed" with no reason, eleven times; devices go by raw ids. Worked top down: build, test, deploy the
+hub, commit by path, push, strike it here.
+
+1. **C-404 a failed creation says why** -- CREATIONS shows each failure's reason, TRY AGAIN, FORGET, and CLEAR THE FAILED.
+2. **C-405 devices by name** -- THE ENGINE ROOM names a device as the app does, the id small beneath.
+3. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-11: "not yet").
+
 ## Today's goals -- 2026-11-15, the Tiiny's update
 
 *The user, 2026-11-15: "yes please, goal loop the set".* The Tiiny's update of 2026-11-11 (C-369..C-374): after it every

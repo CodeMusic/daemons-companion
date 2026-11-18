@@ -283,6 +283,29 @@
   },
   {
    "n": 28,
+   "name": "DAVID'S COMPASS",
+   "section": "GAME EVENTS",
+   "held": null,
+   "items": [
+    {
+     "name": "ITEM_COMPASS",
+     "id": 252
+    }
+   ],
+   "note": "held: the item in the bag"
+  },
+  {
+   "n": 29,
+   "name": "THE COMPASS, READ",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2800
+    ]
+   }
+  },
+  {
+   "n": 30,
    "name": "EVERY GROVE FOUND",
    "section": "GAME EVENTS",
    "held": {
@@ -305,7 +328,7 @@
    }
   },
   {
-   "n": 29,
+   "n": 31,
    "name": "PRUNE",
    "section": "DRIVERS",
    "held": null,
@@ -318,7 +341,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 30,
+   "n": 32,
    "name": "GOTO",
    "section": "DRIVERS",
    "held": null,
@@ -331,7 +354,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 31,
+   "n": 33,
    "name": "TRAVERSE",
    "section": "DRIVERS",
    "held": null,
@@ -344,7 +367,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 32,
+   "n": 34,
    "name": "DISPLACE",
    "section": "DRIVERS",
    "held": null,
@@ -357,7 +380,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 33,
+   "n": 35,
    "name": "VERBOSE",
    "section": "DRIVERS",
    "held": null,
@@ -370,7 +393,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 34,
+   "n": 36,
    "name": "CRACK",
    "section": "DRIVERS",
    "held": null,
@@ -383,7 +406,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 35,
+   "n": 37,
    "name": "ASCEND",
    "section": "DRIVERS",
    "held": null,
@@ -396,7 +419,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 36,
+   "n": 38,
    "name": "DESCEND",
    "section": "DRIVERS",
    "held": null,
@@ -409,7 +432,7 @@
    "note": "held: the DRIVER in the bag"
   },
   {
-   "n": 37,
+   "n": 39,
    "name": "TEA, FOR BRAZEN'S GUARDS",
    "section": "GAME EVENTS",
    "held": null,
@@ -422,7 +445,7 @@
    "note": "held: the item in the bag"
   },
   {
-   "n": 38,
+   "n": 40,
    "name": "BRAZEN'S GATES OPEN",
    "section": "GAME EVENTS",
    "held": {
@@ -436,7 +459,7 @@
    }
   },
   {
-   "n": 39,
+   "n": 41,
    "name": "REVEAL",
    "section": "GAME EVENTS",
    "held": {
@@ -446,7 +469,7 @@
    }
   },
   {
-   "n": 40,
+   "n": 42,
    "name": "RESOLVER",
    "section": "GAME EVENTS",
    "held": null,
@@ -459,7 +482,7 @@
    "note": "held: the item in the bag"
   },
   {
-   "n": 41,
+   "n": 43,
    "name": "INTERRUPT",
    "section": "GAME EVENTS",
    "held": null,
@@ -472,7 +495,7 @@
    "note": "held: the item in the bag"
   },
   {
-   "n": 42,
+   "n": 44,
    "name": "EVERY GOTO POINT",
    "section": "GAME EVENTS",
    "held": {
@@ -482,7 +505,7 @@
    }
   },
   {
-   "n": 43,
+   "n": 45,
    "name": "THE GUIDE",
    "section": "GAME EVENTS",
    "held": {
@@ -492,7 +515,7 @@
    }
   },
   {
-   "n": 44,
+   "n": 46,
    "name": "THE SUBTLE LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -502,7 +525,7 @@
    }
   },
   {
-   "n": 45,
+   "n": 47,
    "name": "THE HERMETIC LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -512,7 +535,7 @@
    }
   },
   {
-   "n": 46,
+   "n": 48,
    "name": "THE EUDAIMON LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -522,7 +545,7 @@
    }
   },
   {
-   "n": 47,
+   "n": 49,
    "name": "EVERY SPELL READ",
    "section": "GAME EVENTS",
    "held": {
@@ -536,7 +559,7 @@
    }
   },
   {
-   "n": 48,
+   "n": 50,
    "name": "MENDED",
    "section": "GAME EVENTS",
    "held": {
@@ -546,7 +569,7 @@
    }
   },
   {
-   "n": 49,
+   "n": 51,
    "name": "EVERY GROVE LIT",
    "section": "GAME EVENTS",
    "held": {
@@ -569,7 +592,7 @@
    }
   },
   {
-   "n": 50,
+   "n": 52,
    "name": "GLOBAL INDEX",
    "section": "GAME EVENTS",
    "held": {
@@ -591,7 +614,7 @@
    "note": "IsNationalPokedexEnabled: also sb2 pokedex.nationalMagic == 0xB9 (sb2_byte)"
   },
   {
-   "n": 51,
+   "n": 53,
    "name": "STILL",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -601,7 +624,7 @@
    }
   },
   {
-   "n": 52,
+   "n": 54,
    "name": "NAMING",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -611,7 +634,7 @@
    }
   },
   {
-   "n": 53,
+   "n": 55,
    "name": "NOTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -621,7 +644,7 @@
    }
   },
   {
-   "n": 54,
+   "n": 56,
    "name": "REFLECT",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -631,7 +654,7 @@
    }
   },
   {
-   "n": 55,
+   "n": 57,
    "name": "STANCE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -641,7 +664,7 @@
    }
   },
   {
-   "n": 56,
+   "n": 58,
    "name": "MEND",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -651,7 +674,7 @@
    }
   },
   {
-   "n": 57,
+   "n": 59,
    "name": "PRACTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -661,7 +684,7 @@
    }
   },
   {
-   "n": 58,
+   "n": 60,
    "name": "ROLLOVER",
    "section": "THE YEAR",
    "held": {
@@ -671,7 +694,7 @@
    }
   },
   {
-   "n": 59,
+   "n": 61,
    "name": "EVEN LIGHT, SPRING",
    "section": "THE YEAR",
    "held": {
@@ -681,7 +704,7 @@
    }
   },
   {
-   "n": 60,
+   "n": 62,
    "name": "EVEN LIGHT, AUTUMN",
    "section": "THE YEAR",
    "held": {
@@ -691,7 +714,7 @@
    }
   },
   {
-   "n": 61,
+   "n": 63,
    "name": "DAWN VIGIL",
    "section": "THE YEAR",
    "held": {
@@ -701,7 +724,7 @@
    }
   },
   {
-   "n": 62,
+   "n": 64,
    "name": "FIRST FROST",
    "section": "THE YEAR",
    "held": {
@@ -711,7 +734,7 @@
    }
   },
   {
-   "n": 63,
+   "n": 65,
    "name": "DEN DAY",
    "section": "THE YEAR",
    "held": {
@@ -721,7 +744,7 @@
    }
   },
   {
-   "n": 64,
+   "n": 66,
    "name": "FLEDGLING DAY",
    "section": "THE YEAR",
    "held": {
@@ -731,7 +754,7 @@
    }
   },
   {
-   "n": 65,
+   "n": 67,
    "name": "LANTERN NIGHTS",
    "section": "THE YEAR",
    "held": {
@@ -741,7 +764,7 @@
    }
   },
   {
-   "n": 66,
+   "n": 68,
    "name": "SCIENCE FAIR",
    "section": "THE YEAR",
    "held": {
@@ -751,7 +774,7 @@
    }
   },
   {
-   "n": 67,
+   "n": 69,
    "name": "TRUCE DAY",
    "section": "THE YEAR",
    "held": {
@@ -761,7 +784,7 @@
    }
   },
   {
-   "n": 68,
+   "n": 70,
    "name": "MARIGOLD DAYS",
    "section": "THE YEAR",
    "held": {
@@ -771,7 +794,7 @@
    }
   },
   {
-   "n": 69,
+   "n": 71,
    "name": "GIVING THANKS",
    "section": "THE YEAR",
    "held": {
@@ -781,7 +804,7 @@
    }
   },
   {
-   "n": 70,
+   "n": 72,
    "name": "STREAM AND HEARSAY",
    "section": "GAME EVENTS",
    "held": null,
@@ -798,7 +821,7 @@
    "note": "the page only gives this row (the STREAM and HEARSAY in the bag, every show told)"
   },
   {
-   "n": 71,
+   "n": 73,
    "name": "COMPANION LINKED",
    "section": "GAME EVENTS",
    "held": {

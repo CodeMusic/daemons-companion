@@ -1290,6 +1290,12 @@
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },
+ "252": {
+  "name": "COMPASS",
+  "description": "DAVID's compass, from the ship. The letters on its rose are not the ones on any map.",
+  "pocket": "POCKET_KEY_ITEMS",
+  "importance": 1
+ },
  "254": {
   "name": "RED SCARF",
   "description": "A red scarf, handed out on PARADE DAYS. It changes nothing in battle. It is worn for the day.",

@@ -318,7 +318,7 @@ function opened(f, v, ts, now) {
       ${stepDot(t, ts)}<span class="t">${d ? "└ " : ""}${esc(t.title)}${(t.hops?.length ?? 0) > 1 ? " ⇢" : ""}</span>
       <span class="small">${esc(t.user)} · ${LIVE(t) ? STATE[t.state] : `${took(t.ms)} ${ago(t.ended ?? t.at, now)}`}</span></div>`;
   if (f.type !== "task") {
-    const mine = f.type === "hub" ? ts.filter((t) => !t.mind || t.device === "the hub") : ts.filter((t) => (f.type === "mind" ? t.mind : t.device) === f.id);
+    const mine = f.type === "hub" ? ts.filter((t) => !t.mind || t.mind === "the hub" || t.device === "the hub") : ts.filter((t) => (f.type === "mind" ? t.mind : t.device) === f.id);
     const settled = mine.filter((t) => !LIVE(t)), fails = settled.filter((t) => t.state === "failed").length;
     const avg = settled.filter((t) => t.ms).reduce((a, t, _, all) => a + t.ms / all.length, 0);
     const m = f.type === "mind" ? (v.minds ?? []).find((x) => x.name === f.id) : null;
@@ -356,6 +356,7 @@ async function drawMind() {
   const live = shown.filter(LIVE), done = shown.filter((t) => !LIVE(t)).slice(0, 30);
   const known = new Map((v.minds ?? []).map((m) => [m.name, m.ok]));
   for (const t of shown) if (t.mind && !known.has(t.mind)) known.set(t.mind, null);
+  known.delete("the hub");   // C-402: work done on the hub itself is drawn at the HUB, not as a mind beside it
   const minds = [...known].map(([name, ok]) => ({ name, ok }));
   const devices = [...new Set(shown.slice(0, 60).map((t) => t.device))].filter((d) => d !== "the hub").slice(0, 12);
   const trail = ui.trail ?? [], focus = trail.at(-1) ?? null;

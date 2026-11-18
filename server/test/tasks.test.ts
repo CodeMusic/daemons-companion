@@ -91,4 +91,18 @@ describe("whatsnew", () => {
     keepDigest(s.get, s.set, d); keepDigest(s.get, s.set, { ...d, state: "done" });
     expect(digests(s.get)).toEqual([{ ...d, state: "done" }]);
   });
+  // C-402: one mind, one name
+  it("names the house's module by the one that took it -- a rename, not a hand-off", () => {
+    const s = mem(), tasks = new Tasks(s.get, s.set);
+    const t = tasks.open({ kind: "dream", title: "a dream told", mind: "the house's module", state: "thinking" });
+    tasks.hop(t.id, "the house's module");
+    tasks.named(t.id, "hub module");
+    expect(tasks.find(t.id)).toMatchObject({ mind: "hub module", hops: [{ mind: "hub module" }] });
+    tasks.hop(t.id, "the Tiiny"); tasks.fell(t.id, "slow"); tasks.named(t.id, "dev board");
+    expect(tasks.find(t.id)!.hops!.map((h) => h.mind)).toEqual(["hub module", "the Tiiny", "dev board"]);
+  });
+  it("calls a phone's own model by the phone, not \"this phone\"", () => {
+    const t = traceTask({ at: "2026-11-18T12:00:00Z", kind: "talk", ring: "phone", from: "phone", device: "iPhone", thought: "this phone", ms: { think: 900 } });
+    expect(t).toMatchObject({ mind: "iPhone's own", device: "iPhone" });
+  });
 });

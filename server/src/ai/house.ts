@@ -318,6 +318,7 @@ export class House {
   // words written to a prompt, at length (a write-up, a day-dream); null when no module can think
   async write(system: string, user: string, maxTokens = 400, job?: WriteJob): Promise<string | null> {
     return this.turn((h) => !!h.llm, async (m, h) => {
+      job?.named?.(m.name);   // C-402: "the house's module" is this one -- THE MIND names it as its minds list does
       const said = await chat(m.url, h.llm!, [{ role: "system", content: system }, { role: "user", content: user }], { maxTokens, timeoutMs: 180000, signal: job?.signal });
       if (said.tokens) job?.spent?.({ out: said.tokens });
       return said.text.trim();

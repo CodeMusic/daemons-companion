@@ -103,6 +103,15 @@ export class Tasks {
     const hops = [...(t.hops ?? []), { mind: clip(mind, 40) ?? "a mind", at: this.now().toISOString() }].slice(-6);
     this.keep(this.all().map((x) => (x.id === id ? { ...x, mind: hops[hops.length - 1].mind, hops } : x)));
   }
+  // C-402: the mind just tried is known now by its own name (the house's modules are tried as one, then one of them takes
+  // it) -- the same mind, so its hop is renamed, not a hand-off added
+  named(id: string, mind: string) {
+    const t = this.find(id), name = clip(mind, 40);
+    if (!t || !LIVE.includes(t.state) || !name) return;
+    const last = t.hops?.[t.hops.length - 1];
+    const hops = last && !last.error ? [...t.hops!.slice(0, -1), { ...last, mind: name }] : [...(t.hops ?? []), { mind: name, at: this.now().toISOString() }];
+    this.keep(this.all().map((x) => (x.id === id ? { ...x, mind: name, hops } : x)));
+  }
   fell(id: string, error: string) {
     const t = this.find(id);
     if (!t?.hops?.length) return;
@@ -128,10 +137,13 @@ export function traceTask(t: TraceLike): Task {
   const ok = !!t.thought;
   // C-319 later: the phone's hedge made visible -- the minds that failed or were too slow, then the one that answered
   const began = new Date(Date.parse(t.at) - ms).toISOString();
-  const hops: Hop[] = [...(t.failed ?? []).map((m) => ({ mind: m, at: began, error: t.covered ? "too slow; covered" : "failed" })),
-                       ...(t.thought ? [{ mind: t.thought, at: began }] : [])];
+  // C-402: a phone says "this phone" of its own model; on the hub's page that is that phone's own mind, named for it
+  const device = t.device ?? t.from;
+  const mindOf = (m: string) => (m === "this phone" ? `${device}'s own` : m);   // DRAFT
+  const hops: Hop[] = [...(t.failed ?? []).map((m) => ({ mind: mindOf(m), at: began, error: t.covered ? "too slow; covered" : "failed" })),
+                       ...(t.thought ? [{ mind: mindOf(t.thought), at: began }] : [])];
   return { ...(hops.length > 1 ? { hops } : {}), id: `trace-${t.at}`, kind: t.kind, title: t.kind === "guide" ? "asked THE GUIDE" : "talked with a daemon",   // DRAFT
-           user: t.user ?? "the house", device: t.device ?? t.from, ...(t.thought ? { mind: t.thought } : {}),
+           user: t.user ?? "the house", device, ...(t.thought ? { mind: mindOf(t.thought) } : {}),
            state: ok ? "done" : "failed", at: new Date(Date.parse(t.at) - ms).toISOString(), ended: t.at, ms,
            ...(ok ? {} : { error: t.failed?.join(", ") || "no mind answered" }), source: "trace" };
 }

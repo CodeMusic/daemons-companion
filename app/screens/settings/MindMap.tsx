@@ -111,7 +111,7 @@ function Mesh({ m }: { m: MeshView }) {
 }
 // C-363: what is opened on THE WEB -- the hub, a mind or a device
 type Focus = { type: "hub" | "mind" | "device"; id: string };
-const inFocus = (t: Task, f: Focus | null) => !f || (f.type === "hub" ? !t.mind || t.device === "the hub" : f.type === "mind" ? t.mind === f.id : t.device === f.id);
+const inFocus = (t: Task, f: Focus | null) => !f || (f.type === "hub" ? !t.mind || t.mind === "the hub" || t.device === "the hub" : f.type === "mind" ? t.mind === f.id : t.device === f.id);
 const WINDOWS = [["hour", 3600e3, "AN HOUR"], ["day", 86400e3, "A DAY"], ["week", 7 * 86400e3, "A WEEK"]] as const;
 const ago = (iso: string, now: number) => {
   const s = Math.max(0, Math.round((now - Date.parse(iso)) / 1000));
@@ -306,6 +306,7 @@ export function MindAtWork({ ink }: { ink: string }) {
   const minds = useMemo(() => {
     const known = new Map((v?.minds ?? []).map((m) => [m.name, m.ok as boolean | null]));
     for (const t of [...inWindow, ...later]) if (t.mind && !known.has(t.mind)) known.set(t.mind, null);
+    known.delete("the hub");   // C-402: work done on the hub itself is drawn at the HUB, not as a mind beside it
     return [...known].map(([name, ok]) => ({ name, ok }));
   }, [v, inWindow.length]);
   const devices = useMemo(() => [...new Set(inWindow.map((t) => t.device))].filter((d) => d !== "the hub").slice(0, 10), [inWindow.length]);

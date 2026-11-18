@@ -885,7 +885,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     RUNNING.set(task.id, ctl);
     let sizeIn = 0, sizeOut = 0;
     const job: WriteJob = { signal: ctl.signal, spent: (t) => { TASKS.update(task.id, { tokens: t }); },
-                            by: (m) => TASKS.hop(task.id, m), fell: (e) => TASKS.fell(task.id, e), quick: o.quick };   // C-319 later: its hand-offs
+                            by: (m) => TASKS.hop(task.id, m), fell: (e) => TASKS.fell(task.id, e), quick: o.quick,
+                            named: (m) => TASKS.named(task.id, m) };   // C-402   // C-319 later: its hand-offs
     // quick (C-383): this one write by the quick thinker, thinking off, whatever the task's own
     const write = async (system: string, user: string, most?: number, quick?: boolean) => {
       if (ctl.signal.aborted) throw new Error(STOPPED);

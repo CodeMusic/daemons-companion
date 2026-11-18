@@ -87,9 +87,12 @@ function markAway(on) {
   $away.innerHTML = s < 90 ? `<b>THE HUB IS RESTARTING</b> · back in a moment${s >= 5 ? ` (${s}s)` : ""}`
                            : `<b>THE HUB ISN'T ANSWERING</b> · ${Math.round(s / 60)}m · still asking every two seconds`;
 }
+// C-399: each show() is numbered; only the newest may set the next redraw, so a button pressed while a redraw is on its
+// way does not leave two redraws running side by side
+let shown = 0;
 async function show(again = false) {
   clearTimeout(timer);
-  const p = pageNow();
+  const p = pageNow(), n = ++shown;
   drawing = p;
   if (!again) { ui = {}; drawNav(); $page.innerHTML = `<p class="small">Asking the hub…</p>`; }
   // a redraw waits while something is being typed into the page (a home's id, an address)
@@ -101,14 +104,14 @@ async function show(again = false) {
       markAway(true);
       // nothing drawn yet: say why the page is empty; drawn already: leave it as it was
       if (!again || ui.waiting) { ui.waiting = true; $page.innerHTML = `<h1>${esc(p.label)}</h1><p class="small">Waiting for the hub to answer…</p>`; }
-      if (pageNow() === p) timer = setTimeout(() => show(true), 2000);
+      if (pageNow() === p && n === shown) timer = setTimeout(() => show(true), 2000);
       return;
     }
     markAway(false);
     if (!again || ui.waiting) $page.innerHTML = `<h1>${esc(p.label)}</h1><div class="card bad">${esc(e.message)}</div>`;
   }
   ui.waiting = false;
-  if (p.every && pageNow() === p) timer = setTimeout(() => show(true), p.every);
+  if (p.every && pageNow() === p && n === shown) timer = setTimeout(() => show(true), p.every);
 }
 window.addEventListener("hashchange", () => show());
 // a button anywhere: data-act names what it does, data-* what it does it to

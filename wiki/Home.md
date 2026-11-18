@@ -17,7 +17,7 @@ with you -- and its CASINO plays with your game's money.
 pages -- every way to play, getting started, the world, daemons, battles and the seventeen types, BENCHMARKS, MARKS and
 ROOTS, the INDEX, the NOTEBOOK, CALLOW SCHOOL, the books, PLAY, the GAME CORNER and the CASINO, the companion, help and
 a glossary. **This app has its own**:
-[THE COMPANION](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf), 71 pages -- every tab,
+[THE COMPANION](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf), 76 pages -- every tab,
 the nights and dreams, MEETINGS, the LIBRARY, THE MIND, the devices and every setting.
 
 **Why the name? [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf)** (19 pages) tells how the Greek *daimon* branched, and why it is said *DAY-mons*.
@@ -82,7 +82,7 @@ too, and TestFlight hands one build to all three. In testing for now -- [The one
 - [The DAEMONS player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf) -- the
   game, for the player who holds it.
 - [THE COMPANION](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf) -- this app, all of it,
-  in 71 pages: your daemon AWAY, the days, the house's mind, the devices and every setting.
+  in 76 pages: your daemon AWAY, the days, the house's mind, the devices and every setting.
 - [THE OLD WORD](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-etymology.pdf) -- where the word daemon came from, and why it is
   said DAY-mons.
 - [PRINCIPLES OF MIND](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-textbook.pdf) -- CALLOW SCHOOL's TEXTBOOK as a university textbook, seven floors from Language to Error.

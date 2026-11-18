@@ -3,7 +3,7 @@
 **One app for everything: the game, the companion, the LIBRARY and the NOTEBOOK** (C-186, docs/ONEAPP.md). The
 companion's app grew into it -- there is no second app. Play DAEMONS, SEND a daemon out of your party, care for it,
 read what the game has given you, and bring it home again, all in one place. The whole app is told in its own book,
-**[THE COMPANION](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf)** (a PDF of 71
+**[THE COMPANION](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf)** (a PDF of 76
 pages, C-321), which also stands on the LIBRARY's MANUALS shelf.
 
 *In testing.* It is handed out through TestFlight (C-210): to our own testers now, and to testers outside once Apple's
@@ -137,7 +137,7 @@ before. **READ ALOUD** reads any chapter of THE SUBTLE LAYER or THE GUIDE, or an
 its own cover -- **FOUND IN THE GAME** (the books your save has found), **MANUALS** (QUICK START, THE PLAYER'S MANUAL,
 **THE COMPANION**, THE WATCH, THE GLASSES, THE CARDPUTERS, PLAYING TOGETHER, A BIGGER MIND), **HISTORY AND STUDY** (THE OLD WORD, CALLOW SCHOOL) and **YOUR OWN
 PAGES** (NOTEBOOK, SONGBOOK, STREAM). The manuals are DAEMONS' own PDFs, fetched as published and kept on the device.
-**THE COMPANION** ([PDF, 71 pages](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf),
+**THE COMPANION** ([PDF, 76 pages](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf),
 C-321) is this app's own manual, reprinted as the app changes. **The reader keeps its place** (C-309): a sync, a redraw
 or the app opened again comes back to the same book, page and line. While a book reads aloud, it lends the reader its
 own look -- its colours, a ribbon of its chapters with the one heard lit, and NOW READING.

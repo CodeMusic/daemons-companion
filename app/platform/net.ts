@@ -494,8 +494,9 @@ export async function artByJson(path: string): Promise<string> {
   const shelf = /^\/art\/books\/([a-z]{1,16})\.png$/.exec(path);   // C-320: a book's cover on the LIBRARY's shelf
   const symbol = /^\/art\/symbol\/([a-z]|exclamation_mark|question_mark)\.png$/.exec(path);   // C-315: a SYMBOL form on a card
   const painting = /^\/art\/paintings\/([0-9a-f]{16})\.png$/.exec(path);   // C-338: a painting from THE EASEL
-  if (sub || face || shelf || symbol || painting) {
-    const { png } = await api<{ png: string }>(painting ? `/api/art?painting=${painting[1]}` : face ? `/api/art?arcana=${face[1]}` : shelf ? `/api/art?book=${shelf[1]}`
+  const daysym = /^\/art\/daysymbol\/((?:sun|mon|tue|wed|thu|fri|sat)_(?:light|dark))\.png$/.exec(path);   // DAEMONS T-531: a day's symbol
+  if (sub || face || shelf || symbol || painting || daysym) {
+    const { png } = await api<{ png: string }>(daysym ? `/api/art?daysymbol=${daysym[1]}` : painting ? `/api/art?painting=${painting[1]}` : face ? `/api/art?arcana=${face[1]}` : shelf ? `/api/art?book=${shelf[1]}`
       : symbol ? `/api/art?symbol=${symbol[1]}` : `/api/art?${sub![1]}=${sub![2]}`);
     keepArt(path, `data:image/png;base64,${png}`);
     return ART.get(path)!;

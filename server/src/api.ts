@@ -3341,6 +3341,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           const f = q.get("symbol") ?? "", file = join(ART_DIR, "symbol", `${/^([a-z]|exclamation_mark|question_mark)$/.test(f) ? f : "-"}.png`);
           return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such form" });
         }
+        if (q.has("daysymbol")) {   // DAEMONS T-531: a day's symbol, for a phone away
+          const f = q.get("daysymbol") ?? "", file = join(ART_DIR, "daysymbol", `${/^(sun|mon|tue|wed|thu|fri|sat)_(light|dark)$/.test(f) ? f : "-"}.png`);
+          return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such day" });
+        }
         if (q.has("painting")) {   // C-338: a painting, for a phone away
           const file = paintingFile(q.get("painting") ?? "");
           return existsSync(file) ? send(res, 200, { png: readFileSync(file).toString("base64") }) : send(res, 404, { error: "no such painting" });
@@ -3393,6 +3397,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && symbolArt) {
         const file = join(ART_DIR, "symbol", `${symbolArt[1]}.png`);
         if (!existsSync(file)) return send(res, 404, { error: "no such form" });
+        res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
+        return res.end(readFileSync(file));
+      }
+      // DAEMONS T-531: a day's symbol, ring and horizon (data/art/daysymbol/<day>_<light|dark>.png, tools/gendaysymbol.py)
+      const daySymbolArt = path.match(/^\/art\/daysymbol\/((?:sun|mon|tue|wed|thu|fri|sat)_(?:light|dark))\.png$/);
+      if (req.method === "GET" && daySymbolArt) {
+        const file = join(ART_DIR, "daysymbol", `${daySymbolArt[1]}.png`);
+        if (!existsSync(file)) return send(res, 404, { error: "no such day" });
         res.writeHead(200, { "content-type": "image/png", "access-control-allow-origin": "*", "cache-control": "max-age=86400" });
         return res.end(readFileSync(file));
       }

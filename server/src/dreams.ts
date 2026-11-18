@@ -77,6 +77,10 @@ export function dreamImage(d: { to: string; personality: number | null; quality:
 }
 // C-308: a dream's title -- the one its making gave it, else the game's title for its image
 export const titleOf = (d: Dream): string => d.title || DREAM_TITLES[dreamImage(d)] || "A DREAM";
+// DAEMONS T-531 (bible 9.21): a dream's symbol is its day's -- the night it began, on the companion's own clock, Sunday
+// first as week.json is. The seven are drawn by DAEMONS tools/gendaysymbol.py: /art/daysymbol/<day>_<light|dark>.png.
+export const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+export const dayOfDream = (d: { from?: string; at: string }): string => DAY_KEYS[new Date(d.from || d.at).getDay()];
 // the dream's day, as the game counts it: days since 2026-01-01 by the local date the night ended
 export function dreamDay(d: { to: string }): number {
   const t = new Date(d.to);

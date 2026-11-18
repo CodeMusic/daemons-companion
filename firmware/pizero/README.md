@@ -93,6 +93,7 @@ at 1 GHz), and the GBA needs 59.7.
 ```sh
 tools/install.sh <user>@<device> probe    # what the device really is -> build/probe-<device>.txt (reads only)
 tools/install.sh <user>@<device>          # copy the source across, build it there, make the .deb, install it
+tools/shot.sh <user>@<device> out.png     # a picture of the screen now (/dev/fb0), for review sheets and qa
 ```
 
 It builds on the device itself, using four A53 cores and two jobs at a time to fit in 512 MB. The first build fetches
@@ -116,7 +117,7 @@ keys while running), `ZERO_KEYLOG=1` (print key codes it does not know).
 | `src/hub/` | libcurl; the device state asked every thirty seconds as every board asks it, and pairing (`hub.cpp`); the save's mirror (`mirror.cpp`) |
 | `src/pages/` | HOME, PLAY, GAMES (`make.cpp`), LINK, CARE, STEP, PARTY, SAY, and what they share (`parts.*`) |
 | `test/` | the checks `./build.sh` runs |
-| `tools/` | `install.sh`, `probe.sh`, `make_deb.sh` |
+| `tools/` | `install.sh`, `probe.sh`, `make_deb.sh`, `shot.sh` |
 | `packaging/` | the launcher's entry and icon |
 
 What it is built from is fetched at pinned versions and checked by hash. None of it is kept here: mGBA 0.10.5

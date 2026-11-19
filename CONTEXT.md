@@ -22,12 +22,17 @@ The handhelds are off-the-shelf ESP32-S3 development boards the author bought an
 - **LilyGO T-Deck Plus** — a hand-sized board with a keyboard, a trackball, a LoRa radio and a GPS.
 - and **the author's phone**, running the companion's app; M5Stack boards and an LLM630 (an on-device model) are
   planned (`TODO.md`).
+- **The Kode Dot** (C-424, arriving December 2026) — Kode's pocket maker device, an ESP32-P4 with an ESP32-C5 radio,
+  sold with NFC, a 125 kHz reader and IR for makers to build with. The companion runs on it as an app in Kode's own
+  launcher, on Kode's published SDK (`firmware/kodedot/`, `docs/KODEDOT.md`).
 
 Like the boards they are modelled on, they ship with several radios on purpose, for makers to build with:
 
 - **IR** (infrared LED + receiver) — the same kind of emitter as a TV remote.
 - **Bluetooth Low Energy** and **Wi-Fi** (built into the ESP32-S3).
-- **NFC** (a PN532 module, the CC1101 board) — reads/writes 13.56 MHz tags.
+- **NFC** (a PN532 module, the CC1101 board; an ST25R3916B, the Kode Dot) — reads/writes 13.56 MHz tags.
+- **125 kHz RFID** (the Kode Dot only) — the low-frequency tags of key fobs and cards; Kode's SDK reads an EM4100 tag's
+  ID, writes one to a T5577 blank, and plays one back.
 - **Sub-GHz** (a CC1101) — short-range ISM-band transceiver.
 - **AM/FM** (an SI4732, receive only) — broadcast radio.
 - **LoRa** (an SX1262, the watch and the T-Deck) — long-range, low-rate messages between the author's own devices: a
@@ -51,6 +56,10 @@ the board works:
 - **WHISPER (Bluetooth)**: offer a connection the author's own phone can open, and pass a message each way.
 - **TOUCHSTONE (NFC)**: read the **identifier** and type of the author's own tags (a MIFARE Classic card, an NTAG card
   or sticker) — confirming the reader works, nothing more.
+- **LODESTONE (125 kHz)**, the Kode Dot only (the author chose it, 2026-11-19; C-425): the author carries **their own**
+  125 kHz fobs on one device. READ MY TAG shows a tag's ID; KEEP A TAG keeps it on the Dot under a name; MY TAGS has
+  the Dot play a kept tag to the author's own reader, as the fob would; COPY TO A BLANK writes it to a blank T5577
+  card the author owns, where the Dot cannot play it.
 - **LONGWAVE (sub-GHz)**: listen for the author's own sub-GHz device, show what was heard, and, on a press, send that
   one signal back once — to confirm both receive and send.
 - **UPLINK (Wi-Fi)**: list the networks in range, and learn the author's own network. **WI-FI MOTION**, the first
@@ -67,9 +76,13 @@ The radio experiments still to come (`TODO.md` C-70: a lightning detector, a sta
 
 - Testing is against **the author's own devices only** — their TV, their phone, their tags, their sub-GHz unit.
 - The point is **"does this radio work on my board"**, not reaching anyone else's equipment.
-- This is **not** access-control bypass. The board has no 125 kHz RFID, and the project does not try to clone,
-  spoof, or defeat any credential, lock, car, or payment system. Reading a tag's public ID is a functional check, not
-  an attack.
+- This is **not** access-control bypass. The project does not try to defeat any credential, lock, car, or payment
+  system. Reading a tag's public ID is a functional check, not an attack.
+- **LODESTONE carries the author's own fobs, and nothing else** (the author's decision, 2026-11-19): it reads, keeps and
+  plays only tags the author owns, to readers the author is allowed through, as the fob itself would. It never reads
+  a tag that is not the author's, never guesses, steps through or replays IDs at a reader, and never touches an
+  encrypted or secure credential (an EM4100-type tag holds a plain number and nothing else). **A kept tag never leaves
+  the Dot**: not to the hub, the phone, the save, a log, or this repository; deleting it on the Dot is the end of it.
 - Nothing here targets other people, networks, or property.
 - **Credentials and secrets stay out of the repo**: the author's Wi-Fi password is typed by the author, into the site
   or on the device, and kept in the board's own flash (or an ignored `secrets.h`); the shared secret for the author's
@@ -79,7 +92,7 @@ The radio experiments still to come (`TODO.md` C-70: a lightning detector, a sta
   is busy, as the author chose.
 
 If a change ever drifted outside these boundaries, that would be a real concern — but nothing in this project does.
-It is a personal creature-companion toy that happens to switch off its own TV and read its own tags.
+It is a personal creature-companion toy that happens to switch off its own TV, read its own tags, and open its own door.
 
 ## How to work in this repo
 

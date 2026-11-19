@@ -456,6 +456,24 @@ export function songNow(h: Host, store: Store, deviceId = "", now = new Date()):
            stage: song.length, share, perfect: share >= 1, ready: share >= 1 && evolves,
            atHome: bondScore(bondOf(store, d.personality)) >= AT_HOME };
 }
+// C-419 (DAEMONS T-595's DaemonSong_PlayForIndex): how far each species' song is known, as the INDEX sings it -- the
+// carried daemon's form as it knows it now (with what it has learned here since SYNC); any other species as the first of
+// it in the party, then the boxes, knows it; a species no one holds, whole. A past form's part is always whole: it is the
+// earlier parts of a song (ownsong.ts learnedOf).
+export function indexSongs(h: Host, store: Store, deviceId = "", now = new Date()): Record<number, number> {
+  const out: Record<number, number> = {};
+  const s = songNow(h, store, deviceId, now);
+  if (s) out[s.species] = s.share;
+  const file = h.save.read();
+  let held: { species: number; exp: number; personality: number }[] = [];
+  try { held = file ? [...readSave(file).party, ...readBoxes(file)] : []; } catch { /* the carried one only */ }
+  for (const d of held) {
+    const species = evolvedOf(store, d.personality)?.to ?? d.species, part = songOf(species).at(-1);
+    if (species in out || !part) continue;
+    out[species] = shareOf(part, d.exp + pendingExp(store, d.personality).exp, SPECIES[String(species)]?.growth ?? 0);
+  }
+  return out;
+}
 export function trainSong(h: Host, store: Store, deviceId = "", now = new Date()): (Lesson & { species: number }) | null {
   const s = songNow(h, store, deviceId, now), d = s && carriedDaemon(h, store, deviceId);
   if (!s || !d) return null;

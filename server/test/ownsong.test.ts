@@ -131,3 +131,94 @@ describe("the widget's song (C-418)", () => {
     expect(r.share).toBeGreaterThan(0); expect(r.share).toBeLessThan(1);
   });
 });
+
+// C-419: the song on a staff, and the INDEX singing it
+import profileJson from "../data/profile_layout.json" with { type: "json" };
+import { BOTTOM, fifthsOf, keySignature, ledgersAt, signatureSteps, spell, staffOf } from "../src/ownsong.js";
+
+describe("a part on a staff (C-419, DAEMONS T-600's staff)", () => {
+  it("reads every type's key signature from its key's name", () => {
+    expect(fifthsOf("C major")).toBe(0); expect(fifthsOf("A minor")).toBe(0);
+    expect(fifthsOf("F-sharp major")).toBe(6); expect(fifthsOf("E-flat minor")).toBe(-6);
+    expect(fifthsOf("D-flat major")).toBe(-5); expect(fifthsOf("F-sharp minor")).toBe(3); expect(fifthsOf("B minor")).toBe(2);
+    expect(keySignature("F major")).toMatchObject({ accidental: -1, letters: ["B"], pcs: [10] });
+    expect(keySignature("E major").letters).toEqual(["F", "C", "G", "D"]);
+    for (const k of Object.values(SONGS.keys)) {           // every note of a type's scale is in its signature's seven
+      const sig = keySignature(k.name), scale = k.minor ? [0, 2, 3, 5, 7, 8, 10] : [0, 2, 4, 5, 7, 9, 11];
+      for (const d of scale) expect(spell(60 + k.tonic + d, sig).shown).toBeNull();
+    }
+  });
+
+  it("spells a note as its key has it, and an off-key note with its accidental", () => {
+    expect(spell(60, keySignature("C major"))).toMatchObject({ letter: "C", step: 28, shown: null });   // middle C
+    expect(spell(77, keySignature("F-sharp major"))).toMatchObject({ letter: "E", accidental: 1, shown: null });   // E-sharp
+    const cflat = spell(71, keySignature("E-flat minor"));
+    expect(cflat).toMatchObject({ letter: "C", accidental: -1, shown: null });
+    expect(cflat.step).toBe(spell(72, keySignature("C major")).step);   // C-flat sits on C's space, not B's line
+    expect(spell(65, keySignature("G major"))).toMatchObject({ letter: "F", shown: 0 });       // F natural in G: a natural
+    expect(spell(61, keySignature("C major"))).toMatchObject({ letter: "C", shown: 1 });       // C-sharp
+    expect(spell(66, keySignature("F major"))).toMatchObject({ letter: "G", shown: -1 });      // G-flat in a flat key
+  });
+
+  it("writes a signature where it is written, and counts ledger lines", () => {
+    expect(signatureSteps(keySignature("D major"), "treble")).toEqual([8, 5]);   // F-sharp on the top line, C-sharp the third space
+    expect(signatureSteps(keySignature("F major"), "bass")).toEqual([2]);        // B-flat on the bass's second line
+    expect([ledgersAt(-1), ledgersAt(-2), ledgersAt(-3), ledgersAt(0), ledgersAt(8), ledgersAt(9), ledgersAt(10), ledgersAt(12)])
+      .toEqual([0, 1, 1, 0, 0, 0, 1, 2]);
+    expect(BOTTOM.treble - BOTTOM.bass).toBe(12);
+  });
+
+  it("sets every part on the clef with fewer ledger lines, in bars of four beats", () => {
+    let bass = 0;
+    for (const p of Object.values(SONGS.parts)) {
+      const s = staffOf(p);
+      expect(s.notes).toHaveLength(p.notes.length);
+      expect(s.notes[0]).toMatchObject({ at: 0, bar: 0 });
+      expect(s.sigSteps).toHaveLength(s.sig.letters.length);
+      if (s.clef === "bass") bass++;
+      const most = Math.max(...s.notes.map((n) => ledgersAt(n.r)));
+      expect(most).toBeLessThanOrEqual(5);
+    }
+    expect(bass).toBeGreaterThan(0);                       // the low parts read on the bass
+    const cub = staffOf(songOf(1)[0]);
+    expect(cub.clef).toBe("treble");
+    expect(cub.notes.at(-1)!.bar).toBe(Math.floor((cub.notes.reduce((n, x) => n + x.beats, 0) - 4) / 4));   // its cadence in the last bar
+  });
+});
+
+describe("the INDEX sings (C-419, DAEMONS T-595)", () => {
+  const P = profileJson as any, PHONE = "iphone-widget-0a0b0c", T0 = new Date("2026-11-18T15:00:00");
+  const mark = (sb2: Uint8Array, at: number, ns: number[]) => { for (const n of ns) sb2[at + ((n - 1) >> 3)] |= 1 << ((n - 1) & 7); };
+  function index(party: any[], boxes: any[] = [], bound = [1, 2, 3, 4]) {
+    const bytes = buildSave({ player: "ASH", trainerId: 0x00ab1234, slots: [{ counter: 3, party }], boxes,
+      edit: (sb2) => { mark(sb2, P.sb2.index_seen, bound); mark(sb2, P.sb2.index_bound, bound); } });
+    const h: core.Host = { edition: "CONTENT", save: { read: () => bytes, write: () => null } };
+    const store = new Store(":memory:");
+    carriedFor(store, core.awayNow(h), PHONE);
+    const get = () => route(h, store, { method: "GET", path: "/api/index", body: {}, deviceId: PHONE }, T0).body as any;
+    return { h, store, get };
+  }
+  const nat = (species: number) => SPECIES[String(species)].national;
+
+  it("sings the carried daemon's form as it knows it, a past form whole, and a form no one holds whole", () => {
+    const seer = { personality: 0x13572468, otId: 0x00ab1234, species: 2, nickname: "PIP", level: 20, exp: expFor(curve, 20), away: true };
+    const { get } = index([seer], [], [nat(1), nat(2), nat(3)]);
+    const by = Object.fromEntries(get().entries.map((e: any) => [e.species, e.song]));
+    const [, part] = songOf(2);
+    expect(by[2]).toBeCloseTo(shareOf(part, expFor(curve, 20), curve));
+    expect(by[2]).toBeGreaterThan(0); expect(by[2]).toBeLessThan(1);
+    expect(by[1]).toBe(1);                                 // ROVERCUB: its past form, whole
+    expect(by[3]).toBe(1);                                 // ROVERBYTE: held by no one, whole
+  });
+
+  it("hears what it has learned here since SYNC, and a boxed one as its box has it", () => {
+    const pip = { personality: 0x2468ace0, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 8, exp: expFor(curve, 8), away: true };
+    const label = SPECIES["4"], boxed = { personality: 0x0badf00d, otId: 0x00ab1234, species: 4, nickname: "BOX", level: 6, exp: expFor(label.growth, 6) };
+    const { store, get } = index([pip], [boxed], [nat(1), nat(4)]);
+    const before = get().entries.find((e: any) => e.species === 1).song;
+    store.logInteraction("exp", `${pip.personality} 40 train ${T0.toISOString()}`);
+    expect(get().entries.find((e: any) => e.species === 1).song).toBeGreaterThan(before);
+    const own = songOf(4).at(-1)!;
+    expect(get().entries.find((e: any) => e.species === 4).song).toBeCloseTo(shareOf(own, expFor(label.growth, 6), label.growth));
+  });
+});

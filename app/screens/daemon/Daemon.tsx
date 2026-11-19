@@ -32,7 +32,7 @@ import type { Care } from "../../../server/src/care";   // C-266
 import { pretendLife, useDev } from "../../state/dev";
 import { onLifeHeard } from "../../state/lifeHeard";   // C-300
 import { GIVEN, phraseMs, PROVISIONS, type Serving } from "./Provision";   // C-302
-import { evolves, songLine, type Singing } from "./OwnSong";              // C-418: TRAIN sings
+import { evolves, SongCard, songLine, type Singing } from "./OwnSong";    // C-418: TRAIN sings; C-419: ITS SONG
 import { lesson as lessonOf } from "../../../server/src/ownsong";
 import { ownSongUri } from "../../sound/ownSong";
 // C-327: the household space, as /api/device/state carries it (server/src/household.ts)
@@ -158,7 +158,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     }
     redrawWidgetNow();                                    // C-300: the widget too, at once -- not in half an hour (C-111: alone, drawn here)
   };
-  return (
+  return (<>
     <Card borderLeftWidth={6} borderLeftColor="$color9">
       <Eyebrow>{`${name}, TODAY`}</Eyebrow>
       <YStack position="relative">
@@ -202,7 +202,8 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       {witching ? <WitchingHour nickname={name} species={daemon.species} note={note} /> : null}
       <HalloweenNote h={halloween} masked={masked} name={name} />
     </Card>
-  );
+    <SongCard song={l.song} ink={ink} />{/* C-419: ITS SONG, every part so far */}
+  </>);
 }
 // C-266 (the user, 2026-11-01: "in the app in the daemon companion view you can see their stats, like mood, and the
 // health ones"): how it is, and how it has been looked after -- each a bar, the care's words beside it (DRAFT). Weight is

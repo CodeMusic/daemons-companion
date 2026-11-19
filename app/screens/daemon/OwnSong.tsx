@@ -12,7 +12,12 @@
 // One clock drives every note (useNativeDriver), so a part of thirty notes costs one animation. Every word DRAFT.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, Text, View } from "react-native";
-import { BINARY, heardAt, noteColours, type Heard, type Lesson } from "../../../server/src/ownsong";
+import { BINARY, heardAt, songOf, type Heard, type Lesson } from "../../../server/src/ownsong";
+import { Text as Words, XStack, YStack } from "tamagui";
+import { Head, SongStaves, useSinging } from "../../ui/staff";
+import { Card, Eyebrow, Small } from "../../ui/ui";
+import { ListenControl } from "../shared/Index";
+import type { SongNow } from "../../../server/src/core";
 import { openMouthOf } from "../../../server/src/expressions";
 import speciesJson from "../../../server/data/species.json";
 
@@ -27,19 +32,7 @@ const RISE_MS = 2300, BACK_STEP = 180, BACK_MS = 1500;
 export const singingMs = (l: Lesson) =>
   l.part ? (l.part.notes.reduce((n, [, b]) => n + b, 0) * 60000) / l.part.bpm + RISE_MS * 0.4 + l.adjusted.length * BACK_STEP + BACK_MS : 0;
 
-// A note head in its colour: a black key's is split, the two colours either side of it; a longer note a little larger
-function Head({ midi, beats, size, faint = 1 }: { midi: number; beats: number; size: number; faint?: number }) {
-  const c = noteColours(midi), s = size * (0.8 + 0.15 * Math.min(2, beats));
-  return (
-    <View style={{ width: s * 1.3, height: s * 2.2, opacity: faint }}>
-      <View style={{ position: "absolute", left: s * 1.02, top: 0, width: Math.max(1.5, s * 0.14), height: s * 1.7, backgroundColor: c[0] }} />
-      <View style={{ position: "absolute", left: 0, top: s * 1.2, width: s * 1.15, height: s * 0.9, borderRadius: s, overflow: "hidden",
-                     backgroundColor: c[0], transform: [{ rotate: "-18deg" }] }}>
-        {c[1] ? <View style={{ position: "absolute", left: s * 0.575, top: 0, width: s * 0.6, height: s, backgroundColor: c[1] }} /> : null}
-      </View>
-    </View>
-  );
-}
+// A note head in its colour (C-419: ui/staff.tsx, where the INDEX's staves draw it too)
 
 // STATIC: the candidates, each in its own colour and at its own height, the true one surest
 function Cloud({ n, size }: { n: Heard; size: number }) {
@@ -120,4 +113,33 @@ export function songLine(s: { share: number; perfect: boolean; ready: boolean; a
   if (s.ready) return "Its part of its song is whole.";                                       // DRAFT: at home here too
   if (s.perfect) return "Its song is whole.";                                                 // DRAFT: a final form, matured
   return `song ${Math.floor(s.share * 100)}%`;                                                // DRAFT
+}
+
+// C-419 (the user, 2026-11-18: "in the index you can still look at a past form ... and hear its song"): ITS SONG on the
+// daemon's own page -- the whole of its song so far, each part on its staff, the earlier parts whole and its own as it
+// knows it (static where it has not learned), and SING to hear it so. Every word DRAFT.
+export function SongCard({ song, ink }: { song: SongNow | null | undefined; ink: string }) {
+  const sung = useSinging(), { hush } = sung, species = song?.species;
+  const parts = useMemo(() => (species !== undefined ? songOf(species) : []), [species]);
+  useEffect(() => () => hush(), [hush]);                   // a song does not follow it off the page
+  if (!song || !parts.length) return null;
+  const shares = parts.map((_, i) => (i < parts.length - 1 ? 1 : song.share));
+  const key = `own-${song.species}-${Math.round(song.share * 1000)}`;
+  return (
+    <Card>
+      <Eyebrow>ITS SONG</Eyebrow>
+      <Small>{parts.length > 1
+        ? "Every part it has been, whole, then its own as it knows it so far. A note it has not learned is static."   // DRAFT
+        : "Its own part, as it knows it so far. A note it has not learned is static."}</Small>{/* DRAFT */}
+      <XStack marginVertical={4}>
+        <ListenControl label="SING" phase={sung.singing === key ? sung.phase : null} ink={ink}
+                       onListen={() => sung.sing(key, parts, shares)} onStop={sung.hush} />
+      </XStack>
+      {sung.failed ? <Small color="$color8">{sung.failed}</Small> : null}
+      <YStack><SongStaves parts={parts} shares={shares} at={sung.singing === key ? sung.at : null} /></YStack>
+      <Words fontSize={12} lineHeight={17} color="$color10">
+        {"Each note in its colour: C red, D orange, E yellow, F green, G blue, A indigo, B violet; a sharp or flat the two either side. Each part in its type's key."}
+      </Words>{/* DRAFT */}
+    </Card>
+  );
 }

@@ -100,3 +100,71 @@ export function lesson(species: number, exp: number, growth: number, trainsToday
 /** A note's colours as SYNESTHESIA draws it: one for a white key, the two either side for a black key. */
 export const noteColours = (midi: number): string[] => SONGS.colours[String(((midi % 12) + 12) % 12)] ?? ["#888888"];
 export const BINARY = () => SONGS.binary;
+
+// C-419 (DAEMONS T-600's staff; the user, 2026-11-18: "so the visual pattern can also teach you the key"): A PART ON A
+// STAFF -- its clef, its type's key signature, and each note spelt in that key on its line or space. Notation, not sound:
+// the app draws it (app/ui/staff.tsx), for the INDEX and the daemon's own page. Every word DRAFT.
+const LETTERS = "CDEFGAB", NATURAL = [0, 2, 4, 5, 7, 9, 11];
+const pc = (m: number) => ((m % 12) + 12) % 12;
+/** A key's place on the circle of fifths, from its name: sharps plus, flats minus (F-sharp major 6, E-flat minor -6). */
+export function fifthsOf(key: string): number {
+  const m = key.match(/^([A-G])(-sharp|-flat)? (major|minor)$/);
+  if (!m) return 0;
+  const major: Record<string, number> = { C: 0, G: 1, D: 2, A: 3, E: 4, B: 5, F: -1 };
+  const minor: Record<string, number> = { A: 0, E: 1, B: 2, F: -4, C: -3, G: -2, D: -1 };
+  return (m[3] === "major" ? major : minor)[m[1]] + (m[2] === "-sharp" ? 7 : m[2] === "-flat" ? -7 : 0);
+}
+export interface KeySignature { fifths: number; accidental: -1 | 0 | 1; letters: string[]; pcs: number[] }
+/** A key's signature: its sharps (F C G D A E B) or flats (B E A D G C F) in the order they are written. */
+export function keySignature(key: string): KeySignature {
+  const fifths = fifthsOf(key), accidental = (Math.sign(fifths) || 0) as -1 | 0 | 1;
+  const letters = (fifths > 0 ? "FCGDAEB" : "BEADGCF").slice(0, Math.abs(fifths)).split("");
+  return { fifths, accidental, letters, pcs: letters.map((l) => pc(NATURAL[LETTERS.indexOf(l)] + accidental)) };
+}
+/**
+ * A note spelt in a key: its letter and accidental as the key has it (E-sharp in F-sharp major, C-flat in E-flat minor),
+ * a note off the key (CORRUPT's bent one) raised from below in a sharp key and lowered from above in a flat one. `step`
+ * is its line or space, seven to an octave, middle C 28; `shown` is the accidental written beside it, null where the key
+ * signature already says it.
+ */
+export interface Spelt { letter: string; accidental: -1 | 0 | 1; step: number; shown: -1 | 0 | 1 | null }
+export function spell(midi: number, sig: KeySignature): Spelt {
+  const inKey = (l: string) => (sig.letters.includes(l) ? sig.accidental : 0);
+  let letter = LETTERS.split("").find((l) => pc(NATURAL[LETTERS.indexOf(l)] + inKey(l)) === pc(midi));
+  let accidental: -1 | 0 | 1 = letter ? inKey(letter) : 0;
+  if (!letter) {
+    if (NATURAL.includes(pc(midi))) letter = LETTERS[NATURAL.indexOf(pc(midi))];       // the key altered it: a natural
+    else { accidental = sig.accidental < 0 ? -1 : 1; letter = LETTERS[NATURAL.indexOf(pc(midi - accidental))]; }
+  }
+  const natural = midi - accidental;
+  return { letter, accidental, step: (Math.floor(natural / 12) - 1) * 7 + LETTERS.indexOf(letter),
+           shown: accidental === inKey(letter) ? null : accidental };
+}
+
+export type Clef = "treble" | "bass";
+/** Each clef's bottom line as a step: E above middle C on the treble, G two octaves below on the bass. */
+export const BOTTOM: Record<Clef, number> = { treble: 30, bass: 18 };
+// where each sharp and flat of a signature is written, counted up from the treble's bottom line (the bass's are two lower)
+const SIG_AT: Record<string, number[]> = { "1": [8, 5, 9, 6, 3, 7, 4], "-1": [4, 7, 3, 6, 2, 5, 1] };
+export const signatureSteps = (sig: KeySignature, clef: Clef) =>
+  (SIG_AT[String(sig.accidental)] ?? []).slice(0, sig.letters.length).map((r) => r - (clef === "bass" ? 2 : 0));
+/** How many ledger lines a note a number of steps above its staff's bottom line stands on or beyond. */
+export const ledgersAt = (r: number) => (r < 0 ? Math.floor(-r / 2) : r > 8 ? Math.floor((r - 8) / 2) : 0);
+
+/** A part set on a staff: the clef with fewer ledger lines (the treble when even), each note spelt and placed. */
+export interface Placed { midi: number; beats: number; at: number; bar: number; r: number; shown: -1 | 0 | 1 | null }
+export interface Staffed { clef: Clef; sig: KeySignature; sigSteps: number[]; notes: Placed[] }
+export const BEATS_A_BAR = 4;
+export function staffOf(part: SongPart): Staffed {
+  const sig = keySignature(part.key);
+  const spelt = part.notes.map(([m]) => spell(m, sig));
+  const cost = (c: Clef) => spelt.reduce((n, s) => n + ledgersAt(s.step - BOTTOM[c]), 0);
+  const clef: Clef = cost("bass") < cost("treble") ? "bass" : "treble";
+  let t = 0;
+  const notes = part.notes.map(([midi, beats], i) => {
+    const p = { midi, beats, at: t, bar: Math.floor(t / BEATS_A_BAR + 1e-9), r: spelt[i].step - BOTTOM[clef], shown: spelt[i].shown };
+    t += beats;
+    return p;
+  });
+  return { clef, sig, sigSteps: signatureSteps(sig, clef), notes };
+}

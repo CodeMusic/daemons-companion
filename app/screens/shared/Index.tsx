@@ -9,6 +9,8 @@ import { Index, Reading, Spoken } from "../../state/types";
 import { Art, Card, Eyebrow, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "./OwnVoice";   // C-303: the daemon tells of itself
+import { songOf } from "../../../server/src/ownsong";
+import { SongStaves, useSinging } from "../../ui/staff";   // C-419: SONG for CRY -- the INDEX sings
 export function useIndexReader() {
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
@@ -46,8 +48,8 @@ export function useIndexReader() {
 // keeps its place and its size as it changes.
 // C-303: `gear` is the INDEX's own LISTEN -- the play mark in a cog, because what reads the record is the device.
 const COG = [0, 45, 90, 135];
-export function ListenControl({ phase, onListen, onStop, ink, gear = false, ring: tint = "$color9", word = "$color12" }: { phase: "making" | "speaking" | null; onListen: () => void;
-                                                           onStop: () => void; ink: string; gear?: boolean; ring?: string; word?: string }) {   // C-309: ring, word -- a book's own colours
+export function ListenControl({ phase, onListen, onStop, ink, gear = false, ring: tint = "$color9", word = "$color12", label = "LISTEN" }: { phase: "making" | "speaking" | null; onListen: () => void;
+                                                           onStop: () => void; ink: string; gear?: boolean; ring?: string; word?: string; label?: string }) {   // C-309: ring, word -- a book's own colours; C-419: label, SONG or SING
   const Word = ({ children }: { children: string }) =>
     <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} color={word}>{children}</Text>;
   const ring = { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" } as const;
@@ -71,7 +73,7 @@ export function ListenControl({ phase, onListen, onStop, ink, gear = false, ring
     </XStack>
   );
   return (
-    <XStack alignItems="center" gap={10} role="button" aria-label="Listen" cursor="pointer" onPress={onListen}>
+    <XStack alignItems="center" gap={10} role="button" aria-label={label[0] + label.slice(1).toLowerCase()} cursor="pointer" onPress={onListen}>
       <YStack {...ring} backgroundColor={gear ? "transparent" : tint}>
         {gear ? (<>
           {COG.map((a) => (   // four bars through the middle: eight teeth
@@ -82,7 +84,7 @@ export function ListenControl({ phase, onListen, onStop, ink, gear = false, ring
         <View style={{ width: 0, height: 0, marginLeft: 4, borderTopWidth: 8, borderBottomWidth: 8, borderLeftWidth: 13,
                        borderTopColor: "transparent", borderBottomColor: "transparent", borderLeftColor: ink }} />
       </YStack>
-      <Word>LISTEN</Word>
+      <Word>{label}</Word>
     </XStack>
   );
 }
@@ -92,10 +94,16 @@ export function IndexScreen({ ink }: { ink: string }) {
   const [open, setOpen] = useState<number | null>(null);
   const voice = useIndexReader();
   const own = useOwnVoice();                               // C-303: the daemon's own telling, by a tap on its sprite
-  const busy = voice.reading !== null || own.told !== null;
+  // C-419 (DAEMONS T-595; the user, 2026-11-18: "in the index you can still look at a past form (in app or game) and hear
+  // its song"): SONG -- its line's parts, a past form's whole and its own as the one carried (else the first held) knows it
+  const sung = useSinging(), { hush } = sung;
+  useEffect(() => () => hush(), [hush]);
+  const busy = voice.reading !== null || own.told !== null || sung.singing !== null;
   if (error) return <Small>{error}</Small>;
   if (!ix) return <Small>Loading…</Small>;
   const flat = (s: string) => s.replace(/\n/g, " ");      // the game's line breaks are for its own window
+  // C-419: each part's share -- the earlier parts whole, its own as the INDEX says it is known (1, whole, held by no one)
+  const shares = (e: Index["entries"][number]) => songOf(e.species).map((_, i, all) => (i < all.length - 1 ? 1 : e.song ?? 1));
   return (
     <YStack gap={10}>
       <Card>
@@ -125,9 +133,20 @@ export function IndexScreen({ ink }: { ink: string }) {
           {open === e.national ? (
             <YStack gap={8} marginTop={8}>
               <Text fontSize={15} lineHeight={22} color="$color12">{flat(e.entry ?? "")}</Text>
-              {e.entry ? (
-                <ListenControl phase={voice.reading?.species === e.species ? voice.reading.phase : null} ink={ink} gear
-                               onListen={() => { if (!own.told) voice.listen(e.species); }} onStop={voice.stop} />
+              <XStack gap={22} flexWrap="wrap" rowGap={8}>
+                {e.entry ? (
+                  <ListenControl phase={voice.reading?.species === e.species ? voice.reading.phase : null} ink={ink} gear
+                                 onListen={() => { if (!own.told && !sung.singing) voice.listen(e.species); }} onStop={voice.stop} />
+                ) : null}
+                {e.song !== undefined && songOf(e.species).length ? (   /* C-419: SONG, where the game had its cry */
+                  <ListenControl label="SONG" phase={sung.singing === `ix-${e.species}` ? sung.phase : null} ink={ink}
+                                 onListen={() => { if (!own.told && !voice.reading) sung.sing(`ix-${e.species}`, songOf(e.species), shares(e)); }}
+                                 onStop={sung.hush} />
+                ) : null}
+              </XStack>
+              {sung.failed && open === e.national ? <Small color="$color8">{sung.failed}</Small> : null}
+              {e.song !== undefined && songOf(e.species).length ? (
+                <SongStaves parts={songOf(e.species)} shares={shares(e)} at={sung.singing === `ix-${e.species}` ? sung.at : null} />
               ) : null}
               {voice.failed && open === e.national ? <Small color="$color8">{voice.failed}</Small> : null}
               {own.failed && open === e.national ? <Small color="$color8">{own.failed}</Small> : null}

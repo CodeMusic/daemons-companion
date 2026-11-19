@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { Art } from "./ui";
-import { act, arena, listen, type Arena, type Fight, type Line } from "../platform/battle";
+import { act, arena, listen, replayDue, untilSaid, type Arena, type Fight, type Line } from "../platform/battle";
 
 const INK = "#1d2029", PAPER = "#fbfaf6", RULE = "#2b2f3a", FIELD = "#e8efe2", GOOD = "#3fae5a", MID = "#e0b13a", LOW = "#d4483b";
 const STATUS: Record<string, string> = { psn: "LEAK", tox: "LEAK", brn: "HEAT", par: "THR", slp: "SUSP", frz: "HUNG" };   // DRAFT: the states, short
@@ -28,9 +28,14 @@ export function BattleOverlay() {
   if (!a) return null;
   const f = a.fights.find((x) => x.phase === "on" && x.me !== null)
          ?? a.fights.find((x) => x.phase === "asked" && x.me === 1 && !closed.has(x.id))
-         ?? a.fights.find((x) => x.phase === "over" && x.me !== null && !closed.has(x.id) && Date.now() - Date.parse(x.at) < 30 * 60_000);
+         ?? a.fights.find((x) => x.phase === "over" && x.me !== null && !closed.has(x.id)
+                                // C-421: a challenge's replay waits for its look, and once watched is not shown again
+                                && (replayDue(x) || (!(x.challenge && x.auto?.[x.me]) && Date.now() - Date.parse(x.endedAt ?? x.at) < 30 * 60_000)));
   if (!f) return null;
-  const close = () => setClosed((s) => new Set(s).add(f.id));
+  const close = () => {
+    setClosed((s) => new Set(s).add(f.id));
+    if (replayDue(f)) act("/api/battle/seen", { id: f.id }).catch(() => {});      // C-421: watched, so it is not shown again
+  };
   return (
     <YStack position="absolute" top={0} left={0} right={0} bottom={0} zIndex={999} alignItems="center" justifyContent="center"
             backgroundColor="rgba(8,10,14,0.6)" padding={12} role="dialog" aria-label="BATTLE">
@@ -67,6 +72,11 @@ function Asked({ f, a, onClose }: { f: Fight; a: Arena; onClose: () => void }) {
   return (
     <YStack borderWidth={3} borderColor="$color9" borderRadius={7} padding={16} gap={12} alignItems="center">
       <Text fontFamily="$mono" fontSize={17} fontWeight="700" color={INK} textAlign="center">{f.asking}</Text>
+      {f.challenge ? (
+        <Text fontSize={12} color="#6b7080" textAlign="center">
+          {`A CHALLENGE ${f.sides[0].label} left. It waits until ${untilSaid(f.until)}; their daemon fights by itself.  DRAFT`}
+        </Text>
+      ) : null}
       {theirs ? (
         <YStack alignItems="center" gap={4}>
           <Art path={`/art/species/${theirs.species}.png`} size={96} />
@@ -166,6 +176,7 @@ function Fought({ f, onClose }: { f: Fight; onClose: () => void }) {
   };
   const leave = async () => { try { await act("/api/battle/leave", { id: f.id }); } catch (e) { setSaid((e as Error).message); } };
   const over = f.phase === "over" && !playing;
+  const itself = !!f.auto?.[me];                                                  // C-421: this side's daemon fights by itself
   return (
     <YStack borderRadius={7} overflow="hidden">
       {/* the field: theirs at the top right, this one's lower left, as the game draws them */}
@@ -210,7 +221,12 @@ function Fought({ f, onClose }: { f: Fight; onClose: () => void }) {
           )}
         </YStack>
       </YStack>
-      {over ? (
+      {f.phase === "over" && playing ? (
+        <XStack padding={8} justifyContent="space-between" alignItems="center">
+          <Text fontSize={11} color="#6b7080">{itself ? `Your CHALLENGE, taken by ${f.sides[them].label} -- the replay.  DRAFT` : "The replay.  DRAFT"}</Text>
+          <Text fontSize={12} fontWeight="700" color={INK} cursor="pointer" onPress={() => setShown(lines.length)} role="button" aria-label="Skip to the end">SKIP</Text>
+        </XStack>
+      ) : over ? (
         <YStack padding={12} gap={8} alignItems="center">
           {f.exp[me] ? <Text fontFamily="$mono" fontSize={13} color={INK} textAlign="center">{`${mine.nickname} gained ${f.exp[me]} EXP. Points!`}</Text> : null}
           {f.counted?.[me] === false ? <Text fontSize={12} color="#6b7080" textAlign="center">{`${mine.nickname} has had its three battles for EXP today -- this one was for the result alone.  DRAFT`}</Text> : null}
@@ -220,8 +236,8 @@ function Fought({ f, onClose }: { f: Fight; onClose: () => void }) {
         </YStack>
       ) : (
         <XStack padding={8} justifyContent="space-between" alignItems="center">
-          <Text fontSize={11} color="#6b7080">{`${f.sides[0].label} vs ${f.sides[1].label}${f.far ? " · on the exchange" : ""} · turn ${f.turn + 1}  · DRAFT`}</Text>
-          <Text fontSize={12} color={LOW} cursor="pointer" onPress={leave} role="button" aria-label="Leave the battle">LEAVE</Text>
+          <Text fontSize={11} color="#6b7080">{`${f.sides[0].label} vs ${f.sides[1].label}${f.far ? " · on the exchange" : ""} · turn ${f.turn + 1}${itself ? " · yours fights by itself" : ""}  · DRAFT`}</Text>
+          {itself ? null : <Text fontSize={12} color={LOW} cursor="pointer" onPress={leave} role="button" aria-label="Leave the battle">LEAVE</Text>}
         </XStack>
       )}
       {said ? <Text fontSize={12} color={LOW} padding={8}>{said}</Text> : null}

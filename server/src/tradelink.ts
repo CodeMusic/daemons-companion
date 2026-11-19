@@ -106,6 +106,7 @@ export function exchangeRoute(store: Store, keys: X.Keys, p: X.Player, name: str
     case "unshare": return M.unshareDream(store, p.id, b.id);
     // C-328: BATTLES between players, the exchange's arena (battleroute.ts)
     case "battle": case "battle/request": case "battle/answer": case "battle/choose": case "battle/leave": case "battle/award":
+    case "battle/challenge": case "battle/seen":                     // C-421
       return exchangeBattle(store, p, name, b, X.players(store), reach);
     case "meet": return M.meet(store, p.id, b.with, reach).then((r) => ("error" in r ? r : M.outView(store, p.id, nameOf(store), reach)));
     // C-329: DAEMONS IN DIALOGUE -- this player's daemon out talks with another's out now; the talks, one talk, INTEGRATE

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { Action, Art, Card, Eyebrow, Pending, Small, useInk } from "../../ui/ui";
 import { useArena } from "../../ui/battle";
-import { act, arenaError } from "../../platform/battle";
+import { act, arenaError, untilSaid } from "../../platform/battle";
 
 const BATTLE_H: [number, number] = [289, 209];   // C-344: its usual height, 375 and 720 wide
 const KIND: Record<string, string> = { device: "a device here", app: "the app or site here", player: "a player on the exchange" };   // DRAFT
@@ -17,14 +17,30 @@ export function BattleCard({ ink }: { ink?: string }) {
   const [said, setSaid] = useState("");
   // C-344: its place held until the first answer, rather than arriving under the finger a few seconds after YOU opens
   if (!a) return arenaError() ? <Card><Eyebrow>BATTLE</Eyebrow><Small>{arenaError()}</Small></Card> : <Pending title="BATTLE" height={BATTLE_H} />;
-  const waiting = a.fights.find((f) => f.phase === "asked" && f.me === 0);
+  const waiting = a.fights.find((f) => f.phase === "asked" && f.me === 0 && !f.challenge);
+  // C-421: this device's own CHALLENGE waiting; the ones it could take (to it, or open to anyone); who is away to challenge
+  const left = a.fights.find((f) => f.phase === "asked" && f.me === 0 && f.challenge);
+  const takeable = a.fights.filter((f) => f.phase === "asked" && f.challenge && (f.open ? f.me === null : f.me === 1));
+  const known = a.known ?? [];
+  const challenge = async (body: { to?: string; where?: string }) => {
+    setSaid("");
+    try { await act("/api/battle/challenge", body); } catch (e) { setSaid((e as Error).message); }
+  };
+  const take = async (id: string) => {
+    setSaid("");
+    try { await act("/api/battle/answer", { id, accept: true, ...(a.chooses && a.daemon?.personality !== undefined ? { personality: a.daemon.personality } : {}) }); }
+    catch (e) { setSaid((e as Error).message); }
+  };
   const choose = async (personality: number) => { setSaid(""); try { await act("/api/battle/pick", { personality }); } catch (e) { setSaid((e as Error).message); } };
   const ask = async (to: string, label: string) => {
     setSaid("");
     try { await act("/api/battle/request", { to }); void label; } catch (e) { setSaid((e as Error).message); }
   };
   const withdraw = async (id: string) => { try { await act("/api/battle/answer", { id, accept: false }); setSaid(""); } catch (e) { setSaid((e as Error).message); } };
-  const recent = a.fights.filter((f) => f.phase === "over" && f.me !== null).slice(0, 3);
+  const recent = a.fights.filter((f) => (f.phase === "over" && f.me !== null) || (f.challenge && f.me === 0 && (f.phase === "lapsed" || f.phase === "declined"))).slice(0, 3);
+  const ended = (f: (typeof recent)[number]) =>   // DRAFT
+    f.phase === "lapsed" ? "Your CHALLENGE waited a day; no one took it." : f.phase === "declined" ? `${f.sides[1].label} declined your CHALLENGE.`
+      : `${f.result ?? "A draw"}${f.exp[f.me!] ? ` · +${f.exp[f.me!]} EXP` : f.counted?.[f.me!] === false ? " · no EXP (its three today were had)" : ""}`;
   return (
     <Card gap={8}>
       <Eyebrow>BATTLE</Eyebrow>
@@ -71,10 +87,56 @@ export function BattleCard({ ink }: { ink?: string }) {
             </XStack>
           ))}
         </YStack>
-      ) : <Small>No one else is online to battle. Open the companion on another device, or join the exchange on TRADE.</Small>}
-      {recent.map((f) => (
-        <Small key={f.id} color="$color10">{`${f.result ?? "A draw"}${f.exp[f.me!] ? ` · +${f.exp[f.me!]} EXP` : f.counted?.[f.me!] === false ? " · no EXP (its three today were had)" : ""}`}</Small>
-      ))}
+      ) : <Small>No one else is online to battle. Leave a CHALLENGE below, or join the exchange on TRADE.</Small>}
+      {takeable.length ? (
+        <YStack gap={6}>
+          <Small color="$color10">CHALLENGES waiting for you</Small>
+          {takeable.map((f) => {
+            const d = f.sides[0].daemon, gap = d && a.daemon ? Math.abs(d.level - a.daemon.level) : 0;
+            return (
+              <XStack key={f.id} alignItems="center" justifyContent="space-between" gap={8}>
+                <XStack alignItems="center" gap={8} flex={1}>
+                  {d ? <Art path={`/art/species/${d.species}.png`} size={36} /> : <YStack width={36} />}
+                  <YStack flex={1}>
+                    <Text fontFamily="$mono" fontSize={13} fontWeight="700" color={ink}>{`${f.sides[0].label}${f.far ? " · on the exchange" : ""}`}</Text>
+                    <Small color={gap >= 10 ? "$red10" : "$color10"}>
+                      {d ? `${d.nickname} LV ${d.level}${a.daemon ? ` against ${a.daemon.nickname} LV ${a.daemon.level}` : ""} · until ${untilSaid(f.until)}` : `until ${untilSaid(f.until)}`}
+                    </Small>
+                  </YStack>
+                </XStack>
+                <Action label="TAKE IT" ink={ink} onPress={() => take(f.id)} />
+              </XStack>
+            );
+          })}
+        </YStack>
+      ) : null}
+      {left ? (
+        <XStack alignItems="center" justifyContent="space-between" gap={8}>
+          <YStack flex={1}><Small>{`Your CHALLENGE ${left.open ? `to anyone${left.far ? " on the exchange" : " at home"}` : `to ${left.sides[1].label}`} waits until ${untilSaid(left.until)}. ${a.daemon?.nickname ?? "Your daemon"} will fight by itself; you watch the replay.`}</Small></YStack>
+          <Action label="WITHDRAW" ink={ink} onPress={() => withdraw(left.id)} />
+        </XStack>
+      ) : a.daemon ? (
+        <YStack gap={6}>
+          <Small color="$color10">Not online now -- leave a CHALLENGE. It waits a day; whoever takes it fights live, and yours fights by itself.</Small>
+          {known.map((o) => (
+            <XStack key={o.seat} alignItems="center" justifyContent="space-between" gap={8}>
+              <XStack alignItems="center" gap={8} flex={1}>
+                {o.daemon ? <Art path={`/art/species/${o.daemon.species}.png`} size={36} /> : <YStack width={36} />}
+                <YStack flex={1}>
+                  <Text fontFamily="$mono" fontSize={13} fontWeight="700" color={ink}>{o.label}</Text>
+                  <Small color="$color10">{o.daemon ? `${o.daemon.nickname} · LV ${o.daemon.level}` : KIND[o.kind]}</Small>
+                </YStack>
+              </XStack>
+              <Action label="CHALLENGE" ink={ink} onPress={() => challenge({ to: o.seat })} />
+            </XStack>
+          ))}
+          <XStack flexWrap="wrap" gap={8}>
+            <Action label="ANYONE AT HOME" ink={ink} onPress={() => challenge({ where: "home" })} />
+            {a.player ? <Action label="ANYONE ON THE EXCHANGE" ink={ink} onPress={() => challenge({ where: "exchange" })} /> : null}
+          </XStack>
+        </YStack>
+      ) : null}
+      {recent.map((f) => <Small key={f.id} color="$color10">{ended(f)}</Small>)}
       {said ? <Small>{said}</Small> : null}
       <Small color="$color8">DRAFT</Small>
     </Card>

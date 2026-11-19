@@ -13,10 +13,13 @@ export type Line = { text: string; side: 0 | 1 | null; hp: [number, number] | nu
 export type Fight = { id: string; phase: "asked" | "on" | "over" | "declined" | "lapsed" | "withdrawn"; at: string; me: 0 | 1 | null; turn: number;
                       sides: [Side, Side]; chosen: [boolean, boolean]; deadline: string | null; secondsLeft: number | null; log: Line[][];
                       winner: 0 | 1 | null; draw: boolean; forfeit: 0 | 1 | null; exp: [number, number]; result: string | null; asking: string | null; far?: boolean;
-                      counted?: [boolean | null, boolean | null] };   // C-420: false when the day's three were spent (its exp shown as 0)
+                      counted?: [boolean | null, boolean | null];   // C-420: false when the day's three were spent (its exp shown as 0)
+                      // C-421: a CHALLENGE -- open to anyone, until when it waits, which side fights by itself, who has watched it
+                      endedAt?: string | null; challenge?: boolean; open?: boolean; auto?: [boolean, boolean]; watched?: [boolean, boolean]; until?: string | null };
 export type Online = { seat: string; label: string; kind: "device" | "app" | "player"; daemon: Daemon | null };
 export type Arena = { seat: string; label: string; player: { id: string; name: string } | null; daemon: Daemon | null; chooses: boolean;
-                      away: Daemon[]; online: Online[]; fights: Fight[]; expADay?: number };
+                      away: Daemon[]; online: Online[]; fights: Fight[]; expADay?: number;
+                      known?: Online[] };   // C-421: who can be left a CHALLENGE though not online now
 
 export function mySeat(): string {
   let s = placeOf<string>("battle.seat", "");
@@ -49,6 +52,15 @@ export function listen(f: () => void): () => void {
   if (!timer) { refresh(); loop(); }
   return () => { listeners.delete(f); if (!listeners.size && timer) { clearTimeout(timer); timer = null; } };
 }
+// C-421: a time a challenge waits until, said plainly: "18:40", or "tomorrow 09:15"
+export function untilSaid(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso), now = new Date();
+  const hm = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return d.toDateString() === now.toDateString() ? hm : `tomorrow ${hm}`;          // DRAFT
+}
+// C-421: a challenge's replay, due on the side that fought by itself until its player has watched it
+export const replayDue = (f: Fight) => f.phase === "over" && !!f.challenge && f.me !== null && !!f.auto?.[f.me] && !f.watched?.[f.me];
 export async function act<T = Fight>(path: string, body: unknown): Promise<T> {
   const r = await battleApi<T>(path, body);
   await refresh();

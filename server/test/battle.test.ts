@@ -240,4 +240,103 @@ describe("between players, through the exchange", () => {
   }, 30_000);
 });
 
+// C-421 (the user, 2026-11-18, by multiple choice: "live, or a challenge"): a CHALLENGE waits a day, like a trade offer;
+// whoever takes it fights live, and the daemon that left it fights by itself, its player watching the replay later
+describe("a CHALLENGE that waits, like a trade offer", () => {
+  const h = household(), c1 = card(h, 1001), c2 = card(h, 1002);
+  const tough = (c: typeof c1) => ({ ...c, stats: { ...c.stats, maxHP: 999 } });
+  it("waits a day, keeps no seat from battling live meanwhile, and lapses after it", () => {
+    const s = new Store(":memory:"), t0 = new Date("2026-11-19T10:00:00Z");
+    const f = A.challenge(s, "k", { seat: "app-aaa111", label: "IPHONE", card: c1 }, { seat: "watch-bbb222", label: "WATCH" }, t0) as A.Fight;
+    expect(f).toMatchObject({ phase: "asked", challenge: true, auto: [true, false] });
+    expect(A.challenge(s, "k", { seat: "app-aaa111", label: "IPHONE", card: c1 }, null, t0)).toMatchObject({ error: expect.stringMatching(/waiting already/) });
+    expect(A.failed(A.request(s, "k", { seat: "app-aaa111", label: "IPHONE", card: c1 }, { seat: "site-ccc333", label: "SITE" }, t0))).toBe(false);
+    const later = new Date(t0.getTime() + 5 * 3600_000), at = (t: Date) => A.fights(s, "k", t).find((x) => x.id === f.id)!;
+    expect(A.view(at(later), "watch-bbb222", later)).toMatchObject({ phase: "asked", me: 1, challenge: true, until: "2026-11-20T10:00:00.000Z" });
+    expect(at(new Date(t0.getTime() + A.CHALLENGE_MS + 1000)).phase).toBe("lapsed");   // and kept for its player to learn so
+  });
+  it("taken, the side that left it fights by itself: the taker's choice is the turn; it never misses, and cannot choose or leave", () => {
+    const s = new Store(":memory:"), t0 = new Date("2026-11-19T10:00:00Z");
+    const f = A.challenge(s, "k", { seat: "app-aaa111", label: "IPHONE", card: tough(c1) }, null, t0) as A.Fight;
+    expect(A.view(f, "watch-bbb222", t0)).toMatchObject({ open: true, me: null });
+    expect(A.answer(s, "k", f.id, "watch-bbb222", false, null, "WATCH", t0)).toMatchObject({ error: expect.stringMatching(/whoever takes it/) });
+    expect(A.answer(s, "k", f.id, "app-aaa111", true, c2, "IPHONE", t0)).toMatchObject({ error: expect.any(String) });   // not one's own
+    const t1 = new Date(t0.getTime() + 5 * 3600_000);
+    const on = A.answer(s, "k", f.id, "watch-bbb222", true, tough(c2), "WATCH", t1, 7) as A.Fight;
+    expect(on).toMatchObject({ phase: "on", to: { seat: "watch-bbb222" } });
+    expect(on.choices[0]).not.toBeNull();                                          // chosen for it as the turn begins
+    expect((A.choose(s, "k", f.id, "watch-bbb222", 0, new Date(t1.getTime() + 1000)) as A.Fight).battle!.turn).toBe(1);
+    expect(A.choose(s, "k", f.id, "app-aaa111", 0, new Date(t1.getTime() + 2000))).toMatchObject({ error: expect.stringMatching(/by itself/) });
+    expect(A.leave(s, "k", f.id, "app-aaa111", new Date(t1.getTime() + 2000))).toMatchObject({ error: expect.stringMatching(/by itself/) });
+    const t2 = t1.getTime() + 2000 + 3 * (A.TURN_MS + A.READ_MS) + 5000;        // the taker stops choosing: three missed are theirs
+    const over = A.fights(s, "k", new Date(t2)).find((x) => x.id === f.id)!;
+    expect(over).toMatchObject({ phase: "over", forfeit: 1, missed: [0, 3] });
+    // over, it waits for the one who left it to watch it (three days), then goes a quarter hour after
+    const day = new Date(t2 + 86400_000);
+    expect(A.view(A.fights(s, "k", day).find((x) => x.id === f.id)!, "app-aaa111", day)).toMatchObject({ me: 0, auto: [true, false], watched: [false, true] });
+    expect(A.watch(s, "k", f.id, "app-aaa111", day)).toMatchObject({ watched: [true, true] });
+    expect(A.fights(s, "k", new Date(day.getTime() + 1000)).some((x) => x.id === f.id)).toBe(false);
+  });
+  it("in the household: left for a watch that is away, taken once it is back, both given their experience, the replay watched", async () => {
+    const bytes = household(), store = new Store(":memory:");
+    const watch = "t-watch-ultra-abc123";
+    assign(store, watch, 1002);
+    let watchHere = false;
+    const boards = (): BoardSeen[] => [{ id: watch, kind: "t-watch-ultra", here: watchHere }];
+    const ask = (who: 0 | 1, path: string, b?: any): Promise<any> => battleRoute({ save: bytes, boards, link: null }, store, b === undefined ? "GET" : "POST", path,
+                                                                  who === 0 ? "app-phone01" : watch, who === 0 ? { label: "IPHONE", personality: "1001" } : {}, b ?? {});
+    const first = await ask(0, "/api/battle");
+    expect(first.body.online).toEqual([]);
+    expect(first.body.known).toEqual([expect.objectContaining({ seat: watch, kind: "device", daemon: expect.objectContaining({ nickname: "LABEL" }) })]);
+    expect((await ask(0, "/api/battle/request", { to: watch })).status).toBe(400);   // not online: no live request
+    const left = await ask(0, "/api/battle/challenge", { to: watch });
+    expect(left.body).toMatchObject({ phase: "asked", challenge: true, me: 0 });
+    watchHere = true;
+    const theirs = (await ask(1, "/api/battle")).body.fights.find((f: any) => f.id === left.body.id);
+    expect(theirs).toMatchObject({ phase: "asked", me: 1, challenge: true });     // the watch asks it as any request (battle.cpp)
+    expect((await ask(1, "/api/battle/answer", { id: left.body.id, accept: true })).status).toBe(200);
+    const end = await fight(ask, left.body.id);
+    expect(end[0]).toMatchObject({ phase: "over", auto: [true, false], watched: [false, true] });
+    expect(pendingExp(store, 1001).exp).toBe(end[0].exp[0]);
+    expect(pendingExp(store, 1002).exp).toBe(end[0].exp[1]);
+    expect((await ask(0, "/api/battle/seen", { id: left.body.id })).body.watched).toEqual([true, true]);
+  }, 30_000);
+  it("on the exchange: open to anyone, taken by a player who comes online later; each companion gives its own daemon's experience", async () => {
+    let n = 0;
+    const KEYS: X.Keys = { token: () => `tok${++n}`, hash: (t) => `h:${t}`, password: (pw) => pw, check: () => false, code: () => `CODE${++n}` };
+    const hub = new Store(":memory:"), kitStore = new Store(":memory:");
+    const viaHub = (async (url: string, init: any) => {
+      const name = String(url).split("/api/exchange/")[1], b = init.body ? JSON.parse(init.body) : {};
+      const out = (body: unknown) => ({ status: 200, json: async () => JSON.parse(JSON.stringify(body)) });
+      if (name === "join") return out(X.join(hub, KEYS, b));
+      const p = X.playerFor(hub, KEYS, init.headers["x-daemons-player"] ?? "");
+      if (!p) return out({ error: "join the exchange first" });
+      if (name === "me") return out(X.players(hub).find((v) => v.id === p.id));
+      return out(await exchangeRoute(hub, KEYS, p, name, b));
+    }) as unknown as typeof fetch;
+    const rover: Link = localLink(hub, KEYS), kit: Link = remoteLink(kitStore, "http://hub:4730", viaHub);
+    await rover.join({ name: "ROVER" });
+    await kit.join({ name: "KIT", code: X.invite(hub, KEYS).code });
+    const roverSave = household(), kitBytes = kitSave();
+    const ask = (who: 0 | 1, path: string, b?: any): Promise<any> => who === 0
+      ? battleRoute({ save: roverSave, boards: () => [], link: rover }, hub, b === undefined ? "GET" : "POST", path, "app-rover01", { label: "IPHONE", personality: "1001" }, b ?? {})
+      : battleRoute({ save: kitBytes, boards: () => [], link: kit }, kitStore, b === undefined ? "GET" : "POST", path, "site-kit0001", { label: "THE SITE" }, b ?? {});
+    const before = await ask(0, "/api/battle");
+    expect(before.body.online.some((o: any) => o.kind === "player")).toBe(false);   // KIT is not online
+    expect(before.body.known).toEqual([expect.objectContaining({ label: "KIT", kind: "player" })]);
+    const left = await ask(0, "/api/battle/challenge", { where: "exchange" });
+    expect(left.status).toBe(200);
+    expect(left.body).toMatchObject({ far: true, challenge: true, open: true });
+    const seen = (await ask(1, "/api/battle")).body.fights.find((f: any) => f.id === left.body.id);
+    expect(seen).toMatchObject({ phase: "asked", open: true, me: null, far: true });
+    expect((await ask(1, "/api/battle/answer", { id: left.body.id, accept: true })).status).toBe(200);
+    const end = await fight(ask, left.body.id.slice(2));
+    expect(end[0]).toMatchObject({ phase: "over", auto: [true, false] });
+    await ask(0, "/api/battle"); await ask(1, "/api/battle");
+    expect(pendingExp(hub, 1001).exp).toBe(end[0].exp[0]);
+    expect(pendingExp(kitStore, 2001).exp).toBe(end[1].exp[1]);
+    expect((await ask(0, "/api/battle/seen", { id: left.body.id })).status).toBe(200);
+  }, 30_000);
+});
+
 function x10(chart: number[][], a: number, d: number) { return chart.filter((c) => c[0] === a && c[1] === d).reduce((m, c) => m * c[2] / 10, 1); }

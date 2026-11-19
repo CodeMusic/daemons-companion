@@ -114,6 +114,12 @@ third, written into the save at the next SYNC. **Nobody's health is kept**: ever
 a battle after them is fought for the result alone. Levels meet as they are -- a request shows both daemons' levels,
 and how far apart they are, before it is taken. *(DRAFT)*
 
+**A CHALLENGE** (C-421), when the other is not online: leave one for a device or player, or open to anyone at home or on
+the exchange, and it waits a day, as a trade offer does. Whoever takes it fights live; the daemon that left it fights by
+itself, its routine chosen each turn as a missed turn's is, so the battle goes at the taker's pace. Its player watches
+the replay the next time they look, with SKIP to the end. A waiting challenge keeps nobody from battling live
+meanwhile, and a challenge counts toward the three a day as any battle does. *(DRAFT)*
+
 ## Later
 
 **OUT TOGETHER** (C-220, its first piece): on TRADE, send a daemon that is AWAY out, and when another player's is out too

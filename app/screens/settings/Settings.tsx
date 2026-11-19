@@ -37,6 +37,7 @@ export function SettingsScreen({ ink }: { ink: string }) {
         <YStack gap={14}>
           {ALONE ? <AloneSettings ink={ink} /> : <SavePathSettings ink={ink} />}
           <WeatherCard ink={ink} />
+          {ALONE ? null : <CaresCard ink={ink} />}{/* C-415 */}
           {ON_PHONE ? <GameAwayCard ink={ink} /> : null}
         </YStack>
       ) : tab === "theme" ? <ThemeSettings ink={ink} />
@@ -418,6 +419,22 @@ export function RelayCard({ ink }: { ink: string }) {
       {/* selectable is the phone's; on the web it reached the DOM as an unknown attribute, so the web gets user-select */}
       <Text fontFamily="$mono" fontSize={13} color="$color12" {...(Platform.OS === "web" ? { userSelect: "text" } : { selectable: true })}>{r.secret}</Text>
       {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+
+// C-415 (the user, 2026-11-18, by multiple choice): each daemon fed, watered, trained and put to bed on its own, or one
+// set of cares for every daemon, as it was. DRAFT
+function CaresCard({ ink }: { ink: string }) {
+  const [cares, setCares] = useState<"daemon" | "shared" | null>(null);
+  useEffect(() => { api<{ cares: "daemon" | "shared" }>("/api/cares").then((r) => setCares(r.cares)).catch(() => {}); }, []);
+  if (!cares) return null;
+  return (
+    <Card>
+      <Eyebrow>CARES</Eyebrow>
+      <Small>Each daemon is fed, watered, trained and put to bed on its own, by the device that carries it. Or one set of cares for all of them. DRAFT</Small>
+      <Choice value={cares} options={[["daemon", "Each its own"], ["shared", "Shared"]]} ink={ink}
+              onPick={(c) => api<{ cares: "daemon" | "shared" }>("/api/cares", { cares: c }).then((r) => { setCares(r.cares); redrawWidgetNow(); }).catch(() => {})} />
     </Card>
   );
 }

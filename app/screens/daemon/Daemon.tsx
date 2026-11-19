@@ -10,7 +10,7 @@ import { ACTS, castLine, playerId } from "../../state/data";
 import { DenStage } from "./Den";
 import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
 import { Carried, Cast, Daemon, DeviceRow, IndexEntry, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../../state/types";
-import { Action, Art, Card, CareKey, careSound, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
+import { Action, Art, Card, CareKey, careSound, Choice, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
 import { hearSettings, soundLevel } from "../../sound/tuneSound";
 import { IndexScreen } from "../shared/Index";
 import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "../shared/OwnVoice";   // C-303
@@ -329,15 +329,35 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
   // first AWAY anywhere (C-103: most wait in a box, and the card was hidden for all of them)
   const [hosted, setHosted] = useState<Daemon | null>(null);
   const [own, setOwn] = useState(false);                 // the phone's own, as TODAY shows it, over any other away
+  // C-416 (the user, 2026-11-18, by multiple choice): the widget follows the app. The app and its widget are one device
+  // to the companion (the widget's id, asThisDevice), so the daemon shown here is the one that device carries; a phone
+  // that carries none yet takes the first away that no other device has, here, so the widget draws the same one.
+  const [choices, setChoices] = useState<{ me: string; away: Carried[]; now: number | null } | null>(null);
   const load = useCallback(() => {
     api<{ party: Daemon[] }>("/api/party").then((r) => { setParty(r.party); setError(""); }).catch((e) => setError(e.message));
     api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices").then(async (v) => {
       const mine = WIDGET ? await WIDGET.widgetId() : null;
-      const own = v.devices.find((x) => x.id === mine)?.daemon ?? null, d = own ?? v.away[0] ?? null;
+      let own = v.devices.find((x) => x.id === mine)?.daemon ?? null;
+      if (mine && !own && !ALONE) {
+        const taken = new Set(v.devices.filter((x) => x.id !== mine && x.daemon).map((x) => x.daemon!.personality));
+        const free = v.away.find((a) => !taken.has(a.personality));
+        if (free) {
+          const w = await api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices/carry", { id: mine, personality: free.personality }).catch(() => null);
+          own = w?.devices.find((x) => x.id === mine)?.daemon ?? null;
+          if (own) redrawWidgetNow();
+        }
+      }
+      const d = own ?? v.away[0] ?? null;
       setHosted(d ? { ...d, friendship: 0, away: true, asked: false, holding: null } : null);
       setOwn(!!own);
+      setChoices(mine && !ALONE ? { me: mine, away: v.away, now: own?.personality ?? null } : null);
     }).catch(() => {});
   }, []);
+  const carryHere = async (personality: number | null) => {   // C-416: this phone's daemon, and so its widget's
+    if (!choices) return;
+    await api("/api/devices/carry", { id: choices.me, personality }).catch(() => {});
+    redrawWidgetNow(); load();
+  };
   const fresh = useFresh();   // C-344: a fresher answer read again in place
   useEffect(load, [load, fresh]);
   // C-21: the one SYNC. It reads the save, receives or returns a daemon if the game asked, links the save (so the
@@ -404,6 +424,13 @@ export function DaemonScreen({ ink, goSettings }: { ink: string; goSettings: () 
       {seg === "routines" ? <RoutinesCard ink={ink} daemon={away && !ALONE ? { nickname: away.nickname, slot: away.slot ?? null } : null} /> : null}{/* IT SINGS, THE EASEL, SLEEP SOUNDS: its routines */}
       {seg === "yours" ? (<>
       {away ? <LifeCard ink={ink} name={away.nickname} daemon={away} /> : null}
+      {choices && choices.away.length > 1 ? (
+        <YStack gap={4}>
+          <Small>On this phone and its widget. DRAFT</Small>
+          <Choice<number | null> value={choices.now} ink={ink} onPick={carryHere}
+            options={[...choices.away.map((a): [number | null, string] => [a.personality, a.nickname || a.name]), [null, "None"]]} />
+        </YStack>
+      ) : null}{/* C-416 */}
       {away ? <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link"
                     onPress={() => setSeg("mind")}>{"THE MIND ›"}</Text> : null}{/* C-254: a look around its mind, DRAFT */}
       <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color={ink} cursor="pointer" role="link"

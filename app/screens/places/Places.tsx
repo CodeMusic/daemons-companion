@@ -504,7 +504,9 @@ export function DeviceScreen({ ink }: { ink: string }) {
                        d.id].filter(Boolean).join(" · ")}</Small>
               <Text fontSize={14} color="$color12">
                 {d.daemon ? `Hosts ${d.daemon.nickname || d.daemon.name}, Lv. ${d.daemon.level}` : "Hosts no daemon"}</Text>
-              {(link.away ?? []).length ? (
+              {d.kind === "iphone-widget" ? (
+                <Small>{d.mine === false ? "It shows the daemon its phone's app shows." : "It shows the daemon this app shows. Choose it on the DAEMON screen."} DRAFT</Small>
+              ) : (link.away ?? []).length ? (   /* C-416: a widget follows its phone's app; no pick of its own */
                 <Choice<number | null> value={d.daemon?.personality ?? null}
                   options={[...(link.away ?? []).map((a): [number | null, string] => [a.personality, a.nickname || a.name]), [null, "None"]]}
                   onPick={async (personality) => {

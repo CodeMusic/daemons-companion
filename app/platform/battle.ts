@@ -15,11 +15,13 @@ export type Fight = { id: string; phase: "asked" | "on" | "over" | "declined" | 
                       winner: 0 | 1 | null; draw: boolean; forfeit: 0 | 1 | null; exp: [number, number]; result: string | null; asking: string | null; far?: boolean;
                       counted?: [boolean | null, boolean | null];   // C-420: false when the day's three were spent (its exp shown as 0)
                       // C-421: a CHALLENGE -- open to anyone, until when it waits, which side fights by itself, who has watched it
-                      endedAt?: string | null; challenge?: boolean; open?: boolean; auto?: [boolean, boolean]; watched?: [boolean, boolean]; until?: string | null };
-export type Online = { seat: string; label: string; kind: "device" | "app" | "player"; daemon: Daemon | null };
+                      endedAt?: string | null; challenge?: boolean; open?: boolean; auto?: [boolean, boolean]; watched?: [boolean, boolean]; until?: string | null;
+                      commons?: boolean };   // C-422: a battle with a friend's home, on THE COMMONS
+export type Online = { seat: string; label: string; kind: "device" | "app" | "player" | "friend"; daemon: Daemon | null };   // C-422: friend, a friend's home's player
 export type Arena = { seat: string; label: string; player: { id: string; name: string } | null; daemon: Daemon | null; chooses: boolean;
                       away: Daemon[]; online: Online[]; fights: Fight[]; expADay?: number;
-                      known?: Online[] };   // C-421: who can be left a CHALLENGE though not online now
+                      known?: Online[];     // C-421: who can be left a CHALLENGE though not online now
+                      friends?: boolean };  // C-422: linked to THE COMMONS, and it answered: friends' homes can be battled
 
 export function mySeat(): string {
   let s = placeOf<string>("battle.seat", "");
@@ -60,6 +62,8 @@ export function untilSaid(iso: string | null | undefined): string {
   return d.toDateString() === now.toDateString() ? hm : `tomorrow ${hm}`;          // DRAFT
 }
 // C-421: a challenge's replay, due on the side that fought by itself until its player has watched it
+// C-422: where a battle is, said after its names
+export const whereSaid = (f: Fight) => (f.commons ? " · a friend's home" : f.far ? " · on the exchange" : "");   // DRAFT
 export const replayDue = (f: Fight) => f.phase === "over" && !!f.challenge && f.me !== null && !!f.auto?.[f.me] && !f.watched?.[f.me];
 export async function act<T = Fight>(path: string, body: unknown): Promise<T> {
   const r = await battleApi<T>(path, body);

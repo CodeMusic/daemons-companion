@@ -120,6 +120,11 @@ itself, its routine chosen each turn as a missed turn's is, so the battle goes a
 the replay the next time they look, with SKIP to the end. A waiting challenge keeps nobody from battling live
 meanwhile, and a challenge counts toward the three a day as any battle does. *(DRAFT)*
 
+**Friends' homes** (C-422): once your home and a friend's are friends on THE COMMONS, their players are listed in BATTLE
+too -- "KIT · KIT HOUSE", a player in a friend's home -- to battle live when they are online, or to leave a CHALLENGE
+for; ANYONE IN FRIENDS' HOMES leaves one open to all of them. Each home gives its own daemon its experience, and a home
+that is not a friend never sees either of you. *(DRAFT)*
+
 ## Later
 
 **OUT TOGETHER** (C-220, its first piece): on TRADE, send a daemon that is AWAY out, and when another player's is out too

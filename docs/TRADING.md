@@ -147,6 +147,13 @@ built and run on the tailnet first.*
   friends' offers beside the home's own (their ids begin `c:`), and passes every request for one to the commons. An
   offer is made to THIS HOME or to FRIENDS' HOMES. SYNC fetches both inboxes.
 - **If the commons does not answer**, the home's own trading goes on as before.
+- **Battles go the same way** (C-422, DRAFT): a friend's home's players are listed in BATTLE beside the home's own (as
+  "KIT · KIT HOUSE", their ids `c:`), live when they are online and by CHALLENGE (C-421) when not -- to one of them, or
+  open to FRIENDS' HOMES. The commons fights it in its own arena (`battleroute.ts` `exchangeBattle`, within the same
+  reach as trades), and each home gives its own daemon its experience. The home asks the commons who is online at
+  most four seconds at a time; a commons that does not answer leaves the home's own battles as they were. Tested in
+  `server/test/battle_commons.test.ts`: three homes over HTTP, two friends battling live and by challenge, the
+  stranger seeing neither.
 - **Code:** `server/src/commons.ts` (homes, approval, friends, reach), `commons_api.ts` and `commons_main.ts` (its
   own HTTP server and database), `commonslink.ts` (the hub's side), and `keys.ts`. Trades are `exchange.ts`'s, with a
   reach rule. Tested end to end in `server/test/commons.test.ts`: two homes over HTTP, approved, friends, traded, each

@@ -152,7 +152,7 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
       }),
       ...Object.entries(seats).filter(([k, v]) => k !== seat && !boards.some((x) => x.id === k) && now.getTime() - Date.parse(v.at) < FRESH)
         .map(([k, v]) => ({ seat: k, label: v.label, kind: "app", daemon: null })),
-      ...(far?.players ?? []).map((p: any) => ({ seat: `player:${p.id}`, label: p.name, kind: "player", daemon: null })),
+      ...(far?.players ?? []).map((p: any) => ({ seat: `player:${p.id}`, label: p.name, kind: p.commons ? "friend" : "player", daemon: null })),   // C-422
     ];
     // C-421: who can be left a CHALLENGE though not online now -- this home's devices carrying a daemon, its apps and
     // sites of the last week, and the exchange's players
@@ -164,7 +164,7 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
       }),
       ...Object.entries(seats).filter(([k]) => k !== seat && !here.has(k) && !boards.some((x) => x.id === k))
         .map(([k, v]) => ({ seat: k, label: v.label, kind: "app", daemon: null })),
-      ...(far?.known ?? []).filter((p: any) => !here.has(`player:${p.id}`)).map((p: any) => ({ seat: `player:${p.id}`, label: p.name, kind: "player", daemon: null })),
+      ...(far?.known ?? []).filter((p: any) => !here.has(`player:${p.id}`)).map((p: any) => ({ seat: `player:${p.id}`, label: p.name, kind: p.commons ? "friend" : "player", daemon: null })),
     ];
     let away: { personality: number; nickname: string; name: string; species: number; level: number; today: number }[] = [];
     try { away = h.save ? readAway(h.save).map((d) => ({ personality: d.personality >>> 0, nickname: d.nickname, name: d.name, species: d.species, level: d.level, today: today(d.personality) })) : []; } catch { /* none */ }
@@ -175,6 +175,7 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
       seat, label: myLabel, player: me ? { id: me.id, name: me.name } : null,
       daemon: mine ? { personality: mine.personality >>> 0, nickname: mine.nickname, name: mine.name, species: mine.species, level: mine.level, today: today(mine.personality) } : null,
       chooses: !isBoard, away, online, known, expADay: EXP_BATTLES_A_DAY,
+      friends: !!far?.commons,                                  // C-422: this home is linked to THE COMMONS, and it answered
       fights: [...ours.map(shown), ...farFights.map(farShown)]
         .sort((x: any, y: any) => String(y.at).localeCompare(String(x.at))),
     });
@@ -203,9 +204,9 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
     const to = String(b.to ?? ""), where = String(b.where ?? "home");
     const card = myCard();
     if (typeof card === "string") return no(400, card);
-    if (to.startsWith("player:") || (!to && where === "exchange")) {
+    if (to.startsWith("player:") || (!to && (where === "exchange" || where === "friends"))) {   // C-422: friends' homes, through THE COMMONS
       if (!me) return no(400, "join the exchange first -- TRADE on the YOU tab");             // DRAFT
-      const r = await h.link!.call("battle/challenge", { ...(to ? { to: to.slice("player:".length) } : {}), ...sent(card) });
+      const r = await h.link!.call("battle/challenge", { ...(to ? { to: to.slice("player:".length) } : { where }), ...sent(card) });
       if (r?.error) return no(400, r.error);
       remote[r.id] = { seat, personality: card.personality }; keepRemote();
       return ok({ ...r, id: X + r.id, far: true });
@@ -259,9 +260,10 @@ export const BATTLE_PATHS = ["/api/battle", "/api/battle/pick", "/api/battle/req
 
 // ---- the exchange's half: players battle as "player:<id>" (tradelink.ts exchangeRoute sends these here) ----
 const XKEY = "exchange.battles", XSEEN = "exchange.battle.seen";
-export function exchangeBattle(store: Store, player: { id: string; name: string }, name: string, b: any,
+export function exchangeBattle(store: Store, player: { id: string; name: string; label?: string }, name: string, b: any,
                                players: { id: string; name: string }[], reach: (a: string, b: string) => boolean = () => true, now = new Date()): any {
   const seat = `player:${player.id}`;
+  const who = player.label ?? player.name;                      // C-422: on THE COMMONS, "KIT · ITS HOME"
   const seen = parsed<Record<string, string>>(store.getSetting(XSEEN), {});
   seen[player.id] = now.toISOString(); store.setSetting(XSEEN, JSON.stringify(seen));
   const v = (r: A.Result<A.Fight>) => (A.failed(r) ? r : A.view(r, seat, now));
@@ -285,7 +287,7 @@ export function exchangeBattle(store: Store, player: { id: string; name: string 
       if (b.to !== undefined && (!to || !reach(player.id, to.id))) return { error: "no such player" };   // DRAFT
       const c = card();
       if (typeof c === "string") return { error: c };
-      return v(A.challenge(store, XKEY, { seat, label: player.name, card: c }, to ? { seat: `player:${to.id}`, label: to.name } : null, now));
+      return v(A.challenge(store, XKEY, { seat, label: who, card: c }, to ? { seat: `player:${to.id}`, label: to.name } : null, now));
     }
     case "battle/seen": return v(A.watch(store, XKEY, String(b.id ?? ""), seat, now));
     case "battle/request": {
@@ -293,12 +295,12 @@ export function exchangeBattle(store: Store, player: { id: string; name: string 
       if (!to || !reach(player.id, to.id)) return { error: "no such player" };                 // DRAFT
       const c = card();
       if (typeof c === "string") return { error: c };
-      return v(A.request(store, XKEY, { seat, label: player.name, card: c }, { seat: `player:${to.id}`, label: to.name }, now));
+      return v(A.request(store, XKEY, { seat, label: who, card: c }, { seat: `player:${to.id}`, label: to.name }, now));
     }
     case "battle/answer": {
       const c = b.accept === true ? card() : null;
       if (typeof c === "string") return { error: c };
-      return v(A.answer(store, XKEY, String(b.id ?? ""), seat, b.accept === true, c, player.name, now, undefined, mayTake));
+      return v(A.answer(store, XKEY, String(b.id ?? ""), seat, b.accept === true, c, who, now, undefined, mayTake));
     }
     case "battle/choose": return v(A.choose(store, XKEY, String(b.id ?? ""), seat, b.slot, now));
     case "battle/leave": return v(A.leave(store, XKEY, String(b.id ?? ""), seat, now));

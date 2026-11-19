@@ -73,6 +73,12 @@ function merged(store: Store, home: any, far: any): any {
              .sort((x: any, y: any) => String(y.at).localeCompare(String(x.at))).slice(0, 10) };
 }
 const marked = (o: any) => (o && !o.error && o.id ? { ...o, id: C + o.id, commons: true } : o);
+// C-422: a question the home asks every few seconds (who is online to battle) waits for the commons a few seconds at most
+function soon<T>(p: Promise<T>, ms = 4000): Promise<T | { error: string }> {
+  let t: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<{ error: string }>((r) => { t = setTimeout(() => r({ error: "the commons did not answer in time" }), ms); });   // DRAFT
+  return Promise.race([p, late]).finally(() => clearTimeout(t));
+}
 const strip = (id: unknown) => String(id ?? "").slice(C.length);
 const isC = (id: unknown) => String(id ?? "").startsWith(C);
 
@@ -157,6 +163,26 @@ export async function homeRoute(store: Store, keys: X.Keys, p: X.Player, name: s
       const r = await there("meet", { with: strip(b.with) });
       return r.error ? r : merged(store, await here("out", {}), r);
     }
+    // C-422 (the user, 2026-11-18: battles "in the household or across households, like trading"): BATTLES across homes --
+    // friends' homes' players and their battles listed beside the home's own ("c:" before an id), and a request, a
+    // CHALLENGE (to one of them, or open to friends' homes: `where: "friends"`) or anything done in one of their battles
+    // made on the commons, whose arena is battleroute.ts exchangeBattle's within its REACH: strangers never see each other.
+    case "battle": {
+      const home = here("battle", b), far: any = await soon(there("battle", {}));
+      if (!far || far.error || !home || home.error) return home;
+      const suffix = ` · ${store.getSetting("commons.name") ?? ""}`, theirs = (x: any) => !String(x.name).endsWith(suffix);
+      const friend = (x: any) => ({ ...x, id: C + x.id, commons: true });
+      return { ...home, commons: true,
+               players: [...(home.players ?? []), ...(far.players ?? []).filter(theirs).map(friend)],
+               known: [...(home.known ?? []), ...(far.known ?? []).filter(theirs).map(friend)],
+               fights: [...(home.fights ?? []), ...(far.fights ?? []).map(marked)] };
+    }
+    case "battle/request": case "battle/challenge": {
+      const toFriends = isC(b.to) || (name === "battle/challenge" && b.to === undefined && b.where === "friends");
+      return toFriends ? marked(await there(name, { ...b, to: isC(b.to) ? strip(b.to) : undefined, where: undefined })) : here(name, b);
+    }
+    case "battle/answer": case "battle/choose": case "battle/leave": case "battle/award": case "battle/seen":
+      return isC(b.id) ? marked(await there(name, { ...b, id: strip(b.id) })) : here(name, b);
     case "written": {
       const ids: string[] = Array.isArray(b.ids) ? b.ids.map(String) : [];
       here("written", { ids: ids.filter((i) => !isC(i)) });

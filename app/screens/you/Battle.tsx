@@ -5,10 +5,11 @@ import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { Action, Art, Card, Eyebrow, Pending, Small, useInk } from "../../ui/ui";
 import { useArena } from "../../ui/battle";
-import { act, arenaError, untilSaid } from "../../platform/battle";
+import { act, arenaError, untilSaid, whereSaid } from "../../platform/battle";
 
 const BATTLE_H: [number, number] = [289, 209];   // C-344: its usual height, 375 and 720 wide
-const KIND: Record<string, string> = { device: "a device here", app: "the app or site here", player: "a player on the exchange" };   // DRAFT
+const KIND: Record<string, string> = { device: "a device here", app: "the app or site here", player: "a player on the exchange",
+                                       friend: "a player in a friend's home" };   // DRAFT; friend: C-422, through THE COMMONS
 
 export function BattleCard({ ink }: { ink?: string }) {
   const dayInk = useInk();
@@ -98,7 +99,7 @@ export function BattleCard({ ink }: { ink?: string }) {
                 <XStack alignItems="center" gap={8} flex={1}>
                   {d ? <Art path={`/art/species/${d.species}.png`} size={36} /> : <YStack width={36} />}
                   <YStack flex={1}>
-                    <Text fontFamily="$mono" fontSize={13} fontWeight="700" color={ink}>{`${f.sides[0].label}${f.far ? " · on the exchange" : ""}`}</Text>
+                    <Text fontFamily="$mono" fontSize={13} fontWeight="700" color={ink}>{`${f.sides[0].label}${whereSaid(f)}`}</Text>
                     <Small color={gap >= 10 ? "$red10" : "$color10"}>
                       {d ? `${d.nickname} LV ${d.level}${a.daemon ? ` against ${a.daemon.nickname} LV ${a.daemon.level}` : ""} · until ${untilSaid(f.until)}` : `until ${untilSaid(f.until)}`}
                     </Small>
@@ -112,7 +113,7 @@ export function BattleCard({ ink }: { ink?: string }) {
       ) : null}
       {left ? (
         <XStack alignItems="center" justifyContent="space-between" gap={8}>
-          <YStack flex={1}><Small>{`Your CHALLENGE ${left.open ? `to anyone${left.far ? " on the exchange" : " at home"}` : `to ${left.sides[1].label}`} waits until ${untilSaid(left.until)}. ${a.daemon?.nickname ?? "Your daemon"} will fight by itself; you watch the replay.`}</Small></YStack>
+          <YStack flex={1}><Small>{`Your CHALLENGE ${left.open ? `to anyone${left.commons ? " in friends' homes" : left.far ? " on the exchange" : " at home"}` : `to ${left.sides[1].label}`} waits until ${untilSaid(left.until)}. ${a.daemon?.nickname ?? "Your daemon"} will fight by itself; you watch the replay.`}</Small></YStack>
           <Action label="WITHDRAW" ink={ink} onPress={() => withdraw(left.id)} />
         </XStack>
       ) : a.daemon ? (
@@ -133,6 +134,7 @@ export function BattleCard({ ink }: { ink?: string }) {
           <XStack flexWrap="wrap" gap={8}>
             <Action label="ANYONE AT HOME" ink={ink} onPress={() => challenge({ where: "home" })} />
             {a.player ? <Action label="ANYONE ON THE EXCHANGE" ink={ink} onPress={() => challenge({ where: "exchange" })} /> : null}
+            {a.friends ? <Action label="ANYONE IN FRIENDS' HOMES" ink={ink} onPress={() => challenge({ where: "friends" })} /> : null}
           </XStack>
         </YStack>
       ) : null}

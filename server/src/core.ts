@@ -383,32 +383,51 @@ export function soundings(h: Host, store: Store) {
 // Every device asks for it each time it looks (GET /api/device/state), and on the hub's one slow core reading two weeks
 // of the log is ~70 ms a time (2026-11-14) -- so a reading is kept while the log has not been written and the minute
 // has not turned, which is finer than anything in it moves.
-const READ = new WeakMap<Store, { key: string; life?: Life; feel?: ReturnType<typeof withCare> }>();
-const readingOf = (store: Store, now: Date) => {
-  const key = `${store.interactionsRev}|${Math.floor(now.getTime() / 60000)}`;
-  let r = READ.get(store);
-  if (!r || r.key !== key) READ.set(store, r = { key });
+type Reading = { key: string; life?: Life; feel?: ReturnType<typeof withCare> };
+const READ = new WeakMap<Store, Map<string, Reading>>();
+const readingOf = (store: Store, now: Date, who: number | null = null) => {
+  const key = `${store.interactionsRev}|${Math.floor(now.getTime() / 60000)}`, at = who === null ? "" : String(who);
+  let m = READ.get(store);
+  if (!m) READ.set(store, m = new Map());
+  let r = m.get(at);
+  if (!r || r.key !== key) { if (m.size > 32) m.clear(); m.set(at, r = { key }); }
   return r;
 };
-export function daemonLife(store: Store, now = new Date()): Life {
-  const r = readingOf(store, now);
-  return r.life ??= life(store.interactionsSince(new Date(now.getTime() - 14 * 86400000)), now);
+// C-415 (the user, 2026-11-18, by multiple choice: per daemon by default): whose cares a daemon's life is read from --
+// its own (and the household's: what was done together, and every care from before the cares were kept apart), or,
+// with the setting "cares" at "shared", every daemon's at once, as it was. null: the household's, everything.
+export function caresFor(store: Store, personality: number | null | undefined): number | null {
+  if (personality === null || personality === undefined || store.getSetting("cares") === "shared") return null;
+  return personality >>> 0;
+}
+// C-415: the daemon a care was given to -- the one the device that gave it carries, kept whatever the setting, so the
+// cares can be read apart later; anything other than a care stays the household's
+export const CARE_KINDS = ["feed", "water", "train", "sleep", "wake"];
+export function careOwner(h: Host, store: Store, kind: string, deviceId = ""): number | null {
+  if (!CARE_KINDS.includes(kind)) return null;
+  const d = carriedDaemon(h, store, deviceId);
+  return d ? d.personality >>> 0 : null;
+}
+export function daemonLife(store: Store, now = new Date(), who: number | null = null): Life {
+  const r = readingOf(store, now, who);
+  return r.life ??= life(store.interactionsSince(new Date(now.getTime() - 14 * 86400000), who), now);
 }
 
 // C-120 / C-119: how it feels (from the last day), and the expression that shows it -- a description every host draws
-export function daemonFeelings(store: Store, now = new Date(), lifeNow: Life | null = null) {
+export function daemonFeelings(store: Store, now = new Date(), lifeNow: Life | null = null, who: number | null = null) {
   // C-266: hungry and thirsty for days is sad, whatever the last day pushed
-  const read = () => withCare(feelings(store.interactionsSince(new Date(now.getTime() - 26 * 3600000)), now), (lifeNow ?? daemonLife(store, now)).care);
-  if (lifeNow && lifeNow !== daemonLife(store, now)) return read();   // a life given from elsewhere: read with that one
-  const r = readingOf(store, now);
+  const read = () => withCare(feelings(store.interactionsSince(new Date(now.getTime() - 26 * 3600000), who), now), (lifeNow ?? daemonLife(store, now, who)).care);
+  if (lifeNow && lifeNow !== daemonLife(store, now, who)) return read();   // a life given from elsewhere: read with that one
+  const r = readingOf(store, now, who);
   return r.feel ??= read();
 }
 export const artName = (species: number | string) => (SPECIES[String(species)]?.art?.front as string | undefined)?.split("/").pop()?.replace("_front.png", "");
-export function daemonExpression(store: Store, now = new Date(), lifeNow = daemonLife(store, now), species: number | null = null) {
+export function daemonExpression(store: Store, now = new Date(), lifeNow?: Life, species: number | null = null, who: number | null = null) {
+  lifeNow ??= daemonLife(store, now, who);
   const t = thriveOf(store, now);                                 // C-207: drowsy after a broken night, its colours the week's
   const life = lifeNow.tired === "awake" && drowsyFrom(t, now.getHours()) ? { ...lifeNow, tired: "drowsy" as const } : lifeNow;
   const face = species === null ? null : faceOf(artName(species));
-  return careworn(thrived(expressionFor(life, daemonFeelings(store, now, lifeNow), face), t), lifeNow.care, face);   // C-266: as it has been cared for
+  return careworn(thrived(expressionFor(life, daemonFeelings(store, now, lifeNow, who), face), t), lifeNow.care, face);   // C-266: as it has been cared for
 }
 
 // C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home
@@ -496,14 +515,14 @@ export function deviceState(h: Host, store: Store, now = new Date(), deviceId = 
                       gender: genderOf(d.species, d.personality),                        // C-359: he, she, or they
                       holding: d.holding, art: ev ? `/art/${artName(d.species)}.png` : `/art/party/${d.slot}.png`, mood: null,   // C-184: its new face
                       types: row?.types ?? [], category: row?.category ?? "", entry: row?.entry?.[h.edition] ?? "",
-                      artKey: artKeyOf(d), life: daemonLife(store, now),
-                      expression: (as && drawnAs(as, faceOf(artName(d.species)))) || daemonExpression(store, now, undefined, d.species),   // C-119: drawn by every host
+                      artKey: artKeyOf(d), life: daemonLife(store, now, caresFor(store, d.personality)),   // C-415: its own cares
+                      expression: (as && drawnAs(as, faceOf(artName(d.species)))) || daemonExpression(store, now, undefined, d.species, caresFor(store, d.personality)),   // C-119: drawn by every host
                       thrive: thriveOf(store, now),                 // C-207: the glow and the small marks, drawn by every host
                       den: den(row?.types ?? []),                                      // C-113: where it is drawn
                       grown: grown(d, store), margin,
                       evolved: ev ? { from: was, to: d.name, at: ev.at } : null };   // C-184: told once by each board
     // C-357, THE MASK: a week unanswered, and it stops sending -- no board is told the book is held until one is answered
-    if (d && readSubtle(bytes).held && !maskOf(store, now).mask) subtle = senseFor(store, d.friendship, daemonFeelings(store, now), now, virtueHeldToday(profile.wisdom, now));   // T-510
+    if (d && readSubtle(bytes).held && !maskOf(store, now).mask) subtle = senseFor(store, d.friendship, daemonFeelings(store, now, null, caresFor(store, d.personality)), now, virtueHeldToday(profile.wisdom, now));   // T-510
     if (d) {
       const msg = firstSight(store, bytes, now), held = readHermetic(bytes, store).held;
       hermetic = { held: held ? 1 : 0, first: msg ? 1 : 0 };   // C-238

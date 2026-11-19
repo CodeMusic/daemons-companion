@@ -15,6 +15,7 @@ export interface SubItem { id: number; title: string; done: boolean; steps: Step
 export interface Goal { id: number; title: string; done: boolean; subitems: SubItem[] }
 export interface Plan { subitems: { title: string; steps: string[] }[] }
 
+type LogRow = { at: string; kind: string; detail: string | null; daemon: string | null };   // C-415
 export class Store {
   db: Db;
 
@@ -32,6 +33,9 @@ export class Store {
       -- the daemon's log is read by when (its life, its feelings, its spirits): by when it is found, not by every row
       CREATE INDEX IF NOT EXISTS interactions_at ON interactions (at);
       CREATE INDEX IF NOT EXISTS interactions_kind_at ON interactions (kind, at);`);
+    // C-415: whose care it was -- the daemon's personality, or null for the household's (and every row from before)
+    const cols = this.db.prepare("PRAGMA table_info(interactions)").all() as { name: string }[];
+    if (!cols.some((c) => c.name === "daemon")) this.db.exec("ALTER TABLE interactions ADD COLUMN daemon TEXT");
   }
 
   // C-22: the save the app is married to -- the game it carries daemons for. Unset until the first SYNC.
@@ -46,8 +50,10 @@ export class Store {
 
   // C-13 (the user, 2026-10-04): using the companion at all -- a radio ROUTINE included -- is tending the daemon.
   // Each use is kept; the daemon's life (C-13, still to build) reads from here.
-  logInteraction(kind: string, detail: string | null, at = new Date()) {
-    this.db.prepare("INSERT INTO interactions (at, kind, detail) VALUES (?, ?, ?)").run(at.toISOString(), kind, detail);
+  // C-415: `daemon`, the personality of the daemon it was for -- a care, given by a device that carries one
+  logInteraction(kind: string, detail: string | null, at = new Date(), daemon: number | null = null) {
+    this.db.prepare("INSERT INTO interactions (at, kind, detail, daemon) VALUES (?, ?, ?, ?)")
+      .run(at.toISOString(), kind, detail, daemon === null ? null : String(daemon >>> 0));
     this.recent = null; this.interactionsRev++;
   }
 
@@ -57,14 +63,18 @@ export class Store {
   // once and kept for two seconds, or until the log is written, and every window inside them is cut from that.
   // counts every write to the log, so a reading of it can be kept until the log moves (core.ts lifeOf)
   interactionsRev = 0;
-  private recent: { from: string; made: number; rows: { at: string; kind: string; detail: string | null }[] } | null = null;
-  interactionsSince(since: Date): { at: string; kind: string; detail: string | null }[] {
+  private recent: { from: string; made: number; rows: LogRow[] } | null = null;
+  // C-415: `daemon` given, only the household's rows and that daemon's own -- another daemon's cares are left out
+  interactionsSince(since: Date, daemon: number | null = null): { at: string; kind: string; detail: string | null }[] {
     const s = since.toISOString(), now = Date.now();
-    if (this.recent && now - this.recent.made < 2000 && this.recent.from <= s) return this.recent.rows.filter((r) => r.at >= s);
+    const own = daemon === null ? null : String(daemon >>> 0);
+    const cut = (rows: LogRow[]) =>
+      rows.filter((r) => r.at >= s && (own === null || r.daemon === null || r.daemon === own)).map(({ at, kind, detail }) => ({ at, kind, detail }));
+    if (this.recent && now - this.recent.made < 2000 && this.recent.from <= s) return cut(this.recent.rows);
     const wide = new Date(Math.min(since.getTime(), now - 35 * 86400000)).toISOString();
-    const rows = this.db.prepare("SELECT at, kind, detail FROM interactions WHERE at >= ? ORDER BY id").all(wide) as { at: string; kind: string; detail: string | null }[];
+    const rows = this.db.prepare("SELECT at, kind, detail, daemon FROM interactions WHERE at >= ? ORDER BY id").all(wide) as LogRow[];
     this.recent = { from: wide, made: now, rows };
-    return rows.filter((r) => r.at >= s);
+    return cut(rows);
   }
 
   // C-45: the experience a daemon gained on the device and not yet written into the save (by its personality)

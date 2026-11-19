@@ -32,7 +32,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { artName, awayNow, careGiven, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
+import { artName, awayNow, careGiven, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -322,9 +322,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (care) {
       const night = care[1] === "sleep" ? null : appNight(h, store, deviceId, now, b?.stirs);   // C-283: woken -- the night it slept
       // C-196: the daemon's written line for it, as the boards show (chosen before the care counts, as api.ts's careLine)
-      const l = daemonLife(store, now), kind = care[1] as LineKind;
+      const owner = careOwner(h, store, care[1], deviceId);   // C-415: the daemon this device carries
+      const l = daemonLife(store, now, caresFor(store, owner)), kind = care[1] as LineKind;
       const said = writtenLine(kind, l.mood, now.toLocaleDateString("en-CA"), kind === "feed" ? l.fed.today : kind === "water" ? l.watered.today : 0);
-      store.logInteraction(care[1], "site"); careGiven(h, store, care[1], deviceId, now);
+      store.logInteraction(care[1], "site", now, owner); careGiven(h, store, care[1], deviceId, now);
       const r = lifeNow(h, store, deviceId, now), save = h.save.read();
       return { ...r, body: { ...(r.body as object), ...saying(said, !!save && readSubtle(save).held),   // C-204: and under it
                              ...(night ? { dream: { id: night.id, text: night.text, by: night.by, quality: night.quality } } : {}) } };
@@ -395,13 +396,14 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
 
 function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const d = carriedDaemon(h, store, deviceId);
-  const lf = daemonLife(store, now);
+  const who = caresFor(store, d?.personality);              // C-415: its own cares
+  const lf = daemonLife(store, now, who);
   // C-357 (5): CONTAINER -- the form it is now (what it became here, until SYNC writes it), and a line under it for a week
   const save = d ? h.save.read() : null, form = d ? (evolvedOf(store, d.personality)?.to ?? d.species) : null;
   const vessel = d && form !== null ? vesselOf(store, d.personality, form, now) : null;
   const vesselUnder = vessel && save && readSubtle(save).held ? VESSEL_UNDER : null;
   const mask = !!(d && save && readSubtle(save).held && maskOf(store, now).mask);   // C-357, THE MASK
-  return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null), grown: d ? grown(d, store) : null, level: d?.level ?? null,
+  return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null, who), grown: d ? grown(d, store) : null, level: d?.level ?? null,
             thrive: thriveOf(store, now), vesselUnder, mask, maskUnder: mask ? MASK_UNDER : null,
             maskEyes: mask && form !== null ? faceOf(artName(form))?.eyes ?? null : null });   // C-119; C-207: the week, for the den's glow and marks; C-357: its eyes, checked (faces.json)
 }

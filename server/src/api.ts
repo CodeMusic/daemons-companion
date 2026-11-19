@@ -2455,6 +2455,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         store.setSetting("device", JSON.stringify(s));
         return send(res, 200, s);
       }
+      // C-415 (the user, 2026-11-18): cares per daemon ("daemon", the default) or one set for every daemon ("shared")
+      if (req.method === "GET" && path === "/api/cares") return send(res, 200, { cares: store.getSetting("cares") === "shared" ? "shared" : "daemon" });
+      if (req.method === "POST" && path === "/api/cares") {
+        const c = (await body(req)).cares;
+        if (c !== "daemon" && c !== "shared") return send(res, 400, { error: "cares is daemon or shared" });
+        store.setSetting("cares", c === "shared" ? "shared" : null);
+        return send(res, 200, { cares: c });
+      }
       if (req.method === "GET" && path === "/api/ir/brands") return send(res, 200, irCodesJson.brands);   // C-34, C-51
       // C-51: the board's remotes -- what it reports, and what the site asks of it
       if (req.method === "POST" && path === "/api/device/remotes") {
@@ -3365,7 +3373,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         // C-293: a daemon put to bed on another device (the phone, the widget) and woken from this one has had its night too
         const woke = WAKING_KINDS.includes(kind) ? appNight(hostOf(ecfg), store, deviceId, new Date(), undefined) : null;
         if (woke) tellDream(ecfg, woke, deviceId);
-        store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null);
+        store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null, new Date(),
+                             core.careOwner(hostOf(ecfg), store, kind, deviceId));   // C-415: the daemon it was for
         core.careGiven(hostOf(ecfg), store, kind, deviceId);                // C-185: a care given is the bond's
         return send(res, 200, { last: store.lastInteraction(), ...(isLineKind(kind) ? saying(careLine(kind), bookHeld(ecfg)) : {}) });   // C-180: its answer, at once; C-204: and under it
       }

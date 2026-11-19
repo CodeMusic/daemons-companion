@@ -14,6 +14,8 @@ struct Entry: TimelineEntry {
   var spot: Double = 0.5      // C-113: where in the den it stands, 0 (left) to 1 (right)
   var facesRight = false      // the game's front sprites face left; facing right is the sprite mirrored
   var hop = false             // a button was just pressed
+  var serving: Int? = nil     // C-302: what FEED or DRINK gave, eaten to this stage (0 full ... 3 empty); nil, nothing there
+  var served = true           // false: the empty one fading away
 }
 
 // C-113: the hour's wandering, as timeline entries. Each stop is a few minutes long and it turns to face the way it went;
@@ -22,7 +24,15 @@ func wander(_ s: Snapshot?, paired: Bool, from start: Date, until end: Date, rea
   var r = Scatter("\(Int(start.timeIntervalSince1970 / 3600))")
   var spot = 0.3 + 0.4 * r.next(), entries: [Entry] = []
   let still = s?.tired == "asleep"
-  if react {   // the answer to a press: up, then down again
+  if react, Provisions.given(s?.did) != nil {
+    // C-302: FEED or DRINK -- up and down again as below, and what it was given eaten in four stages beside it: full, a
+    // stage each third of the phrase, empty a moment, then faded and gone, as the app's (Provision.swift)
+    let step = Provisions.step(s?.did), gone = step * 3 + 0.65
+    for t in Set([0, step, step * 2, step * 3, 1.2, gone, gone + 0.4]).sorted() {
+      entries.append(Entry(date: start.addingTimeInterval(t), snapshot: s, paired: paired, spot: spot, hop: t < 1.2,
+                           serving: t >= gone + 0.4 ? nil : min(3, Int((t + 0.001) / step)), served: t < gone))
+    }
+  } else if react {   // the answer to a press: up, then down again
     entries.append(Entry(date: start, snapshot: s, paired: paired, spot: spot, hop: true))
     entries.append(Entry(date: start.addingTimeInterval(1.2), snapshot: s, paired: paired, spot: spot))
   } else {
@@ -115,6 +125,16 @@ struct Stage: View {
           .scaleEffect(x: (entry.facesRight ? -1 : 1) * (s.expr?.pose.girth ?? 1), y: s.expr?.pose.squash ?? 1, anchor: .bottom)   // C-119: squashed toward its feet; C-266: as wide as it has been cared for
           .frame(width: side, height: side)
           .position(x: x, y: floor - side / 2 + side * 0.06 - (entry.hop ? side * 0.16 : 0) + (s.expr?.pose.dy ?? 0) * side / 64)
+        // C-302: what it was given, on the floor in front of it -- the way it faces -- a quarter of its side, as the app's
+        if let stage = entry.serving, let p = Provisions.given(s.did) {
+          let w = side / 4, ahead: Double = entry.facesRight ? 1 : -1
+          ProvisionView(provision: p, stage: stage)
+            .frame(width: w, height: w)
+            .position(x: min(g.size.width - w / 2, max(w / 2, x + ahead * (side * 0.56 - w / 2))),
+                      y: floor - side + side * 0.06 + side * 0.95 - w / 2)
+            .opacity(entry.served ? 1 : 0)
+            .transition(.opacity)
+        }
         if let mark = s.expr?.mark, !(s.said != nil && entry.date.timeIntervalSince(s.at) < 60) {   // C-119: zz, a heart, a drop
           PixelMark(mark: mark).frame(width: max(12, side * 0.2), height: max(12, side * 0.2)).position(above)
         } else if asleep && s.expr == nil {
@@ -129,6 +149,7 @@ struct Stage: View {
       }
       .animation(.smooth(duration: 1.1), value: entry.spot)
       .animation(.spring(duration: 0.45, bounce: 0.5), value: entry.hop)
+      .animation(.easeOut(duration: 0.35), value: entry.served)
     }
   }
 }

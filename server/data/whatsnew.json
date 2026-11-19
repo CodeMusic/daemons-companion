@@ -1,9 +1,54 @@
 {
- "latest": 989,
+ "latest": 990,
  "builds": [
   {
+   "build": 990,
+   "commit": "ae58a010",
+   "date": "2026-11-19",
+   "sections": [
+    {
+     "ticket": "C-420",
+     "title": "Battle EXP three a day per daemon; levels as they are, the gap shown",
+     "lines": [
+      "Battle EXP three a day per daemon; levels as they are, the gap shown"
+     ]
+    },
+    {
+     "ticket": "C-417",
+     "title": "The widget's FEED and DRINK eaten and drunk, as the app's",
+     "lines": [
+      "The widget's FEED and DRINK eaten and drunk, as the app's"
+     ]
+    },
+    {
+     "ticket": "C-418",
+     "title": "TRAIN sings: the song as it knows it, then the error carried back",
+     "lines": [
+      "TRAIN sings — its part as it knows it, then the error carried back",
+      "It stands still to sing; the notes larger, inside the den, toward its open side"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.407.1 (DAEMONS release)",
+      "and 3 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Songs.json: every daemon's song (DAEMONS T-594, C-418; DRAFT)",
+      "The companion book's shelf cover, redrawn with its reprint (DAEMONS 1bd97e09, C-418)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 989,
-   "commit": "f0597d4a",
+   "commit": "6bc6c0f",
    "date": "2026-11-18",
    "sections": [
     {
@@ -79,16 +124,16 @@
     },
     {
      "ticket": "C-415",
-     "title": "Cares kept per daemon",
+     "title": "Cares per daemon or one shared set, a setting: today the hub keeps one care log for every daemon on it, so feeding one daemon shows another (a family member's) fed too; each care recorded against the daemon it was for, and life, feelings and expression read per daemon when the setting says so",
      "lines": [
-      "Feeding, watering, training or putting one daemon to bed no longer does it for all of them. SETTINGS > GENERAL > CARES switches back to one shared set. (DRAFT)"
+      "Cares kept per daemon — feeding one daemon no longer feeds every daemon on the hub (the user, 2026-11-18, by multiple choice: per daemon by default)"
      ]
     },
     {
      "ticket": "C-416",
-     "title": "The widget follows the app",
+     "title": "The phone widget shows the same daemon as the phone app: today the widget is a device of its own (C-100) carrying a different daemon than the app shows",
      "lines": [
-      "The widget always shows the daemon the app shows; choose it on the DAEMON screen, under ON THIS PHONE AND ITS WIDGET. (DRAFT)"
+      "The widget follows the app; C-415's CARES switch and its app half"
      ]
     },
     {
@@ -113,7 +158,7 @@
   },
   {
    "build": 988,
-   "commit": "b9335d27",
+   "commit": "9e298e7",
    "date": "2026-11-17",
    "sections": [
     {
@@ -132,13 +177,6 @@
      "lines": [
       "Knows the game's ROM release v11.385.1 (T-565 menu sounds)",
       "Knows the game's ROM release v11.386.1 (DAEMONS release: T-565 batch 2, the battle music, and batch 4, the battle sounds)"
-     ]
-    },
-    {
-     "ticket": null,
-     "title": "ALSO",
-     "lines": [
-      "WHAT'S NEW for build 987 (C-343, C-345, C-396)"
      ]
     }
    ]
@@ -160,13 +198,6 @@
      "title": "Sign in with Apple in the next iOS build",
      "lines": [
       "Sign in with Apple and C-345 the age check's native module (DaemonsAgeRange: iOS 26 Declared Age Range, an 18 gate) — the user's yes, 2026-11-17, for build 987"
-     ]
-    },
-    {
-     "ticket": null,
-     "title": "ALSO",
-     "lines": [
-      "WHAT'S NEW for build 987 (C-343, C-345, C-396)"
      ]
     }
    ]
@@ -196,8 +227,7 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "Each widget named for its phone in YOUR DEVICES (C-394)",
-      "WHAT'S NEW for build 986 (C-393 THE CARDPUTERS)"
+      "Each widget named for its phone in YOUR DEVICES (C-394)"
      ]
     }
    ]
@@ -218,8 +248,7 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "The handheld's bridge names the board, never the phone (C-391)",
-      "WHAT'S NEW for build 985"
+      "The handheld's bridge names the board, never the phone (C-391)"
      ]
     }
    ]
@@ -301,8 +330,7 @@
      "title": "ALSO",
      "lines": [
       "A network's name is kept as typed: the hub trimmed 'RevivalNetwork ' into a network that does not exist (C-93)",
-      "Away on Tailscale, the phone reaches home on the tailnet before the relay (C-389)",
-      "WHAT'S NEW for build 984"
+      "Away on Tailscale, the phone reaches home on the tailnet before the relay (C-389)"
      ]
     }
    ]
@@ -380,9 +408,7 @@
      "lines": [
       "Battle.json: a ROUTINE, not a move (T-567)",
       "Species.json, index_cards.json: CELEBI is bound, not caught (T-571)",
-      "The four books' pages: USER, not trainer (T-571, from their sources)",
-      "WHAT'S NEW for 983 (whatsnew.py —write —build 983); C-210's 982 record named as whatsnew.py reads it",
-      "WHAT'S NEW for 983 again, at d728b5f (C-384, C-385, C-386, C-251); C-364's SET UP from the auto-SYNC lane, also under C-384"
+      "The four books' pages: USER, not trainer (T-571, from their sources)"
      ]
     }
    ]
@@ -483,8 +509,7 @@
       "Art: the ROVER line and the MUSAI branch redrawn (DAEMONS T-552, T-553; engine c449f7717)",
       "LIBRARY shelf: THE SOCIAL, THE COMPANION and THE WATCH covers re-rendered — each now names the release its PDF was printed for",
       "The hub answers a device's look in a fraction of the time: the daemon's life and feelings kept while the log is unwritten and the minute unturned, the INDEX while the save is the same bytes — and the temporary timings gone",
-      "A device's look costs the hub less again: the CASINO's results kept while the log is unwritten (every poll read every result ever, twice), the bond written only when a look moved it, the day's walk read once, the reels' daemons each scored once",
-      "WHAT'S NEW for 982 (whatsnew.py —write —build 982)"
+      "A device's look costs the hub less again: the CASINO's results kept while the log is unwritten (every poll read every result ever, twice), the bond written only when a look moved it, the day's walk read once, the reels' daemons each scored once"
      ]
     }
    ]
@@ -763,8 +788,6 @@
      "title": "ALSO",
      "lines": [
       "THE COMPANION's shelf cover, redrawn with its manual (C-356 in it)",
-      "WHAT'S NEW for build 977 (C-354's SET UP, C-221's link cable)",
-      "WHAT'S NEW for build 978 (977's work, with the Reminders purpose strings)",
       "THE COMPANION's shelf cover, reprinted with THE DAY'S TENDING and the LINK CABLE (DAEMONS releasedocs STALE)",
       "Companion data: THE WALLED GARDEN (DAEMONS T-540, engine ce345c195) — companion_export —write: the place's name in maps, the planner and the profile layout",
       "Companion data: the GATEKEEPER's TOKEN and the attendant's dream BEHIND THE WALL (DAEMONS T-551, engine dc780f8c5)",
@@ -932,8 +955,7 @@
      "ticket": null,
      "title": "ALSO",
      "lines": [
-      "THE COMPANION's shelf cover, reprinted with its GUARDIAN section (DAEMONS 'releasedocs STALE')",
-      "WHAT'S NEW for build 975 (C-356's dream journal and signs, C-253's nightly memory, C-357, C-338's persona in talk)"
+      "THE COMPANION's shelf cover, reprinted with its GUARDIAN section (DAEMONS 'releasedocs STALE')"
      ]
     }
    ]

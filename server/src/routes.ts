@@ -32,7 +32,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { artName, awayNow, careGiven, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
+import { artName, awayNow, careGiven, songNow, trainSong, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -44,6 +44,7 @@ import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";
 import { centreOf, checkNight, dayOfDream, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf; T-531: dayOfDream; C-412: centreOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd, evolvedOf } from "./evolve.js";
+import { songOf, SONGS } from "./ownsong.js";   // C-418
 import { WAKES, wakesBy } from "./life.js";   // C-293: the cares that wake it, one list
 import { faceOf, openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches; C-357: its eyes, for THE MASK
 import { thriveOf } from "./thrive.js";   // C-207
@@ -62,7 +63,7 @@ import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF 
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
 const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -108,6 +109,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       return ok(g && s && readSubtle(s, undefined, a.query?.preview === "1").held ? { held: true, goal: g.id, ...weatheringOf(store, g.id, now) } : { held: false });
     }
     if (path === "/api/daemon/life") return lifeNow(h, store, deviceId, now);
+    // C-418: its own song now, and the part it is learning -- for the widget, which draws and sings TRAIN on its own
+    if (path === "/api/daemon/song") {
+      const s = songNow(h, store, deviceId, now);
+      return ok(s ? { ...s, part: songOf(s.species).at(-1) ?? null, window: SONGS.window, candidates: SONGS.static.candidates,
+                      floor: SONGS.static.floor } : null);
+    }
     if (path === "/api/soundings") return ok({ daemons: soundings(h, store) });   // C-195
     const sp = path.match(SPECIES_ID);
     if (sp) {
@@ -326,8 +333,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const l = daemonLife(store, now, caresFor(store, owner)), kind = care[1] as LineKind;
       const said = writtenLine(kind, l.mood, now.toLocaleDateString("en-CA"), kind === "feed" ? l.fed.today : kind === "water" ? l.watered.today : 0);
       store.logInteraction(care[1], "site", now, owner); careGiven(h, store, care[1], deviceId, now);
+      const lessonOf = care[1] === "train" ? trainSong(h, store, deviceId, now) : null;   // C-418: TRAIN sings, and learns
       const r = lifeNow(h, store, deviceId, now), save = h.save.read();
       return { ...r, body: { ...(r.body as object), ...saying(said, !!save && readSubtle(save).held),   // C-204: and under it
+                             ...(lessonOf ? { lesson: lessonOf } : {}),
                              ...(night ? { dream: { id: night.id, text: night.text, by: night.by, quality: night.quality } } : {}) } };
     }
     const step = path.match(STEP);
@@ -405,6 +414,7 @@ function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   const mask = !!(d && save && readSubtle(save).held && maskOf(store, now).mask);   // C-357, THE MASK
   return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null, who), grown: d ? grown(d, store) : null, level: d?.level ?? null,
             thrive: thriveOf(store, now), vesselUnder, mask, maskUnder: mask ? MASK_UNDER : null,
+            song: songNow(h, store, deviceId, now),                                     // C-418: its own song, as it knows it
             maskEyes: mask && form !== null ? faceOf(artName(form))?.eyes ?? null : null });   // C-119; C-207: the week, for the den's glow and marks; C-357: its eyes, checked (faces.json)
 }
 

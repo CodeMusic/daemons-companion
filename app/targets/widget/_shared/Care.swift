@@ -41,6 +41,9 @@ func care(_ kind: CareKind) async {
       now.cue = l.cue; now.wakesAt = isoDate(l.wakesAt)   // C-300
       if let r = l.care?.rest { now.rest = r }       // C-279
       if let lv = l.level { now.level = lv }
+      if let g = l.song, now.song != nil {           // C-418: where its song stands, now the companion has taught it
+        now.song?.share = g.share; now.song?.ready = g.ready; now.song?.trainsToday = g.trainsToday
+      }
       Shared.snapshot = now
     }
   } catch {
@@ -102,6 +105,62 @@ enum CareSound {
     let peak = mix.reduce(0) { max($0, abs($1)) }, g = peak > 0 ? 0.7 / max(peak, 0.7) : 0   // never louder than the sample
     return wavData(mix.map { Int16(max(-1, min(1, $0 * g)) * 32767) }, rate: rate)
   }
+  // C-418: the part it is learning as it knows it (server/src/ownsong.ts, app/sound/ownSong.ts: the same sound) -- a note
+  // learned sung clear; a note not yet learned its candidates in the key at once, the true one louder the surer it is,
+  // over a hiss that fades as it closes; the part's bass under it, softly. Notes may sound together, so each is mixed in
+  // at its own start.
+  static func ownSong(_ s: SongSnap, edition: String?) -> Data? {
+    guard let p = s.part, let ins = Instruments.all.first(where: { $0.edition == edition }) ?? Instruments.all.first,
+          let pcm = samples(ins), pcm.count > 1 else { return nil }
+    let rate = 22050, beat = 60 / p.bpm
+    var notes: [(Int, Double, Double, Double)] = [], hiss: [(Double, Double, Double)] = [], t = 0.0
+    for (i, n) in SongMath.heard(s, share: s.share).enumerated() {
+      let held = n.beats * beat * 0.95
+      if n.sure >= 1 { notes.append((n.midi, t, held, 0.8)) } else {
+        let w = 0.25 + 0.75 * n.sure, others = Array(n.candidates.dropFirst())
+        notes.append((n.midi, t, held, 0.7 * w))
+        for (k, c) in others.enumerated() {
+          let lag = Double((i * 7 + k * 13) % 9) * 0.004
+          notes.append((c, t + lag, max(0.04, held - lag), 0.7 * (1 - w) * 2.2 / Double(max(1, others.count))))
+        }
+        hiss.append((t, held, s.floor * (1 - n.sure) * (1 - n.sure)))
+      }
+      t += n.beats * beat
+    }
+    t = 0
+    for b in p.bass { notes.append((Int(b[0]), t, b[1] * beat * 0.9, 0.22 + 0.25 * s.share)); t += b[1] * beat }
+    let rel = rate * ins.releaseMs / 1000
+    let att = max(1, rate * ins.attackMs / 1000), dec = max(1, rate * ins.decayMs / 1000)
+    let loops = ins.loopStart >= 0 && ins.loopEnd > ins.loopStart + 1 && ins.loopEnd <= pcm.count
+    let end = max(notes.map { $0.1 + $0.2 }.max() ?? 0, hiss.map { $0.0 + $0.1 }.max() ?? 0)
+    var mix = [Double](repeating: 0, count: Int(end * Double(rate)) + rel + 1)
+    for (midi, at, dur, vel) in notes {
+      let start = Int(at * Double(rate)), held = Int(dur * Double(rate))
+      let step = pow(2, Double(midi - ins.root) / 12) * Double(ins.rate) / Double(rate)
+      var pos = 0.0, level = 0.0
+      for i in 0..<(held + rel) where start + i < mix.count {
+        if pos >= Double(loops ? ins.loopEnd : pcm.count - 1) { if !loops { break }; pos -= Double(ins.loopEnd - ins.loopStart) }
+        let j = Int(pos), f = pos - Double(j)
+        let a = Double(pcm[j]) / 32768, b = Double(pcm[min(j + 1, pcm.count - 1)]) / 32768
+        if i < held { level = i < att ? Double(i) / Double(att) : i < att + dec ? 1 - (1 - ins.sustain) * Double(i - att) / Double(dec) : ins.sustain }
+        let env = i < held ? level : level * (1 - Double(i - held) / Double(max(1, rel)))
+        mix[start + i] += (a + (b - a) * f) * env * vel
+        pos += step
+      }
+    }
+    var seed: UInt32 = 0x2545F491, low = 0.0                 // the same hiss every time, softened
+    for (at, dur, level) in hiss {
+      let a = Int(at * Double(rate)), n = Int(dur * Double(rate)), edge = Double(rate) * 0.02
+      for i in 0..<n where a + i < mix.count {
+        seed ^= seed << 13; seed ^= seed >> 17; seed ^= seed << 5
+        low += 0.25 * (Double(seed) / 4294967296 * 2 - 1 - low)
+        mix[a + i] += low * level * min(1, Double(i) / edge, Double(n - i) / edge)
+      }
+    }
+    let peak = mix.reduce(0) { max($0, abs($1)) }, g = peak > 0 ? 0.7 / max(peak, 0.7) : 0
+    return wavData(mix.map { Int16(max(-1, min(1, $0 * g)) * 32767) }, rate: rate)
+  }
+
   static func wavData(_ samples: [Int16], rate: Int) -> Data {
     var d = Data()
     func u32(_ x: Int) { withUnsafeBytes(of: UInt32(x).littleEndian) { d.append(contentsOf: $0) } }
@@ -141,7 +200,9 @@ enum CareSound {
     guard let tune = tunes[kind], Shared.snapshot?.sound != false else { return }
     try? AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
     try? AVAudioSession.sharedInstance().setActive(true)
-    let data = sampled(tune, root: dayRoot, edition: Shared.snapshot?.edition) ?? wav(tune, root: dayRoot)   // T-425
+    // C-418: TRAIN sings its own song -- the part it is learning, as it knows it -- where the companion has given one
+    let song = kind == .train ? Shared.snapshot?.song.flatMap { ownSong($0, edition: Shared.snapshot?.edition) } : nil
+    let data = song ?? sampled(tune, root: dayRoot, edition: Shared.snapshot?.edition) ?? wav(tune, root: dayRoot)   // T-425
     player = try? AVAudioPlayer(data: data)
     player?.volume = Float(min(1, Double(Shared.snapshot?.volume ?? 60) / 70))
     player?.play()

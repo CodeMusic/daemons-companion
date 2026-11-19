@@ -32,6 +32,9 @@ import type { Care } from "../../../server/src/care";   // C-266
 import { pretendLife, useDev } from "../../state/dev";
 import { onLifeHeard } from "../../state/lifeHeard";   // C-300
 import { GIVEN, phraseMs, PROVISIONS, type Serving } from "./Provision";   // C-302
+import { evolves, songLine, type Singing } from "./OwnSong";              // C-418: TRAIN sings
+import { lesson as lessonOf } from "../../../server/src/ownsong";
+import { ownSongUri } from "../../sound/ownSong";
 // C-327: the household space, as /api/device/state carries it (server/src/household.ts)
 type TogetherState = { device: string; side: "left" | "right"; since: string; until: string;
                        daemon: { slot: number; species: number; name: string; nickname: string; level: number; art: string; artKey: string } | null;
@@ -62,6 +65,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const masked = halloween.on && !!halloween.costume && !unmasked;
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
   const [serving, setServing] = useState<Serving | null>(null);   // C-302: the fruit or the glass, eaten or drunk
+  const [singing, setSinging] = useState<Singing | null>(null);   // C-418: TRAIN -- its part sung, the error carried back
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
   const [note, setNote] = useState("C");                    // C-114: the day's note, for its phrase
   const [sky, setSky] = useState<{ edition: string; mended: boolean; both: boolean }>({ edition: "CONTENT", mended: false, both: false });   // C-305, C-306: the aurora's
@@ -114,10 +118,16 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     setSaid(word); setUnder(""); if (what !== "sleep") setHop((n) => n + 1);   // C-118: seen at once; the life it brings back follows
     if (what === "feed" || what === "water") setServing({ provision: PROVISIONS[GIVEN[what]], at: Date.now(), ms: phraseMs(what) });   // C-302
     setL((was) => was && presumed(was, what));            // C-122: the happy path, drawn before the companion answers
+    // C-418: TRAIN sings the part it is learning and the error comes back -- the lesson worked out here, at once, as the
+    // companion will (server/src/ownsong.ts); its answer corrects the line under the den
+    const s = what === "train" ? l.song : null;
+    const sung = s ? lessonOf(s.species, s.total, s.growth, s.trainsToday, evolves(s.species)) : null;
+    if (s && sung?.part) setSinging({ lesson: sung, at: Date.now(), species: s.species });
     if (ON_PHONE) {                                       // C-114: a phrase of the game's music, on the day's note
       try {
         if (what !== "wake" && soundLevel() > 0) {
-          await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri: careSound(what, note) });
+          const uri = (sung?.part ? ownSongUri(sung.part, sung.before) : null) ?? careSound(what, note);   // C-418: its song
+          await setAudioModeAsync({ playsInSilentMode: false }); player.replace({ uri });
           player.volume = soundLevel(); player.play();
         }
       }
@@ -154,7 +164,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       <YStack position="relative">
       <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level} aurora={aurora ? sky.edition : null} both={sky.both} veiled={l.mask && !masked ? (l.maskEyes ?? []) : null}   // C-113, C-119; C-240: Halloween shimmers all day; C-357: THE MASK
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} singing={singing} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level} aurora={aurora ? sky.edition : null} both={sky.both} veiled={l.mask && !masked ? (l.maskEyes ?? []) : null}   // C-113, C-119; C-240: Halloween shimmers all day; C-357: THE MASK
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
                           path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={together?.daemon ? 108 : 144} />} height={180}
                 together={together?.daemon ? { mine: together.side, art: <Art key={together.daemon.artKey} path={together.daemon.art} size={108} /> } : null} />
@@ -168,6 +178,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
         ? <Text fontSize={28} fontWeight="800" letterSpacing={2} color="$color12">ASLEEP</Text>
         : <Text fontSize={20} fontWeight="600" color="$color12">{shown.word}</Text>}
       <Small>{`fed ${l.fed.today} of 3 · water ${l.watered.today} of 3${l.trained ? " · trained" : ""}${l.rested ? " · slept" : ""}`}</Small>
+      {l.song ? <Small color={l.song.ready ? "$color12" : "$color10"}>{songLine(l.song)}</Small> : null}{/* C-418: its own song, as it knows it */}
       {l.cue ? <Small color="$color10">{l.cue}</Small> : null}
       {shown.care ? <CareStats mood={shown.mood} care={shown.care} /> : null}
       {l.grown && l.grown.exp > 0 ? <Small>{l.grown.level > (l.level ?? 0)

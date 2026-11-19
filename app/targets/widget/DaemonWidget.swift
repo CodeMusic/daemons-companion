@@ -16,6 +16,8 @@ struct Entry: TimelineEntry {
   var hop = false             // a button was just pressed
   var serving: Int? = nil     // C-302: what FEED or DRINK gave, eaten to this stage (0 full ... 3 empty); nil, nothing there
   var served = true           // false: the empty one fading away
+  var sung: Double? = nil     // C-418: TRAIN -- how far into the part it is learning it has sung, in seconds
+  var back: Double? = nil     //        then how far back the error has come, 0..1
 }
 
 // C-113: the hour's wandering, as timeline entries. Each stop is a few minutes long and it turns to face the way it went;
@@ -24,7 +26,20 @@ func wander(_ s: Snapshot?, paired: Bool, from start: Date, until end: Date, rea
   var r = Scatter("\(Int(start.timeIntervalSince1970 / 3600))")
   var spot = 0.3 + 0.4 * r.next(), entries: [Entry] = []
   let still = s?.tired == "asleep"
-  if react, Provisions.given(s?.did) != nil {
+  if react, s?.did == "train", let song = s?.song, let part = song.part {
+    // C-418: TRAIN sings -- the part it is learning, a note at a time out of its mouth (an entry every half second or
+    // so, SwiftUI moving the notes between them), then the error carried back as green binary (OwnSong.swift)
+    let length = SongMath.seconds(part), step = max(0.5, length / 24)
+    var t = 0.0
+    while t <= length + RISE_SECONDS {
+      entries.append(Entry(date: start.addingTimeInterval(t), snapshot: s, paired: paired, spot: spot, hop: t < 1.2, sung: t))
+      t += step
+    }
+    for b in [0.0, 0.5, 1.0] {
+      entries.append(Entry(date: start.addingTimeInterval(t + b * 1.1), snapshot: s, paired: paired, spot: spot, back: b))
+    }
+    entries.append(Entry(date: start.addingTimeInterval(t + 1.6), snapshot: s, paired: paired, spot: spot))
+  } else if react, Provisions.given(s?.did) != nil {
     // C-302: FEED or DRINK -- up and down again as below, and what it was given eaten in four stages beside it: full, a
     // stage each third of the phrase, empty a moment, then faded and gone, as the app's (Provision.swift)
     let step = Provisions.step(s?.did), gone = step * 3 + 0.65
@@ -134,6 +149,15 @@ struct Stage: View {
                       y: floor - side + side * 0.06 + side * 0.95 - w / 2)
             .opacity(entry.served ? 1 : 0)
             .transition(.opacity)
+        }
+        // C-418: TRAIN sings -- the notes from its mouth, then the binary back into it
+        if let song = s.song, song.part != nil, entry.sung != nil || entry.back != nil {
+          let ahead: CGFloat = entry.facesRight ? 1 : -1
+          SongFlight(song: song, sung: entry.sung, back: entry.back, side: side,
+                     mouth: CGPoint(x: x + ahead * side * 0.14, y: floor - side * 0.55), ahead: ahead)
+            .frame(width: g.size.width, height: g.size.height)
+            .animation(.linear(duration: max(0.5, SongMath.seconds(song.part!) / 24)), value: entry.sung)
+            .animation(.easeIn(duration: 0.5), value: entry.back)
         }
         if let mark = s.expr?.mark, !(s.said != nil && entry.date.timeIntervalSince(s.at) < 60) {   // C-119: zz, a heart, a drop
           PixelMark(mark: mark).frame(width: max(12, side * 0.2), height: max(12, side * 0.2)).position(above)

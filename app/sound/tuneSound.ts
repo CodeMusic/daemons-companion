@@ -23,6 +23,7 @@ export const soundLevel = (s: Hearing = mine) => (s?.sound === false ? 0 : Math.
 // wherever they cannot be, the boards' square wave on the same notes
 let voice: { name: string; pcm: Int16Array; ins: Instrument } | null = null;
 export const playWith = (v: typeof voice) => { voice = v; };
+export const voiceNow = () => voice;                      // C-418: a daemon's own song is mixed on the same instrument
 // the instrument for a save's edition -- the harp for CONTENT, the flute for CONTEXT (server/data/sounds/, DAEMONS' own,
 // bundled with the app, so it plays away and hosting alone too); asked again for another edition, it changes
 const SOUNDS: Record<string, Instrument & { file: string; edition: string }> = require("../../server/data/sounds/instruments.json");
@@ -55,7 +56,7 @@ export function soundOf(id: string, notes: [number, number][], root = 0, level =
   const bytes = echo && voice ? echoWav(notes, root, voice.pcm, voice.ins, level) : tuneWav(notes, root, level);
   return asUri(bytes, `${id}-${voiceName()}${echo ? "-echo" : ""}`);
 }
-function asUri(bytes: Uint8Array, name: string): string {
+export function asUri(bytes: Uint8Array, name: string): string {
   if (Platform.OS === "web") {
     let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     return `data:audio/wav;base64,${btoa(bin)}`;

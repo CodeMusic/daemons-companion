@@ -61,6 +61,29 @@ function render(tune: [number, number][], root: number, pcm: Int16Array, ins: In
   return mix;
 }
 
+// C-418: notes that may sound together -- a daemon's own song, where a note not yet learned is STATIC, a cloud of
+// candidate notes at once over a hiss (server/src/ownsong.ts) -- each at its own start, mixed, then the hiss laid in
+export interface Voicing { midi: number; at: number; ms: number; vel: number }
+export interface Hiss { at: number; ms: number; level: number }
+export function mixWav(notes: Voicing[], hiss: Hiss[], pcm: Int16Array, ins: Instrument, level = 1): Uint8Array {
+  const end = Math.max(0, ...notes.map((n) => n.at + n.ms + ins.release_ms), ...hiss.map((h) => h.at + h.ms));
+  const mix = new Float32Array(Math.round((RATE * end) / 1000) + 1);
+  for (const n of notes) {
+    const s = note(pcm, ins, n.midi, n.ms), a = Math.round((RATE * n.at) / 1000);
+    for (let i = 0; i < s.length && a + i < mix.length; i++) mix[a + i] += s[i] * n.vel;
+  }
+  let seed = 0x2545f491, low = 0;                           // the same hiss every time: a small generator, softened
+  for (const h of hiss) {
+    const a = Math.round((RATE * h.at) / 1000), n = Math.round((RATE * h.ms) / 1000), edge = Math.round(RATE * 0.02);
+    for (let i = 0; i < n && a + i < mix.length; i++) {
+      seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5;
+      low += 0.25 * (((seed >>> 0) / 4294967296) * 2 - 1 - low);
+      mix[a + i] += low * h.level * Math.min(1, i / edge, (n - i) / edge);
+    }
+  }
+  return pcmWav(normal(mix, level), RATE);
+}
+
 // The samples of a mono 16-bit WAV file (its "data" chunk)
 export function wavPcm(bytes: Uint8Array): Int16Array {
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);

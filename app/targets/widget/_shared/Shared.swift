@@ -40,6 +40,52 @@ struct Snapshot: Codable {
   var rest: Int? = nil              // C-279: how well it has slept, 0..100 (C-266's care.rest), for the moon
   var wakesAt: Date? = nil          // C-300: asleep -- when it would wake by itself, so the widget is drawn again then
   var sky: Sky? = nil               // C-312: what the aurora waits on (the book mended; both editions met)
+  var song: SongSnap? = nil         // C-418: its own song, and the part it is learning -- TRAIN sings it
+}
+
+// C-418 (DAEMONS T-594): a daemon's own song as GET /api/daemon/song gives it -- where it stands (the share of its part
+// learned, READY when that part is whole and it has a form to become, AT HOME when its bond would let it evolve here),
+// the part it is learning ([MIDI, beats, the share it is learned at] a note), and how STATIC is made: a note not learned
+// is its candidates in the key (steps along it from the note, the first kept longest), closing over `window` of the way.
+// The same rule as server/src/ownsong.ts heardAt; change the two together.
+struct SongSnap: Codable {
+  struct Part: Codable { let name: String; let bpm: Double; let tonic: Int; let minor: Bool; let notes: [[Double]]; let bass: [[Double]] }
+  let species: Int; var share: Double; var ready: Bool; let atHome: Bool; var trainsToday: Int; let trainsADay: Int
+  let part: Part?; let window: Double; let candidates: [Int]; let floor: Double
+}
+struct HeardNote { let midi: Int; let beats: Double; let at: Double; let sure: Double; let candidates: [Int] }
+enum SongMath {
+  static func heard(_ s: SongSnap, share: Double) -> [HeardNote] {
+    guard let p = s.part else { return [] }
+    let scale = p.minor ? [0, 2, 3, 5, 7, 8, 10] : [0, 2, 4, 5, 7, 9, 11]
+    func inKey(_ m: Int) -> Bool { scale.contains(((m - p.tonic) % 12 + 12) % 12) }
+    func step(_ m: Int, _ k: Int) -> Int {
+      var n = m
+      while !inKey(n) { n -= 1 }
+      for _ in 0..<abs(k) { n += k > 0 ? 1 : -1; while !inKey(n) { n += k > 0 ? 1 : -1 } }
+      return n
+    }
+    return p.notes.map { n in
+      let midi = Int(n[0]), beats = n[1], at = n[2]
+      if share >= at { return HeardNote(midi: midi, beats: beats, at: at, sure: 1, candidates: [midi]) }
+      let near = max(0, min(1, (share - (at - s.window)) / s.window))
+      let keep = Int((Double(s.candidates.count) * (1 - near)).rounded())
+      return HeardNote(midi: midi, beats: beats, at: at, sure: near, candidates: [midi] + s.candidates.prefix(keep).map { step(midi, $0) })
+    }
+  }
+  // what one TRAIN is presumed to teach before the companion answers: a forty-second of its part, three a day, never past whole
+  static func taught(_ s: SongSnap) -> Double {
+    s.trainsToday < s.trainsADay && s.share < 1 ? min(1, s.share + 1.0 / Double(s.trainsADay * 14)) : s.share
+  }
+  static func seconds(_ p: SongSnap.Part) -> Double { p.notes.reduce(0) { $0 + $1[1] } * 60 / p.bpm }
+  // a note's colours (SYNESTHESIA): C red, D orange, E yellow, F green, G blue, A indigo, B violet; a black key both sides'
+  static let white: [Int: String] = [0: "#B8443E", 2: "#C9702E", 4: "#CFAE34", 5: "#3F9A55", 7: "#3474B0", 9: "#4D4BAE", 11: "#8A4CAE"]
+  static func colours(_ midi: Int) -> [String] {
+    let pc = (midi % 12 + 12) % 12
+    if let c = white[pc] { return [c] }
+    return [white[pc - 1] ?? "#888888", white[(pc + 1) % 12] ?? "#888888"]
+  }
+  static let binary = "#52F77B"
 }
 
 // C-312 (the user, 2026-11-10, by multiple choice: "Bands over its sky"): the aurora in the widget's night sky -- the den's
@@ -108,6 +154,8 @@ struct Life: Decodable {
   struct Care: Decodable { let rest: Int }   // C-279: the rest of C-266's care is not drawn here
   let care: Care?
   let wakesAt: String?                       // C-300
+  struct Song: Decodable { let share: Double; let ready: Bool; let trainsToday: Int }
+  let song: Song?                            // C-418: where its song stands after a TRAIN
 }
 // The part of GET /api/device/state the widget draws
 struct DeviceState: Decodable {
@@ -230,11 +278,12 @@ enum Companion {
       let look = d.expression?.name ?? "awake", key = "\(d.artKey)/\(look)"     // C-119: its picture in its expression's shade
       var png = old?.artKey == key ? old?.png : nil
       if png == nil { png = (try? await call("/api/art?party=\(d.slot)" + (look == "awake" ? "" : "&expression=\(look)")) as Art)?.png }
-      let s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
+      var s = Snapshot(carries: true, name: d.nickname.isEmpty ? d.name : d.nickname, level: d.level, word: d.life.word,
                        fed: d.life.fed.today, watered: d.life.watered.today, trained: d.life.trained, tired: d.life.tired,
                        cue: d.life.cue, png: png, artKey: key, said: nil, den: d.den, expr: d.expression, at: Date(),
                        sound: st.settings?.sound, volume: st.settings?.volume, edition: st.edition, rest: d.life.care?.rest,
                        wakesAt: isoDate(d.life.wakesAt), sky: st.sky)
+      s.song = try? await call("/api/daemon/song") as SongSnap   // C-418: an older companion has none, and TRAIN hops as before
       Shared.snapshot = s
       return s
     } catch {

@@ -26,7 +26,8 @@ import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./save/growth.js";
 import { tradeLocks, tradesToWrite, tradesWritten } from "./tradelink.js";   // C-219
 import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.js";
-import { bondAdd, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution } from "./evolve.js";
+import { bondAdd, bondOf, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution, AT_HOME } from "./evolve.js";
+import { lesson, shareOf, songOf, TRAINS_A_DAY, type Lesson } from "./ownsong.js";   // C-418
 import { carriedFor } from "./carry.js";
 import { validDeviceId } from "./deviceid.js";
 import { shareCare, togetherView } from "./household.js";
@@ -428,6 +429,40 @@ export function daemonExpression(store: Store, now = new Date(), lifeNow?: Life,
   const life = lifeNow.tired === "awake" && drowsyFrom(t, now.getHours()) ? { ...lifeNow, tired: "drowsy" as const } : lifeNow;
   const face = species === null ? null : faceOf(artName(species));
   return careworn(thrived(expressionFor(life, daemonFeelings(store, now, lifeNow, who), face), t), lifeNow.care, face);   // C-266: as it has been cared for
+}
+
+// C-418 (DAEMONS T-594): a TRAIN is a lesson in its own song -- sung as it knows its part and, three a day until the part
+// is perfect, the experience a battle would give, kept by its personality until SYNC writes it home (as a step's, C-47).
+// Counted by the day's lessons that taught something, so a TRAIN past the third still sings.
+function trainsToday(store: Store, personality: number, now: Date) {
+  const day = new Date(now); day.setHours(0, 0, 0, 0);
+  return store.kindSince("exp", day).filter((e) => (e.detail ?? "").startsWith(`${personality} `) && / train /.test(` ${e.detail} `)).length;
+}
+// where its song stands now: the form it is (what it became here, until SYNC), its experience in all, its growth curve,
+// the day's lessons, its part's share, and whether that part is whole -- READY when its form evolves further; AT HOME
+// when its bond is deep enough to evolve here too (the user, 2026-11-18: "if you and your daemon reach a certain depth
+// of companionship then it feels at home in this world too")
+export interface SongNow { species: number; total: number; growth: number; trainsToday: number; trainsADay: number;
+                           stage: number; share: number; perfect: boolean; ready: boolean; atHome: boolean }
+export function songNow(h: Host, store: Store, deviceId = "", now = new Date()): SongNow | null {
+  const d = carriedDaemon(h, store, deviceId);
+  if (!d) return null;
+  const species = evolvedOf(store, d.personality)?.to ?? d.species;
+  const song = songOf(species), part = song[song.length - 1];
+  if (!part) return null;
+  const growth = SPECIES[String(species)]?.growth ?? 0, total = d.exp + pendingExp(store, d.personality).exp;
+  const share = shareOf(part, total, growth), evolves = (SPECIES[String(species)]?.evolutions ?? []).length > 0;
+  return { species, total, growth, trainsToday: trainsToday(store, d.personality, now), trainsADay: TRAINS_A_DAY,
+           stage: song.length, share, perfect: share >= 1, ready: share >= 1 && evolves,
+           atHome: bondScore(bondOf(store, d.personality)) >= AT_HOME };
+}
+export function trainSong(h: Host, store: Store, deviceId = "", now = new Date()): (Lesson & { species: number }) | null {
+  const s = songNow(h, store, deviceId, now), d = s && carriedDaemon(h, store, deviceId);
+  if (!s || !d) return null;
+  const evolves = (SPECIES[String(s.species)]?.evolutions ?? []).length > 0;
+  const l = lesson(s.species, s.total, s.growth, s.trainsToday, evolves);
+  if (l.gain > 0) store.logInteraction("exp", `${d.personality} ${l.gain} train ${now.toISOString()}`);
+  return { ...l, species: s.species };
 }
 
 // C-45: what it has grown here, to show on the device and the site: the experience, and the level it would be at home

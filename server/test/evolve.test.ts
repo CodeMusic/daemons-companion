@@ -3,7 +3,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/save/growth.js";
 import { syncSave } from "../src/save/writer.js";
 import { readSave, readBoxes, readAway, blocks, ORDERS } from "../src/save/reader.js";
-import { evolveTarget, judgeEvolution, evolvedOf, bondAdd, bondOf, bondScore, bondSeen } from "../src/evolve.js";
+import { evolveTarget, judgeEvolution, evolvedOf, bondAdd, bondOf, bondScore, bondSeen, AT_HOME } from "../src/evolve.js";
 import { Store } from "../src/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
@@ -12,16 +12,19 @@ const curve = SPECIES["1"].growth;                              // ROVERCUB: LEV
 
 describe("evolving while carried (C-184)", () => {
   it("judges the game's own rule, only what the companion may judge", () => {
-    expect(evolveTarget({ species: 1, level: 15, friendship: 0, personality: 1 }, 10)).toBeNull();
-    expect(evolveTarget({ species: 1, level: 16, friendship: 0, personality: 1 }, 10)).toBe(2);
+    expect(evolveTarget({ species: 1, level: 15, friendship: 0, personality: 1, bond: AT_HOME }, 10)).toBeNull();
+    expect(evolveTarget({ species: 1, level: 16, friendship: 0, personality: 1, bond: AT_HOME }, 10)).toBe(2);
+    // C-418: not AT HOME here yet -- its whole part sends it home to SING, and it evolves in the game
+    expect(evolveTarget({ species: 1, level: 16, friendship: 0, personality: 1 }, 10)).toBeNull();
+    expect(evolveTarget({ species: 1, level: 16, friendship: 0, personality: 1, bond: AT_HOME - 1 }, 10)).toBeNull();
     const unjudged = Object.entries(SPECIES).find(([, r]) => (r.evolutions ?? []).length && r.evolutions.every((e: any) => !e.judged));
     if (unjudged) expect(evolveTarget({ species: Number(unjudged[0]), level: 100, friendship: 255, personality: 1 }, 12)).toBeNull();
   });
 
   it("keeps what it became, and goes on from there", () => {
     const store = new Store(":memory:");
-    expect(judgeEvolution(store, { species: 1, level: 10, friendship: 0, personality: 99 })).toBeNull();
-    expect(judgeEvolution(store, { species: 1, level: 16, friendship: 0, personality: 99 })).toMatchObject({ from: 1, to: 2 });
+    expect(judgeEvolution(store, { species: 1, level: 10, friendship: 0, personality: 99, bond: AT_HOME })).toBeNull();
+    expect(judgeEvolution(store, { species: 1, level: 16, friendship: 0, personality: 99, bond: AT_HOME })).toMatchObject({ from: 1, to: 2 });
     expect(evolvedOf(store, 99)).toMatchObject({ to: 2 });
   });
 

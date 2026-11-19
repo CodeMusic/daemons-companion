@@ -5,6 +5,10 @@
 // judge (`judged`): its level, its friendship (220, as the game's), the hour for DAY and NIGHT, the SILCOON/CASCOON split
 // on its personality. Never an item, a trade, beauty or SHEDINJA's copy. What evolved is kept by its personality until
 // SYNC writes the new species into the save (writer.ts), and the game finishes it (its stats, the INDEX, its moves).
+// C-418 (the user, 2026-11-18, by multiple choice: "for now, Only in the game ... but if you and your daemon reach a
+// certain depth of companionship then it feels at home in this world too, and is able to evolve home or away"): a
+// daemon evolves here only once its bond is AT HOME -- until then its song's whole part sends it home to SING (DAEMONS
+// T-595). CARRIED, which is only ever met here, is judged as before.
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
 
@@ -13,9 +17,11 @@ export interface Evolution { method: string; param: number | string; target: num
 export interface Judged { species: number; level: number; friendship: number; personality: number; bond?: number }
 
 // the species it becomes now, or null: the first of its evolutions the companion may judge whose rule it meets
+export const AT_HOME = 160;                                      // DRAFT: the CARRIED line's last threshold (C-185)
 export function evolveTarget(d: Judged, hour: number): number | null {
+  const home = (d.bond ?? 0) >= AT_HOME;
   for (const e of (SPECIES[String(d.species)]?.evolutions ?? []) as Evolution[]) {
-    if (!e.judged) continue;
+    if (!e.judged || (e.method !== "CARRIED" && !home)) continue;
     const p = Number(e.param), friend = d.friendship >= 220, split = ((d.personality >>> 16) % 10) < 5;
     const met = e.method === "LEVEL" || e.method === "LEVEL_NINJASK" ? d.level >= p
       : e.method === "FRIENDSHIP" ? friend

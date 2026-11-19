@@ -1,6 +1,116 @@
 {
- "latest": 988,
+ "latest": 989,
  "builds": [
+  {
+   "build": 989,
+   "commit": "f0597d4a",
+   "date": "2026-11-18",
+   "sections": [
+    {
+     "ticket": "C-398",
+     "title": "THE CARDPUTERS caught up with the Zero's first days",
+     "lines": [
+      "THE CARDPUTERS' shelf cover from its reprint (DAEMONS 6961839f); the wiki names THE COMPANION's 76 pages and THE CARDPUTERS' 24"
+     ]
+    },
+    {
+     "ticket": "C-403",
+     "title": "LISTEN in THE GLASSES",
+     "lines": [
+      "LISTEN in THE GLASSES — its recording (near, the user's pick; DAEMONS 6e54552c) named among the books the app plays (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-400",
+     "title": "THE MIND gives every kind of work a colour",
+     "lines": [
+      "DRAFT: THE MIND gives every kind of work a colour — one table, TASK_KINDS in server/src/ai/tasks.ts (SONGS and DIALOGUE added, both had drawn grey), sent with every /api/mind/tasks and imported by the phone; Tasks.open and the hub's ledgered work take a TaskKind, so the compiler refuses a kind with no colour; the test holds every colour off the steps' spectrum and THE ENGINE ROOM's fallback copy to the table"
+     ]
+    },
+    {
+     "ticket": "C-407",
+     "title": "The dream's day symbol in DREAMS (DAEMONS T-531)",
+     "lines": [
+      "The dream's day symbol in DREAMS (DAEMONS T-531, DRAFT) — each dream shows its day's ring and horizon beside its title (dreams.ts dayOfDream: the night's day on the companion's own clock; /art/daysymbol/<day>_<light|dark>.png and /api/art?daysymbol= for a phone away; the seven drawn by DAEMONS tools/gendaysymbol.py from the paths approved 2026-11-08)"
+     ]
+    },
+    {
+     "ticket": "C-404",
+     "title": "THE ENGINE ROOM's CREATIONS say why one failed, and try it again",
+     "lines": [
+      "DRAFT: THE ENGINE ROOM's CREATIONS say why one failed, and try it again — a failed painting keeps its reason in /api/creations as a song already did; POST /api/creations/again {uid} asks a failed song or painting again (the same request, mode and style, by the daemon that made it, found among those away) and lets the failed one go; CREATIONS: each failure's reason and what was asked, TRY AGAIN, a FAILED filter, TICK THE N FAILED for one LET GO; songs said SONG (they were said PAINTING) with a SONGS filter"
+     ]
+    },
+    {
+     "ticket": "C-405",
+     "title": "THE ENGINE ROOM names every device as the app does",
+     "lines": [
+      "DRAFT: THE ENGINE ROOM names every device as the app does — /api/devices carries each one's name (server/src/devicenames.ts: data/devices.json's look, then KIND_NAMES, a widget for its phone, C-394); KIND_NAMES moves to server/src/kindnames.ts, which the app re-exports, so the hub and the app share one table; DEVICES shows the name with the id small beneath, and THE HOUSE's seats, THE MIND's web and tasks, and who asked for a creation say the name"
+     ]
+    },
+    {
+     "ticket": "C-175",
+     "title": "LoRa on every chip and band",
+     "lines": [
+      "Every LoRa chip and band — SX1268, SX1276, LLCC68, SX1280 beside the SX1262 and SX1278; 920 MHz; the hub says when boards cannot hear each other"
+     ]
+    },
+    {
+     "ticket": "C-412",
+     "title": "The dream's stage: its centre on the day symbol (DAEMONS T-531)",
+     "lines": [
+      "The dream's stage is its centre (DAEMONS T-531, DRAFT; the user, 2026-11-18, by multiple choice: \"which centre\") — a spine of seven dots through the day symbol in DREAMS, root at the foot and crown at the top, in ink, the dream's own centre lit larger in the day's colour; mergeAsk asks the writer for a centre (JSON \"centre\", or a CENTRE: line), keepLenses keeps it, centreOf falls back to the day's own; /api/dreams gives centre and dayColour"
+     ]
+    },
+    {
+     "ticket": "C-402",
+     "title": "THE MIND names each mind once",
+     "lines": [
+      "DRAFT: THE MIND names each mind once — the house's module, tried as one, is renamed to the module that took the work (hub module, a dev board) as the minds list names it, a rename not a hand-off (Tasks.named, WriteJob.named from house.write); a phone's \"this phone\" is that phone's own (\"iPhone's own\"); work done on the hub itself is drawn at the HUB, in THE ENGINE ROOM and on the phone"
+     ]
+    },
+    {
+     "ticket": "C-413",
+     "title": "CREATIONS sends small covers, not the full paintings",
+     "lines": [
+      "DRAFT: CREATIONS sends small covers, not the full paintings — each cover (a sleep piece's, a song's, a painting) gets a 256px JPEG beside it (<name>-small.jpg, thumbs.ts), made by ffmpeg on the hub the first time it is asked for, one at a time, again when the picture is newer, the painting itself sent when one cannot be made; a creation lists it as thumb; THE ENGINE ROOM's CREATIONS and the phone's gallery tiles and small records show it; a painting let go takes its small copy with it. Not through THE MESH: a job there is a task in THE MIND, and a first visit would push the ledger's real work out",
+      "Every small cover made ahead, in the background — ffmpeg takes ~2.6 s just to start on the hub (one core), so a first visit asking for 35 would have waited minutes; a sweep a minute after start, then every half hour for covers painted since"
+     ]
+    },
+    {
+     "ticket": "C-415",
+     "title": "Cares kept per daemon",
+     "lines": [
+      "Feeding, watering, training or putting one daemon to bed no longer does it for all of them. SETTINGS > GENERAL > CARES switches back to one shared set. (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-416",
+     "title": "The widget follows the app",
+     "lines": [
+      "The widget always shows the daemon the app shows; choose it on the DAEMON screen, under ON THIS PHONE AND ITS WIDGET. (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.402.1 (DAEMONS release: T-565 batch 13, pret's last music)",
+      "and 12 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Profile_layout.json: the SUBTLE scenes' flags (T-575..T-580)",
+      "Items.json, events.json: DAVID's COMPASS and its two DEBUG rows (T-586)",
+      "Profile_layout.json: THE LOG's touch-stone read (DAEMONS T-585)",
+      "Battle.json: 67 routines' split (DAEMONS T-490 step 3, contact is physical)"
+     ]
+    }
+   ]
+  },
   {
    "build": 988,
    "commit": "b9335d27",

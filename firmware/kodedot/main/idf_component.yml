@@ -9,3 +9,5 @@ dependencies:
     git: https://github.com/kodediy/kode-sdk.git
     path: components/kscreen
     version: v0.1.5
+  espressif/cjson:
+    version: "*"

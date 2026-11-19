@@ -10,11 +10,11 @@ CONFIG_KODEOS_BOOT_ROLE_APP=y
 # The console over the USB-C cable, and its `screenshot`: how a picture is checked without standing at the board.
 CONFIG_KODEOS_CONSOLE=y
 
-# No radio yet: the first step is the ROUTINES menu and LODESTONE, which need none. The den's sync (C-426) turns it on
-# by deleting these three lines (Kode's template says why all three are needed).
-CONFIG_KODEOS_RADIO=n
-CONFIG_ESP_HOSTED_ENABLED=n
-CONFIG_BT_ENABLED=n
+# C-426: the radio, for the den's Wi-Fi: AO_Radio (the C5's link, which selects esp-hosted), Wi-Fi on it, and AO_Net
+# for kode_http_*. An app's default is none (kaos/Kconfig: on only for kodeOS); these are Kode's network example's.
+CONFIG_KODEOS_RADIO=y
+CONFIG_KODEOS_WIFI=y
+CONFIG_KODEOS_NET=y
 
 # The board compiles Montserrat 14 only, because the launcher draws in its own faces: 28 for the menu's rows.
 CONFIG_LV_FONT_MONTSERRAT_28=y

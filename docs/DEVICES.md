@@ -19,7 +19,7 @@
 | **T-Glass** | 126x126 seen (294x126 panel) | one touch button, BOOT | PDM mic (unused) | -- (a vibration motor) | -- | -- (BHI260AP, unused) | voltage only | phone, USB cable; Wi-Fi drains it | built (C-262) |
 | **M5StickC-Plus 1.1** | 240x135 | two buttons | PDM mic | buzzer (tunes only) | -- | **the Thermal HAT: GLOW** | AXP192 | Wi-Fi, USB cable, phone | runs (C-148) |
 | **ESP32-S3-BOX-3** (Espressif) | 320x240 touch | touch | two mics (ES7210) | speaker (ES8311) | -- | -- | on its dock | Wi-Fi; **runs ESPHome**: Home Assistant's voice assistant, its screen the daemon's face (`firmware/box3/`) | built (C-138) |
-| **Kode Dot** (ESP32-P4 + C5) | 410x502 AMOLED, touch | D-pad, TOP, BOTTOM, touch | its mic (ES8311) | speaker (ES8311) | one RGB (KTD2026); an LRA haptic | **IR, NFC, 125 kHz**; compass and IMU | gauge (CW2217) + charger (BQ25896) | Wi-Fi (2.4 and 5 GHz), phone; an app in Kode's launcher (`firmware/kodedot/`, `docs/KODEDOT.md`) | the ROUTINES menu built (C-424); the board December 2026 |
+| **Kode Dot** (ESP32-P4 + C5) | 410x502 AMOLED, touch | D-pad, TOP, BOTTOM, touch | its mic (ES8311) | speaker (ES8311) | one RGB (KTD2026); an LRA haptic | **IR, NFC, 125 kHz**; compass and IMU | gauge (CW2217) + charger (BQ25896) | Wi-Fi (2.4 and 5 GHz), phone; an app in Kode's launcher (`firmware/kodedot/`, `docs/KODEDOT.md`) | the den and the ROUTINES menu built, run in kode-sim (C-424, C-426); the board December 2026 |
 | **LLM630** (behind a T-Embed) | none | none | none | none | -- | -- | own gauge | UART to its T-Embed | C-76: the offline brain, not a device of its own |
 
 *Built* means it compiles and has not yet run on that board.

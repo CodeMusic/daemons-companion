@@ -1,0 +1,92 @@
+{
+  "timeout_s": 900,
+  "settle_s": 5,
+  "network": "internet",
+  "forbid": [
+    "(?<![0-9A-Fa-f:])(?:[0-9A-Fa-f]{2}:){4}[0-9A-Fa-f]{2}(?![0-9A-Fa-f:])"
+  ],
+  "steps": [
+    {
+      "expect_console": "daemons up",
+      "timeout_s": 120
+    },
+    {
+      "console": "function name=\"server\" arg=\"http://@HOST_IP@:4799\""
+    },
+    {
+      "expect_console": "the companion is at",
+      "timeout_s": 30
+    },
+    {
+      "expect_console": "job 0: result 0",
+      "timeout_s": 180
+    },
+    {
+      "expect_console": "job 1: result 0",
+      "timeout_s": 120
+    },
+    {
+      "wait": 3
+    },
+    {
+      "screenshot": "1_den"
+    },
+    {
+      "button": "right",
+      "hold_ms": 120
+    },
+    {
+      "wait": 1
+    },
+    {
+      "button": "top",
+      "hold_ms": 120
+    },
+    {
+      "expect_console": "job 2: result 0",
+      "timeout_s": 60
+    },
+    {
+      "expect_console": "job 0: result 0",
+      "timeout_s": 60
+    },
+    {
+      "wait": 3
+    },
+    {
+      "screenshot": "2_fed"
+    },
+    {
+      "button": "right",
+      "hold_ms": 120
+    },
+    {
+      "wait": 1
+    },
+    {
+      "button": "right",
+      "hold_ms": 120
+    },
+    {
+      "wait": 1
+    },
+    {
+      "button": "top",
+      "hold_ms": 120
+    },
+    {
+      "expect_console": "job 2: result 0",
+      "timeout_s": 60
+    },
+    {
+      "expect_console": "job 0: result 0",
+      "timeout_s": 60
+    },
+    {
+      "wait": 3
+    },
+    {
+      "screenshot": "3_asleep"
+    }
+  ]
+}

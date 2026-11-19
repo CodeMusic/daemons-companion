@@ -7,12 +7,36 @@ in the game's words. The plan, and why it is built this way, is `docs/KODEDOT.md
 
 ## What runs today
 
-The ROUTINES menu: FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LODESTONE (125 kHz) and UPLINK (Wi-Fi). The pad
-moves, TOP opens or runs, BOTTOM goes back and, from the menu, home to kodeOS; a tap on a row does what TOP does. Each
+**The den** (C-426), where the app opens: the Dot's daemon, drawn from the companion, with the day, its care and the
+next step, and DRINK, FEED, TRAIN and SLEEP (WAKE while it sleeps) under it. A care is drawn at once and kept until the
+companion takes it, so going home to kodeOS (a reset) loses none. The Dot asks the companion again every 30 seconds.
+
+The Dot finds the companion at the address it is given once, over its cable, at its console (`idf.py -p PORT
+monitor`, or kode-sim's terminal):
+
+```
+function name="server" arg="http://HOST:4730"
+```
+
+It is kept in kodeOS's settings. At home the Dot needs no key: it is a board on the companion's device door, by its
+name, `kode-dot-` and the end of its MAC.
+
+**The ROUTINES menu**, the row under the cares: FLARE (IR), WHISPER (Bluetooth), TOUCHSTONE (NFC), LODESTONE (125 kHz) and UPLINK (Wi-Fi). The pad
+moves, TOP opens or runs, BOTTOM goes back and, from the den, home to kodeOS; a tap on a row does what TOP does. Each
 move ticks the haptic and lights the LED in the type's colour.
 
 LODESTONE has its first routine, **READ MY TAG**: five seconds listening for an EM4100 tag, then its ID on the glass.
 The ID is shown there and nowhere else -- never logged, never kept.
+
+## Checking it in the simulator
+
+```sh
+./seer.sh review                       # scenarios/menu.json: ROUTINES, LODESTONE, READ MY TAG, and back
+./scratch_companion.sh                 # a fresh scratch companion on roverbyteseer: a synthetic save, port 4799
+./seer.sh review scenarios/den.json    # the den against it: the picture, FEED, SLEEP
+```
+
+Never point the simulator at the real companion: a care given there is given to the real daemon.
 
 ## Building
 
@@ -41,6 +65,8 @@ It appears in Apps. From an app that does not start, BOTTOM + LEFT held about a 
 | `main/app_main.c` | the launcher's name for the app, and its start |
 | `main/daemons_ao.c` | the one Active Object: the screen, the buttons, the routines it runs |
 | `main/routines.c` | the routine types and their routines, as data |
+| `main/companion.c` | the companion's answers read, and the worker's job that asks for them |
+| `main/den.c` | the den on the glass |
 | `main/idf_component.yml` | the SDK's version, the one pin |
-| `scenarios/` | what `seer.sh review` plays in the simulator |
+| `scenarios/` | what `seer.sh review` plays in the simulator; `scratch_companion.sh` is what the den's plays against |
 | `appdata/` | the launcher's colour, description and icon (a placeholder) |

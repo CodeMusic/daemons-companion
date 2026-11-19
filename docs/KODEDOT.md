@@ -60,10 +60,17 @@ over ESP-Hosted. It holds nearly every radio and sense the other devices have be
   through Kode's own C5 firmware. **It has no NFC, no 125 kHz and no infrared** -- those wait for the board.
 
 ```sh
-firmware/kodedot/seer.sh build     # the board's image, build/daemons.bin
-firmware/kodedot/seer.sh review    # kode-sim: boot kodeOS, install the app, play scenarios/menu.json, judge it
-firmware/kodedot/seer.sh run       # the Dot in a browser here, http://127.0.0.1:8765
+firmware/kodedot/seer.sh build                       # the board's image, build/daemons.bin
+firmware/kodedot/seer.sh review                      # kode-sim: boot kodeOS, install the app, play scenarios/menu.json
+firmware/kodedot/scratch_companion.sh                # a fresh scratch companion on roverbyteseer (a synthetic save)
+firmware/kodedot/seer.sh review scenarios/den.json   # ... and the den against it
+firmware/kodedot/seer.sh run                         # the Dot in a browser here, http://127.0.0.1:8765
 ```
+
+Two things about the simulator learned the hard way: a review's network is closed unless its scenario says
+`"network": "internet"`, and its network is user-mode, so the Dot reaches a server on roverbyteseer by roverbyteseer's
+own address (a scenario writes `@HOST_IP@`; `seer.sh` fills it in), never 127.0.0.1. About one install in three fails
+in kodeOS's installer (`corrupt`, or an `appmgr` assert) before the app runs; run it again.
 
 A review's verdict and screenshots come back to `firmware/kodedot/review/` (ignored). `scenarios/menu.json` walks to
 LODESTONE, runs READ MY TAG (which, with no front end in the simulator, hears nothing), comes back, and **forbids any
@@ -93,8 +100,9 @@ work worth offering back to Kode.
 
 **Where a kept tag lives**: only on the Dot -- the app's own settings (`kode_setting_*`, in kodeOS's NVS) or its data
 folder on the internal FAT -- never on the microSD, which leaves the Dot in a pocket. It is never synced to the hub or
-the phone, never put in the save or its mirror, never logged, never committed. **Forget** deletes it. Whether kodeOS
-encrypts its NVS is kodeOS's to say; ask Kode before the first tag is kept.
+the phone, never put in the save or its mirror, never logged, never committed. **Forget** deletes it. Kode's own `kode.h` says of its settings
+that anyone who can read the board can read them, so a kept tag is as safe as the Dot in the hand -- the same as the
+fob it stands for; whether kodeOS encrypts its NVS is kodeOS's to say, and Kode is asked before the first tag is kept.
 
 ## The other routines -- C-427
 
@@ -117,8 +125,17 @@ encrypts its NVS is kodeOS's to say; ask Kode before the first tag is kept.
 1. **The toolchain and the skeleton.** ***Built 2026-11-19***: ESP-IDF 6.1, Rust and kode-sim on roverbyteseer
    (`~/kode/setup_seer.sh`); the app builds for the board (1.3 MB, 90% of the apps region free) and runs the ROUTINES
    menu -- five types, LODESTONE's READ MY TAG wired -- with the pad, the touch, the haptic and the LED.
-2. **The den** (C-426): its daemon, CARE, the day's colours; Wi-Fi, pairing, the store and the outbox, as the Tab5.
-   Simulated in kode-sim against the companion's server.
+2. **The den** (C-426). ***First slice built 2026-11-19***: the app opens on its daemon's den -- the day and its virtue,
+   the daemon drawn from `/api/device/art` at three times its size, its name, level and care, the next step -- with DRINK
+   FEED TRAIN SLEEP (WAKE while it sleeps) and ROUTINES under it. It is a board on the device's door: it names itself
+   `kode-dot-` and the end of its MAC with `?device=` (a header cannot be set through Kode's HTTP calls), asks
+   `/api/device/state` when it opens and every 30 s, and sends a care to `/api/device/interact`, drawn at once (C-121)
+   and kept in order in kodeOS's settings until the companion takes it, so a reset loses none. The companion's address
+   is the Dot's own setting, given over the cable: `function name="server" arg="http://HOST:4730"` at its console.
+   `scenarios/den.json` passes against `scratch_companion.sh`'s synthetic save on roverbyteseer: the den, FEED ("Thank
+   you. That helps."), SLEEP ("Goodnight.", and WAKE in its place), recorded by the companion. **Still to do**: the den
+   kept on the Dot so it opens on it at once (the Tab5's store), its expression and its place (C-113, C-119), a key for
+   away through the relay (the cable's link, C-82), and the address chosen on the Dot rather than typed at the console.
 3. **The board arrives**: READ MY TAG on the author's own tags; which kinds they are; whether V2 plays a tag.
 4. **LODESTONE's KEEP, MY TAGS and COPY TO A BLANK** (C-425).
 5. **FLARE, TOUCHSTONE, WHISPER, and the senses** (C-427).

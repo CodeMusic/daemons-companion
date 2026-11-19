@@ -6,6 +6,7 @@
 #   ./seer.sh sim                    the image for the simulator only (kode-sim build), to check it compiles there
 #   ./seer.sh review [SCENARIO]      kode-sim boots kodeOS, installs the app, plays the scenario (default
 #                                    scenarios/menu.json) and judges it; the verdict and screenshots come back to review/
+#                                    (scenarios/den.json wants scratch_companion.sh running there first)
 #   ./seer.sh run                    the Kode Dot in a browser on this computer: http://127.0.0.1:8765 (Ctrl-C stops it)
 #
 # KODE_HOST overrides where (default roverbyte@roverbyteseer, by its Tailscale name). This folder is copied there
@@ -36,8 +37,11 @@ case ${1:-build} in
     SCENARIO=${2:-scenarios/menu.json}
     # The verdict's exit code is kept: 0 passed, 1 a check failed, 2 the review could not run.
     set +e
-    ssh -o BatchMode=yes "$HOST" "$ENVSET; rm -rf ~/kode/review/daemons; kode-sim review --kodeos ~/kode/KodeOS \
-      --out ~/kode/review/daemons ~/$APP ~/$APP/$SCENARIO"
+    # A scenario says @HOST_IP@ where it means this machine: the simulator's network is user-mode, so the Dot reaches a
+    # server here by the machine's own address on its network, never 127.0.0.1 (C-426's den, against a scratch companion).
+    ssh -o BatchMode=yes "$HOST" "$ENVSET; rm -rf ~/kode/review/daemons; mkdir -p ~/kode/review;
+      IF=\$(route -n get default | awk '/interface:/{print \$2}'); sed \"s/@HOST_IP@/\$(ipconfig getifaddr \$IF)/g\" ~/$APP/$SCENARIO > ~/kode/review/scenario.json;
+      kode-sim review --kodeos ~/kode/KodeOS --out ~/kode/review/daemons ~/$APP ~/kode/review/scenario.json"
     RC=$?
     set -e
     rm -rf "$HERE/review"

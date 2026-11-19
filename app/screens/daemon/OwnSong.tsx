@@ -21,7 +21,7 @@ const SPECIES = speciesJson as unknown as Record<string, { art?: { front?: strin
 export const evolves = (species: number) => (SPECIES[String(species)]?.evolutions ?? []).length > 0;
 const NATIVE = Platform.OS !== "web";
 export type Singing = { lesson: Lesson; at: number; species: number };
-const RISE_MS = 1700, BACK_STEP = 110, BACK_MS = 950;
+const RISE_MS = 2300, BACK_STEP = 180, BACK_MS = 1500;
 
 /** How long the whole of it takes: the part sung, then the error carried back. */
 export const singingMs = (l: Lesson) =>
@@ -54,7 +54,7 @@ function Cloud({ n, size }: { n: Heard; size: number }) {
   );
 }
 
-export function SingNotes({ singing, side, right }: { singing: Singing | null; side: number; right: boolean }) {
+export function SingNotes({ singing, side, right, ahead }: { singing: Singing | null; side: number; right: boolean; ahead: 1 | -1 }) {
   const clock = useRef(new Animated.Value(0)).current;
   const [on, setOn] = useState<Singing | null>(null);
   useEffect(() => {
@@ -74,12 +74,12 @@ export function SingNotes({ singing, side, right }: { singing: Singing | null; s
   if (!on?.lesson.part) return null;
   const part = on.lesson.part, heard = heardAt(part, on.lesson.before), beat = 60000 / part.bpm;
   const lo = Math.min(...part.notes.map(([m]) => m)), hi = Math.max(...part.notes.map(([m]) => m));
-  const head = Math.max(5, Math.round(side / 22));
+  const head = Math.max(7, Math.round(side / 13));
   let t = 0;
   const flight = heard.map((n, i) => {                      // where each note starts and where it ends up
     const t0 = t; t += n.beats * beat;
-    const rise = side * (0.3 + (0.5 * (n.midi - lo)) / Math.max(1, hi - lo));
-    const drift = (right ? 1 : -1) * side * (0.18 + 0.09 * (i % 4));
+    const rise = side * (0.1 + (0.34 * (n.midi - lo)) / Math.max(1, hi - lo));   // a higher note higher; all inside the den
+    const drift = ahead * side * (0.55 + 0.12 * (i % 4));                          // streaming toward the open side
     return { n, t0, rise, drift };
   });
   const back0 = t + RISE_MS * 0.4;
@@ -104,7 +104,7 @@ export function SingNotes({ singing, side, right }: { singing: Singing | null; s
                                                  opacity: at([-1, 0, BACK_MS * 0.8, BACK_MS], [0, 1, 1, 0]),
                                                  transform: [{ translateX: at([0, BACK_MS], [f.drift, 0]) }, { translateY: at([0, BACK_MS], [-f.rise, side * 0.12]) },
                                                              { scale: at([0, BACK_MS], [1, 0.6]) }] }}>
-            <Text allowFontScaling={false} style={{ color: BINARY(), fontSize: Math.max(8, head * 1.15), fontWeight: "700",
+            <Text allowFontScaling={false} style={{ color: BINARY(), fontSize: Math.max(10, head * 1.25), fontWeight: "700",
                                                      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>{a.bits}</Text>
           </Animated.View>
         );

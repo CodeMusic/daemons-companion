@@ -4,7 +4,7 @@
 // side to side and faces the way it goes; asleep, it stays put with a z; `hop` changes when it is tended.
 import type { Thrive } from "../../../server/src/thrive";
 import { AuroraSky, DawnLight, DawnRim, HourPie, WitchShimmer } from "../shared/Witching";   // C-305 the aurora
-import { SingNotes, type Singing } from "./OwnSong";   // C-418: TRAIN sings
+import { SingNotes, singingMs, type Singing } from "./OwnSong";   // C-418: TRAIN sings
 import { Served, type Serving } from "./Provision";   // C-302   // C-236, C-237; T-519 the creator's hour
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
@@ -90,7 +90,9 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
   { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null;
     witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null; singing?: Singing | null; aurora?: string | null; both?: boolean;
     together?: Together | null; veiled?: [number, number, number, number][] | null }) {   // C-357, THE MASK: a week unanswered, a small mask over its eyes   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
-  const pose = expression?.pose, still = pose ? pose.still : asleep;
+  // C-418: it stands where it is to sing, and the notes stream toward the open side of the den
+  const [singOn, setSingOn] = useState(false), [ahead, setAhead] = useState<1 | -1>(-1);
+  const pose = expression?.pose, still = (pose ? pose.still : asleep) || singOn;
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
   const shapes = useMemo(() => (w ? motif(d.motif, w, height) : []), [d.motif, w, height]);
@@ -101,7 +103,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
 
   const shake = useRef(new Animated.Value(0)).current;
   useEffect(() => {                                           // it walks: one leg, then back, facing the way it goes
-    if (still) { x.setValue(0.5); return; }
+    if (still) { if (!singOn) x.setValue(0.5); return; }   // singing, it stops where it is
     let on = true, to = 1;
     const leg = () => {
       if (!on) return;
@@ -120,6 +122,13 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
     tremble?.start();
     return () => { on = false; x.stopAnimation(); breath.stop(); tremble?.stop(); shake.setValue(0); };
   }, [still, pose?.bob, pose?.shake, x, bob, shake]);
+
+  useEffect(() => {                                           // C-418: stopped where it is (read once, as it stops)
+    if (!singing?.lesson.part) return;
+    x.stopAnimation((v) => { setAhead(v < 0.5 ? 1 : -1); setSingOn(true); });
+    const t = setTimeout(() => setSingOn(false), singingMs(singing.lesson));
+    return () => clearTimeout(t);
+  }, [singing, x]);
 
   useEffect(() => {                                           // tended: a hop
     if (!hop) return;
@@ -162,7 +171,7 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
           </View>
           {witching ? <WitchShimmer side={side} level={shimmer} /> : null}
           <DawnRim side={side} level={dawn} />
-          {together ? null : <SingNotes singing={singing} side={side} right={right} />}{/* C-418: the notes from its mouth, then the binary back */}
+          {together ? null : <SingNotes singing={singing} side={side} right={right} ahead={ahead} />}{/* C-418: the notes from its mouth, then the binary back */}
           {/* C-302: what it was given, on the floor in front of it -- the way it faces */}
           {together ? null : <Served serving={serving} px={px}
                   style={{ top: side * 0.95 - 12 * px, ...(right ? { right: -side * 0.06 } : { left: -side * 0.06 }) }} />}

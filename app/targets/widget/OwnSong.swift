@@ -6,7 +6,7 @@
 // 0..1), and SwiftUI moves every note between one entry and the next. Every word DRAFT.
 import SwiftUI
 
-let RISE_SECONDS = 1.7
+let RISE_SECONDS = 2.3
 
 // A note head in its colours: a black key's split between the two either side; `faint` for static's candidates
 struct NoteGlyph: View {
@@ -45,9 +45,9 @@ struct SongFlight: View {
     let beat = 60 / (song.part?.bpm ?? 100)
     let lo = heard.map(\.midi).min() ?? 60, hi = heard.map(\.midi).max() ?? 72
     let starts = heard.indices.map { i in heard[..<i].reduce(0.0) { $0 + $1.beats * beat } }
-    let head = max(4, side / 20)
-    let rise = { (n: HeardNote) in side * (0.3 + 0.5 * CGFloat(n.midi - lo) / CGFloat(max(1, hi - lo))) }
-    let drift = { (i: Int) in ahead * side * (0.18 + 0.09 * CGFloat(i % 4)) }
+    let head = max(6, side / 13)
+    let rise = { (n: HeardNote) in side * (0.1 + 0.34 * CGFloat(n.midi - lo) / CGFloat(max(1, hi - lo))) }   // inside the den
+    let drift = { (i: Int) in ahead * side * (0.55 + 0.12 * CGFloat(i % 4)) }                                     // the way it faces
     let moved = heard.indices.filter { after[$0].sure > heard[$0].sure }
     ZStack(alignment: .topLeading) {
       ForEach(Array(heard.enumerated()), id: \.offset) { i, n in
@@ -70,7 +70,7 @@ struct SongFlight: View {
       if let b = back {                                      // the error carried back: one green group a note moved
         ForEach(Array(moved.prefix(8).enumerated()), id: \.offset) { j, i in
           let bits = String(i & 15, radix: 2).leftPad(4) + " " + String(max(1, min(15, Int(((after[i].sure - heard[i].sure) * 15).rounded()))), radix: 2).leftPad(4)
-          Text(bits).font(.system(size: max(7, head * 1.1), weight: .bold, design: .monospaced))
+          Text(bits).font(.system(size: max(8, head * 1.2), weight: .bold, design: .monospaced))
             .foregroundStyle(Color(hex: SongMath.binary))
             .position(x: mouth.x + drift(i) * (1 - b), y: mouth.y - rise(heard[i]) * (1 - b) + CGFloat(j % 3) * head * 0.4 * (1 - b))
             .opacity(b >= 1 ? 0 : 1)

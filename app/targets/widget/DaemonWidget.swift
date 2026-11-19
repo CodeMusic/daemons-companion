@@ -36,9 +36,9 @@ func wander(_ s: Snapshot?, paired: Bool, from start: Date, until end: Date, rea
       t += step
     }
     for b in [0.0, 0.5, 1.0] {
-      entries.append(Entry(date: start.addingTimeInterval(t + b * 1.1), snapshot: s, paired: paired, spot: spot, back: b))
+      entries.append(Entry(date: start.addingTimeInterval(t + b * 1.5), snapshot: s, paired: paired, spot: spot, back: b))
     }
-    entries.append(Entry(date: start.addingTimeInterval(t + 1.6), snapshot: s, paired: paired, spot: spot))
+    entries.append(Entry(date: start.addingTimeInterval(t + 2.0), snapshot: s, paired: paired, spot: spot))
   } else if react, Provisions.given(s?.did) != nil {
     // C-302: FEED or DRINK -- up and down again as below, and what it was given eaten in four stages beside it: full, a
     // stage each third of the phrase, empty a moment, then faded and gone, as the app's (Provision.swift)
@@ -152,9 +152,9 @@ struct Stage: View {
         }
         // C-418: TRAIN sings -- the notes from its mouth, then the binary back into it
         if let song = s.song, song.part != nil, entry.sung != nil || entry.back != nil {
-          let ahead: CGFloat = entry.facesRight ? 1 : -1
+          let ahead: CGFloat = entry.spot < 0.5 ? 1 : -1      // toward the open side of the den
           SongFlight(song: song, sung: entry.sung, back: entry.back, side: side,
-                     mouth: CGPoint(x: x + ahead * side * 0.14, y: floor - side * 0.55), ahead: ahead)
+                     mouth: CGPoint(x: x + (entry.facesRight ? 1 : -1) * side * 0.14, y: floor - side * 0.55), ahead: ahead)
             .frame(width: g.size.width, height: g.size.height)
             .animation(.linear(duration: max(0.5, SongMath.seconds(song.part!) / 24)), value: entry.sung)
             .animation(.easeIn(duration: 0.5), value: entry.back)

@@ -1,0 +1,16 @@
+# Build output.
+build/
+
+# Fetched by the component manager from the pin in main/idf_component.yml.
+managed_components/
+
+# Generated from sdkconfig.defaults and the board file on every configure.
+sdkconfig
+sdkconfig.old
+
+# The pin in main/idf_component.yml is the only thing that decides which SDK
+# gets built, locally and in CI alike.
+dependencies.lock
+
+# C-424: what ./seer.sh review brings back from roverbyteseer.
+review/

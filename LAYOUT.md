@@ -93,6 +93,7 @@ is added here in the same commit; when one file starts to hold both, split it (t
 |---|---|
 | `esp32/` | the one firmware for the ESP32-S3 handhelds, watches and dials (PlatformIO; `FLASHING.md`) |
 | `tab5/` | the M5Stack Tab5's own firmware |
+| `kodedot/` | the Kode Dot's app (C-424): C on Kode's SDK, run from Kode's own launcher, built and simulated on roverbyteseer by `seer.sh`; **GPL-3.0-or-later**, this folder only, because the SDK it links is (`docs/KODEDOT.md`) |
 | `box3/` | the ESP32-S3-BOX-3, through ESPHome and Home Assistant |
 | `common/` | headers both firmwares share, each written by the `.py` beside it |
 | `pizero/` | the Linux boards: the **Cardputer Zero** (a Raspberry Pi CM0; C-377) first, then the Pi Zero 2 W (C-08) -- one C++ program, an SDL window on a computer and `/dev/fb0` and evdev on the device, the game on mGBA's core (its `README.md`; docs/CARDPUTERZERO.md) |

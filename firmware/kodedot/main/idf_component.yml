@@ -1,0 +1,11 @@
+## C-424: one pin for the SDK. kode brings kode_sys, kaos, kqp, khal, kdrv, klog, kbsp, kdefs and QP/C at the same
+## version; kscreen brings LVGL on the glass (and kui and LVGL with it). Moving to a newer SDK is these two lines.
+dependencies:
+  kodediy/kode:
+    git: https://github.com/kodediy/kode-sdk.git
+    path: components/kode
+    version: v0.1.5
+  kodediy/kscreen:
+    git: https://github.com/kodediy/kode-sdk.git
+    path: components/kscreen
+    version: v0.1.5

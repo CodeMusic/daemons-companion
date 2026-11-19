@@ -91,6 +91,8 @@ only keep the list, it walks beside you through it. Three pieces and a game:
   starts clean for the S3, keeping RoverCodeBase's brain-region layout where it helps: first the day, the step and
   the daemon on screen over Wi-Fi, then ticking a step off with the encoder. *Whether it can count steps (an
   accelerometer) is to be checked on the board.*
+- **The Kode Dot** (the user, 2026-11-19; C-424): Kode's pocket maker device, an ESP32-P4 with an ESP32-C5 radio, NFC,
+  125 kHz, IR, a compass and a haptic motor; an app in Kode's launcher on Kode's SDK (`docs/KODEDOT.md`).
 - **More handhelds, one firmware** (the user, 2026-10-07; C-67): the **plain T-Embed** and the **T-Embed SI4732** run
   the same build as the CC1101 and tell themselves apart at start by what answers on I2C; the **T-Watch S3** is its own
   build of the same code, with a touch face (C-71). Each board's pins and parts: `docs/HARDWARE.md`. A daemon per
@@ -205,6 +207,7 @@ radios are SIGNAL's family, each a *routine type*. In the menu:
 | **NFC** | `TOUCHSTONE` *(NFC)* | you touch a tag to it; a touchstone is a thing you press against to read what it is |
 | **sub-GHz** | `LONGWAVE` *(sub-GHz)* | the one that reaches furthest, heard on the open air |
 | **Wi-Fi** | `UPLINK` *(Wi-Fi)* | the known network link home |
+| **125 kHz** | `LODESTONE` *(125 kHz)* | a natural magnet: these tags speak by magnetic coupling, not radio; it pairs with TOUCHSTONE *(the user, 2026-11-19, DRAFT; the Kode Dot only, C-425)* |
 
 *(Alternatives if any jar: IR `GLIMMER`/`PILOT`; Bluetooth `TETHER`/`HANDSHAKE`; NFC `IMPRINT`/`CONTACT`;
 sub-GHz `CARRIER`/`AETHER`; Wi-Fi `GRID`. `MESH` is held for the LoRa future, C-16.)* ***Confirmed by the user 2026-10-04: FLARE, WHISPER, TOUCHSTONE, LONGWAVE; UPLINK stands.***
@@ -214,7 +217,8 @@ sub-GHz `CARRIER`/`AETHER`; Wi-Fi `GRID`. `MESH` is held for the LoRa future, C-
 - **FLARE (IR)** -- send a power code to the author's own TV and see it turn off.
 - **WHISPER (Bluetooth)** -- a request to the author's own phone.
 - **TOUCHSTONE (NFC)** -- read the **identifier** of the author's own tag (a MIFARE Classic card, an NTAG card or sticker): just
-  the ID, to confirm the reader. (The board has no 125 kHz RFID, so door fobs are out of scope.)
+  the ID, to confirm the reader. (The T-Embed has no 125 kHz RFID; the Kode Dot does, and its LODESTONE carries the
+  author's own fobs -- C-425, `docs/KODEDOT.md`, and `CONTEXT.md`'s boundary.)
 - **LONGWAVE (sub-GHz)** -- listen for the author's own sub-GHz device, show basic info, and echo a signal back, to
   confirm both receive and send.
 

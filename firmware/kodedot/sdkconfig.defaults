@@ -1,0 +1,20 @@
+# C-424: the app's own settings. Everything about the board -- flash, PSRAM, cache, the console and the LVGL build every
+# project on it shares -- arrives from kbsp's sdkconfig.board, which CMakeLists.txt fetches and reads first. Never copy
+# any of it here.
+
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="managed_components/kodediy__kbsp/partitions.csv"
+
+# An app never writes otadata, so any reset returns to kodeOS.
+CONFIG_KODEOS_BOOT_ROLE_APP=y
+
+# The console over the USB-C cable, and its `screenshot`: how a picture is checked without standing at the board.
+CONFIG_KODEOS_CONSOLE=y
+
+# No radio yet: the first step is the ROUTINES menu and LODESTONE, which need none. The den's sync (C-426) turns it on
+# by deleting these three lines (Kode's template says why all three are needed).
+CONFIG_KODEOS_RADIO=n
+CONFIG_ESP_HOSTED_ENABLED=n
+CONFIG_BT_ENABLED=n
+
+# The board compiles Montserrat 14 only, because the launcher draws in its own faces: 28 for the menu's rows.
+CONFIG_LV_FONT_MONTSERRAT_28=y

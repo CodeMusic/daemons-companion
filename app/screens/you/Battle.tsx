@@ -28,7 +28,7 @@ export function BattleCard({ ink }: { ink?: string }) {
   return (
     <Card gap={8}>
       <Eyebrow>BATTLE</Eyebrow>
-      <Small>One daemon each, the game's own rules. Win or lose, every daemon comes back as it went, and its experience reaches the game at the next SYNC.  DRAFT</Small>
+      <Small>{`One daemon each, the game's own rules. Win or lose, every daemon comes back as it went. Each daemon's first ${a.expADay ?? 3} battles a day give it EXP, which reaches the game at the next SYNC.  DRAFT`}</Small>
       {a.chooses ? (
         a.away.length ? (
           <YStack gap={4}>
@@ -45,6 +45,11 @@ export function BattleCard({ ink }: { ink?: string }) {
           </YStack>
         ) : <Small>No daemon AWAY to fight with -- SEND one from the game first.</Small>
       ) : a.daemon ? <Small>{`This device fights with ${a.daemon.nickname}.`}</Small> : null}
+      {a.daemon?.today !== undefined ? (
+        <Small color="$color10">{a.daemon.today < (a.expADay ?? 3)
+          ? `${a.daemon.nickname}: ${(a.expADay ?? 3) - a.daemon.today} of ${a.expADay ?? 3} battles for EXP left today.`
+          : `${a.daemon.nickname} has had its ${a.expADay ?? 3} battles for EXP today; more are for the result alone.`}</Small>
+      ) : null}
       {waiting ? (
         <XStack alignItems="center" justifyContent="space-between" gap={8}>
           <Small>{`Asked ${waiting.sides[1].label} -- waiting for an answer.`}</Small>
@@ -68,7 +73,7 @@ export function BattleCard({ ink }: { ink?: string }) {
         </YStack>
       ) : <Small>No one else is online to battle. Open the companion on another device, or join the exchange on TRADE.</Small>}
       {recent.map((f) => (
-        <Small key={f.id} color="$color10">{`${f.result ?? "A draw"}${f.exp[f.me!] ? ` · +${f.exp[f.me!]} EXP` : ""}`}</Small>
+        <Small key={f.id} color="$color10">{`${f.result ?? "A draw"}${f.exp[f.me!] ? ` · +${f.exp[f.me!]} EXP` : f.counted?.[f.me!] === false ? " · no EXP (its three today were had)" : ""}`}</Small>
       ))}
       {said ? <Small>{said}</Small> : null}
       <Small color="$color8">DRAFT</Small>

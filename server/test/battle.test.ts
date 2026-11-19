@@ -168,6 +168,34 @@ describe("within the household: the app and a watch, both this save's daemons", 
     const home: any = await battleRoute({ save: bytes, boards: () => [], link: null }, store, "GET", "/api/battle", "app-phone01", { personality: "1003" }, {});
     expect(home.body.daemon).toBeNull();
   });
+  // C-420 (the user, 2026-11-18, by multiple choice): each daemon's first three battles a day give EXP, as TRAIN's three
+  it("gives a daemon EXP for its first three battles a day; a fourth is fought for the result alone", async () => {
+    const bytes = household(), store = new Store(":memory:");
+    const watch = "t-watch-ultra-abc123", now = new Date(), yesterday = new Date(now.getTime() - 86400_000);
+    assign(store, watch, 1002);
+    for (const n of [1, 2, 3]) {
+      store.logInteraction("exp", `1001 40 battle b9${n}`, now);          // ROVERCUB's three, today
+      store.logInteraction("exp", `1002 40 battle b8${n}`, yesterday);    // LABEL's three were yesterday's
+    }
+    store.logInteraction("exp", "1002 1 step 7", now);                   // a step is not a battle
+    const boards = (): BoardSeen[] => [{ id: watch, kind: "t-watch-ultra", here: true }];
+    const ask = (who: 0 | 1, path: string, b?: any): Promise<any> => battleRoute({ save: bytes, boards, link: null }, store, b === undefined ? "GET" : "POST", path,
+                                                                  who === 0 ? "app-phone01" : watch, who === 0 ? { label: "IPHONE", personality: "1001" } : {}, b ?? {});
+    const first = await ask(0, "/api/battle");
+    expect(first.body).toMatchObject({ expADay: 3, daemon: { personality: 1001, today: 3 } });
+    expect(first.body.away.find((d: any) => d.personality === 1002).today).toBe(0);
+    const asked = await ask(0, "/api/battle/request", { to: watch });
+    await ask(1, "/api/battle/answer", { id: asked.body.id, accept: true });
+    const end = await fight(ask, asked.body.id);
+    await ask(0, "/api/battle");
+    const seen = (await ask(0, "/api/battle")).body.fights.find((f: any) => f.id === asked.body.id);
+    expect(seen.counted).toEqual([false, true]);
+    expect(seen.exp[0]).toBe(0);                                        // shown as none, so a watch says nothing untrue
+    expect(seen.exp[1]).toBeGreaterThan(0);
+    expect(pendingExp(store, 1001).exp).toBe(120);                      // only the three it had
+    expect(pendingExp(store, 1002).exp).toBe(120 + 1 + seen.exp[1]);     // yesterday's, the step, and this battle's
+    expect(end[1].counted).toEqual([false, true]);                      // the watch sees the same
+  }, 30_000);
 });
 
 describe("between players, through the exchange", () => {

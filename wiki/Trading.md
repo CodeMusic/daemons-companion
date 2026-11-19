@@ -110,6 +110,10 @@ Each turn both choose; one not chosen in thirty seconds is chosen for that side,
 leaving, is a forfeit. The winner is told in the game's words, and gets the game's experience for it, the loser a
 third, written into the save at the next SYNC. **Nobody's health is kept**: every daemon comes back as it went.
 
+**Three a day** (C-420): each daemon's first three battles a day give it that experience, as TRAIN gives three a day;
+a battle after them is fought for the result alone. Levels meet as they are -- a request shows both daemons' levels,
+and how far apart they are, before it is taken. *(DRAFT)*
+
 ## Later
 
 **OUT TOGETHER** (C-220, its first piece): on TRADE, send a daemon that is AWAY out, and when another player's is out too

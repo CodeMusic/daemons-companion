@@ -55,6 +55,11 @@ function Asked({ f, a, onClose }: { f: Fight; a: Arena; onClose: () => void }) {
   const [pick, setPick] = useState<number | null>(a.daemon?.personality ?? a.away[0]?.personality ?? null);
   const [said, setSaid] = useState("");
   const theirs = f.sides[0].daemon;
+  // C-420 (the user, 2026-11-18, by multiple choice): levels as they are, the gap shown before taking it, and how many of
+  // the daemon's three battles for experience are left today
+  const mine = a.chooses ? a.away.find((d) => d.personality === pick) ?? null : a.daemon;
+  const gap = theirs && mine ? Math.abs(theirs.level - mine.level) : 0;
+  const left = mine?.today !== undefined ? Math.max(0, (a.expADay ?? 3) - mine.today) : null;
   const answer = async (yes: boolean) => {
     try { await act("/api/battle/answer", { id: f.id, accept: yes, ...(yes && a.chooses && pick !== null ? { personality: pick } : {}) }); if (!yes) onClose(); }
     catch (e) { setSaid((e as Error).message); }
@@ -82,6 +87,18 @@ function Asked({ f, a, onClose }: { f: Fight; a: Arena; onClose: () => void }) {
           </XStack>
         </YStack>
       ) : !a.daemon ? <Text fontSize={12} color={LOW}>No daemon AWAY to fight with -- SEND one from the game.  DRAFT</Text> : null}
+      {theirs && mine ? (
+        <YStack gap={2} alignItems="center">
+          <Text fontFamily="$mono" fontSize={13} color={gap >= 10 ? LOW : INK} textAlign="center">
+            {`${mine.nickname} LV ${mine.level} against ${theirs.nickname} LV ${theirs.level}${gap >= 10 ? ` -- ${gap} levels apart` : ""}`}
+          </Text>
+          {left !== null ? (
+            <Text fontSize={11} color="#6b7080" textAlign="center">
+              {left > 0 ? `${left} of ${mine.nickname}'s ${a.expADay ?? 3} battles for EXP left today.  DRAFT` : `${mine.nickname}'s battles for EXP are spent today -- this one is for the result alone.  DRAFT`}
+            </Text>
+          ) : null}
+        </YStack>
+      ) : null}
       <XStack gap={10}>
         <Button label="ACCEPT" strong onPress={() => answer(true)} disabled={a.chooses ? pick === null : !a.daemon} />
         <Button label="DECLINE" onPress={() => answer(false)} />
@@ -196,8 +213,9 @@ function Fought({ f, onClose }: { f: Fight; onClose: () => void }) {
       {over ? (
         <YStack padding={12} gap={8} alignItems="center">
           {f.exp[me] ? <Text fontFamily="$mono" fontSize={13} color={INK} textAlign="center">{`${mine.nickname} gained ${f.exp[me]} EXP. Points!`}</Text> : null}
+          {f.counted?.[me] === false ? <Text fontSize={12} color="#6b7080" textAlign="center">{`${mine.nickname} has had its three battles for EXP today -- this one was for the result alone.  DRAFT`}</Text> : null}
           {f.forfeit === them ? <Text fontSize={12} color="#6b7080">{`${f.sides[them].label} left the battle.  DRAFT`}</Text> : null}
-          <Text fontSize={11} color="#6b7080" textAlign="center">Its experience reaches the game at the next SYNC. Both daemons are back to full health.  DRAFT</Text>
+          <Text fontSize={11} color="#6b7080" textAlign="center">{`${f.counted?.[me] === false ? "" : "Its experience reaches the game at the next SYNC. "}Both daemons are back to full health.  DRAFT`}</Text>
           <Button label="OK" strong onPress={onClose} />
         </YStack>
       ) : (

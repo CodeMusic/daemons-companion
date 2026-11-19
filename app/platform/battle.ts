@@ -5,16 +5,18 @@ import { apiLive, ON_PHONE } from "./net";
 import { placeOf, setPlace } from "../state/place";
 import { deviceName } from "../state/me";
 
-export type Daemon = { personality?: number; nickname: string; name: string; species: number; level: number };
+// C-420: `today`, how many of its three battles for experience a daemon has had today (the arena's `expADay`)
+export type Daemon = { personality?: number; nickname: string; name: string; species: number; level: number; today?: number };
 export type Move = { slot: number; id: number; name: string; type: string | null; power: number; pp: number; maxPP: number };
 export type Side = { label: string; seat: string; daemon: (Daemon & { types: string[]; hp: number; maxHP: number; status: string; art: string | null; moves?: Move[] }) | null };
 export type Line = { text: string; side: 0 | 1 | null; hp: [number, number] | null; sound: string | null };
 export type Fight = { id: string; phase: "asked" | "on" | "over" | "declined" | "lapsed" | "withdrawn"; at: string; me: 0 | 1 | null; turn: number;
                       sides: [Side, Side]; chosen: [boolean, boolean]; deadline: string | null; secondsLeft: number | null; log: Line[][];
-                      winner: 0 | 1 | null; draw: boolean; forfeit: 0 | 1 | null; exp: [number, number]; result: string | null; asking: string | null; far?: boolean };
+                      winner: 0 | 1 | null; draw: boolean; forfeit: 0 | 1 | null; exp: [number, number]; result: string | null; asking: string | null; far?: boolean;
+                      counted?: [boolean | null, boolean | null] };   // C-420: false when the day's three were spent (its exp shown as 0)
 export type Online = { seat: string; label: string; kind: "device" | "app" | "player"; daemon: Daemon | null };
 export type Arena = { seat: string; label: string; player: { id: string; name: string } | null; daemon: Daemon | null; chooses: boolean;
-                      away: Daemon[]; online: Online[]; fights: Fight[] };
+                      away: Daemon[]; online: Online[]; fights: Fight[]; expADay?: number };
 
 export function mySeat(): string {
   let s = placeOf<string>("battle.seat", "");

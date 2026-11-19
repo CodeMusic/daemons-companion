@@ -57,9 +57,37 @@ function cardOf(store: Store, save: Uint8Array | null, personality: number): Car
 }
 const seatLabel = (b: BoardSeen) => b.kind.toUpperCase();
 
-// the experience, written as a step's is (core.ts pendingExp): "<personality> <gain> battle <id>"
-function give(store: Store, personality: number, exp: number, id: string) {
-  if (exp > 0) store.logInteraction("exp", `${personality >>> 0} ${exp} battle ${id}`);
+// C-420 (the user, 2026-11-18, by multiple choice: "three a day per daemon"): a daemon's first three battles a day give
+// it the game's experience, as TRAIN gives three a day; a battle after them is fought for the result alone. Counted by
+// the companion that holds the daemon's save, by this clock's day, so two of one household's devices cannot battle all
+// day for it. The experience is written as a step's is (core.ts pendingExp), "<personality> <gain> battle <id>", so it
+// grows the daemon's song as TRAIN does (DAEMONS songs), with nothing more to tell.
+export const EXP_BATTLES_A_DAY = 3;
+const COUNTED = "battle.counted";                               // "<battle id> <personality>" -> did its experience count
+const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+export function battlesToday(store: Store, personality: number, now = new Date()): number {
+  const p = `${personality >>> 0} `;
+  return store.kindSince("exp", midnight(now)).filter((r) => (r.detail ?? "").startsWith(p) && / battle /.test(r.detail ?? "")).length;
+}
+function give(store: Store, personality: number, exp: number, id: string, now: Date) {
+  if (exp <= 0) return;
+  store.together(() => {
+    const counts = battlesToday(store, personality, now) < EXP_BATTLES_A_DAY;
+    if (counts) store.logInteraction("exp", `${personality >>> 0} ${exp} battle ${id}`, now);
+    const m = parsed<Record<string, boolean>>(store.getSetting(COUNTED), {});
+    m[`${id} ${personality >>> 0}`] = counts;
+    const ks = Object.keys(m);
+    for (const k of ks.slice(0, Math.max(0, ks.length - 200))) delete m[k];
+    store.setSetting(COUNTED, JSON.stringify(m));
+  });
+}
+// what a seat is shown of the experience: the game's amount where it counted, none where the day's three were spent
+// (`counted`, each side: true, false, or null when not given yet or not this companion's daemon). A watch shows no
+// EXP line for 0 (battle.cpp), so a battle past the three says nothing there rather than something untrue.
+function withCounted<V extends { exp: [number, number] }>(store: Store, v: V, id: string, ps: [number | undefined, number | undefined]) {
+  const m = parsed<Record<string, boolean>>(store.getSetting(COUNTED), {});
+  const counted = ps.map((p) => (p === undefined ? null : m[`${id} ${p >>> 0}`] ?? null)) as [boolean | null, boolean | null];
+  return { ...v, exp: v.exp.map((e, i) => (counted[i] === false ? 0 : e)) as [number, number], counted };
 }
 
 export async function battleRoute(h: BattleHost, store: Store, method: string, path: string, seatAsked: string, q: Record<string, string>, b: any, now = new Date()): Promise<Reply> {
@@ -89,9 +117,14 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
   const settle = (fs: A.Fight[]) => {
     for (const f of fs) if (f.phase === "over") for (const i of [0, 1] as const) {
       const card = (f.battle?.sides[i].card) ?? null, exp = card ? A.award(store, HOME, f.id, i) : 0;
-      if (card && exp) give(store, card.personality, exp, f.id);
+      if (card && exp) give(store, card.personality, exp, f.id, now);
     }
   };
+  // a household battle as this seat sees it: both daemons are this save's, so both sides' experience is known here
+  const shown = (f: A.Fight) => withCounted(store, A.view(f, seat, now), f.id, [f.battle?.sides[0].card.personality, f.battle?.sides[1].card.personality]);
+  const viewed = (r: A.Result<A.Fight>) => (A.failed(r) ? r : shown(r));
+  // C-420: how many of a daemon's three battles for experience it has had today
+  const today = (personality: number) => battlesToday(store, personality, now);
 
   if (method === "GET" && path === "/api/battle") {
     const all = A.fights(store, HOME, now); settle(all);
@@ -105,7 +138,7 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
       if (f.phase === "over" && r && !r.awarded && f.me !== null) {
         const exp = await h.link!.call("battle/award", { id: f.id });
         r.awarded = true; keepRemote();
-        if (exp && !exp.error && exp.exp > 0) give(store, r.personality, exp.exp, X + f.id);
+        if (exp && !exp.error && exp.exp > 0) give(store, r.personality, exp.exp, X + f.id, now);
       }
     }
     const online = [
@@ -117,13 +150,16 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
         .map(([k, v]) => ({ seat: k, label: v.label, kind: "app", daemon: null })),
       ...(far?.players ?? []).map((p: any) => ({ seat: `player:${p.id}`, label: p.name, kind: "player", daemon: null })),
     ];
-    let away: { personality: number; nickname: string; name: string; species: number; level: number }[] = [];
-    try { away = h.save ? readAway(h.save).map((d) => ({ personality: d.personality >>> 0, nickname: d.nickname, name: d.name, species: d.species, level: d.level })) : []; } catch { /* none */ }
+    let away: { personality: number; nickname: string; name: string; species: number; level: number; today: number }[] = [];
+    try { away = h.save ? readAway(h.save).map((d) => ({ personality: d.personality >>> 0, nickname: d.nickname, name: d.name, species: d.species, level: d.level, today: today(d.personality) })) : []; } catch { /* none */ }
+    // a battle on the exchange: only this side's daemon is this companion's to count
+    const farShown = (f: any) => withCounted(store, { ...f, id: X + f.id, far: true }, X + f.id,
+                                             [f.me === 0 ? remote[f.id]?.personality : undefined, f.me === 1 ? remote[f.id]?.personality : undefined]);
     return ok({
       seat, label: myLabel, player: me ? { id: me.id, name: me.name } : null,
-      daemon: mine ? { personality: mine.personality >>> 0, nickname: mine.nickname, name: mine.name, species: mine.species, level: mine.level } : null,
-      chooses: !isBoard, away, online,
-      fights: [...ours.map((f) => A.view(f, seat, now)), ...farFights.map((f) => ({ ...f, id: X + f.id, far: true }))]
+      daemon: mine ? { personality: mine.personality >>> 0, nickname: mine.nickname, name: mine.name, species: mine.species, level: mine.level, today: today(mine.personality) } : null,
+      chooses: !isBoard, away, online, expADay: EXP_BATTLES_A_DAY,
+      fights: [...ours.map(shown), ...farFights.map(farShown)]
         .sort((x: any, y: any) => String(y.at).localeCompare(String(x.at))),
     });
   }
@@ -145,7 +181,7 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
     const target = boards.find((x) => x.id === to && x.here) ?? (seats[to] && now.getTime() - Date.parse(seats[to].at) < FRESH ? { label: seats[to].label } : null);
     if (!target) return no(400, "that device is not online now");                             // DRAFT
     const label = "kind" in target ? seatLabel(target as BoardSeen) : (target as { label: string }).label;
-    return answer(viewed(A.request(store, HOME, { seat, label: myLabel, card }, { seat: to, label }, now), seat, now));
+    return answer(viewed(A.request(store, HOME, { seat, label: myLabel, card }, { seat: to, label }, now)));
   }
   if (path === "/api/battle/answer") {
     const yes = b.accept === true;
@@ -161,7 +197,7 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
       if (yes && card) { remote[farId] = { seat, personality: (card as Card).personality }; keepRemote(); }
       return ok({ ...r, id: id, far: true });
     }
-    return answer(viewed(A.answer(store, HOME, id, seat, yes, card as Card | null, myLabel, now), seat, now));
+    return answer(viewed(A.answer(store, HOME, id, seat, yes, card as Card | null, myLabel, now)));
   }
   if (path === "/api/battle/choose" || path === "/api/battle/leave") {
     const what = path.endsWith("choose") ? "choose" : "leave";
@@ -172,11 +208,10 @@ export async function battleRoute(h: BattleHost, store: Store, method: string, p
     }
     const r = what === "choose" ? A.choose(store, HOME, id, seat, b.slot, now) : A.leave(store, HOME, id, seat, now);
     if (!A.failed(r)) settle([r]);
-    return answer(viewed(r, seat, now));
+    return answer(viewed(r));
   }
   return no(404, "not found");
 }
-const viewed = (r: A.Result<A.Fight>, seat: string, now: Date) => (A.failed(r) ? r : A.view(r, seat, now));
 export const BATTLE_PATHS = ["/api/battle", "/api/battle/pick", "/api/battle/request", "/api/battle/answer", "/api/battle/choose", "/api/battle/leave"];
 
 // ---- the exchange's half: players battle as "player:<id>" (tradelink.ts exchangeRoute sends these here) ----

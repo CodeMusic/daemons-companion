@@ -246,6 +246,8 @@ bool faceHasDaemon();                     // C-162: the face shows the daemon (a
 // C-163 (faces.cpp): the faces' sky and weather, and the watch's CARE grid
 String seasonLook();                      // casino.cpp: the companion's dress -- leaves, petals, snow, rain, stars ...
 uint32_t seasonColour(int k);             // casino.cpp: its two colours, 0 and 1
+String seasonOwnLook();                   // casino.cpp: C-414 the season (or holiday) alone, for the faces
+String weatherLook();                     // casino.cpp: C-414 the weather alone (rain, storm, fog, snow, a clear night's stars), or ""
 bool faceSkyOn();
 void faceSky(int hillTop);                // the season's sky in the face's circle, and the hill the daemon stands on
 void faceWeather();                       // the weather (or the season's own) falling in front

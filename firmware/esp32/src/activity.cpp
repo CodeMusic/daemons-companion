@@ -15,7 +15,22 @@ static Act act;
 static const uint32_t SHOW_MS = 2800, FILL_MS = 700;
 static int routinesToday = 0, caresToday = 0, doneToday = 0; static String countedDay;
 
-static void dayRoll() { if (countedDay != st.date) { countedDay = st.date; routinesToday = caresToday = doneToday = 0; } }
+// C-414 (the user, 2026-11-18: "0 steps, 0 cares is not right"): the day's tallies are kept, so a restart -- a cable
+// put in, a crash -- does not set them back to nought; a new day still starts them again
+static void dayRoll() {
+  if (countedDay == st.date) return;
+  countedDay = st.date; routinesToday = caresToday = doneToday = 0;
+  if (!st.date.length()) return;
+  Preferences p; p.begin("tally", true);
+  if (p.getString("day", "") == st.date) { routinesToday = p.getInt("r", 0); caresToday = p.getInt("c", 0); doneToday = p.getInt("d", 0); }
+  p.end();
+}
+static void tallyKeep() {
+  if (!st.date.length()) return;
+  Preferences p; p.begin("tally", false);
+  p.putString("day", st.date); p.putInt("r", routinesToday); p.putInt("c", caresToday); p.putInt("d", doneToday);
+  p.end();
+}
 float expFill() {
   long span = st.daemon.expNext - st.daemon.expFrom;
   return span <= 0 ? 1.0f : constrain((float)(st.daemon.expTotal - st.daemon.expFrom) / span, 0.0f, 1.0f);
@@ -24,6 +39,7 @@ float expFill() {
 void activity(int kind, const String &what, int expGain) {
   dayRoll();
   if (kind == 0) caresToday++; else if (kind == 1) routinesToday++; else doneToday++;
+  tallyKeep();
   if (!st.carrying) return;
   long span = max(1L, st.daemon.expNext - st.daemon.expFrom);
   act.what = what; act.shorter = ""; act.at = millis(); act.grew = false;
@@ -75,7 +91,10 @@ void activityLoop(uint32_t now) {
   thousands = s / 1000;
 }
 // C-206: the day's tallies as numbers, for the TOGETHER face's rings
-void activityCounts(int &cares, int &done, int &routines) { dayRoll(); cares = caresToday; done = doneToday; routines = routinesToday; }
+// C-414: the cares the hub counted today (fed and watered, from any device) when it knows more than this watch saw
+void activityCounts(int &cares, int &done, int &routines) {
+  dayRoll(); cares = max(caresToday, st.daemon.fed + st.daemon.watered); done = doneToday; routines = routinesToday;
+}
 bool activityShowing() { return act.at && millis() - act.at < SHOW_MS; }
 
 // the panel: what happened, then the daemon and its EXP bar, filling
@@ -108,7 +127,7 @@ String activityToday(int width) {
   String out;
   for (const char *gap : {"   ", "  ", " "}) {
     out = s >= 0 ? String(s) + " STEPS" + gap : String();
-    out += String(doneToday) + " DONE" + gap + String(caresToday) + " CARES" + gap + String(routinesToday) + " ROUTINES";   // DRAFT
+    out += String(doneToday) + " DONE" + gap + String(max(caresToday, st.daemon.fed + st.daemon.watered)) + " CARES" + gap + String(routinesToday) + " ROUTINES";   // DRAFT
     if (canvas.textWidth(out) <= width) break;
   }
   return out;

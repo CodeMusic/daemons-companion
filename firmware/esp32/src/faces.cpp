@@ -56,9 +56,8 @@ void faceSky(int hillTop) {
 
 // ---- the weather in front ---------------------------------------------------------------------------------------
 struct Bit { float x, y, vx, vy, phase; uint32_t rgb; };
-static Bit bits[20];
-static String bitsLook;
-static uint32_t bitsAt = 0;
+struct Fall { Bit bits[20]; String look; uint32_t at = 0; };
+static Fall seasonFall, weatherFall;                              // C-414: the season's, and the weather's over it
 static bool twinkles(const String &l) { return l == "stars" || l == "sun" || l == "frost" || l == "moon"; }
 static void reset(Bit &b, const String &l, bool anywhere) {
   int r = min(W, H) / 2 - 10;
@@ -70,17 +69,14 @@ static void reset(Bit &b, const String &l, bool anywhere) {
   b.phase = (esp_random() % 628) / 100.0f;
   b.rgb = l == "snow" ? 0xFFFFFF : seasonColour(esp_random() & 1);
 }
-void faceWeather() {
-  if (!faceSkyOn()) return;                                       // the season and its weather go together (faceSky)
-  String l = seasonLook();
-  if (!l.length() || l == "none") return;
-  int n = l == "rain" || l == "storm" ? 20 : l == "fog" ? 6 : 14;
+static void fall(Fall &f, const String &l, int n) {
+  if (!l.length() || l == "none" || n <= 0) return;
   uint32_t t = millis();
-  if (l != bitsLook) { bitsLook = l; for (int i = 0; i < n; i++) reset(bits[i], l, true); bitsAt = t; }
-  float dt = min(0.25f, (t - bitsAt) / 1000.0f); bitsAt = t;
+  if (l != f.look) { f.look = l; for (int i = 0; i < 20; i++) reset(f.bits[i], l, true); f.at = t; }
+  float dt = min(0.25f, (t - f.at) / 1000.0f); f.at = t;
   int cx = W / 2, cy = H / 2, r = min(W, H) / 2 - 6;
   for (int i = 0; i < n; i++) {
-    Bit &b = bits[i];
+    Bit &b = f.bits[i];
     b.x += b.vx * dt; b.y += b.vy * dt;
     if (b.y > cy + r + 6 || b.y < cy - r - 8 || b.x < cx - r - 8 || b.x > cx + r + 8) reset(b, l, false);
     int x = b.x + 4 * sinf(b.phase + t / 600.0f), y = b.y;
@@ -100,6 +96,14 @@ void faceWeather() {
     else canvas.fillCircle(x, y, 2, c);                           // a holiday's own: its colours, falling
   }
   if (l == "storm" && (t / 90) % 61 == 0) canvas.drawLine(cx + 30, cy - r + 20, cx + 10, cy - 20, PAPER);   // now and then, lightning
+}
+// the season always, a little thinner when there is weather; the weather in front of it. Snow in winter is one fall.
+void faceWeather() {
+  if (!faceSkyOn()) return;                                       // the season and its weather go together (faceSky)
+  String season = seasonOwnLook(), weather = weatherLook();
+  if (weather == season) weather = "";
+  fall(seasonFall, season, weather.length() ? 8 : 14);
+  fall(weatherFall, weather, weather == "rain" || weather == "storm" ? 20 : weather == "fog" ? 6 : 12);
 }
 
 // words that stay readable over the sky and the weather: edged in INK

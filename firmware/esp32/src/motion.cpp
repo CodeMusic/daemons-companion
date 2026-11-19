@@ -109,7 +109,15 @@ static bool inVehicle = false; static uint32_t vehicleFrom = 0;   // the sensor'
 static float accelScale = 1.0f / 4096;
 static String why = "starting";
 
-static void onSteps(uint8_t, uint8_t *data, uint32_t, uint64_t *, void *) { rawSteps = bhy2_parse_step_counter(data); }
+// C-414 (the user, 2026-11-18: "I've never seen the steps tracked ... always said 9"): the counter alone never moved on
+// the Ultra, so the detector's single steps are counted too, and the larger of the two is the count; what each has
+// said goes down the cable once a minute (motionLoop), so the next look says which of them works
+static volatile uint32_t counterSaid = 0, detected = 0, counterEvents = 0;
+static void onSteps(uint8_t, uint8_t *data, uint32_t, uint64_t *, void *) {
+  counterSaid = bhy2_parse_step_counter(data); counterEvents++;
+  rawSteps = max((uint32_t)counterSaid, (uint32_t)detected);
+}
+static void onStep(uint8_t, uint8_t *, uint32_t, uint64_t *, void *) { detected++; if (detected > rawSteps) rawSteps = detected; }
 
 static void onActivity(uint8_t, uint8_t *data, uint32_t size, uint64_t *, void *) {
   if (size < 2) return;
@@ -181,13 +189,21 @@ static void motionTask(void *) {
   bhy.onResultEvent(SensorBHI260AP::ACTIVITY_RECOGNITION, onActivity);
   bhy.onResultEvent(SensorBHI260AP::WRIST_TILT_GESTURE, onTilt);
   bhy.onResultEvent(SensorBHI260AP::ACCEL_PASSTHROUGH, onAccel);
-  bhy.configure(SensorBHI260AP::STEP_COUNTER, 1, 0);
+  bhy.onResultEvent(SensorBHI260AP::STEP_DETECTOR, onStep);
+  bool c = bhy.configure(SensorBHI260AP::STEP_COUNTER, 1, 0);
+  bool d = bhy.configure(SensorBHI260AP::STEP_DETECTOR, 1, 0);   // C-414: each step as it is taken, beside the count
   bhy.configure(SensorBHI260AP::ACTIVITY_RECOGNITION, 1, 0);
   bhy.configure(SensorBHI260AP::WRIST_TILT_GESTURE, 1, 0);
   bhy.configure(SensorBHI260AP::ACCEL_PASSTHROUGH, 50, 0);   // 50 Hz: enough for a shake or a tap, and half the FIFO
-  ready = true; why = "running";
-  Serial.println("motion: the BHI260AP is running");
-  for (;;) { bhy.update(); vTaskDelay(pdMS_TO_TICKS(40)); }
+  ready = true; why = String("running") + (c ? "" : ", no counter") + (d ? "" : ", no detector");
+  Serial.println("motion: the BHI260AP is " + why);
+  uint32_t toldAt = 0;
+  for (;;) {
+    bhy.update(); vTaskDelay(pdMS_TO_TICKS(40));
+    if (millis() - toldAt > 60000) { toldAt = millis();   // C-414: which of the two is counting, down the cable
+      Serial.printf("motion: counter %lu (%lu reports) detector %lu kind %d\n", (unsigned long)counterSaid,
+                    (unsigned long)counterEvents, (unsigned long)detected, (int)kind); }
+  }
 }
 
 void motionBegin() {

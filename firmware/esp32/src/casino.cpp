@@ -870,4 +870,19 @@ String runSlots() {
 
 // C-163: the look and its colours, for the watch's faces (faces.cpp) -- the same rule as the reels
 String seasonLook() { return lookNow(); }
+// C-414 (the user, 2026-11-18: "should also show reflective weather (along with the reflective season) on those faces"):
+// the faces keep the season (or the holiday) falling and lay the weather over it, rather than one in place of the other
+String seasonOwnLook() {
+  if (sent()) return st.casino.look;
+  if (dressed() && st.holiday.look != "none") return st.holiday.look;
+  if (st.season == "winter") return "snow";
+  if (st.season == "spring") return "petals";
+  if (st.season == "summer") return "sun";
+  return "leaves";
+}
+String weatherLook() {
+  if (st.sky == "rain" || st.sky == "storm" || st.sky == "fog" || st.sky == "snow") return st.sky;
+  if (st.sky == "clear" && st.watch == "NIGHT") return "stars";
+  return "";
+}
 uint32_t seasonColour(int k) { return k ? colourB() : colourA(); }

@@ -549,18 +549,25 @@ static void ringArc(int cx, int cy, int r, int w, float f, uint16_t c) {
   canvas.drawArc(cx, cy, r, r - w, 0, 360, canvas.color565(40, 44, 52));              // the track
   if (f > 0) canvas.drawArc(cx, cy, r, r - w, 270, 270 + 360 * min(1.0f, f), c);       // from the top, clockwise
 }
+// C-414 (the user, 2026-11-18: "I do not like that the daemon is smaller ... I do not see the seasonal effects"): the
+// DAEMON face as it is -- the season's sky, the daemon full size on its hill, the weather in front -- with the three rings
+// thin round its edge; the numbers are left to the strip below, which already says the steps
 static void drawFaceTogether(uint16_t day) {
-  canvas.fillRect(0, 0, W, H, INK);
+  canvas.fillRect(0, 0, W, 26, INK);
+  faceSky(186);
   int cx = W / 2, cy = H / 2, cares, done, routines; activityCounts(cares, done, routines);
   long steps = watchSteps();
-  ringArc(cx, cy, 114, 9, steps > 0 ? steps / 10000.0f : 0, day);
-  ringArc(cx, cy, 102, 9, (st.daemon.fed + st.daemon.watered) / 6.0f, canvas.color565(0x40, 0xA8, 0xF8));
-  ringArc(cx, cy, 90, 9, done / 3.0f, canvas.color565(0xF8, 0xB8, 0x40));
+  ringArc(cx, cy, 118, 5, steps > 0 ? steps / 10000.0f : 0, day);                                  // the steps, of ten thousand
+  ringArc(cx, cy, 112, 5, (st.daemon.fed + st.daemon.watered) / 6.0f, canvas.color565(0x40, 0xA8, 0xF8));   // the cares, of six
+  ringArc(cx, cy, 106, 5, (done + routines) / 3.0f, canvas.color565(0xF8, 0xB8, 0x40));            // what was done, of three
   char hm[6]; const char *ampm; clockTime(hm, sizeof hm, &ampm);
-  canvas.setTextDatum(MC_DATUM); canvas.setTextFont(4); timeAt(hm, ampm, cx, 64, PAPER);
-  if (st.carrying) faceDaemon(cx, 178, 1, 30, 120);
-  canvas.setTextFont(1); canvas.setTextColor(QUIET);
-  canvas.drawString(String(steps >= 0 ? steps : 0) + " STEPS  " + String(cares) + " CARES  " + String(done) + " DONE", cx, 196);   // DRAFT
+  canvas.setTextDatum(MC_DATUM);
+  if (st.carrying) { faceBoth(cx, 188, 2, 56, 72); faceListening(day); }
+  faceWeather();
+  canvas.setTextFont(2); edgedString(upper(st.theme.length() ? st.theme : st.day), cx, 34, readable(day));
+  if (st.carrying) { canvas.setTextFont(4); timeAt(hm, ampm, cx, 57, PAPER); }
+  else { canvas.setTextFont(7); timeAt(hm, ampm, cx, 96, PAPER); }
+  faceLine(upper(dayLine()), 207, PAPER);
   canvas.setTextDatum(TL_DATUM);
 }
 static void drawFaceOrbit(uint16_t day) {
@@ -595,6 +602,7 @@ static void drawFaceSuspend(uint16_t day) {
   canvas.setTextFont(2); canvas.setTextColor(canvas.color565(90, 90, 100));
   if (lastNight(h, q, to)) canvas.drawString("SUSPENDED " + String(h, 1) + " H  -  " + q, cx, 150);                  // DRAFT
   if (st.carrying) canvas.drawString(upper(st.daemon.nickname) + (st.daemon.tired == "asleep" ? " IS SUSPENDED" : " IS AWAKE"), cx, 172);   // DRAFT
+  faceWeather();                                             // C-414: the season and the weather here too, on the black
   canvas.setTextDatum(TL_DATUM);
 }
 

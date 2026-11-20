@@ -37,6 +37,8 @@ in the slot. The probe (`tools/install.sh <user>@<device> probe`) found the plan
 | launcher | APPLaunch 0.6.105, `/usr/share/APPLaunch/applications/*.desktop` as planned |
 | to build | gcc, g++, ninja, git and pkg-config there; cmake and libcurl's headers installed once with `sudo` |
 | Wi-Fi | **2.4 GHz only**: it cannot join a 5 GHz network |
+| power switch | **Not a shutdown, but safe for the card** (seen 2026-11-19 in the kept journal, `/var/log/journal`): moved to off, the `powerfail-suo` driver (out of tree, irq, 500 ms debounce) does SysRq U, *emergency remount filesystems readonly*, and the cell is cut. What was written is on the card; a save mid-write, or a SYNC under way, is lost. `sudo shutdown now` over SSH is the clean way, and the app has no POWER OFF yet |
+| save | 2026-11-19, after a night switched off: `daemons.sav`, `mirror.json` and the hub's `/api/save/mirror` share one SHA-1 (C-380 seen on the device) |
 | speed | **131.5 frames a second** (`--bench 1800`, 13.7 s on one core at 1 GHz): 2.2 times the GBA's 59.7. No frame skip, no gpSP |
 
 **The first build on the device took 17 minutes**, one compiler at a time (`build.sh` now picks one below 300 MB free),

@@ -22,6 +22,8 @@ only keep the list, it walks beside you through it. Three pieces and a game:
 
 ## 2. Goals, steps, and the day (what RoverRadio began)
 
+- **GOALS move onto PRAXIS** (the user, 2026-11-19): one daemon-gamified project system under every life-management
+  feature and any project a person runs, earning ARETE -- [PROJECTS.md](PROJECTS.md), C-428..C-434.
 - **A goal is a ticket.** You add one ("redo the garage"). The AI breaks it into **sub-items, each with steps** small
   enough to start right now -- and you edit the result; the AI proposes, you decide.
 - **Through the day the device holds one thing: the next step of the first open sub-item**, and nudges you toward it.

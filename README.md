@@ -58,7 +58,7 @@ The app has grown into **one app for everything** -- the game, the companion, th
   companion as a save of its own, and SETTINGS, **YOUR SAVES** chooses which one the companion reads (C-215).
 - **The iPad on its side** is one screen: the game on the left, always playing, and the companion beside it -- with a
   NOTEBOOK page just filed, or the INDEX card of a daemon just met, opening next to the game (C-189).
-- **In a browser**, the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) plays the game with this
+- **In a browser**, the [DAEMONS playground](https://github.com/CodeMusic/daemons-eudaimonia) plays the game with this
   companion's site in a tab beside it.
 - **On a Mac** (C-210): the iPad app runs on an Apple Silicon Mac. TestFlight hands one build to the iPhone, the iPad
   and the Mac; a Mac window of its own comes later.
@@ -212,7 +212,7 @@ a green or red dot for each ([The hub and its AI](https://github.com/CodeMusic/d
 
 **A second companion beside yours.** `COMPANION_CONFIG=/path/to/config.json` starts the server on another config file
 -- its own port, database and save -- and the site takes `?server=http://host:port` to use it, for that visit only.
-The [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) runs one for each build of the game this way,
+The [DAEMONS playground](https://github.com/CodeMusic/daemons-eudaimonia) runs one for each build of the game this way,
 so the daemons its testers send never meet yours.
 
 Every command and option: **[Running the companion](https://github.com/CodeMusic/daemons-companion/wiki/Running-the-companion)**.
@@ -249,7 +249,7 @@ I would go back now and then. A daemon likes to know the way home.
 | [**CodeMusic/DAEMONS**](https://github.com/CodeMusic/DAEMONS) | **the game** -- its design bible, its tools, [its player's manual](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-manual.pdf), and patches for your own cartridge |
 | [CodeMusic/pokefirered-daemons](https://github.com/CodeMusic/pokefirered-daemons) | the game's engine |
 | [CodeMusic/gpt-play-pokemon-firered-daemons](https://github.com/CodeMusic/gpt-play-pokemon-firered-daemons) | the harness that lets a model play it |
-| [CodeMusic/daemons-playground](https://github.com/CodeMusic/daemons-playground) | the game in a browser, for demos and beta tests, with a companion of its own beside it |
+| [CodeMusic/daemons-eudaimonia](https://github.com/CodeMusic/daemons-eudaimonia) | where EUDAIMONIA is to be built, PRAXIS and ARETE used together (docs/PROJECTS.md, section 10); today the DAEMONS playground, the game in a browser, for demos and beta tests, with a companion of its own beside it |
 | **CodeMusic/daemons-companion** | this: where your daemon goes when it leaves the game |
 
 **Nothing of Nintendo's is in here.** The daemon art it shows is DAEMONS' own -- every sprite in

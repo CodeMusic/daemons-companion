@@ -46,7 +46,7 @@ been seen, so the computer is the way to start ([Host on your phone](Host-on-you
 bring your own FireRed or LeafGreen, and
 the app makes DAEMONS from it on the device, plays it, and shares its one save with the companion. On an iPad on its
 side, the game and the companion sit side by side. In a browser, the [DAEMONS
-playground](https://github.com/CodeMusic/daemons-playground) does the same; the iPad app runs on an Apple Silicon Mac
+playground](https://github.com/CodeMusic/daemons-eudaimonia) does the same; the iPad app runs on an Apple Silicon Mac
 too, and TestFlight hands one build to all three. In testing for now -- [The one app](The-one-app).
 
 ## Every page

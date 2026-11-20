@@ -19,7 +19,7 @@ decided later. It collects nothing for its developer:
 |---|---|---|
 | **iPhone** | GAME, a tab | every tab |
 | **iPad** | upright, GAME is a tab; **on its side, the game on the left and the companion beside it** | every tab |
-| **a browser** | the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground): the game with the companion's site in a tab | the companion's site (`./bindCompanion.sh`, or served by [the hub](The-hub-and-its-AI)) -- everything but GAME |
+| **a browser** | the [DAEMONS playground](https://github.com/CodeMusic/daemons-eudaimonia): the game with the companion's site in a tab | the companion's site (`./bindCompanion.sh`, or served by [the hub](The-hub-and-its-AI)) -- everything but GAME |
 | **a Mac** | **the iPad app** (C-210), from TestFlight: it runs on an Apple Silicon Mac; a native Mac window comes later | the same app's tabs; or the site |
 
 **TestFlight** hands one build to the iPhone, the iPad and the Mac (C-210), so a Mac opens the app like any other. A

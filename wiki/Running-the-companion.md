@@ -106,7 +106,7 @@ The site uses another server when its address says so: `http://localhost:8081/?s
 this machine's kinds of address are taken (loopback, a private network, the tailnet, `localhost`, a `.local` or
 `.ts.net` name, or a bare one), and only for that visit: open the site plainly and it is back on yours. A second server
 still answers only this computer and a paired phone. To use it from a phone, something on this computer has to carry
-the phone's requests, as the [DAEMONS playground](https://github.com/CodeMusic/daemons-playground) does for the
+the phone's requests, as the [DAEMONS playground](https://github.com/CodeMusic/daemons-eudaimonia) does for the
 companions it runs, one for each build of the game.
 
 A browser keeps the site's key **for each server**, under the address it was paired with, so a `?server=` link never

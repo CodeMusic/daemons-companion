@@ -394,7 +394,7 @@ function personaCard(ecfg: Config, store: Store, personality: number, now = new 
   const d = awayNow(ecfg).find((x) => x.personality >>> 0 === personality);
   if (!d) return null;
   const w = talkWho(ecfg, store, ""), carried = carriedDaemon(ecfg, store);
-  const goals = store.goals().filter((g) => !g.done).slice(0, 4).map((g) => ({ goal: g.title, ...(w.goal?.goal === g.title ? { step: w.goal.step } : {}) }));
+  const goals = store.openGoals().slice(0, 4).map((g) => ({ goal: g.title, ...(w.goal?.goal === g.title ? { step: w.goal.step } : {}) }));
   const f = speciesFacts(d.species, d.nickname, ecfg.edition, d.personality);
   const life = carried && carried.personality >>> 0 === personality ? core.daemonLife(store, now) : null;
   return cardOf({ ...f, level: d.level, goals, day: dayFacts(now),

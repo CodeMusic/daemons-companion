@@ -6,5 +6,5 @@ import { Store as StoreOn, type Db } from "./store.js";
 export type { Db, Statement, Step, SubItem, Goal, Plan } from "./store.js";
 
 export class Store extends StoreOn {
-  constructor(path: string) { super(new DatabaseSync(path) as unknown as Db); }
+  constructor(path: string, o: { now?: () => number } = {}) { super(new DatabaseSync(path) as unknown as Db, o); }
 }

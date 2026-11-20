@@ -6,7 +6,7 @@ export type { By, Effort, Entry, Have, Item, Link, Node, Note, Options, Proposal
 export { sync, type Peer } from "./exchange.js";
 export { fromExpo, type Db, type ExpoDatabase, type Statement } from "./db.js";
 export { OPS, PROPOSABLE, checkEvent, isLong, type Long, type Op, type PxEvent } from "./events.js";
-export { CORE, FIELD_TYPES, LINK_TYPES, PHASES, SHORT, checkForm, type FieldDef, type FieldType, type Form, type KindDef,
+export { CORE, FIELD_TYPES, LINK_TYPES, PHASES, PREFIX, SHORT, checkForm, type FieldDef, type FieldType, type Form, type KindDef,
   type Phase, type StateDef } from "./form.js";
 export { Clock, hlcIso, hlcString, parseHlc, type Hlc } from "./hlc.js";
 export { cryptoRandom, derivedId, sha256, sha256hex, utf8, uuidTime, uuidv7, type Random } from "./ids.js";

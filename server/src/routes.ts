@@ -63,7 +63,7 @@ import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF 
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
 const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
@@ -104,6 +104,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/journal") { const j = aJournal(store, Number(a.query?.id), now); return j ? ok(j) : no(404, "no such journal"); }
     if (path === "/api/walk") return ok(walk(h, store, now));   // C-48
     if (path === "/api/goal") return ok({ goal: store.currentGoal(), limit: ENTRY_LIMIT });   // C-46: ONE goal
+    if (path === "/api/arete") return ok(store.life.arete(now));   // C-430: ARETE held, earned today and this week, and its rules
     if (path === "/api/goal/weathering") {                               // C-357 (4): SLOW WRITES, once the book is held
       const g = store.currentGoal(), s = h.save.read();
       return ok(g && s && readSubtle(s, undefined, a.query?.preview === "1").held ? { held: true, goal: g.id, ...weatheringOf(store, g.id, now) } : { held: false });
@@ -250,7 +251,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       if (!space) return no(400, "put two of your devices together first");                          // DRAFT
       const away = awayNow(h), mine = carriedFor(store, away, device), theirs = carriedFor(store, away, partnerIn(space, device));
       if (!mine || !theirs) return no(400, "both devices must carry a daemon");                     // DRAFT
-      const goals = store.goals().filter((g) => !g.done).slice(0, 4).map((g) => ({ goal: g.title }));
+      const goals = store.openGoals().slice(0, 4).map((g) => ({ goal: g.title }));
       const facts = (d: typeof mine) => ({ ...speciesFacts(d.species, d.nickname, h.edition, d.personality), level: d.level, goals, day: dayFacts(now) });
       const r = Dialogue.begin(store, "home", { player: "home", facts: facts(mine), edition: h.edition }, { player: "home", facts: facts(theirs), edition: h.edition },
                                b ?? {}, { filtered: false, space: "household", now });
@@ -356,9 +357,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/goal") {
       const title = entry(b.title);
       if (!title) return no(400, `a goal is a few words, at most ${ENTRY_LIMIT} letters`);
-      const open = store.currentGoal();
-      if (open && !b.replace) return no(409, "one goal at a time: finish this one, or replace it", { goal: open });
-      if (open) store.db.prepare("UPDATE goals SET done = ? WHERE id = ?").run(`set aside ${now.toISOString()}`, open.id);
+      // C-430: TODAY's rule (the LIFE form's), not the database's: one open goal at a time -- a new one sets the old aside
+      const open = store.currentGoal(), full = !store.life.roomToday();
+      if (full && !b.replace) return no(409, "one goal at a time: finish this one, or replace it", { goal: open });
+      if (full && open) store.setAside(open.id);
       return ok({ goal: store.addGoal(title), limit: ENTRY_LIMIT }, 201);
     }
     if (path === "/api/goal/step" || path === "/api/goal/milestone") {

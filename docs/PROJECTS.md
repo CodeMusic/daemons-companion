@@ -2,7 +2,8 @@
 
 *Started 2026-11-19 (the user: "let's start designing this management system which is daemon gamified and 'projects'
 within it can take many forms (from life management project, to learning, to cooking recipies, etc) and for the ones
-where you define points you earn rewards"). **Nothing here is built.** A decision recorded here is one the user made;
+where you define points you earn rewards"). **Built so far: the engine (C-429) and GOALS on it, earning ARETE (C-430);
+the rest is design.** A decision recorded here is one the user made;
 everything marked OPEN is a question for them; every in-app word is DRAFT.*
 
 **Named by the user, 2026-11-19, by multiple choice: PRAXIS, and its points ARETE** -- Aristotle's pair: *praxis* is
@@ -49,14 +50,14 @@ that day it became **a rule and a test, with no folder split**: `LAYOUT.md` name
 
 | Feature | Where | Stored as | On a phone alone | What finishing it gives |
 |---|---|---|---|---|
-| GOALS | `store.ts`, `core.ts`, `routes.ts`, `ai/breakdown.ts`; `journey/Goals.tsx`, `today/Today.tsx` | three tables, goal -> subitem (a milestone when titled) -> step; **fixed at three levels, one open goal at a time, 40 characters** | yes | a step: 1 exp (to the save at SYNC), a meal, training, +4 mood; a goal: 3 bond and a one-time gift |
+| GOALS | `store.ts`, `core.ts`, `routes.ts`, `ai/breakdown.ts`; `journey/Goals.tsx`, `today/Today.tsx` | three tables, goal -> subitem (a milestone when titled) -> step; **fixed at three levels, one open goal at a time, 40 characters**. *Since C-430: items in the LIFE space (`goals.ts`), the three tables read in once* | yes | a step: 1 exp (to the save at SYNC), a meal, training, +4 mood; a goal: 3 bond and a one-time gift. *Since C-430, ARETE too* |
 | JOURNAL, dream journal | `journal.ts`, `signs.ts`; `journey/Journal.tsx` | four tables (journals, entries, chapters, signs), `kind` standard or dream | yes (plain pages; signs from the lexicon) | nothing |
 | THE SUBTLE LAYER's question | `subtleask.ts` | a JSON blob in `settings` | yes | nothing |
 | the daemon's DREAMS | `dreams.ts`; `daemon/Dreams.tsx` | a JSON blob, 90 kept | yes | a rested night: 2 bond |
 | TENDING | `tending.ts`; `today/Tending.tsx` | a JSON blob, 120 kept | yes | nothing |
 | the week (virtue over shadow) | `data/week.json`, `days.ts`, `months.ts`, `synesthesia.ts` | static | yes | nothing -- no balance is kept |
 | MEETINGS, VOICE NOTES | `meetings.ts`, `voicenotes.ts`; `daemon/Meetings.tsx` | JSON blobs; action items are plain strings | **no** (hub only) | nothing |
-| THRIVE | `thrive.ts` | derived: 50 + nights x 4 + goals x 8 + steps (to 20) | yes | the glow and the pose |
+| THRIVE | `thrive.ts` | derived: 50 + nights x 4 + goals x 8 + steps (to 20); *since C-430 the goals and steps are read from ARETE's ledger* | yes | the glow and the pose |
 | seven dawns -> THE EUDAIMON LAYER | `dawns.ts` | an array of dates | yes | a book unlocked |
 
 **Rewards are six separate currencies** -- exp, bond, mood, the feelings, THRIVE, the save's friendship (from meetings
@@ -289,6 +290,13 @@ THE MIND's routing, in `machine/` (C-387 holds).
   routes stay as they are** (`/api/goal`, `/api/steps/:id/done`, the devices' ticks) in front of the engine, so the app
   and every board keep working unchanged. *One open goal* becomes TODAY's rule rather than the database's, and the
   40-character limit becomes the item's short title.
+  *Built (C-430, 2026-11-20), and what it settled:* the LIFE form has four kinds -- goal, milestone, **loose** (the
+  unnamed group that holds a goal's loose steps, as the old store kept them) and step -- and a kind may be numbered on
+  its own, so each keeps the number it had: LIFE-3, MILESTONE-4, STEP-17. The three tables are read in **once, each row
+  at its own time** (made when its goal was, done when it was done), and left as they were. Every finish, old ones
+  included, is in the ledger, paid by its rule under that day's cap; a finish past the cap is kept at nothing, so
+  THRIVE can read the week's finishes from the ledger -- and, for the days before the move, from the log as it always
+  did. A removed step is archived, never deleted. `GET /api/arete` says what is held, earned today and this week.
 - **The JOURNAL** becomes spaces of the JOURNAL and DREAM JOURNAL forms; entries, chapters and signs become items
   linked *made from*.
 - **TENDING, the subtle question, MEETINGS and VOICE NOTES** move out of their `settings` blobs into items.
@@ -349,7 +357,8 @@ eudaimonia, and its BALANCE page holds the week's seven pairs, which THE WEEK'S 
 2. **The engine**: kinds, items, fields, states, the event log, the fold, UUIDv7 and the clock, on the existing `Db`;
    tested on Node and on the phone's engine. No sync yet. **C-429**, *done 2026-11-20 (companion 9c1949f7)*.
 3. **GOALS onto it**, behind the same routes; the ARETE ledger and the rules with today's numbers; THRIVE from the
-   ledger. *Phases 2 and 3 are the slice: one form, the same behaviour, new rails.* **C-430**
+   ledger. *Phases 2 and 3 are the slice: one form, the same behaviour, new rails.* **C-430**, *done 2026-11-20*: the
+   LIFE form and its rules are `server/src/goals.ts` (below).
 4. **Sync**: phone and hub by version vectors; a phone that hosted alone joins a hub; blobs by hash. **C-431**
 5. **The JOURNAL, the DREAM JOURNAL, TENDING and MEETINGS** onto it; THE WEEK'S BALANCE. **C-432**
 6. **Forms you make yourself**; LEARNING and RECIPES; the REWARD SHELF. **C-433**
@@ -373,7 +382,9 @@ here, **`packages/praxis/`**, its own repository before long; **our own small ev
 **OPEN:**
 
 - **What the game will take for ARETE** at SYNC, and how much a day (the game lane).
-- **The default ARETE per kind** and the virtue bonus (the numbers in section 6 are placeholders).
+- **The default ARETE per kind** and the virtue bonus (the numbers in section 6 are placeholders). C-430 built GOALS with
+  them -- a step 1, a milestone 5, a goal 20 -- and **daily caps** of 20, 15 and 60 ARETE: guesses, in `RULES`
+  (`server/src/goals.ts`), to be chosen.
 - **The site's subdomain**: C-411 has dashboard.daemons.codemusic.ca; eudaimonia.daemons.codemusic.ca is the other
   choice.
 - **THE UNITY BOOK's lens on the site** (an idea): an item read for its cost (the effort, the night reading), for its

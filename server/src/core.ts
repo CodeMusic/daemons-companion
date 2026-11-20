@@ -46,6 +46,8 @@ import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass
 import { toneOf } from "./spirits.js";   // C-296: the tone is part of what a picture is
 import type { Spirits } from "./save/reader.js";
 import { genderOf } from "./ai/gender.js";   // C-359
+import { SHORT } from "../../packages/praxis/src/index.js";   // C-430: an entry is an item's short title
+import { ruleOf, type DaemonGets } from "./goals.js";        // C-430: what a finish gives the daemon
 
 // the key a device files a daemon's picture under: changes when the picture would -- its species, its moves (the
 // streaks), and (C-296) its spirits' tone, left off when there is none so every key before it is unchanged
@@ -292,19 +294,28 @@ export function setWalk(h: Host, store: Store, b: { goal?: unknown; steps?: unkn
 
 
 // C-46: an entry is short on purpose -- simpler is better (the user) -- and the site says so.
-export const ENTRY_LIMIT = 40;
+// C-430: it is PRAXIS's short title, what an item shows on a device (40)
+export const ENTRY_LIMIT = SHORT;
 export const entry = (v: unknown) => typeof v === "string" && v.trim() && v.trim().length <= ENTRY_LIMIT ? v.trim() : null;
 
 // A step done, from the site or the board: kept as time together (C-13), a meal (C-44), and experience (C-47).
+// C-430: the step (and the goal it finishes) is paid its ARETE by the LIFE form's rules (goals.ts), and each rule names
+// what the finish gives the daemon -- given here, with today's numbers (EXP_PER_STEP, BOND.goal)
 export function doStep(h: Host, store: Store, id: number, from: "site" | "device", deviceId = "") {
   const r = store.completeStep(id);
-  if (r.fresh) { store.logInteraction("step", `${from} ${id}`); growFromStep(h, store, id, deviceId); }
-  if (r.fresh && r.goal) {                                       // C-185: a goal finished together -- the bond's, and the gift's
-    const d = carriedDaemon(h, store, deviceId);
-    store.logInteraction("goal", String(id));                 // C-207: the week's goals, for how the daemon looks
-    if (d) { bondAdd(store, d.personality, "goals"); offerGift(store, speciesHeld(h)); }
-  }
+  if (r.fresh) daemonGets(h, store, ruleOf("step")?.daemon ?? [], id, from, deviceId);
+  if (r.fresh && r.goal) daemonGets(h, store, ruleOf("goal")?.daemon ?? [], id, from, deviceId);   // C-185: a goal finished together
   return r;
+}
+function daemonGets(h: Host, store: Store, gets: DaemonGets[], stepId: number, from: "site" | "device", deviceId: string) {
+  const d = gets.includes("bond") || gets.includes("gift") ? carriedDaemon(h, store, deviceId) : null;
+  for (const g of gets) {
+    if (g === "together") store.logInteraction("step", `${from} ${stepId}`);   // time together, a meal, training, its mood
+    if (g === "exp") growFromStep(h, store, stepId, deviceId);                 // C-47: EXP_PER_STEP
+    if (g === "goal") store.logInteraction("goal", String(stepId));            // C-207: the week's goals, for how the daemon looks
+    if (g === "bond" && d) bondAdd(store, d.personality, "goals");             // C-185: BOND.goal
+    if (g === "gift" && d) offerGift(store, speciesHeld(h));                   // C-185: the gift's
+  }
 }
 const giftNews = (store: Store) => { const g = giftOf(store); return g ? { gift: { name: HANDSHAKE.name, at: g.at, home: g.state === "written" } } : {}; };
 // every species the save holds, party and PC -- so the gift is never given to a save that already has the line

@@ -20,7 +20,10 @@ of its own with a `git mv`. `test/portable.test.ts` holds it to that.
   change made after reading another always comes later, even from a slow clock.
 - **SPACES, KINDS, STATES, FIELDS and FORMS.** A space is made from a form (data: kinds, each with states in four
   phases, open, doing, done and aside, and typed fields). Taking a newer form is an event.
-- **Handles** (`LIFE-12`) are numbered by the space's keeper, provisional (`LIFE-~a3f2`) until then, kept once given.
+- **Handles** (`LIFE-12`) are numbered by the space's keeper, provisional (`LIFE-~a3f2`) until then, kept once given. A
+  kind with a `prefix` of its own is numbered on its own (`STEP-17`; kinds sharing a prefix share its numbers), and the
+  keeper may give an item a chosen number as it is made (`make(..., { number })`), so items brought in from elsewhere
+  keep the numbers they had (C-430: GOALS).
 
 ## How two replicas merge
 
@@ -30,7 +33,7 @@ of its own with a `git mv`. `test/portable.test.ts` holds it to that.
 | a long body | the same, and a write that lost to one it never saw is set aside (`versions()`) |
 | links, tags, a checklist | added and removed by event id: a concurrent add stands |
 | a parent | a field; two moves that make a loop set the later aside (`tree()`) |
-| ARETE | awards and spends are entries, summed. An award's id comes from its item and key (`finish:1`), so two replicas that finish one step offline pay once. Undo takes it back, and finishing again pays once |
+| ARETE | awards and spends are entries, summed. An award's id comes from its item and key (`finish:1`), so two replicas that finish one step offline pay once. Undo takes it back, and finishing again pays once. A rule can say what a finish pays (`state(item, "done", { pay })`, under its own cap), and a finish paid nothing is still an entry, so every finish can be read from the ledger (`ledger(space, { since })`, each entry with its item's kind) |
 | a proposal | counts only once accepted; an accept anywhere takes it |
 
 ## Sync
@@ -49,6 +52,9 @@ const life = px.makeSpace({ title: "Life", prefix: "LIFE", form, reach: "home" }
 const step = px.make(life, "step", { title: "Water the seedlings" });
 px.state(step, "done");                    // pays the step's ARETE, once
 ```
+
+The companion's GOALS are the first use (`server/src/goals.ts`, C-430): a LIFE space, its form's rules paying ARETE
+under daily caps, behind the routes the app and the boards already call.
 
 ## Test
 

@@ -91,7 +91,7 @@ is added here in the same commit; when one file starts to hold both, split it (t
 
 | Folder | What it is |
 |---|---|
-| `packages/praxis/` | **PRAXIS**'s engine (C-429; `docs/PROJECTS.md` section 4): the append-only event log, UUIDv7 ids and the hybrid logical clock, the fold into its `px_` tables, the merge rules, handles numbered by a space's keeper, the ARETE ledger, and the exchange of events by version vector. `packages/praxis/src/` runs on the phone too: no `node:*`, no package, nothing from the companion, on the same `Db` as the Store (C-111), so it moves to its own repository with a `git mv`. `packages/praxis/test/` runs every suite on `node:sqlite` and through expo-sqlite's calls (`npm test` there, Node 22+). Neither MIND nor MACHINE: storage and the exchange |
+| `packages/praxis/` | **PRAXIS**'s engine (C-429; `docs/PROJECTS.md` section 4): the append-only event log, UUIDv7 ids and the hybrid logical clock, the fold into its `px_` tables, the merge rules, handles numbered by a space's keeper, the ARETE ledger, and the exchange of events by version vector. `packages/praxis/src/` runs on the phone too: no `node:*`, no package, nothing from the companion, on the same `Db` as the Store (C-111), so it moves to its own repository with a `git mv`. `packages/praxis/test/` runs every suite on `node:sqlite` and through expo-sqlite's calls (`npm test` there, Node 22+). GOALS run on it (`server/src/goals.ts`, C-430), so `app/metro.config.js` watches it as it does `server/src`. Neither MIND nor MACHINE: storage and the exchange |
 
 ## `firmware/` -- the devices
 

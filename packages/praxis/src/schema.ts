@@ -29,7 +29,7 @@ export const SCHEMA = `
     keeper TEXT, reach TEXT NOT NULL, form_name TEXT, form_version INTEGER, form_hlc TEXT, archived INTEGER NOT NULL,
     made TEXT NOT NULL, maker TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS px_kinds (space TEXT NOT NULL, kind TEXT NOT NULL, title TEXT NOT NULL, points INTEGER,
-    virtue TEXT, PRIMARY KEY (space, kind));
+    virtue TEXT, prefix TEXT, PRIMARY KEY (space, kind));
   CREATE TABLE IF NOT EXISTS px_states (space TEXT NOT NULL, kind TEXT NOT NULL, state TEXT NOT NULL, phase TEXT NOT NULL,
     position INTEGER NOT NULL, PRIMARY KEY (space, kind, state));
   CREATE TABLE IF NOT EXISTS px_fields (space TEXT NOT NULL, kind TEXT NOT NULL, field TEXT NOT NULL, type TEXT NOT NULL,
@@ -40,6 +40,8 @@ export const SCHEMA = `
     short TEXT NOT NULL, state TEXT, phase TEXT, parent TEXT, position TEXT NOT NULL, points INTEGER NOT NULL, virtue TEXT,
     due TEXT, archived INTEGER NOT NULL, handle INTEGER, made TEXT NOT NULL, maker TEXT NOT NULL);
   CREATE INDEX IF NOT EXISTS px_items_space ON px_items (space, parent, position);
+  CREATE INDEX IF NOT EXISTS px_items_handle ON px_items (space, handle);
+  CREATE INDEX IF NOT EXISTS px_items_kind ON px_items (space, kind, phase);
 
   -- LINKS, added and taken away by event id: a link stands until an unlink names it
   CREATE TABLE IF NOT EXISTS px_links (id TEXT PRIMARY KEY, space TEXT NOT NULL, item TEXT NOT NULL, type TEXT NOT NULL,
@@ -61,6 +63,7 @@ export const SCHEMA = `
   CREATE TABLE IF NOT EXISTS px_ledger (id TEXT PRIMARY KEY, space TEXT NOT NULL, item TEXT NOT NULL, op TEXT NOT NULL,
     key TEXT NOT NULL, points INTEGER NOT NULL, reason TEXT, event TEXT NOT NULL, actor TEXT NOT NULL, hlc TEXT NOT NULL);
   CREATE INDEX IF NOT EXISTS px_ledger_item ON px_ledger (item);
+  CREATE INDEX IF NOT EXISTS px_ledger_hlc ON px_ledger (space, hlc);
   CREATE TABLE IF NOT EXISTS px_takebacks (id TEXT PRIMARY KEY, event TEXT NOT NULL, actor TEXT NOT NULL, hlc TEXT NOT NULL);
 
   -- proposals, and every accept and decline of one

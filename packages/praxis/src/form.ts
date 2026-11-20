@@ -15,6 +15,8 @@ export interface StateDef { name: string; phase: Phase; title?: string }
 export interface KindDef {
   title: string;
   points?: number;                    // ARETE for finishing one, unless the item carries its own
+  prefix?: string;                    // C-430: its items numbered on their own, under this prefix (STEP-17); without
+                                      // one, a kind shares its space's numbers (LIFE-12). Kinds with one prefix share it.
   virtue?: string;
   states: StateDef[];                 // the first is where a new item starts
   fields?: Record<string, FieldDef>;
@@ -36,6 +38,8 @@ export const SHORT = 40;
 export const LINK_TYPES = ["blocks", "follows", "relates", "made-from", "tag", "check"] as const;
 
 const NAME = /^[\w.:@-]{1,64}$/;
+/** what a handle's prefix may be: LIFE, T, STEP */
+export const PREFIX = /^[A-Z][A-Z0-9]{0,9}$/;
 
 /** what is wrong with a form, or [] when nothing is */
 export function checkForm(f: unknown): string[] {
@@ -49,6 +53,7 @@ export function checkForm(f: unknown): string[] {
     if (!NAME.test(k) || k === "space") out.push(`kind "${k}" cannot be a kind's name`);
     if (typeof kind.title !== "string") out.push(`kind ${k} needs a title`);
     if (kind.points !== undefined && !(Number.isInteger(kind.points) && kind.points >= 0)) out.push(`kind ${k}'s points are a whole number`);
+    if (kind.prefix !== undefined && !PREFIX.test(kind.prefix)) out.push(`kind ${k}'s prefix is a handle's prefix (STEP)`);
     if (!Array.isArray(kind.states) || !kind.states.length) out.push(`kind ${k} needs states`);
     else {
       const names = new Set<string>();

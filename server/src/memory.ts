@@ -64,9 +64,7 @@ export function dayMaterial(store: Store, from: Date, to: Date, extra: Extra = {
   const seen = store.interactionsSince(from).filter((e) => Date.parse(e.at) < to.getTime());
   const counts = DAY_WORDS.map(([kinds, one, many]) => { const k = seen.filter((e) => kinds.includes(e.kind)).length;
     return k === 0 ? "" : k === 1 ? one : `${k} ${many}`; }).filter(Boolean);
-  const steps = (store.db.prepare(`SELECT s.text AS step, g.title AS goal FROM steps s JOIN subitems i ON i.id = s.subitem JOIN goals g ON g.id = i.goal
-                                    WHERE s.done >= ? AND s.done < ? ORDER BY s.done`).all(from.toISOString(), to.toISOString()) as { step: string; goal: string }[]);
-  const goals = (store.db.prepare("SELECT title FROM goals WHERE done >= ? AND done < ?").all(from.toISOString(), to.toISOString()) as { title: string }[]);
+  const { steps, goals } = store.goalsDoneBetween(from, to);   // C-430: from PRAXIS's LIFE space
   const lines = [
     extra.dayName ? `The day was a ${extra.dayName}.` : "",
     `Together you had: ${counts.length ? counts.join(", ") : "a quiet day, little done together"}.`,

@@ -23,7 +23,8 @@ export function thriveOf(store: Store, now = new Date()): Thrive {
   // the latest night by when it ended, not by when it was kept -- a watch's outbox may tell an old night late
   const nights = dreamsOf(store).filter((d) => new Date(d.to) >= since).sort((a, b) => b.to.localeCompare(a.to));
   const nightScore = nights.reduce((s, d) => s + (d.quality === "vivid" ? 2 : d.quality === "quiet" ? 1 : -1), 0);
-  const goals = store.kindSince("goal", since).length, steps = store.kindSince("step", since).length;
+  // C-430: the week's finishes, read from ARETE's ledger since GOALS moved onto PRAXIS (from the log before it)
+  const goals = store.finishedSince("goal", since), steps = store.finishedSince("step", since);
   const level = Math.max(0, Math.min(100, Math.round(50 + nightScore * 4 + goals * 8 + Math.min(steps, 20))));
   const last = nights[0] && now.getTime() - new Date(nights[0].to).getTime() < MORNING ? nights[0] : null;
   return { level, glow: Math.max(0, Math.round((level - 55) / 45 * 100)), stars: Math.min(goals, 5),

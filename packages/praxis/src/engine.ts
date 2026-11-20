@@ -14,7 +14,7 @@
 
 import type { Db, Statement } from "./db.js";
 import { checkChange, checkEvent, isLong, NAME, PROPOSABLE, type Op, type PxEvent } from "./events.js";
-import { checkForm, checkValue, CORE, LINK_TYPES, SHORT, type Form, type Phase } from "./form.js";
+import { checkForm, checkValue, CORE, LINK_TYPES, PREFIX, SHORT, type Form, type Phase } from "./form.js";
 import { Clock, hlcIso, parseHlc } from "./hlc.js";
 import { cryptoRandom, derivedId, uuidv7, type Random } from "./ids.js";
 import { between } from "./position.js";
@@ -53,6 +53,7 @@ export interface Effort { id: string; seconds: number; note: string | null; acto
 export interface Entry {
   id: string; space: string; item: string; op: "award" | "spend"; key: string; points: number; reason: string | null;
   actor: string; hlc: string; back: boolean;
+  kind: string | null;     // the kind of the item it was for ("space" for a space's own), once its making has arrived
 }
 export interface Proposal {
   id: string; space: string; item: string; op: Op; field?: string; value?: unknown; actor: string; hlc: string;
@@ -87,6 +88,9 @@ export class Praxis {
 
   constructor(readonly db: Db, opts: Options = {}) {
     db.exec(SCHEMA);
+    // C-430: px_kinds from before kinds had prefixes -- the column added, and the fold made again to fill it
+    const before = !(db.prepare("PRAGMA table_info(px_kinds)").all() as Row[]).some((c) => c.name === "prefix");
+    if (before) db.exec("ALTER TABLE px_kinds ADD COLUMN prefix TEXT");
     const now = opts.now ?? Date.now;
     this.newId = uuidv7(now, opts.random ?? cryptoRandom);
     const kept = this.one("SELECT value FROM px_meta WHERE key = 'replica'")?.value as string | undefined;
@@ -99,6 +103,7 @@ export class Praxis {
     this.clock = new Clock(this.replica, now);
     const last = this.one("SELECT MAX(hlc) AS h FROM px_events")?.h as string | null | undefined;
     if (last) this.clock.observe(last);
+    if (before) this.rebuild();
   }
 
   // ---- the database --------------------------------------------------------------------------------------------------
@@ -261,8 +266,8 @@ export class Praxis {
     // a form taken (or arrived): its kinds, states and fields, and every item of the space projected against them again
     for (const t of ["px_kinds", "px_states", "px_fields"]) this.run(`DELETE FROM ${t} WHERE space = ?`, id);
     for (const [k, kind] of Object.entries(form?.kinds ?? {})) {
-      this.run("INSERT INTO px_kinds (space, kind, title, points, virtue) VALUES (?, ?, ?, ?, ?)", id, k, kind.title,
-        kind.points ?? null, kind.virtue ?? null);
+      this.run("INSERT INTO px_kinds (space, kind, title, points, virtue, prefix) VALUES (?, ?, ?, ?, ?, ?)", id, k, kind.title,
+        kind.points ?? null, kind.virtue ?? null, kind.prefix ?? null);
       kind.states.forEach((s, i) => this.run("INSERT INTO px_states (space, kind, state, phase, position) VALUES (?, ?, ?, ?, ?)",
         id, k, s.name, s.phase, i));
       for (const [f, fd] of Object.entries(kind.fields ?? {}))
@@ -303,10 +308,20 @@ export class Praxis {
     return r ? this.itemOf(r) : null;
   }
 
-  private itemOf(r: Row): Item {
-    const prefix = this.one("SELECT prefix FROM px_spaces WHERE id = ?", r.space)?.prefix ?? "PX";
+  /** the prefix each kind of a space is numbered under, its own or the space's (`""`: a kind the form does not have) */
+  private prefixes(space: string): Map<string, string> {
+    const own = (this.one("SELECT prefix FROM px_spaces WHERE id = ?", space)?.prefix as string | undefined) ?? "PX";
+    const out = new Map([["", own]]);
+    for (const k of this.all("SELECT kind, prefix FROM px_kinds WHERE space = ?", space)) out.set(k.kind, k.prefix ?? own);
+    return out;
+  }
+
+  private itemOf(r: Row, prefixes?: Map<string, string>, held?: Record<string, unknown>): Item {
+    const p = prefixes ? null : this.one("SELECT s.prefix AS own, k.prefix AS kind FROM px_spaces s " +
+      "LEFT JOIN px_kinds k ON k.space = s.id AND k.kind = ? WHERE s.id = ?", r.kind, r.space);
+    const prefix = prefixes ? (prefixes.get(r.kind) ?? prefixes.get("")!) : (p?.kind ?? p?.own ?? "PX");
     const fields: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(this.values(r.id))) if (!(CORE as readonly string[]).includes(k)) fields[k] = v;
+    for (const [k, v] of Object.entries(held ?? this.values(r.id))) if (!(CORE as readonly string[]).includes(k)) fields[k] = v;
     return { id: r.id, space: r.space, kind: r.kind, title: r.title, short: r.short, state: r.state, phase: r.phase,
       parent: r.parent, position: r.position, points: r.points, virtue: r.virtue, due: r.due, archived: !!r.archived,
       number: r.handle, handle: r.handle === null ? `${prefix}-~${r.id.slice(-4)}` : `${prefix}-${r.handle}`,
@@ -315,15 +330,34 @@ export class Praxis {
 
   /** a space's items in their order; `parent: null` for the top level */
   items(space: string, f: { kind?: string; phase?: Phase; parent?: string | null; archived?: boolean } = {}): Item[] {
-    return this.all("SELECT * FROM px_items WHERE space = ? ORDER BY position, id", space)
-      .filter((r) => (f.kind === undefined || r.kind === f.kind) && (f.phase === undefined || r.phase === f.phase) &&
-        (f.parent === undefined || r.parent === f.parent) && (f.archived === undefined || !!r.archived === f.archived))
-      .map((r) => this.itemOf(r));
+    const where = ["i.space = ?"], args: unknown[] = [space];
+    if (f.kind !== undefined) { where.push("i.kind = ?"); args.push(f.kind); }
+    if (f.phase !== undefined) { where.push("i.phase = ?"); args.push(f.phase); }
+    if (f.parent !== undefined) { where.push("i.parent IS ?"); args.push(f.parent); }
+    if (f.archived !== undefined) { where.push("i.archived = ?"); args.push(f.archived ? 1 : 0); }
+    // three reads however many items: the rows, their fields, and the space's prefixes
+    const held = new Map<string, Record<string, unknown>>();
+    for (const v of this.all(`SELECT v.item, v.field, v.value FROM px_values v JOIN px_items i ON i.id = v.item WHERE ${where.join(" AND ")}`, ...args)) {
+      const x = JSON.parse(v.value);
+      let m = held.get(v.item);
+      if (!m) held.set(v.item, (m = {}));
+      m[v.field] = isLong(x) ? x.text : x;
+    }
+    const prefixes = this.prefixes(space);
+    return this.all(`SELECT i.* FROM px_items i WHERE ${where.join(" AND ")} ORDER BY i.position, i.id`, ...args)
+      .map((r) => this.itemOf(r, prefixes, held.get(r.id) ?? {}));
   }
 
-  /** the item a handle names (LIFE-12 -> 12) */
-  numbered(space: string, n: number): Item | null {
-    const r = this.one("SELECT * FROM px_items WHERE space = ? AND handle = ?", space, n);
+  /** the numbers a kind's items are given: its own prefix's, or "" for the space's own (kinds with no prefix) */
+  private sequence(space: string, kind: string): string {
+    return this.one("SELECT prefix FROM px_kinds WHERE space = ? AND kind = ?", space, kind)?.prefix ?? "";
+  }
+
+  /** the item a handle names (LIFE-12 -> 12). A kind with a prefix of its own is numbered on its own (STEP-17): name
+   *  the kind to look there; without one, the space's own numbers are looked in. */
+  numbered(space: string, n: number, kind?: string): Item | null {
+    const r = this.one("SELECT i.* FROM px_items i LEFT JOIN px_kinds k ON k.space = i.space AND k.kind = i.kind " +
+      "WHERE i.space = ? AND i.handle = ? AND COALESCE(k.prefix, '') = ?", space, n, kind === undefined ? "" : this.sequence(space, kind));
     return r ? this.itemOf(r) : null;
   }
 
@@ -399,12 +433,15 @@ export class Praxis {
       .map((r) => ({ id: r.id, seconds: r.seconds, note: r.note, actor: r.actor, hlc: r.hlc }));
   }
 
-  /** ARETE's ledger, oldest first: every award and spend, and whether it was taken back */
-  ledger(space?: string): Entry[] {
-    return this.all("SELECT l.*, t.id IS NOT NULL AS back FROM px_ledger l LEFT JOIN px_takebacks t ON t.id = l.id ORDER BY l.hlc, l.id")
-      .filter((r) => space === undefined || r.space === space)
+  /** ARETE's ledger, oldest first: every award and spend, and whether it was taken back -- one space's, or every one;
+   *  `since` (ms) leaves out what came before it */
+  ledger(space?: string, o: { since?: number } = {}): Entry[] {
+    const from = o.since === undefined ? "" : String(Math.max(0, Math.floor(o.since))).padStart(18, "0");
+    const sql = "SELECT l.*, t.id IS NOT NULL AS back, m.kind AS kind FROM px_ledger l LEFT JOIN px_takebacks t ON t.id = l.id " +
+      `LEFT JOIN px_made m ON m.item = l.item WHERE ${space === undefined ? "" : "l.space = ? AND "}l.hlc >= ? ORDER BY l.hlc, l.id`;
+    return (space === undefined ? this.all(sql, from) : this.all(sql, space, from))
       .map((r) => ({ id: r.id, space: r.space, item: r.item, op: r.op, key: r.key, points: r.points, reason: r.reason,
-        actor: r.actor, hlc: r.hlc, back: !!r.back }));
+        actor: r.actor, hlc: r.hlc, back: !!r.back, kind: r.kind ?? null }));
   }
 
   /** ARETE held: every award less every spend, leaving out what was taken back (one space's, or all of them) */
@@ -485,7 +522,7 @@ export class Praxis {
     const problems = checkForm(o.form);
     if (problems.length) throw new Error(`the form: ${problems.join("; ")}`);
     const prefix = o.prefix ?? (o.title.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4) || "PX");
-    if (!/^[A-Z][A-Z0-9]{0,9}$/.test(prefix)) throw new Error(`"${prefix}" cannot be a handle's prefix`);
+    if (!PREFIX.test(prefix)) throw new Error(`"${prefix}" cannot be a handle's prefix`);
     if (o.reach !== undefined && !REACHES.includes(o.reach)) throw new Error(`reach is one of ${REACHES.join(", ")}`);
     const id = this.newId();
     this.transaction(() => this.emit(id, id, "make", undefined, { kind: "space", title: o.title, prefix,
@@ -497,7 +534,7 @@ export class Praxis {
   setSpace(space: string, field: "title" | "prefix" | "reach" | "keeper" | "parent", value: string | null, o: By = {}) {
     this.mustSpace(space);
     if (field === "reach" && !REACHES.includes(value as Reach)) throw new Error(`reach is one of ${REACHES.join(", ")}`);
-    if (field === "prefix" && !/^[A-Z][A-Z0-9]{0,9}$/.test(value ?? "")) throw new Error(`"${value}" cannot be a handle's prefix`);
+    if (field === "prefix" && !PREFIX.test(value ?? "")) throw new Error(`"${value}" cannot be a handle's prefix`);
     if (field === "title" && !value?.trim()) throw new Error("a space needs a title");
     this.transaction(() => { this.emit(space, space, "set", field, value, o.actor); this.number(); });
   }
@@ -510,12 +547,21 @@ export class Praxis {
     this.transaction(() => this.emit(space, space, "set", "form", form, o.actor));
   }
 
-  /** an ITEM of a kind the space's form has, with its fields; at the end of its parent's items unless `after` says */
+  /** an ITEM of a kind the space's form has, with its fields; at the end of its parent's items unless `after` says.
+   *  `number`: the handle's number, chosen -- by the space's keeper only, and one not yet given (C-430: an item brought
+   *  in from elsewhere keeps the number it had); without it, the keeper gives the next. */
   make(space: string, kind: string, fields: { title: string } & Record<string, unknown>,
-    o: { parent?: string | null; after?: string | null } & By = {}): string {
+    o: { parent?: string | null; after?: string | null; number?: number } & By = {}): string {
     return this.transaction(() => {
       const id = this.newId();
       this.emit(space, id, "make", undefined, this.making(space, kind, fields, o), o.actor);
+      if (o.number !== undefined) {
+        if (this.one("SELECT keeper FROM px_spaces WHERE id = ?", space)?.keeper !== this.replica) throw new Error("only the space's keeper numbers its items");
+        if (!Number.isInteger(o.number) || o.number < 1) throw new Error("a handle's number is a whole number from 1");
+        const had = this.numbered(space, o.number, kind);
+        if (had) throw new Error(`${had.handle} is given already`);
+        this.emit(space, id, "set", "handle", o.number, "keeper");
+      }
       this.number();
       return id;
     });
@@ -559,26 +605,31 @@ export class Praxis {
     });
   }
 
-  /** an item into a state. Into a done phase it earns its points; out of one, they are taken back. */
-  state(item: string, state: string, o: By = {}) {
+  /** an item into a state. Into a done phase it earns its points; out of one, they are taken back. `pay` (C-430): what
+   *  this finish earns instead -- a rule's, under its daily cap -- kept in the ledger even at nothing, so every finish is
+   *  there to be read; `reason` says why. */
+  state(item: string, state: string, o: { pay?: number; reason?: string } & By = {}) {
+    if (o.pay !== undefined && !(Number.isInteger(o.pay) && o.pay >= 0)) throw new Error("pay is a whole number of ARETE");
     this.transaction(() => {
       const it = this.must(item);
       if (!this.mustSpace(it.space).form.kinds[it.kind]?.states.some((s) => s.name === state)) throw new Error(`a ${it.kind} has no state ${state}`);
       this.emit(it.space, item, "state", undefined, state, o.actor);
-      this.settle(item, it.phase, o.actor);
+      this.settle(item, it.phase, o.actor, o.pay, o.reason);
     });
   }
 
   /** finishing pays once per finish (PROJECTS.md 6): the award's key is the finish's round, so a phone and a hub that both
    *  finish one step make the same award; undoing takes it back and opens the next round, so doing it again pays once */
-  private settle(item: string, before: Phase | null, actor?: string) {
+  private settle(item: string, before: Phase | null, actor?: string, pay?: number, reason?: string) {
     const it = this.must(item);
     if ((it.phase === "done") === (before === "done")) return;
     const round = 1 + Number(this.one("SELECT COUNT(*) AS n FROM px_takebacks t JOIN px_ledger l ON l.id = t.id " +
       "WHERE l.item = ? AND l.op = 'award' AND l.key LIKE 'finish:%'", item)?.n ?? 0);
     const key = `finish:${round}`, id = ledgerId(item, "award", key);
     const paid = !!this.one("SELECT 1 FROM px_ledger WHERE id = ?", id);
-    if (it.phase === "done" && !paid && it.points > 0) this.emit(it.space, item, "award", key, { points: it.points, reason: "finish" }, actor);
+    const points = pay ?? it.points;
+    if (it.phase === "done" && !paid && (pay !== undefined || points > 0))
+      this.emit(it.space, item, "award", key, { points, reason: reason ?? "finish" }, actor);
     if (it.phase !== "done" && paid) this.emit(it.space, item, "award", key, { back: true }, actor);
   }
 
@@ -715,11 +766,17 @@ export class Praxis {
    *  made. Runs after every change made here and every exchange; returns how many it numbered. */
   number(): number {
     let n = 0;
+    const seq = "FROM px_items i LEFT JOIN px_kinds k ON k.space = i.space AND k.kind = i.kind";
     for (const s of this.all("SELECT id FROM px_spaces WHERE keeper = ?", this.replica)) {
-      let next = 1 + Number(this.one("SELECT COALESCE(MAX(handle), 0) AS n FROM px_items WHERE space = ?", s.id)?.n ?? 0);
-      for (const it of this.all("SELECT i.id FROM px_items i JOIN px_made m ON m.item = i.id WHERE i.space = ? AND i.handle IS NULL " +
-        "ORDER BY m.hlc, i.id", s.id)) {
-        this.emit(s.id, it.id, "set", "handle", next++, "keeper");
+      if (!this.one("SELECT 1 FROM px_items WHERE space = ? AND handle IS NULL LIMIT 1", s.id)) continue;   // nothing to number
+      // each run of numbers -- the space's own (""), and each kind's prefix (C-430) -- goes on from its highest
+      const next = new Map(this.all(`SELECT COALESCE(k.prefix, '') AS seq, MAX(i.handle) AS n ${seq} WHERE i.space = ? GROUP BY seq`, s.id)
+        .map((r) => [r.seq as string, 1 + Number(r.n ?? 0)]));
+      for (const it of this.all(`SELECT i.id, COALESCE(k.prefix, '') AS seq ${seq} JOIN px_made m ON m.item = i.id ` +
+        "WHERE i.space = ? AND i.handle IS NULL ORDER BY m.hlc, i.id", s.id)) {
+        const h = next.get(it.seq) ?? 1;
+        this.emit(s.id, it.id, "set", "handle", h, "keeper");
+        next.set(it.seq, h + 1);
         n++;
       }
     }

@@ -12,6 +12,7 @@ import { battleRoute, type BoardSeen } from "../src/battleroute.js";
 import * as X from "../src/exchange.js";
 import { exchangeRoute, localLink, remoteLink, type Link } from "../src/tradelink.js";
 import { pendingExp } from "../src/core.js";
+import { learnedOf } from "../src/ownsong.js";
 import { assign } from "../src/carry.js";
 import { Store } from "../src/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
@@ -150,6 +151,13 @@ describe("within the household: the app and a watch, both this save's daemons", 
     expect(end[0].result).toMatch(/outscored/);
     const [e0, e1] = end[0].exp;
     expect(e0 + e1).toBeGreaterThan(0);
+    for (const side of end[0].sides) {                                  // C-423: what each song knew going in, for the end to sing
+      const g = SPECIES[String(side.daemon.species)].growth ?? 0;
+      expect(side.daemon).toMatchObject({ growth: g, exp: expFor(g, side.daemon.level) });
+      const [before, after] = [learnedOf(side.daemon.species, side.daemon.exp, g), learnedOf(side.daemon.species, side.daemon.exp + 5000, g)];
+      expect(after.length).toBe(before.length);
+      after.forEach((a, k) => expect(a).toBeGreaterThanOrEqual(before[k]));
+    }
     await ask(0, "/api/battle"); await ask(1, "/api/battle");             // seen again: nothing given twice
     expect(pendingExp(store, 1001).exp).toBe(e0);
     expect(pendingExp(store, 1002).exp).toBe(e1);

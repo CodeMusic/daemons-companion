@@ -33,6 +33,7 @@ export interface Card {
   nickname: string; level: number; types: number[];        // types by the game's TYPE_ORDER
   stats: Stats; moves: { id: number; pp: number }[];        // its routines and their MP
   art?: string | null;                                       // its front picture's name (the app and boards draw it)
+  exp?: number;                                              // C-423: its experience as it went in, where its companion knows it
 }
 
 // ---- the battle as it stands ----

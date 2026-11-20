@@ -6,9 +6,11 @@
 // the game's lines played one at a time in the box at the bottom, and then this side's four routines, with the seconds
 // left to choose. The end says who outscored whom and the experience each gained (written at the next SYNC). The battle
 // lines are the game's own words (data/battle.json); every other word here is DRAFT.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { Art } from "./ui";
+import { useSinging } from "./staff";
+import { learnedOf, songOf } from "../../server/src/ownsong";
 import { act, arena, listen, replayDue, untilSaid, whereSaid, type Arena, type Fight, type Line } from "../platform/battle";
 
 const INK = "#1d2029", PAPER = "#fbfaf6", RULE = "#2b2f3a", FIELD = "#e8efe2", GOOD = "#3fae5a", MID = "#e0b13a", LOW = "#d4483b";
@@ -230,6 +232,7 @@ function Fought({ f, onClose }: { f: Fight; onClose: () => void }) {
         <YStack padding={12} gap={8} alignItems="center">
           {f.exp[me] ? <Text fontFamily="$mono" fontSize={13} color={INK} textAlign="center">{`${mine.nickname} gained ${f.exp[me]} EXP. Points!`}</Text> : null}
           {f.counted?.[me] === false ? <Text fontSize={12} color="#6b7080" textAlign="center">{`${mine.nickname} has had its three battles for EXP today -- this one was for the result alone.  DRAFT`}</Text> : null}
+          <BattleSongs f={f} me={me} />
           {f.forfeit === them ? <Text fontSize={12} color="#6b7080">{`${f.sides[them].label} left the battle.  DRAFT`}</Text> : null}
           <Text fontSize={11} color="#6b7080" textAlign="center">{`${f.counted?.[me] === false ? "" : "Its experience reaches the game at the next SYNC. "}Both daemons are back to full health.  DRAFT`}</Text>
           <Button label="OK" strong onPress={onClose} />
@@ -241,6 +244,49 @@ function Fought({ f, onClose }: { f: Fight; onClose: () => void }) {
         </XStack>
       )}
       {said ? <Text fontSize={12} color={LOW} padding={8}>{said}</Text> : null}
+    </YStack>
+  );
+}
+
+// C-423 (the user, 2026-11-18, by multiple choice: "hear what it learned"): after the EXP line, each side's song sings
+// the bars it knows -- this side's first, then the other's -- the static a little thinner for what this battle added
+// (the experience it gave, where it counted). A far side's song is heard at what its level says. Every word DRAFT.
+function BattleSongs({ f, me }: { f: Fight; me: 0 | 1 }) {
+  const { singing, phase, sing } = useSinging();
+  const order = [me, (1 - me) as 0 | 1];
+  const songs = order.map((i) => {
+    const d = f.sides[i].daemon;
+    if (!d || d.exp === undefined) return null;
+    const parts = songOf(d.species);
+    if (!parts.length) return null;
+    const growth = d.growth ?? 0, before = learnedOf(d.species, d.exp, growth), after = learnedOf(d.species, d.exp + (f.exp[i] ?? 0), growth);
+    const pct = (x: number[]) => Math.round((x[x.length - 1] ?? 0) * 100);
+    return { i, key: `${f.id}-${i}`, nickname: d.nickname, parts, after, now: pct(after), added: pct(after) - pct(before) };
+  }).filter(Boolean) as { i: 0 | 1; key: string; nickname: string; parts: ReturnType<typeof songOf>; after: number[]; now: number; added: number }[];
+  // sung once, in order, as the end is shown; SING again on either
+  const next = useRef(0), started = useRef(false);
+  useEffect(() => {
+    if (singing) { started.current = true; return; }
+    if (next.current >= songs.length) return;
+    if (next.current > 0 && !started.current) return;
+    const s = songs[next.current++];
+    started.current = false;
+    sing(s.key, s.parts, s.after);
+  }, [singing, songs.length]);
+  if (!songs.length) return null;
+  return (
+    <YStack gap={4} width="100%">
+      {songs.map((s) => (
+        <XStack key={s.key} justifyContent="space-between" alignItems="center" gap={8}>
+          <Text fontSize={12} color={INK} flex={1}>
+            {`${s.i === me ? "" : `${f.sides[s.i].label}'s `}${s.nickname}'s song: ${s.now}% of its part learned${s.added > 0 ? `, ${s.added}% of it in this battle` : ""}.  DRAFT`}
+          </Text>
+          <Text fontFamily="$mono" fontSize={12} fontWeight="700" color={singing === s.key ? MID : INK} cursor="pointer" role="button"
+                aria-label={`Hear ${s.nickname}'s song`} onPress={() => { next.current = songs.length; sing(s.key, s.parts, s.after); }}>
+            {singing === s.key ? (phase === "making" ? "…" : "SINGING") : "SING"}
+          </Text>
+        </XStack>
+      ))}
     </YStack>
   );
 }

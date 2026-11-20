@@ -17,6 +17,8 @@
 // missed turn, so the battle goes at the taker's pace), and its player watches the replay at their next look (`watched`).
 // A waiting challenge, or a battle one's daemon is fighting by itself, keeps no seat from battling live meanwhile.
 import type { Store } from "./store.js";
+import { expFor } from "./save/growth.js";
+import speciesJson from "../data/species.json" with { type: "json" };
 import { autoPick, battleExp, moveName, moveRow, resolve, say, start, TYPE_NAMES, type BattleState, type Card, type Choice } from "./battle.js";
 
 export const ASK_MS = 60_000, TURN_MS = 30_000, READ_MS = 6_000, MISSES = 3, KEEP_MS = 15 * 60_000;
@@ -195,6 +197,11 @@ export function askedOf(store: Store, key: string, seat: string, now = new Date(
 export const fightsOf = (all: Fight[], seat: string) => all.filter((f) => sideOf(f, seat) !== null);
 
 // ---- what a seat is shown: both daemons as the screen draws them, its own routines, the lines so far ----
+// C-423: a side's growth curve, and its experience as it went in -- its companion's own count, or the least its level
+// says (a far side's card tells its level only) -- so the end can sing what each song has learned
+const SPECIES = speciesJson as unknown as Record<string, { growth?: number }>;
+const growthOf = (species: number) => SPECIES[String(species)]?.growth ?? 0;
+
 export function view(f: Fight, seat: string, now = new Date()) {
   const me = sideOf(f, seat), b = f.battle;
   const corner = (c: Corner, i: 0 | 1) => {
@@ -203,6 +210,7 @@ export function view(f: Fight, seat: string, now = new Date()) {
              daemon: card ? { nickname: card.nickname, name: card.name, species: card.species, level: card.level, art: card.art ?? null,
                               types: card.types.map((t) => TYPE_NAMES[t]), hp: fi?.hp ?? card.stats.maxHP, maxHP: card.stats.maxHP,
                               status: fi?.status ?? "none",
+                              growth: growthOf(card.species), exp: card.exp ?? expFor(growthOf(card.species), card.level),
                               moves: i === me ? card.moves.map((m, k) => {
                                 const r = moveRow(m.id);
                                 return { slot: k, id: m.id, name: moveName(m.id), type: r ? TYPE_NAMES[r.type] : null, power: r?.power ?? 0,

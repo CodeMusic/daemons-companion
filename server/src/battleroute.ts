@@ -56,8 +56,10 @@ function cardOf(store: Store, save: Uint8Array | null, personality: number): Car
   if (!save) return "no save named -- set it in Settings";                                   // DRAFT
   const d = readAway(save).find((x) => x.personality >>> 0 === personality >>> 0);
   if (!d) return "only a daemon AWAY can fight -- SEND it from the game first";              // DRAFT
-  const level = Math.max(d.level, levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, d.exp + pendingExp(store, d.personality).exp));
-  return battleCard(save, d.personality, level);
+  const exp = d.exp + pendingExp(store, d.personality).exp;
+  const level = Math.max(d.level, levelFromExp(SPECIES[String(d.species)]?.growth ?? 0, exp));
+  const c = battleCard(save, d.personality, level);
+  return typeof c === "string" ? c : { ...c, exp };                  // C-423: its song as it went in, for the end
 }
 const seatLabel = (b: BoardSeen) => b.kind.toUpperCase();
 

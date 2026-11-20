@@ -265,7 +265,11 @@ export function useSinging() {
       } catch (e) { setFailed((e as Error).message); setOn(null); }
     }, 30);
   };
-  const hush = useCallback(() => { player.pause(); setOn(null); setMs(-1); }, [player]);
+  // C-440: never call this from an unmount cleanup. useAudioPlayer releases the player in its own cleanup, which runs
+  // first, and release already silences it (teardownPlayer on iOS, the src removed on the web); a pause after that
+  // throws SharedObject.NotFoundException on a phone, and in a release build that is a crash -- TestFlight 992 died
+  // leaving DAEMONS > Yours for any other tab. The try is for a press that lands as it goes.
+  const hush = useCallback(() => { try { player.pause(); } catch { /* gone */ } setOn(null); setMs(-1); }, [player]);
   let at: SongAt | null = null;
   if (on?.phase === "speaking") {
     const { starts, notes } = on.times;

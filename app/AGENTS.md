@@ -50,6 +50,17 @@ user deciding it. Navigation is local React state:
   `ui/ui.tsx` `sound/careSound`, inside a check. A top-level import would pull native modules into the site's build.
 - **Code comments cite tickets** (`// C-264: ...`) from the companion's `TODO.md`. Keep them when code moves.
 
+## A player is gone before your cleanup runs (C-440)
+
+`useAudioPlayer` (any `useReleasingSharedObject` hook) releases its object in its own effect cleanup, and that runs
+before any cleanup the component declares after it. A call on a released object throws `SharedObject.NotFoundException`
+on a phone, and an error thrown in an unmount cleanup crashes a release build: TestFlight 992 died leaving DAEMON >
+Yours for any other page, because ITS SONG paused its player as it went. Release already silences a player (iOS tears it
+down, the web removes its src), so do not pause one on unmount; where a cleanup must touch one, wrap it:
+`try { player.pause(); } catch { /* gone */ }`. **The site never shows this** -- the web player's pause after release
+does not throw -- so a page that holds a player is checked on a phone, or on the site with `pause()` patched to throw
+once the element's `src` is removed.
+
 ## WHAT'S NEW, and its SET UP (C-318, C-339)
 
 WHAT'S NEW (`ui/whatsnew.tsx`) reads `server/data/whatsnew.json`, written from history by `server/tools/whatsnew.py`

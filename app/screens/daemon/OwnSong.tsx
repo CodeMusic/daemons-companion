@@ -119,9 +119,8 @@ export function songLine(s: { share: number; perfect: boolean; ready: boolean; a
 // daemon's own page -- the whole of its song so far, each part on its staff, the earlier parts whole and its own as it
 // knows it (static where it has not learned), and SING to hear it so. Every word DRAFT.
 export function SongCard({ song, ink }: { song: SongNow | null | undefined; ink: string }) {
-  const sung = useSinging(), { hush } = sung, species = song?.species;
+  const sung = useSinging(), species = song?.species;      // the song stops as the page goes: its player is released (C-440)
   const parts = useMemo(() => (species !== undefined ? songOf(species) : []), [species]);
-  useEffect(() => () => hush(), [hush]);                   // a song does not follow it off the page
   if (!song || !parts.length) return null;
   const shares = parts.map((_, i) => (i < parts.length - 1 ? 1 : song.share));
   const key = `own-${song.species}-${Math.round(song.share * 1000)}`;

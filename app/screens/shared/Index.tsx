@@ -96,8 +96,7 @@ export function IndexScreen({ ink }: { ink: string }) {
   const own = useOwnVoice();                               // C-303: the daemon's own telling, by a tap on its sprite
   // C-419 (DAEMONS T-595; the user, 2026-11-18: "in the index you can still look at a past form (in app or game) and hear
   // its song"): SONG -- its line's parts, a past form's whole and its own as the one carried (else the first held) knows it
-  const sung = useSinging(), { hush } = sung;
-  useEffect(() => () => hush(), [hush]);
+  const sung = useSinging();                               // it stops as the page goes: its player is released (C-440)
   const busy = voice.reading !== null || own.told !== null || sung.singing !== null;
   if (error) return <Small>{error}</Small>;
   if (!ix) return <Small>Loading…</Small>;

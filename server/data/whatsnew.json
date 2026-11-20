@@ -1,9 +1,23 @@
 {
- "latest": 991,
+ "latest": 993,
  "builds": [
   {
+   "build": 993,
+   "commit": "d5296390",
+   "date": "2026-11-20",
+   "sections": [
+    {
+     "ticket": "C-440",
+     "title": "TestFlight 992 crashes on the DAEMONS tab's sub-tabs: the first sub-tab works, but opening INDEX, MEETINGS, DREAMS or any other sub-tab crashes the app and asks to send a crash report (latest commits to app/screens/daemon are C-418/C-419's songs; check there first)",
+     "lines": [
+      "Leaving DAEMON > Yours no longer crashes the phone — ITS SONG and the INDEX stop pausing a released player"
+     ]
+    }
+   ]
+  },
+  {
    "build": 991,
-   "commit": "1fbb01b9",
+   "commit": "3e62857",
    "date": "2026-11-20",
    "sections": [
     {

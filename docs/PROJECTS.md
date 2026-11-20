@@ -301,9 +301,40 @@ relation to LINK, attachment to BLOB. **Off Redmine in three steps, each the use
 `companion` projects mirrored in, read-only, to use the views on real work; (2) both ways; (3) the engine becomes the
 source, `tools/tickets.py` talks to it, the TODO files' nightly mirror is unchanged, and Redmine retires.
 
-**The site** is the app's web build against a hub or roverbyteseer replica, on its own subdomain under
-daemons.codemusic.ca (C-408's network). More than one person needs C-11's accounts; THE COMMONS has guardians and
-passkeys already.
+**The site is EUDAIMONIA** (*the user, 2026-11-20, by multiple choice*), in **daemons-playground renamed
+daemons-eudaimonia** (C-438): the playground is no longer where the game is played (the companion app is), so it becomes
+the place where PRAXIS and ARETE are used together. Its subdomain sits under daemons.codemusic.ca (C-408's network).
+
+- **The dashboard is the front door** (C-411, C-439). Anyone lands on it, with SIGN IN beside it. Each lane's group is
+  drawn with its daemon, and the tickets waiting on the user with the player's sprite. A ticket, a release or a lane
+  opens in a modal, with a way to a full view in a new tab. It draws from PRAXIS: Redmine reaches it through the
+  bridge's read-only first step until Redmine retires.
+- **A space is public only by choice.** Every space (a project, LIFE, a JOURNAL, LEARNING, any form) has a setting for
+  its PUBLIC reach (section 5), off unless chosen. Signed in, or through a part made public, you reach the spaces
+  themselves.
+- **Accounts** (C-436): the admin first, then people and AI agents.
+  - The first sign-in is admin / admin and is changed at once. Until it is changed it works only from home or the
+    tailnet.
+  - Every account is a daemon, picked from a grouped list. Its sprite is the account's picture and its lane on the
+    dashboard.
+  - These are C-11's accounts, and THE COMMONS's guardians and passkeys are there to reuse.
+- **THE EASTER EGG** (C-437): a hidden door and a password. You choose your cart (FIRERED, LEAFGREEN or both), and it
+  turns into CONTENT or CONTEXT. The game plays in the browser one of two ways:
+  - from your own cart's file, patched by the release (C-187's route, and the one a public visitor takes);
+  - with the password and a backup agreement ticked, straight from the release.
+
+  The password is kept hashed on the server, never in a repository.
+- **The engine moves to its own repository, daemons-praxis, once C-430 is done** (C-435), and the companion and the
+  site each pin it by tag. While one repository uses it, a folder here is cheaper: one commit changes the engine and
+  its first user together. Once two do, it needs its own repository: npm can install a repository by tag but not a
+  folder inside one, and replicas running different builds need an event format with a version both sides can read.
+
+**Why EUDAIMONIA.** For Aristotle, *eudaimonia* is living well and doing well (*eu prattein*, *Nicomachean Ethics* I.4).
+It is activity in accordance with *arete* over a whole life (I.7). That is PRAXIS and ARETE held together. In DAEMONS,
+EUDAIMON already names one side: THE EUDAIMON LAYER, the dawn half of THE UNITY BOOK, and the good pole of SPIRITS. So
+the two words stay apart. *Eudaimon* is a state a daemon passes through; *eudaimonia* is a life done well, and it
+counts the shadow days too. That makes it the mended book's word. THE UNITY BOOK's lineage already names Aristotle's
+eudaimonia, and its BALANCE page holds the week's seven pairs, which THE WEEK'S BALANCE (section 6) tracks.
 
 ## 11. The game world (later; ideas, all OPEN)
 
@@ -316,13 +347,16 @@ passkeys already.
 
 1. **The folders** (section 3), domain by domain, move-only commits. **C-428**
 2. **The engine**: kinds, items, fields, states, the event log, the fold, UUIDv7 and the clock, on the existing `Db`;
-   tested on Node and on the phone's engine. No sync yet. **C-429**
+   tested on Node and on the phone's engine. No sync yet. **C-429**, *done 2026-11-20 (companion 9c1949f7)*.
 3. **GOALS onto it**, behind the same routes; the ARETE ledger and the rules with today's numbers; THRIVE from the
    ledger. *Phases 2 and 3 are the slice: one form, the same behaviour, new rails.* **C-430**
 4. **Sync**: phone and hub by version vectors; a phone that hosted alone joins a hub; blobs by hash. **C-431**
 5. **The JOURNAL, the DREAM JOURNAL, TENDING and MEETINGS** onto it; THE WEEK'S BALANCE. **C-432**
 6. **Forms you make yourself**; LEARNING and RECIPES; the REWARD SHELF. **C-433**
-7. **The site**; the Redmine bridge; a cloud replica, encrypted; its own repository. **C-434**
+7. **The site, EUDAIMONIA** (section 10): the rename **C-438**, the front door **C-439**, accounts **C-436**, THE
+   EASTER EGG **C-437**, the dashboard **C-411**; the engine's own repository once C-430 is done **C-435**; the Redmine
+   bridge and a cloud replica, encrypted **C-434**. *The rename, the dashboard's frame, sign-in and the easter egg need
+   no engine, so they can run beside phases 3 to 6.*
 
 ## 13. Decided, and OPEN
 
@@ -330,9 +364,17 @@ passkeys already.
 here, **`packages/praxis/`**, its own repository before long; **our own small event log** for sync; **domains, with
 `psyche/` and `machine/`** for the folders.
 
+**Decided by the user, 2026-11-20, by multiple choice:**
+- The site is **EUDAIMONIA**, in **daemons-eudaimonia** (daemons-playground renamed).
+- The engine moves to its own repository, **daemons-praxis, once C-430 is done**.
+- On the public site, the game comes **from the player's own cart's file, patched in the browser**, or, with the
+  password and a backup agreement ticked, straight from the release.
+
 **OPEN:**
 
 - **What the game will take for ARETE** at SYNC, and how much a day (the game lane).
 - **The default ARETE per kind** and the virtue bonus (the numbers in section 6 are placeholders).
-- **When PRAXIS moves to its own repository**, and its name there.
-- **The site's subdomain.**
+- **The site's subdomain**: C-411 has dashboard.daemons.codemusic.ca; eudaimonia.daemons.codemusic.ca is the other
+  choice.
+- **THE UNITY BOOK's lens on the site** (an idea): an item read for its cost (the effort, the night reading), for its
+  gift (the ARETE, the dawn reading), or whole, as the mended book turns between its three readings.

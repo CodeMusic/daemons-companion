@@ -87,6 +87,12 @@ is added here in the same commit; when one file starts to hold both, split it (t
 | **MIND** | `app/state/month.ts`, `ai/breakdown.ts`, `ai/easel.ts`, `ai/gender.ts`, `ai/muse.ts`, `ai/personaof.ts`, `ai/voiceof.ts`, `ai/voices.ts`, `arcana.ts`, `aurora.ts`, `care.ts`, `context.ts`, `dawns.ts`, `days.ts`, `dialogue.ts`, `dreams.ts`, `drift.ts`, `eudaimon.ts`, `evolve.ts`, `expressions.ts`, `feelings.ts`, `gift.ts`, `guideask.ts`, `halloween.ts`, `hermetic.ts`, `holidays.ts`, `intuition.ts`, `journal.ts`, `life.ts`, `lines.ts`, `memory.ts`, `mind.ts`, `months.ts`, `originbook.ts`, `ownsong.ts`, `persona.ts`, `playervoice.ts`, `seasons.ts`, `self.ts`, `signs.ts`, `sing.ts`, `sleepsound.ts`, `spirits.ts`, `subtleask.ts`, `synesthesia.ts`, `tending.ts`, `thrive.ts`, `unity.ts`, `vessel.ts`, `weathering.ts`, `witching.ts` |
 | **MACHINE** | `app/platform/endpoint.ts`, `app/platform/lend.ts`, `app/platform/mesh.ts`, `app/platform/mind.ts`, `app/platform/rendering.ts`, `app/state/me.ts`, `ai/comfy.ts`, `ai/discover.ts`, `ai/endpoints.ts`, `ai/hotwords.ts`, `ai/house.ts`, `ai/mindlog.ts`, `ai/module.ts`, `ai/say.ts`, `ai/schedule.ts`, `ai/stackflow.ts`, `ai/talkjobs.ts`, `ai/tasks.ts`, `ai/thoughtroute.ts`, `ai/tiiny.ts`, `ai/tiinyfirst.ts`, `ai/tiinykeep.ts`, `ai/voice.ts`, `ai/wav.ts`, `bookrecordings.ts`, `llmtalker.ts`, `mesh_worker_main.ts`, `ollama.ts`, `procmesh.ts`, `sleepexport.ts`, `sleeptracks.ts`, `songs.ts`, `voicebank.ts` |
 
+## `packages/` -- engines the companion is built on, each importing nothing from it
+
+| Folder | What it is |
+|---|---|
+| `packages/praxis/` | **PRAXIS**'s engine (C-429; `docs/PROJECTS.md` section 4): the append-only event log, UUIDv7 ids and the hybrid logical clock, the fold into its `px_` tables, the merge rules, handles numbered by a space's keeper, the ARETE ledger, and the exchange of events by version vector. `packages/praxis/src/` runs on the phone too: no `node:*`, no package, nothing from the companion, on the same `Db` as the Store (C-111), so it moves to its own repository with a `git mv`. `packages/praxis/test/` runs every suite on `node:sqlite` and through expo-sqlite's calls (`npm test` there, Node 22+). Neither MIND nor MACHINE: storage and the exchange |
+
 ## `firmware/` -- the devices
 
 | Folder | What it is |

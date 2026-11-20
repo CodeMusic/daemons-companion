@@ -1,9 +1,67 @@
 {
- "latest": 990,
+ "latest": 991,
  "builds": [
   {
+   "build": 991,
+   "commit": "1fbb01b9",
+   "date": "2026-11-20",
+   "sections": [
+    {
+     "ticket": "C-421",
+     "title": "A battle CHALLENGE that waits, like a trade offer",
+     "lines": [
+      "A battle CHALLENGE that waits, like a trade offer (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-422",
+     "title": "Battles across households through THE COMMONS, as trades go",
+     "lines": [
+      "Battles across homes through THE COMMONS, as trades go (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-419",
+     "title": "SONG for CRY in the companion: the INDEX, the daemon's page, freestyle summons",
+     "lines": [
+      "SONG for CRY in the companion — the INDEX sings, and ITS SONG on the daemon's page, every part on its staff (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-426",
+     "title": "The Kode Dot's den and the companion's API",
+     "lines": [
+      "The Kode Dot's den — its daemon from the companion, CARE kept until it is taken (first slice)"
+     ]
+    },
+    {
+     "ticket": "C-423",
+     "title": "A battle's end plays what each daemon's song has learned",
+     "lines": [
+      "A battle's end sings what each daemon's song has learned (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.408.1 (DAEMONS release)",
+      "Knows the game's ROM release v11.409.1 (DAEMONS release)",
+      "Knows the game's ROM release v11.410.1 (DAEMONS release)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Shelf cover: the player's manual reprinted for T-597 (DAEMONS)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 990,
-   "commit": "ae58a010",
+   "commit": "9ad602c",
    "date": "2026-11-19",
    "sections": [
     {

@@ -103,6 +103,9 @@ import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import * as X from "./exchange.js";                               // C-218, C-219: THE EXCHANGE
+import { takeBlob } from "@daemons/praxis";
+import { blobsBeside, sha256 as sha256hex } from "./blobstore.js";   // C-431: PRAXIS's blobs, by their SHA-256
+import { praxisRoute } from "./praxissync.js";                      // C-431: PRAXIS's SYNC
 import { KEYS } from "./keys.js";
 import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./manual.js";   // C-233 on the devices
@@ -831,6 +834,7 @@ class Pairing {
 
 export function makeServer(cfg: Config, store = new Store(cfg.database), hub = new DeviceHub(), pairing = new Pairing()): Server {
   useLanInterface(cfg.lanInterface);                           // C-180: never the Module LLM's link
+  const blobs = blobsBeside(cfg.database);                     // C-431: PRAXIS's blobs, in blobs/ beside the database
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
   const widgetOwners = new Map<string, string>();               // which paired phone each widget is on (by its name)
   weatherLoop(store);                                          // C-158: the real weather, while a city is set on the site
@@ -1635,6 +1639,28 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // dialogs that open on the computer itself stay its own
       if (!isLoopback(req.socket.remoteAddress) && LOCAL_ONLY.includes(path) && !(phone && !MACHINE_ONLY.includes(path)))
         return send(res, 403, { error: "that is done on the computer the companion runs on" });
+      // ---- C-431: PRAXIS's SYNC -- a paired phone (or this machine) exchanges events and blobs with the hub
+      // (praxissync.ts); a phone that hosted alone hands over what it made, and its LIFE joins the hub's. Never through
+      // the relay: it is the household's whole record, and a phone pairs at home.
+      if (path.startsWith("/api/praxis/")) {
+        if (relayed) return send(res, 403, { error: "PRAXIS syncs on the home network and the tailnet only" });   // DRAFT
+        const name = path.slice("/api/praxis/".length), blob = /^blob\/([0-9a-f]{64})$/.exec(name);
+        if (blob && req.method === "GET") {
+          const bytes = blobs.get(blob[1]);
+          if (!bytes) return send(res, 404, { error: "no such blob here" });
+          res.writeHead(200, { "content-type": "application/octet-stream", "content-length": bytes.length,
+                               "cache-control": "private, max-age=31536000, immutable" });   // a name is always the same bytes
+          return res.end(bytes);
+        }
+        if (blob && req.method === "PUT") {
+          const bytes = await rawBody(req, 64 * 1024 * 1024);
+          if (!bytes) return send(res, 413, { error: "a blob is at most 64 MB" });   // DRAFT
+          return send(res, 200, { kept: takeBlob(blobs, blob[1], new Uint8Array(bytes), sha256hex) });
+        }
+        if (blob) return send(res, 405, { error: "a blob is fetched with GET and given with PUT" });
+        const r = praxisRoute(store, blobs, req.method ?? "GET", name, req.method === "POST" ? await body(req, 16 * 1024 * 1024) : {});
+        return send(res, r.status, r.body);
+      }
       // ---- C-221: THE LINK CABLE -- a player's screen and buttons, passed to the two linked games (linkcable.ts) ----
       if (path.startsWith("/api/link/")) {
         if (relayed) return send(res, 403, { error: "the link cable is on the home network and the tailnet only" });   // DRAFT

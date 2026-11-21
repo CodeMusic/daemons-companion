@@ -14,6 +14,8 @@
 //   THRIVE          the week's finishes, read from the ledger -- and, for the days before the move, from the log as it
 //                   always was (today's values for today's history)
 //   the old tables  goals, subitems and steps are read into events once, each at its own time, and left as they were
+//   another LIFE    C-431: a phone that hosted alone, joining a hub, pushes its own LIFE; the hub JOINS it to its own
+//                   (joinOthers), so there is one LIFE again -- the phone's goals numbered here, their ARETE counted here
 import { hlcIso, parseHlc, Praxis, type Form, type Item, type StateDef } from "@daemons/praxis";
 import type { Goal, Plan, Step, Store, SubItem } from "./store.js";
 
@@ -261,6 +263,16 @@ export class Goals {
 
   // ---- changing -----------------------------------------------------------------------------------------------------
 
+  /** C-431: every other LIFE read on its own -- a phone's that hosted alone, pushed here when it paired -- joined to this
+   *  one, when this copy keeps it (the hub), so there is one LIFE again and nothing is lost: each of its goals numbered
+   *  here after this LIFE's own, each keeping the number it had there, and every ARETE it earned counted here. Returns
+   *  the LIFEs it joined. */
+  joinOthers(): string[] {
+    if (this.px.space(this.life)?.keeper !== this.px.replica) return [];
+    const others = this.px.spaces().filter((s) => s.form?.name === LIFE.name && !s.archived && s.home === s.id && s.id !== this.life);
+    return this.px.transaction(() => others.map((s) => { this.px.join(s.id, this.life); return s.id; }));
+  }
+
   addGoal(title: string, plan?: Plan): Goal {
     return this.px.transaction(() => {
       const g = this.px.make(this.life, "goal", named(title));
@@ -364,7 +376,9 @@ export class Goals {
   }
 }
 
-/** the LIFE space: the earliest made from the LIFE form */
+/** the LIFE space: the one this copy keeps, or else the earliest made from the LIFE form -- of those read on their own
+ *  (C-431: one joined to another is read in that one) */
 function lifeOf(px: Praxis): string | null {
-  return px.spaces().find((s) => s.form?.name === LIFE.name && !s.archived)?.id ?? null;
+  const lives = px.spaces().filter((s) => s.form?.name === LIFE.name && !s.archived && s.home === s.id);
+  return (lives.find((s) => s.keeper === px.replica) ?? lives[0])?.id ?? null;
 }

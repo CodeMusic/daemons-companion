@@ -3,7 +3,8 @@
 *Started 2026-11-19 (the user: "let's start designing this management system which is daemon gamified and 'projects'
 within it can take many forms (from life management project, to learning, to cooking recipies, etc) and for the ones
 where you define points you earn rewards"). **Built so far: the engine (C-429), GOALS on it, earning ARETE (C-430), and
-the engine in its own repository, daemons-praxis (C-435); the rest is design.** A decision recorded here is one the user made;
+the engine in its own repository, daemons-praxis (C-435), and sync between a phone and its hub -- a phone that hosted
+alone joining one, and blobs by hash (C-431); the rest is design.** A decision recorded here is one the user made;
 everything marked OPEN is a question for them; every in-app word is DRAFT.*
 
 **Named by the user, 2026-11-19, by multiple choice: PRAXIS, and its points ARETE** -- Aristotle's pair: *praxis* is
@@ -72,6 +73,8 @@ only) -- plus the casino's coins, which are the save's money. **Nothing is the p
 - **Ids are local**: integer autoincrement and per-blob counters (`p1`, `t2`). Two copies would collide.
 - **One server is the truth.** The phone caches answers and queues writes in a FIFO with no timestamps; **a phone that
   hosted alone never merges with a hub it pairs with later.** Nothing anywhere is a sync engine (C-11 deferred one).
+  *Since C-431: PRAXIS's events sync (section 5), and a phone that hosted alone hands its goals to the hub it pairs
+  with; everything else is as it was.*
 - **The save already syncs the right way**: whole file, by hash, three-way against the last copy both sides agreed,
   the losing copy set aside in the save trail -- which is content-addressed (C-188, C-364, C-384). The voicebank and
   the book chapters are content-addressed too. **That is the model this design generalises.**
@@ -225,6 +228,29 @@ replica fetches what it needs from whoever has it (the hub, the seer, THE COMMON
 it for good -- the same hash is always the same bytes, so it is cached forever and stored once. Generated content is a
 blob plus the event that says what made it (the recipe, the mind, the persona of the day), so its making is never lost.
 
+**Built (C-431, 2026-11-20; daemons-praxis v0.2.0):**
+
+- **The exchange, both ways or one** (`sync`, `push`): per space and replica, "what I have seen", safe to repeat, over
+  any transport. The hub answers it over HTTP at `/api/praxis/` (`server/src/praxissync.ts`) to a paired phone or
+  itself, at home and on the tailnet, never through the relay; it sends HOME, SHARED and PUBLIC spaces, never THIS PHONE.
+- **A phone that hosted alone joins a hub and loses nothing.** When it pairs (and again whenever the app opens, until it
+  is done), it pushes every space of its own with anything in it (`app/platform/local.ts` `handOver`). The hub then
+  JOINS the phone's LIFE to its own (`goals.ts` `joinOthers`, the engine's `join`): one LIFE, the phone's goals numbered
+  after the hub's (each keeping its old number in its history), every finish and its ARETE kept, counted under the
+  day it was earned. What the phone makes later, alone, lands in the same LIFE at the next hand-over.
+- **Blobs by hash.** A field of type `blob` names a SHA-256; the hub keeps the bytes in `blobs/` beside its database
+  (`server/src/blobstore.ts`), the phone in its documents, and an exchange moves every blob one side names and the other
+  holds, checked against its name before it is kept. Nothing in GOALS has a blob yet: C-432 and C-433 bring the
+  features that do.
+- **A clock set wrong cannot drag the others.** An event more than a day ahead of the receiver's clock waits, and is
+  taken once the clock catches up (the phone is told how many wait).
+- **Format 2** is a join; every other event is still format 1, so a phone on an older build folds everything else.
+
+**Not yet:** a paired phone is still a thin client of the hub (the app asks the hub, and keeps what it saw), so it is a
+replica only while it hosts alone; making it one all the time -- answering from its own copy and syncing in the
+background -- is the next step. Membership (who may hold a SHARED space), a cloud replica (C-434), and saves on the same
+rails (the save's own sync is C-364 and C-365's, in flight) are later.
+
 **Who sees what.** Each space has a reach: **THIS PHONE** (never leaves it), **HOME** (the hub's household), **SHARED**
 (named members), **PUBLIC** (THE COMMONS). A cloud would keep encrypted events and blobs -- a key per space, kept in the
 phone's keychain -- and could relay and back up without reading. Which minds may read a space is the space's own
@@ -366,7 +392,8 @@ eudaimonia, and its BALANCE page holds the week's seven pairs, which THE WEEK'S 
 3. **GOALS onto it**, behind the same routes; the ARETE ledger and the rules with today's numbers; THRIVE from the
    ledger. *Phases 2 and 3 are the slice: one form, the same behaviour, new rails.* **C-430**, *done 2026-11-20*: the
    LIFE form and its rules are `server/src/goals.ts` (below).
-4. **Sync**: phone and hub by version vectors; a phone that hosted alone joins a hub; blobs by hash. **C-431**
+4. **Sync**: phone and hub by version vectors; a phone that hosted alone joins a hub; blobs by hash. **C-431**, *done
+   2026-11-20 (daemons-praxis v0.2.0)*: section 5's "Built".
 5. **The JOURNAL, the DREAM JOURNAL, TENDING and MEETINGS** onto it; THE WEEK'S BALANCE. **C-432**
 6. **Forms you make yourself**; LEARNING and RECIPES; the REWARD SHELF. **C-433**
 7. **The site, EUDAIMONIA** (section 10): the rename **C-438**, the front door **C-439**, accounts **C-436**, THE
@@ -389,6 +416,9 @@ here, **`packages/praxis`**, its own repository before long (it is: C-435); **ou
   under that day's cap, as it is read in -- no one starts at 0.
 
 **OPEN:**
+
+- **How far ahead a clock may be** before its events wait: a day (`AHEAD`, C-431), a guess. And a blob's largest size
+  over HTTP, 64 MB (DRAFT).
 
 - **What the game will take for ARETE** at SYNC, and how much a day (the game lane).
 - **The default ARETE per kind** and the virtue bonus (the numbers in section 6 are placeholders). C-430 built GOALS with

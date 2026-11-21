@@ -23,6 +23,8 @@ import { readSave } from "../../server/src/save/reader";
 import { afterSync, beforeSync, remoteLink, setHub, TRADE_PATHS, tradeRoute } from "../../server/src/tradelink";   // C-219
 import { BATTLE_PATHS, battleRoute } from "../../server/src/battleroute";   // C-328
 import { SPECIES_ART } from "../art/speciesArt";
+import { handOver as handOverTo, hubPeer, type HandedOver } from "../../server/src/praxissync";   // C-431
+import type { BlobStore } from "@daemons/praxis";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -62,6 +64,40 @@ const phoneSave: SaveFile = {
 };
 
 export const hasSave = () => saveFile().exists;
+
+// C-431: PRAXIS's blobs on the phone -- each a file named by its SHA-256, in the app's documents (blobs/ab/ab12...)
+const blobFile = (h: string) => new File(Paths.document, "blobs", h.slice(0, 2), h);
+const phoneBlobs: BlobStore = {
+  has: (h) => /^[0-9a-f]{64}$/.test(h) && blobFile(h).exists,
+  get: (h) => { const f = blobFile(h); return /^[0-9a-f]{64}$/.test(h) && f.exists ? f.bytesSync() : null; },
+  put: (h, bytes) => {
+    const f = blobFile(h);
+    if (f.exists) return;
+    const dir = new Directory(Paths.document, "blobs", h.slice(0, 2));
+    if (!dir.exists) dir.create({ intermediates: true });
+    put(f, bytes);
+  },
+};
+
+// C-431 (docs/PROJECTS.md 5: "a phone that hosted alone joins a hub later and loses nothing"): paired with a hub, the
+// phone hands it what it made here -- its goals, what it finished and the ARETE each earned -- and the hub reads them in
+// its own LIFE (server/src/praxissync.ts). Only a phone that ever hosted alone has a database to hand over; one that
+// could not reach the hub, or whose clock ran too far ahead of it, tries again the next time the app opens.
+const HANDOVER = "praxis.handover";
+const hostedAlone = () => STORE !== null || new File(Paths.document, "SQLite", "companion.db").exists;
+export async function handOver(base: string, token: string): Promise<HandedOver | null> {
+  if (!hostedAlone()) return null;
+  const s = store();
+  s.setSetting(HANDOVER, base);                         // owed, until the hub holds all of it
+  const r = await handOverTo(s, hubPeer(base, token), phoneBlobs);
+  if (!r.ahead) s.setSetting(HANDOVER, null);
+  return r;
+}
+/** the app opened, paired: a hand-over still owed to this hub, tried again */
+export async function handOverOwed(base: string, token: string): Promise<HandedOver | null> {
+  if (!hostedAlone() || store().getSetting(HANDOVER) !== base) return null;
+  return handOver(base, token);
+}
 export function edition(): Edition { return store().getSetting("phone.edition") === "CONTEXT" ? "CONTEXT" : "CONTENT"; }
 export function setEdition(e: Edition) { store().setSetting("phone.edition", e); }
 const host = (): Host => ({ edition: edition(), save: phoneSave });

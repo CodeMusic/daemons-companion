@@ -28,6 +28,9 @@ export function PairScreen({ onPaired }: { onPaired: () => void }) {
       await keepTailnet(j.tailnet);                                   // the way home on the tailnet, from anywhere
       setConnection({ server: base, token: j.token });
       WIDGET?.shareWithWidget({ server: base, token: j.token, away: AWAY });   // C-100
+      // C-431: a phone that hosted alone hands the hub what it made here, and its goals join the hub's -- in the
+      // background; if the hub cannot take it now, it is tried again when the app next opens
+      LOCAL?.handOver(base, j.token).catch(() => {});
       onPaired();
     } catch (e) { setError(`${(e as Error).message}. Is the companion running, and is it open to your network (Settings on the site)?`); }
   };

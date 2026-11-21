@@ -199,7 +199,11 @@ export async function loadConnection(): Promise<boolean> {
   const server = await SecureStore.getItemAsync("server"), token = await SecureStore.getItemAsync("token");
   AWAY = await SecureStore.getItemAsync("away");
   TAILNET = await SecureStore.getItemAsync("tailnet");
-  if (server && token) { SERVER = server; TOKEN = token; WIDGET?.shareWithWidget({ server, token, away: AWAY }); return true; }
+  if (server && token) {
+    SERVER = server; TOKEN = token; WIDGET?.shareWithWidget({ server, token, away: AWAY });
+    LOCAL?.handOverOwed(server, token).catch(() => {});   // C-431: what a phone that hosted alone still owes its hub
+    return true;
+  }
   return false;
 }
 

@@ -384,6 +384,42 @@ eudaimonia, and its BALANCE page holds the week's seven pairs, which THE WEEK'S 
   has ribbons -- so it remembers being there when you did it.
 - The game keeps the same week (DAEMONS vision 9.21); the week's balance could colour the carried daemon's days there.
 
+### The world itself: tags, cards and the first scan (the user, 2026-11-21; all OPEN)
+
+*The user, 2026-11-21, looking ahead to the market and a release: the phone is the best way in -- you get the app and
+link it; "hidden/printed cards around the city can be scanned (via QR/or a physical code card), there are lots of ways
+to find unique daemons ... maybe some only are found in the real world ... but it unites all realms and aspects of the
+game"; NFC tags (circle tags, card-sized tags and more) carry "an imprint of their essence", any phone reads them
+through the app, and whatever is inside -- a daemon, an item, notes, songs -- can be stored on them; and "we have a
+real chance to put something found in-Game to the world that is real", and likewise the other way.*
+
+Nothing here is decided. It stands on what is built: C-124 (an NFC card holds a daemon -- put yours in, take one out,
+swap; built, not yet run on a board), C-146 (every QR code in the game opens its link), C-219 (TRADING, phase 1),
+TOUCHSTONE and LODESTONE (the boards read tags), and the two decks of cards in the books (C-273).
+
+**A tag holds the content; whoever reads it brings the context.** One tag read by two people is one essence and two
+meetings with it, which is the editions' own pair, CONTENT and CONTEXT.
+
+- **The first scan is the way in.** Every tag and printed card carries a web address -- a URL record on a tag, a QR
+  code on paper. A phone without the app opens it (an iPhone reads such a tag with no app at all) and meets the
+  daemon, with the app offered; with the app, the same address opens the app on that daemon. One tag serves every
+  phone, so a stranger's first tap is the onboarding.
+- **Two kinds of tag.**
+  - **A carrier** holds the thing itself. A daemon's record is 100 bytes and an NTAG215 holds 504, so its essence can
+    live on the disk with no server at all -- C-124's cards, written by the app on a phone. Anyone can copy one, and
+    that is fine: it is yours to give.
+  - **A world tag** is one of a kind, hidden in the city or handed over. A copy must not count as a find, so it needs
+    a chip that signs every tap (NTAG 424 DNA does, with a key only the exchange holds) and the exchange to check the
+    signature. A find could stay where it is for the next person, or be claimed once.
+- **Both directions.** From the game to the world: a daemon earned in the game written out to a tag, a card printed
+  for a place the game knows. From the world to the game: a find arrives in the save through SYNC, the way a trade
+  does (C-219), and on the site.
+- **Whatever the companion keeps can ride on one**: a daemon, an item, a page of notes, a song, a card from the decks.
+- **Some daemons only in the world** -- and a way for a player far from any city to meet them (a trade, a loan, a tag
+  sent by post).
+- **What reaches the market is ours**: the app, the tags, EUDAIMONIA. The GBA game stays a patch for a cart the player
+  owns; no tag and no app ever carries the ROM.
+
 ## 12. Phases
 
 1. **The folders** (section 3), domain by domain, move-only commits. **C-428**
@@ -428,3 +464,8 @@ here, **`packages/praxis`**, its own repository before long (it is: C-435); **ou
   choice.
 - **THE UNITY BOOK's lens on the site** (an idea): an item read for its cost (the effort, the night reading), for its
   gift (the ARETE, the dawn reading), or whole, as the mended book turns between its three readings.
+- **The world's tags and cards** (section 11, the user 2026-11-21): which chips -- the user has circle and card-sized
+  tags, not yet read (NTAG213/215/216, MIFARE Classic or 125 kHz); whether world tags are signed (NTAG 424 DNA); where
+  a tag's address points (the public exchange, C-278, comes first: a stranger in the city is not on the tailnet);
+  whether a find stays for the next person or is claimed once; which daemons are found only in the world; and what a
+  scan keeps of where it happened (nothing, unless the finder chooses).

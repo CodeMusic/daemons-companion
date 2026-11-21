@@ -22,6 +22,9 @@
 //   daemons-zero --mirror-in           ask the hub for its copy once, as PLAY does, say what it chose, and stop
 //   daemons-zero --send-save           send the save kept here to the hub once (as SEND THE SAVE NOW), and stop
 //   daemons-zero --sync                a SYNC, as HOME's: this device's save out, the hub's SYNC, its copy back; and stop
+//   daemons-zero --cap cc1101|lora|none  a pretend cap on the header (a computer, or checks): no chip is asked (C-444)
+//   daemons-zero --caps                say which cap is fitted and what it offers, and stop (C-444, docs/CAPS.md)
+//   daemons-zero --band 315|433|915    set the CC1101's band, read the switch back, listen two seconds, and stop
 //   daemons-zero --keep-there          C-215's yes: this other game kept on the hub as a save of its own; and stop
 #include <algorithm>
 #include <chrono>
@@ -36,6 +39,7 @@
 
 #include "app.h"
 #include "canvas.h"
+#include "caps/cap.h"
 #include "game/rom.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
@@ -51,6 +55,7 @@ Page *carePage();
 Page *stepPage();
 Page *partyPage();
 Page *sayPage();
+Page *capsPage();
 
 Emu emu;
 bool held[(size_t)Key::Count];
@@ -69,6 +74,7 @@ Page *pageFor(PageId id) {
     case PageId::Step: return stepPage();
     case PageId::Party: return partyPage();
     case PageId::Say: return sayPage();
+    case PageId::Caps: return capsPage();
     default: return homePage();
   }
 }
@@ -143,7 +149,8 @@ static int bench(int frames) {
 int main(int argc, char **argv) {
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
   std::string start = "home", shot, makeFrom, makeTestingOf, gameKey, romFrom, hubArg, pairCode;
-  bool listGames = false;
+  bool listGames = false, listCaps = false;
+  std::string bandArg;
   bool mirrorIn = false, sendSave = false, syncOnce = false, keepThere = false;
   std::map<uint64_t, std::vector<Key>> presses;
   for (int i = 1; i < argc; i++) {
@@ -174,6 +181,9 @@ int main(int argc, char **argv) {
     else if (a == "--send-save") sendSave = true;
     else if (a == "--sync") syncOnce = true;
     else if (a == "--keep-there") keepThere = true;
+    else if (a == "--cap") caps::pretend(val());
+    else if (a == "--caps") listCaps = true;
+    else if (a == "--band") bandArg = val();
     else if (a == "--press") {
       std::string list = val();
       size_t at = 0;
@@ -197,6 +207,32 @@ int main(int argc, char **argv) {
 
   auto say = [](const std::string &s) { printf("%s\n", s.c_str()); fflush(stdout); };
   auto editionOf = [](std::string k) { for (auto &c : k) c = (char)toupper((unsigned char)c); return k; };
+  if (!bandArg.empty() && bandArg != "315" && bandArg != "433" && bandArg != "915") {
+    fprintf(stderr, "--band is 315, 433 or 915 (868 is never offered: docs/CAPS.md)\n");
+    return 2;
+  }
+  if (listCaps || !bandArg.empty()) {   // C-444: the cap, from the command line (over SSH, for checks)
+    const caps::Found &f = caps::find();
+    printf("cap: %s%s%s\n", f.kind == caps::Kind::None ? "none" : f.name.c_str(), f.detail.empty() ? "" : " -- ", f.detail.c_str());
+    if (!f.why.empty()) printf("  note: %s\n", f.why.c_str());
+    for (auto &o : f.offers) printf("  offers %s (%s): %s\n", o.type.c_str(), o.raw.c_str(), o.state.c_str());
+    if (!bandArg.empty()) {
+      caps::Band b = bandArg == "315" ? caps::Band::B315 : bandArg == "915" ? caps::Band::B915 : caps::Band::B433;
+      bool ok = caps::setBand(b);
+      printf("band %s\n  %s\n", ok ? "set" : "NOT set", caps::bandCheck().c_str());
+      int lo = 0, hi = -200, sum = 0, n = 0;
+      for (auto t0 = std::chrono::steady_clock::now(); std::chrono::steady_clock::now() - t0 < std::chrono::seconds(2); n++) {
+        int r = caps::rssiDbm();
+        lo = n ? std::min(lo, r) : r; hi = std::max(hi, r); sum += r;
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+      }
+      printf("  heard %d samples: quietest %d dBm, loudest %d, mean %d\n", n, lo, hi, n ? sum / n : 0);
+      printf("  antenna said to be on: %s; may transmit here: %s (nothing in this build does)\n", caps::antennaName(caps::antenna()),
+             caps::mayTransmit(b) ? "yes" : "no");
+      if (!ok) return 1;
+    }
+    return 0;
+  }
   if (listGames) {
     Game now;
     bool any = heldGame(now);
@@ -284,8 +320,10 @@ int main(int argc, char **argv) {
   if (!hal::begin(scale, headless)) { fprintf(stderr, "no screen\n"); return 1; }
   if (!headless && !sound::begin()) fprintf(stderr, "sound: none found; the game plays silent\n");
   hub::begin(hal::deviceId());
+  caps::find();   // C-444: once at start; a cap is never fitted while the Zero is on
   const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "games", PageId::Make }, { "link", PageId::Pair },
-                                           { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say } };
+                                           { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say },
+                                           { "caps", PageId::Caps } };
   go(pages.count(start) ? pages.at(start) : PageId::Home);
 
   auto lastDraw = std::chrono::steady_clock::now();

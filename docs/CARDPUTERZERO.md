@@ -285,6 +285,68 @@ C-187's rules, unchanged:
 - **The game on a television** through its HD output.
 - **The companion itself on the device**, hosting alone as the phone does, if 512 MB allows Node.
 
+**The caps** (the CC1101 + NFC, the LoRa-1262) are one layer for every board, in **docs/CAPS.md** (C-444 to C-448),
+with the roll call between the user's own devices (C-447).
+
+## THE DESK: the Zero on a television (C-449 to C-452)
+
+*The user, 2026-11-21: when a monitor or TV is plugged into the Zero's HDMI, a separate, full-size daemon desktop on
+that screen, while the small screen stays the DAEMONS device it is. "Quick to on-screen time from when you plug the
+HDMI in, and it is our new things that you see first whenever you connect a screen", with a menu choice still to reach
+the full Cardputer desktop. Chosen by multiple choice: **our own program** (not a Linux desktop, not a browser kiosk);
+in its first version **the game large, the companion full size, a daemon desktop of apps, and PRAXIS / EUDAIMONIA**.*
+THE DESK is a DRAFT name.
+
+**What the stock image does with HDMI** (M5Stack's `pi-gen` fork and the launcher, read 2026-11-21; not yet seen with
+a screen plugged in): the HDMI is the vc4's own display (`/dev/dri/card0`); the small screen is a second DRM card
+(`card1`, udev's `cardputer-zero-internal`) on **a seat of its own**, and its framebuffer is **`/dev/fb_lcd`** (a udev
+link to whichever `fb*` is the ST7789). On seat0, **lightdm autologs into `rpd-labwc`**, a Wayland desktop, on HDMI;
+M5Stack's **Screen Mirror** copies the small screen onto it in a window. APPLaunch draws only on `fb_lcd`.
+*Which framebuffer number the small screen gets depends on probe order: with HDMI plugged at boot it may not be fb0, so
+`hal/device.cpp` opens `/dev/fb_lcd` first (C-444).*
+
+**The approach: one program, two screens.** `daemons-zero` itself opens the HDMI when one is connected, through DRM/KMS
+on `card0` (SDL2's `kmsdrm`, or a dumb buffer and a plane), beside the small screen it already draws:
+
+- **One process, one game.** The emulator, the save and the hub's mirror exist once (352 MB has no room for two), so
+  the game can move from the small screen to the TV and back mid-frame, and nothing has to be kept in step between
+  two programs.
+- **Quick to the screen.** udev sees the HDMI's hotplug; the program opens `card0` within a second or two, with no
+  desktop to start. Drawn at 1280x720 (or 960x540) and scaled to the TV by the vc4's own scaler, for free.
+- **Ours first.** lightdm no longer starts the Cardputer desktop at boot. **THE PLAIN DESKTOP** on THE DESK's menu
+  hands the HDMI back: it closes `card0` and starts lightdm; leaving that desktop's session gives the screen back to
+  THE DESK. Starting and stopping lightdm as the user needs one polkit rule, installed with the `.deb` (`sudo`, the
+  user's step).
+- **The small screen goes on being the device.** While the game plays on the TV, the small screen shows the companion's
+  strips and the daemon; while THE DESK shows a page, the small screen can show the same page small, or its own.
+
+**The keys between two screens.** With only the Cardputer and a TV, its own keys drive both:
+
+- **Where a page exists on both screens, they stay in step**, and the keys drive both at once (HOME, CARE, the game).
+- **Where they differ**, one key (DRAFT: **FN + TAB**) moves the keyboard between the small screen and the big; the
+  side that has it shows a mark.
+- **A pointer without a mouse**: SYM held, F Z X C move a pointer on the TV (faster the longer held), L clicks, K
+  right-clicks, SPACE scrolls. *The Zero has no touch screen*, so the keys are the trackpad.
+- **A mouse, keyboard or game controller**, plugged into the USB-A or paired over Bluetooth, is used when present and
+  takes the big screen's input; the Cardputer's keys go back to the small screen.
+
+**TELEPATHY** (DRAFT, C-451): the same pointer and keys, aimed at another computer -- the daemon reaching across. First
+as a **USB gadget** (the right USB-C in device mode is a keyboard and mouse to any computer, nothing to install), then
+as **Bluetooth HID**, then as a small receiver the companion's Mac app offers, so a daemon on a device can drive the
+Mac it is linked to.
+
+**What THE DESK shows first** (C-452), each from code the small screen already has, laid out large:
+
+1. **The game, large**: 4x on 1080p (960x640), the strips either side as on the small screen, drawn large.
+2. **The companion, full size**: the den, CARE, STEP, PARTY, SAY, and the library the small screen has no room for
+   (the NOTEBOOK, the GUIDE, the INDEX cards, the books).
+3. **A daemon desktop of apps**: a home of tiles -- the game, the companion, CAPS and the radios, files, a terminal,
+   settings -- each a daemon-themed app; THE PLAIN DESKTOP is one of them.
+4. **PRAXIS / EUDAIMONIA**: the goals and projects, from the hub (PRAXIS's engine runs on the hub; THE DESK reads it).
+
+**Its risks**: memory (two scan-out buffers at 1280x720 are 7 MB; the game's frame is already made); the vc4 with
+`cma-64` (a 1080p buffer needs CMA); and lightdm and our program both wanting `card0` (only one may hold it).
+
 ## The first day
 
 1. **The user flashes the stock image** with M5 Imager (a user, the home Wi-Fi, SSH on). The imager writes their card,

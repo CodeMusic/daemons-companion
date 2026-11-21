@@ -1,4 +1,4 @@
-// C-378: the device's side -- the screen through /dev/fb0 (the framebuffer APPLaunch itself draws on), the keys through
+// C-378: the device's side -- the screen through /dev/fb_lcd, else /dev/fb0 (the framebuffer APPLaunch itself draws on), the keys through
 // evdev (the TCA8418's input device), the cell through power_supply. What is not yet seen on the device is guessed at
 // from M5Stack's own code and can be set from the environment until tools/probe.sh says what it really is:
 //   ZERO_FB=/dev/fb1          another framebuffer
@@ -57,7 +57,9 @@ static int openKeyboard() {
 bool begin(int, bool headless) {
   headlessMode = headless;
   if (headless) return true;
-  const char *path = getenv("ZERO_FB") ? getenv("ZERO_FB") : "/dev/fb0";
+  // C-444 / C-449: /dev/fb_lcd is M5Stack's udev link to the ST7789's framebuffer, whichever number it got -- with a
+  // screen in the HDMI at boot the small screen need not be fb0. APPLaunch looks for it first too.
+  const char *path = getenv("ZERO_FB") ? getenv("ZERO_FB") : access("/dev/fb_lcd", F_OK) == 0 ? "/dev/fb_lcd" : "/dev/fb0";
   fbFd = open(path, O_RDWR | O_CLOEXEC);
   if (fbFd < 0) { perror(path); return false; }
   if (ioctl(fbFd, FBIOGET_VSCREENINFO, &vinfo) || ioctl(fbFd, FBIOGET_FSCREENINFO, &finfo)) { perror("framebuffer"); return false; }

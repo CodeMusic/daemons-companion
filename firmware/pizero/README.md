@@ -75,7 +75,15 @@ you, and the hub lists the device among its phones. From then on the save is kep
 - **PARTY:** the party's routines.
 - **SAY:** a word to every daemon nearby, as the one carried.
 
-`--page care` (or `step`, `party`, `say`, `games`, `link`, `play`) starts on one.
+`--page care` (or `step`, `party`, `say`, `games`, `link`, `play`, `caps`) starts on one.
+
+**CAPS (C-444, [docs/CAPS.md](../../docs/CAPS.md))**: which cap is on the EXT header -- the **CC1101 + NFC** or the
+**LoRa-1262** -- found by asking its chips (I2C 0x43, then the CC1101's PARTNUM and VERSION, read only), and what it
+offers. For the CC1101: its band (315, 433 or 915; never 868, the user being in North America), switched by RF_SW0
+(GPIO14) and RF_SW1 (the chip's own GDO2), the antenna said to be on, and what is heard on that band now. It never
+transmits. **Switch the Zero off before fitting or removing a cap.** `--caps` says what is fitted and stops; `--band 433`
+sets the band, reads the switch back from the chip and listens for two seconds; `--cap cc1101|lora|none` stands a pretend
+cap in on a computer.
 
 **Pictures without a window**, for review sheets:
 
@@ -115,7 +123,8 @@ keys while running), `ZERO_KEYLOG=1` (print key codes it does not know).
 | `src/sound.*` | miniaudio, and a ring between the game and the speaker |
 | `src/game/` | SHA-1 and CRC32, BPS (a port of `server/src/game/bps.ts`), the games made (C-187's rules; both editions, release or testing: `games/`, `saves/`, `originals/`), mGBA's core |
 | `src/hub/` | libcurl; the device state asked every thirty seconds as every board asks it, and pairing (`hub.cpp`); the save's mirror (`mirror.cpp`) |
-| `src/pages/` | HOME, PLAY, GAMES (`make.cpp`), LINK, CARE, STEP, PARTY, SAY, and what they share (`parts.*`) |
+| `src/pages/` | HOME, PLAY, GAMES (`make.cpp`), LINK, CARE, STEP, PARTY, SAY, CAPS, and what they share (`parts.*`) |
+| `src/caps/` | the cap layer (C-444): the buses by ioctl (`bus.*`: spidev, GPIO v2, I2C), the CC1101 (`cc1101.*`), finding the cap and its band (`cap.*`) |
 | `test/` | the checks `./build.sh` runs |
 | `tools/` | `install.sh`, `probe.sh`, `make_deb.sh`, `shot.sh` |
 | `packaging/` | the launcher's entry and icon |

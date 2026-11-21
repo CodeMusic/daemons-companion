@@ -102,7 +102,11 @@ set(SRC
   src/pages/care.cpp
   src/pages/step.cpp
   src/pages/party.cpp
-  src/pages/say.cpp)
+  src/pages/say.cpp
+  src/pages/caps.cpp
+  src/caps/bus.cpp
+  src/caps/cc1101.cpp
+  src/caps/cap.cpp)
 
 if(ZERO_DEVICE)
   list(APPEND SRC src/hal/device.cpp)

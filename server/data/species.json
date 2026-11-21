@@ -10941,7 +10941,7 @@
    "back": "gfx/daemons/reflection_back.png"
   },
   "bodyType": 17,
-  "streaks": true,
+  "streaks": false,
   "growth": 3,
   "base": [
    65,
@@ -10974,7 +10974,7 @@
    "back": "gfx/daemons/lodestar_back.png"
   },
   "bodyType": 8,
-  "streaks": true,
+  "streaks": false,
   "growth": 5,
   "base": [
    100,
@@ -11180,7 +11180,7 @@
    "back": "gfx/daemons/bastet_back.png"
   },
   "bodyType": 0,
-  "streaks": true,
+  "streaks": false,
   "growth": 4,
   "base": [
    70,

@@ -13,7 +13,7 @@ import { useDark } from "../../state/look";
 // in the day's colour. Drawn over the symbol's picture in its own units (the picture is 84 wide, the ring's radius 30;
 // the spine runs from 24 below the line to 24 above, as the sheet the user picked drew it).
 const CENTRE_NAMES = ["ROOT", "SACRAL", "SOLAR PLEXUS", "HEART", "THROAT", "THIRD EYE", "CROWN"];
-function DreamSymbol({ day, centre, colour, size, dark }: { day: string; centre?: number; colour?: string; size: number; dark: boolean }) {
+export function DreamSymbol({ day, centre, colour, size, dark }: { day: string; centre?: number; colour?: string; size: number; dark: boolean }) {
   const u = size / 84, ink = dark ? "#EDE7DA" : "#1C1B1A";
   const dot = (j: number, r: number, fill: string) => {
     const y = 42 + 24 - j * 8;

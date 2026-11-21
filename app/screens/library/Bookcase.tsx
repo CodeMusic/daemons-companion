@@ -5,7 +5,7 @@
 // tools/shelfcovers.py writes server/data/art/books/<book>.png, every one 320 tall at its own width). A shelf that holds
 // more than fits goes on to a second board. A cover not yet fetched shows as cloth with its name, so nothing is ever
 // only a word on a coloured box. Every word DRAFT.
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { Art } from "../../ui/ui";
@@ -16,6 +16,7 @@ export type CaseBook = {
   about: string;          // said on hover (the site) and to a screen reader
   cloth: string;          // the colour behind the cover, while it comes
   mark?: string;          // C-314: a small brass tag across its foot ("kept in the app")
+  cover?: (w: number, h: number) => ReactNode;   // C-456: a cover drawn here (a DREAM-BOOK's daemon), not a picture fetched
   onPress: () => void;
 };
 export type Shelf = { name: string; books: CaseBook[]; empty?: string };
@@ -116,7 +117,7 @@ function Standing({ b, tall }: { b: CaseBook; tall: number }) {
       <YStack position="absolute" top={0} left={0} right={0} bottom={0} padding={8} justifyContent="center">
         <Text fontFamily="$mono" fontSize={11} fontWeight="800" letterSpacing={1} color="#f3e6c4" textAlign="center">{b.title}</Text>
       </YStack>
-      <Art path={`/art/books/${b.id}.png`} size={bw} height={tall} smooth />
+      {b.cover ? b.cover(bw, tall) : <Art path={`/art/books/${b.id}.png`} size={bw} height={tall} smooth />}
       <YStack position="absolute" top={0} bottom={0} left={3} width={2} backgroundColor="rgba(255,255,255,0.16)" />
       <YStack position="absolute" top={0} bottom={0} left={5} width={1} backgroundColor="rgba(0,0,0,0.25)" />
       <YStack position="absolute" top={0} left={0} right={0} height={2} backgroundColor="rgba(255,255,255,0.10)" />

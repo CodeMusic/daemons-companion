@@ -48,3 +48,31 @@ describe("C-200: a night and its dream", () => {
     expect(bondScore(bondOf(store, 9))).toBe(4);
   });
 });
+
+// C-456: DREAM-BOOKS -- every dream kept for good, bound a volume a month for each daemon
+import { boundOf, dreamBooks } from "../src/dreams.js";
+describe("DREAM-BOOKS (C-456)", () => {
+  it("binds dreams past the journal's ninety and gathers a volume a month for each daemon", () => {
+    const store = new Store(":memory:");
+    const cub = { nickname: "ROVERCUB", species: 4, personality: 1001, device: "t-watch-ultra-abc123" };
+    const lab = { nickname: "LABEL", species: 7, personality: 1002, device: "t-watch-ultra-def456" };
+    // a hundred nights from the 1st of October, ROVERCUB's, and LABEL's five in November
+    for (let i = 0; i < 100; i++) {
+      const from = new Date(2026, 9, 1 + i, 23), to = new Date(from.getTime() + 7 * 3600000);
+      keepNight(store, { from: from.toISOString(), to: to.toISOString(), hours: 7, stirs: 1, tucked: false }, cub);
+    }
+    for (let i = 0; i < 5; i++) {
+      const from = new Date(2026, 10, 3 + i, 22, 30), to = new Date(from.getTime() + 8 * 3600000);
+      keepNight(store, { from: from.toISOString(), to: to.toISOString(), hours: 8, stirs: 0, tucked: true }, lab);
+    }
+    expect(dreamsOf(store)).toHaveLength(90);
+    expect(boundOf(store)).toHaveLength(15);                        // none dropped
+    const vols = dreamBooks(store);
+    expect(vols.reduce((n, v) => n + v.dreams.length, 0)).toBe(105);
+    const cubs = vols.filter((v) => v.personality === 1001).map((v) => [v.month, v.dreams.length]);
+    expect(cubs).toEqual([["JANUARY 2027", 8], ["DECEMBER 2026", 31], ["NOVEMBER 2026", 30], ["OCTOBER 2026", 31]]);
+    const labs = vols.find((v) => v.personality === 1002)!;
+    expect(labs).toMatchObject({ title: "LABEL'S DREAMS", month: "NOVEMBER 2026", species: 7 });
+    expect(labs.dreams.map((d) => d.from)).toEqual([...labs.dreams.map((d) => d.from)].sort());   // dreamt order
+  });
+});

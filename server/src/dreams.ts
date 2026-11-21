@@ -259,7 +259,45 @@ const KEEP = 90;
 export function dreamsOf(store: Store): Dream[] {
   try { const l = JSON.parse(store.getSetting("dreams") ?? "[]"); return Array.isArray(l) ? l : []; } catch { return []; }
 }
-function keep(store: Store, list: Dream[]) { store.setSetting("dreams", JSON.stringify(list.slice(0, KEEP))); }
+// C-456 (the user, 2026-11-21, by multiple choice: "keep every dream for good"): a dream past the journal's ninety is
+// not dropped but bound -- kept in `dreams.bound`, the oldest first, without its two tellings -- so its DREAM-BOOK keeps it
+const BOUND = "dreams.bound";
+export function boundOf(store: Store): Dream[] {
+  try { const l = JSON.parse(store.getSetting(BOUND) ?? "[]"); return Array.isArray(l) ? l : []; } catch { return []; }
+}
+function keep(store: Store, list: Dream[]) {
+  const over = list.slice(KEEP);
+  if (over.length) {
+    const bound = boundOf(store), have = new Set(bound.map((d) => d.id));
+    const add = over.filter((d) => !have.has(d.id)).map(({ left: _l, right: _r, ...d }) => d).reverse();
+    store.setSetting(BOUND, JSON.stringify([...bound, ...add]));
+  }
+  store.setSetting("dreams", JSON.stringify(list.slice(0, KEEP)));
+}
+
+// ---- C-456: DREAM-BOOKS -- every dream a daemon dreamt, a volume a month (the user's pick), the daemon its author ----
+const MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+export type DreamVolume = { id: string; who: string; nickname: string; species: number; personality: number | null;
+                            month: string; title: string; dreams: Dream[] };    // its dreams in the order they were dreamt
+/** Every dream kept, journal and bound, as volumes: one a month for each daemon, the newest volume first. */
+export function dreamBooks(store: Store): DreamVolume[] {
+  const seen = new Set<number>(), all: Dream[] = [];
+  for (const d of [...boundOf(store), ...dreamsOf(store)]) if (!seen.has(d.id)) { seen.add(d.id); all.push(d); }
+  all.sort((a, b) => Date.parse(a.from || a.at) - Date.parse(b.from || b.at));
+  const vols = new Map<string, DreamVolume>();
+  for (const d of all) {
+    const when = new Date(d.from || d.at), ym = `${when.getFullYear()}-${String(when.getMonth() + 1).padStart(2, "0")}`;
+    const who = d.personality !== null && d.personality !== undefined ? String(d.personality >>> 0) : `n-${d.nickname}`;
+    const id = `dreams-${who}-${ym}`;
+    let v = vols.get(id);
+    if (!v) vols.set(id, (v = { id, who, nickname: d.nickname, species: d.species, personality: d.personality ?? null,
+                                month: `${MONTHS[when.getMonth()]} ${when.getFullYear()}`, title: "", dreams: [] }));
+    v.dreams.push(d);
+    v.nickname = d.nickname; v.species = d.species;            // the author as it last dreamt this month
+  }
+  return [...vols.values()].map((v) => ({ ...v, title: `${v.nickname}'S DREAMS` }))     // DRAFT
+    .sort((a, b) => Date.parse(b.dreams[0].from || b.dreams[0].at) - Date.parse(a.dreams[0].from || a.dreams[0].at));
+}
 // a night kept with its written dream (the module's, if it comes, replaces it: rewriteDream). The same night told twice
 // (the watch told it again, its answer lost) is the dream already kept.
 export function keepNight(store: Store, n: Night, who: { nickname: string; species: number; personality: number | null; device: string }): Dream {

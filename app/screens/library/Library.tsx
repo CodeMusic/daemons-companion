@@ -24,7 +24,8 @@ import { Mending, UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C
 import { ORIGIN, OriginBook, type OriginT } from "./Origin";   // DAEMONS T-533
 import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the mending, once
 import { ManualBook, manualAbout } from "./Manual";   // C-233
-import { Bookcase, type CaseBook, type Shelf } from "./Bookcase";   // C-320: the LIBRARY as a bookcase
+import { Bookcase, type CaseBook, type Shelf } from "./Bookcase";
+import { DreamBook, DreamCover, type DreamVolume } from "./DreamBooks";   // C-456   // C-320: the LIBRARY as a bookcase
 import { Listen } from "../../ui/bookAudio";   // C-277
 import { usePlace } from "../../state/place";   // C-309: the open book and its page outlive a refresh
 import { BookLookProvider, LOOKS } from "../../ui/bookLook";   // C-309: the book brings its look to the library
@@ -127,9 +128,10 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  type Opened = "manual" | "quick" | "companion" | "watch" | "glass" | "cardputer" | "kodedot" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "notebook" | "songbook" | "stream";
+  type Opened = "manual" | "quick" | "companion" | "watch" | "glass" | "cardputer" | "kodedot" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "notebook" | "songbook" | "stream" | `dreams-${string}`;   // C-456: a DREAM-BOOK
   const [book, setBook] = usePlace<Opened | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
+  const [dreamVols] = useApi<{ volumes: DreamVolume[] }>("/api/dreambooks");   // C-456: the DREAM-BOOKS
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [eud] = useApi<EudaimonT>(`/api/eudaimon${previewQuery() ? "?preview=1" : ""}`);   // C-297: THE EUDAIMON LAYER, the dawn half
   const [uni] = useApi<UnityT>(`/api/unity${previewQuery() ? "?preview=1" : ""}`);   // C-299: THE UNITY BOOK, the halves mended
@@ -192,6 +194,9 @@ export function LibraryScreen() {
   if (book === "notebook") return open(<NotebookCard skip="SONGBOOK" />);   // C-156: moved here from YOU
   if (book === "songbook") return open(<SongbookBook />);
   if (book === "stream") return open(<StreamBook />);
+  const vol = book?.startsWith("dreams-") ? dreamVols?.volumes.find((v) => v.id === book) : undefined;
+  if (vol) return <YStack gap={14}>{back}<DreamBook v={vol} /></YStack>;   // C-456
+  if (book?.startsWith("dreams-") && !dreamVols) return <YStack gap={14}>{back}<Small>Opening the book where you left it…</Small></YStack>;   // DRAFT
   // C-320: the bookcase -- a shelf per kind, each book standing by its cover. The game's books stand only once found;
   // the halves leave as the mended book comes, and the mending plays once before it stands. DRAFT
   const game: CaseBook[] = [
@@ -224,6 +229,10 @@ export function LibraryScreen() {
           : s.diploma ? `DIPLOMA${s.best !== null ? ` · MARK ${s.best}` : ""}`
           : s.textbook ? `The TEXTBOOK · ${s.floors.filter(Boolean).length} of ${s.floors.length} floors` : "The seven floors and the paper." },
     ] },
+    // C-456: a volume a month for each daemon, its cover the daemon who dreamt it. DRAFT
+    { name: "DREAM-BOOKS", empty: "Each month's dreams are bound here, a book for each daemon who dreamt them.", books: (dreamVols?.volumes ?? []).map((v) => ({
+      id: v.id, title: v.title, about: `${v.month} · ${v.dreams.length} ${v.dreams.length === 1 ? "dream" : "dreams"}`, cloth: "#2a1f33",
+      cover: (w: number, h: number) => <DreamCover v={v} w={w} h={h} />, onPress: () => setBook(v.id as `dreams-${string}`) })) },
     { name: "YOUR OWN PAGES", books: [
       { id: "notebook", title: "NOTEBOOK", about: "The pages you have found, read as the game keeps them.", cloth: "#7a5a2e", onPress: () => setBook("notebook") },
       { id: "songbook", title: "SONGBOOK", about: "The songs you have learned, in their colours, to hear again.", cloth: "#2d6a74", onPress: () => setBook("songbook") },

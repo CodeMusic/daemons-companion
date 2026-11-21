@@ -135,7 +135,7 @@ before. **READ ALOUD** reads any chapter of THE SUBTLE LAYER or THE GUIDE, or an
 
 **The LIBRARY is a bookcase** (C-320): a walnut case with a brass plate on each shelf, every book standing face out by
 its own cover -- **FOUND IN THE GAME** (the books your save has found), **MANUALS** (QUICK START, THE PLAYER'S MANUAL,
-**THE COMPANION**, THE WATCH, THE GLASSES, THE CARDPUTERS, PLAYING TOGETHER, A BIGGER MIND), **HISTORY AND STUDY** (THE OLD WORD, CALLOW SCHOOL) and **YOUR OWN
+**THE COMPANION**, THE WATCH, THE GLASSES, THE CARDPUTERS, THE KODE DOT, PLAYING TOGETHER, A BIGGER MIND), **HISTORY AND STUDY** (THE OLD WORD, CALLOW SCHOOL) and **YOUR OWN
 PAGES** (NOTEBOOK, SONGBOOK, STREAM). The manuals are DAEMONS' own PDFs, fetched as published and kept on the device.
 **THE COMPANION** ([PDF, 76 pages](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-companion-manual.pdf),
 C-321) is this app's own manual, reprinted as the app changes. **The reader keeps its place** (C-309): a sync, a redraw

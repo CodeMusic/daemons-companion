@@ -11,15 +11,15 @@
 import { Directory, File, Paths } from "expo-file-system";
 import { ON_PHONE } from "../platform/net";
 
-export type Which = "player" | "quick" | "social" | "tiiny" | "micro" | "word" | "textbook" | "companion" | "watch" | "glass" | "cardputer";   // C-321: THE COMPANION; C-326: THE WATCH; C-262: THE GLASSES; C-393: THE CARDPUTERS
+export type Which = "player" | "quick" | "social" | "tiiny" | "micro" | "word" | "textbook" | "companion" | "watch" | "glass" | "cardputer" | "kodedot";   // C-321: THE COMPANION; C-326: THE WATCH; C-262: THE GLASSES; C-393: THE CARDPUTERS; C-442: THE KODE DOT
 const DOCS = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/";
 const PDF: Record<Which, string> = { player: "DAEMONS-manual.pdf", quick: "DAEMONS-quickstart.pdf", social: "DAEMONS-social-manual.pdf", tiiny: "DAEMONS-tiiny-manual.pdf",
                                      micro: "DAEMONS-microstart.pdf", word: "DAEMONS-etymology.pdf",
                                      textbook: "DAEMONS-textbook.pdf", companion: "DAEMONS-companion-manual.pdf",
                                      watch: "DAEMONS-watch-manual.pdf", glass: "DAEMONS-glass-manual.pdf",
-                                     cardputer: "DAEMONS-cardputer-manual.pdf" };
+                                     cardputer: "DAEMONS-cardputer-manual.pdf", kodedot: "DAEMONS-kodedot-manual.pdf" };
 const INFO: Record<Which, string> = { player: "manual.json", quick: "quick.json", social: "social.json", tiiny: "tiiny.json", micro: "micro.json", word: "word.json",
-                                      textbook: "textbook.json", companion: "companion.json", watch: "watch.json", glass: "glass.json", cardputer: "cardputer.json" };
+                                      textbook: "textbook.json", companion: "companion.json", watch: "watch.json", glass: "glass.json", cardputer: "cardputer.json", kodedot: "kodedot.json" };
 export const manualUrl = (w: Which = "player") => DOCS + PDF[w];
 export type Manual = { uri: string; release: string | null; etag: string | null; size: number; at: string };
 
@@ -51,7 +51,7 @@ export function keptManual(w: Which = "player"): Manual | null {
   try { return { ...(JSON.parse(f.textSync()) as Omit<Manual, "uri">), uri: pdfFile(w).uri }; } catch { return null; }
 }
 
-const shown: Record<Which, Manual | null> = { player: null, quick: null, social: null, tiiny: null, micro: null, word: null, textbook: null, companion: null, watch: null, glass: null, cardputer: null };   // the site's, for as long as the page is open
+const shown: Record<Which, Manual | null> = { player: null, quick: null, social: null, tiiny: null, micro: null, word: null, textbook: null, companion: null, watch: null, glass: null, cardputer: null, kodedot: null };   // the site's, for as long as the page is open
 // asked afresh each time on the phone; on the site a header beyond the plain ones would need GitHub to allow it first
 const FRESH: RequestInit = ON_PHONE ? { headers: { "cache-control": "no-cache" } } : {};
 

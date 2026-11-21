@@ -99,7 +99,9 @@ back to the shelves.
   pages) -- this app's own manual, every tab and page, reprinted as the app changes -- **PLAYING TOGETHER** (trading,
   loans and gifts, OUT TOGETHER, friends, dreams and THE COMMONS) and **A BIGGER MIND** (setting up a Tiiny Pocket for
   the companion). For the devices: **THE WATCH**, **THE GLASSES** and **THE CARDPUTERS** (C-393,
-  [the PDF](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-cardputer-manual.pdf), 24 pages: the Cardputer, the ADV and the Zero, and their caps).
+  [the PDF](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-cardputer-manual.pdf), 24 pages: the Cardputer, the ADV and the Zero, and their caps), and
+  **THE KODE DOT** (C-442, [the PDF](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-kodedot-manual.pdf), 16 pages: the den, its care and every routine on
+  Kode's pocket device, LODESTONE's 125 kHz among them).
   On HISTORY AND STUDY, **THE OLD WORD** (C-274): how the Greek *daimon* branched, and why it is said
   *DAY-mons*.
 - **CALLOW SCHOOL** (C-129) -- your **DIPLOMA** in the game's certificate words, with your best mark and its letter;

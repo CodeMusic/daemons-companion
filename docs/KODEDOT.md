@@ -1,5 +1,9 @@
 # The Kode Dot: every routine in a pocket (C-424)
 
+*The player's book is **THE KODE DOT** (DAEMONS `docs/manual-kodedot/`, printed as `docs/DAEMONS-kodedot-manual.pdf`,
+C-442): what is built, told for someone holding the Dot. Change it with the app: `tools/releasedocs.py` routes
+`firmware/kodedot/` and this file to it.*
+
 *Planned 2026-11-19. The user: "I also have this new device coming in about a month and would like to start planning
 and developing software for it ... it has even more abilities (I have some 125khz tags I will love to unify in this
 device along with other daemon routines)."*

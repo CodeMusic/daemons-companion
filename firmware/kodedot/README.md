@@ -1,7 +1,8 @@
 # DAEMONS on the Kode Dot (C-424)
 
 An app for Kode's launcher, kodeOS, written in C on Kode's SDK: a daemon to carry, and its ROUTINES -- the Dot's radios
-in the game's words. The plan, and why it is built this way, is `docs/KODEDOT.md`.
+in the game's words. The plan, and why it is built this way, is `docs/KODEDOT.md`; the player's own book is **THE KODE
+DOT** (DAEMONS `docs/DAEMONS-kodedot-manual.pdf`, C-442).
 
 **This folder is GPL-3.0-or-later** (`LICENSE`, `NOTICE.md`), because the SDK it links is.
 
@@ -16,6 +17,12 @@ monitor`, or kode-sim's terminal):
 
 ```
 function name="server" arg="http://HOST:4730"
+```
+
+or, with DAEMONS open, the same line through KodeOS's `kcli.py` (not yet tried on the device):
+
+```sh
+python path/to/KodeOS/tools/kcli.py -p PORT cmd 'function name="server" arg="http://HOST:4730"'
 ```
 
 It is kept in kodeOS's settings. At home the Dot needs no key: it is a board on the companion's device door, by its

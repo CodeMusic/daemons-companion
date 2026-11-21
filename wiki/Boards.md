@@ -124,6 +124,9 @@ only on its top button, so a pocket cannot wake it.
   with them, where something is); BOOT presses, and held goes back. The keys type a Wi-Fi password and a word to every
   daemon. The ADV runs; its keys are not yet tried by hand, and the plain Cardputer has not yet run. The whole manual,
   with the Cardputer Zero and the caps: [THE CARDPUTERS](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-cardputer-manual.pdf) (PDF).
+- **Kode Dot** (C-424, C-426; not this firmware): an app in Kode's own launcher, kodeOS, on Kode's SDK. The pad moves,
+  TOP chooses, BOTTOM goes back and, from the den, home to kodeOS; a tap does what TOP does. It runs in Kode's
+  simulator; the Dot comes in December 2026. The whole manual: [THE KODE DOT](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-kodedot-manual.pdf) (PDF).
 - **M5Stack CoreS3**: a touch screen, used as the watch's is -- the face first, swipe to turn, tap to press, hold to go
   back, TALK held on the face. Its power key wakes it or goes back, pressed twice goes home, and held a second, sleeps.
 - **M5Stack Dial**: turn the knob to choose and press it to open (held half a second, back; two seconds, sleep), or

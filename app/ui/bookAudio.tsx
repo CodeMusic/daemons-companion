@@ -28,7 +28,7 @@ import { Action, Small, useInk } from "./ui";
 import { barHeight, darkPaper, PLAIN, useBookLook, wash } from "./bookLook";   // C-309
 
 export type Recorded = "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "textbook"
-  | "quick" | "manual" | "companion" | "social" | "tiiny" | "word" | "origin" | "watch" | "glass" | "cardputer";
+  | "quick" | "manual" | "companion" | "social" | "tiiny" | "word" | "origin" | "watch" | "glass" | "cardputer" | "kodedot";
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
 const BOOKS: Record<Recorded, { file: string; title: string; reads: string; sealed?: boolean }> = {
   guide:    { file: "guide", title: "The Programmer's Guide to the Human Mind", reads: "Read aloud in reason's voice, even and unhurried." },   // DRAFT
@@ -50,6 +50,8 @@ const BOOKS: Record<Recorded, { file: string; title: string; reads: string; seal
   glass:     { file: "the-glasses", title: "The Glasses", reads: "Read aloud soft and close, a voice in your ear." },               // DRAFT
   // C-393: picked by the user from three samples, 2026-11-16 ("A: tinkerer")
   cardputer: { file: "the-cardputers", title: "The Cardputers", reads: "Read aloud bright and quick, like someone showing you a gadget they love." },   // DRAFT
+  // C-442: picked by the user from three samples, 2026-11-21 ("A: lodestone")
+  kodedot:   { file: "the-kode-dot", title: "The Kode Dot", reads: "Read aloud low and steady, with a pull to it, like a lodestone." },   // DRAFT
   // DAEMONS T-533: the whole book, sealed; its key is on its last page
   origin:    { file: "the-origin-audio", title: "The Origin of a Daemon", reads: "Read aloud in its teller's own voice, the whole before it branched.", sealed: true },  // DRAFT
 };

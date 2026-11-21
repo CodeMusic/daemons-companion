@@ -1,4 +1,4 @@
-# C-378: DAEMONS on the Cardputer Zero, and the Linux boards after it -- one C++ program, built on a computer with an
+# C-378: DAEMONS on the Cardputer Zero, and the Linux boards after it (C-457: ZERO_BOARD) -- one C++ program, built on a computer with an
 # SDL window (to write and play it before the device is in hand) and on the device itself with /dev/fb0 and evdev.
 # The plan is docs/CARDPUTERZERO.md. `./build.sh` runs this.
 cmake_minimum_required(VERSION 3.16)
@@ -78,6 +78,13 @@ else()
   set(ZERO_PATCHES_JSON ${CMAKE_CURRENT_SOURCE_DIR}/../../server/data/patches.json)
 endif()
 
+# C-457: the board this is built for -- src/boards/<ZERO_BOARD>.cpp, its screen, keys and name (docs/PIBOARDS.md)
+set(ZERO_BOARD cardputer-zero CACHE STRING "the Linux board: cardputer-zero, gamepi20")
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/boards/${ZERO_BOARD}.cpp)
+  message(FATAL_ERROR "no board called ${ZERO_BOARD}: src/boards/ has the ones there are")
+endif()
+message(STATUS "board: ${ZERO_BOARD}")
+
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -106,7 +113,8 @@ set(SRC
   src/pages/caps.cpp
   src/caps/bus.cpp
   src/caps/cc1101.cpp
-  src/caps/cap.cpp)
+  src/caps/cap.cpp
+  src/boards/${ZERO_BOARD}.cpp)
 
 if(ZERO_DEVICE)
   list(APPEND SRC src/hal/device.cpp)

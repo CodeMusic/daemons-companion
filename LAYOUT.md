@@ -102,7 +102,7 @@ is added here in the same commit; when one file starts to hold both, split it (t
 | `kodedot/` | the Kode Dot's app (C-424): C on Kode's SDK, run from Kode's own launcher, built and simulated on roverbyteseer by `seer.sh`; **GPL-3.0-or-later**, this folder only, because the SDK it links is (`docs/KODEDOT.md`) |
 | `box3/` | the ESP32-S3-BOX-3, through ESPHome and Home Assistant |
 | `common/` | headers both firmwares share, each written by the `.py` beside it |
-| `pizero/` | the Linux boards: the **Cardputer Zero** (a Raspberry Pi CM0; C-377) first, then the Pi Zero 2 W (C-08) -- one C++ program, an SDL window on a computer and `/dev/fb0` and evdev on the device, the game on mGBA's core (its `README.md`; docs/CARDPUTERZERO.md) |
+| `pizero/` | the Linux boards: the **Cardputer Zero** (a Raspberry Pi CM0; C-377) first, then the **GamePi20** (a Pi Zero 2 W; C-457) -- one C++ program, an SDL window on a computer and `/dev/fb0` and evdev on the device, the game on mGBA's core; what differs per board is one file in `firmware/pizero/src/boards/`, picked by `ZERO_BOARD`, and a board with no launcher has its setup in `firmware/pizero/tools/boards/` (its `README.md`; docs/PIBOARDS.md, docs/CARDPUTERZERO.md) |
 
 ## The rest
 

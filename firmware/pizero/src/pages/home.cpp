@@ -243,7 +243,7 @@ struct Home : Page {
         canvas.print(from.c_str());
       }
       canvas.setTextColor(day);
-      std::string more = received.size() > 1 ? "ENTER: NEXT" : "ENTER";   // DRAFT
+      std::string more = received.size() > 1 ? hint("ENTER: NEXT") : hint("ENTER");   // DRAFT
       canvas.setCursor((hal::W - 6 * (int)more.size()) / 2, 140);
       canvas.print(more.c_str());
       return;
@@ -256,7 +256,7 @@ struct Home : Page {
            "its own?", 24, 38, 46, 5, 11);   // DRAFT, the app's words
       canvas.setTextColor(day);
       canvas.setCursor(24, 110);
-      canvas.print("ENTER: KEEP IT THERE    ESC: NOT NOW");   // DRAFT
+      canvas.print(hint("ENTER: KEEP IT THERE    ESC: NOT NOW"));   // DRAFT
     }
   }
 };

@@ -6,6 +6,7 @@
 #include "canvas.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
+#include "pages/parts.h"
 
 namespace {
 struct Pair : Page {
@@ -48,7 +49,7 @@ struct Pair : Page {
     if (!asking.valid() || busy()) return false;
     std::string why = asking.get();
     done = why.empty();
-    answer = done ? "LINKED. ENTER GOES BACK." : why;   // DRAFT
+    answer = done ? hint("LINKED. ENTER GOES BACK.") : why;   // DRAFT
     return true;
   }
   void draw() override {

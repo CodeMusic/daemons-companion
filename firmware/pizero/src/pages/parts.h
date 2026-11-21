@@ -36,3 +36,7 @@ struct Sending {
   }
 };
 std::string replyWords(const Reply &r, const char *field);   // a field of the answer, or the error in words
+
+// C-457: a hint as this board's keys are printed -- "ENTER: DONE    ESC: BACK" is "A: DONE    B: BACK" on a pad. The
+// answer lasts until the fourth call after it.
+const char *hint(const char *words);

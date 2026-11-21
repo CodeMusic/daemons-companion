@@ -3,6 +3,7 @@
 
 #include <cctype>
 #include <cstdio>
+#include "board.h"
 #include "paths.h"
 
 static const char *NAMES[] = {
@@ -11,6 +12,7 @@ static const char *NAMES[] = {
   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
   "ENTER", "ESC", "TAB", "SPACE", "BACKSPACE", "SHIFT", "FN", "SYM", "CTRL", "ALT",
   "UP", "DOWN", "LEFT", "RIGHT",
+  "BTN A", "BTN B", "BTN X", "BTN Y", "BTN L", "BTN R", "START", "SELECT",
 };
 static_assert(sizeof NAMES / sizeof NAMES[0] == (size_t)Key::Count, "a name for every key");
 
@@ -19,7 +21,11 @@ Key keyByName(const std::string &name) {
   std::string n;
   for (char c : name) if (!isspace((unsigned char)c)) n += (char)toupper((unsigned char)c);
   if (n == "OK" || n == "RETURN") n = "ENTER";
-  for (size_t i = 1; i < (size_t)Key::Count; i++) if (n == NAMES[i]) return (Key)i;
+  for (size_t i = 1; i < (size_t)Key::Count; i++) {
+    std::string m;   // "BTN A" is written BTNA or BTN A in keys.conf alike
+    for (const char *c = NAMES[i]; *c; c++) if (*c != ' ') m += *c;
+    if (n == m) return (Key)i;
+  }
   return Key::None;
 }
 char keyChar(Key k, bool shift) {
@@ -43,21 +49,7 @@ const char *gbaKeyName(int k) { return k >= 0 && k < GBA_KEYS ? GBA_NAMES[k] : "
 
 // Two keys may press each GBA key: the device's, and on a computer its arrows
 static Key gameMap[GBA_KEYS][2];
-static void defaults() {
-  const Key d[GBA_KEYS][2] = {
-    { Key::L, Key::None },        // A: under the right thumb, to the right of B as on a GBA
-    { Key::K, Key::None },        // B
-    { Key::Space, Key::None },    // SELECT
-    { Key::Enter, Key::None },    // START
-    { Key::C, Key::Right },       // the pad: the device's printed arrows
-    { Key::Z, Key::Left },
-    { Key::F, Key::Up },
-    { Key::X, Key::Down },
-    { Key::P, Key::None },        // R and L: the top row's two ends
-    { Key::Q, Key::None },
-  };
-  for (int i = 0; i < GBA_KEYS; i++) { gameMap[i][0] = d[i][0]; gameMap[i][1] = d[i][1]; }
-}
+static void defaults() { board::gameKeyDefaults(gameMap); }   // C-457: each board its own
 void gameKeysLoad() {
   defaults();
   std::string text;

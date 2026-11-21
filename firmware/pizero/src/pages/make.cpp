@@ -15,6 +15,7 @@
 #include "game/rom.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
+#include "pages/parts.h"
 
 namespace {
 struct Row { const char *edition; bool testing; };
@@ -172,7 +173,7 @@ struct Games : Page {
       canvas.printf("%s %s%s IS READY", made.edition.c_str(), made.release.c_str(), made.testing ? " TESTING" : "");   // DRAFT
       canvas.setTextColor(soft);
       canvas.setCursor(6, 60);
-      canvas.print("ENTER PLAYS IT   ESC: THE LIST");   // DRAFT
+      canvas.print(hint("ENTER PLAYS IT   ESC: THE LIST"));   // DRAFT
       if (made.testing) {
         canvas.setTextColor(dim);
         wrap("It plays your one save, as every game here does, kept in step with the hub.", 6, 80, 51, 3, 10);   // DRAFT (C-397)
@@ -184,7 +185,7 @@ struct Games : Page {
       wrap(message, 6, 36, 51, 6, 10);
       canvas.setTextColor(soft);
       canvas.setCursor(6, 150);
-      canvas.print("ENTER: BACK TO THE LIST");   // DRAFT
+      canvas.print(hint("ENTER: BACK TO THE LIST"));   // DRAFT
       return;
     }
     for (int i = 0; i < 4; i++) {
@@ -209,9 +210,10 @@ struct Games : Page {
     // the player's own ROMs, as patches.json names them ("Pokemon FireRed (USA) Rev 1" -> FIRERED (USA) REV 1)
     canvas.setTextColor(dim);
     canvas.setCursor(6, 86);
+    int below = 86;   // the testing line goes under however many lines this took (three, and it overlapped)
     if (origs.empty()) {
-      wrap("Put your own FireRed or LeafGreen (USA, the .gba you own) in DAEMONS in your home folder, or on a USB stick. "
-           "TAB looks again.", 6, 86, 51, 4, 10);   // DRAFT
+      below += 10 * wrap(hint("Put your own FireRed or LeafGreen (USA, the .gba you own) in DAEMONS in your home folder, or on a USB stick. "
+           "TAB looks again."), 6, 86, 51, 4, 10);   // DRAFT
     } else {
       std::string line = "YOUR ROMS:";   // DRAFT
       for (auto &o : origs) {
@@ -219,15 +221,15 @@ struct Games : Page {
         if (n.rfind("Pokemon ", 0) == 0) n = n.substr(8);
         line += "  " + upper(n);
       }
-      wrap(line, 6, 86, 51, 2, 10);
+      below += 10 * wrap(line, 6, 86, 51, 2, 10);
     }
     if (testing.editions.empty() && !testing.why.empty()) {
       canvas.setTextColor(dim);
-      wrap("TESTING: " + testing.why, 6, 110, 51, 3, 10);   // DRAFT
+      wrap("TESTING: " + testing.why, 6, std::max(110, below + 4), 51, 3, 10);   // DRAFT
     }
     canvas.setTextColor(soft);
     canvas.setCursor(6, 156);
-    canvas.print("ENTER PLAYS OR MAKES  TAB LOOKS AGAIN  ESC HOME");   // DRAFT
+    canvas.print(hint("ENTER PLAYS OR MAKES  TAB LOOKS AGAIN  ESC HOME"));   // DRAFT
   }
   ~Games() override { if (worker.joinable()) worker.join(); }
 };

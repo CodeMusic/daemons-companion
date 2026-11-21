@@ -22,7 +22,8 @@
 #define ZERO_PATCHES_JSON ""
 #endif
 static const char *LIVE = "https://raw.githubusercontent.com/CodeMusic/daemons-companion/main/server/data/patches.json";
-static const char *INSTALLED = "/usr/share/APPLaunch/share/daemons/patches.json";   // the package's copy
+static const char *INSTALLED = "/usr/share/APPLaunch/share/daemons/patches.json";   // the package's copy (the Cardputer Zero's)
+static const char *INSTALLED_ELSEWHERE = "/usr/share/daemons/patches.json";          // C-457: on a board with no APPLaunch
 
 static std::string lower(std::string s) { std::transform(s.begin(), s.end(), s.begin(), ::tolower); return s; }
 static std::string upperOf(std::string s) { std::transform(s.begin(), s.end(), s.begin(), ::toupper); return s; }
@@ -69,6 +70,7 @@ static bool loadPatches(JsonDocument &doc, bool online) {
   std::string t;
   if (readText(ZERO_PATCHES_JSON, t)) consider(t);
   if (readText(INSTALLED, t)) consider(t);
+  if (readText(INSTALLED_ELSEWHERE, t)) consider(t);
   if (readText(inData("patches.json"), t)) consider(t);
   if (online) {
     Reply r = httpGet(LIVE, { "cache-control: no-cache" }, 15000);

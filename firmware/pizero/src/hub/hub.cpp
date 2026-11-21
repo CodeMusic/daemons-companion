@@ -1,5 +1,6 @@
 // C-381: the device state, read with the boards' own parser's names (firmware/esp32/src/state.cpp); C-380: pairing.
 #include "hub/hub.h"
+#include "board.h"
 
 #include <ArduinoJson.h>
 #include <sys/stat.h>
@@ -35,7 +36,9 @@ std::vector<std::string> headers() {
   if (!key.empty()) h.push_back("authorization: Bearer " + key);
   return h;
 }
-std::string deviceName() { return id == "cardputer-zero-window" ? "Cardputer Zero (a computer)" : "Cardputer Zero"; }   // DRAFT
+std::string deviceName() {   // DRAFT; C-457: the board's own name
+  return id == std::string(board::ID) + "-window" ? std::string(board::NAME) + " (a computer)" : std::string(board::NAME);
+}
 
 std::string deviceId() { return id; }
 

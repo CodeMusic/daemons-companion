@@ -1,4 +1,4 @@
-// C-378: the device's side -- the screen through /dev/fb_lcd, else /dev/fb0 (the framebuffer APPLaunch itself draws on), the keys through
+// C-378: the device's side, every Linux board's (C-457) -- the screen through /dev/fb_lcd, else /dev/fb0 (the framebuffer APPLaunch itself draws on), the keys through
 // evdev (the TCA8418's input device), the cell through power_supply. What is not yet seen on the device is guessed at
 // from M5Stack's own code and can be set from the environment until tools/probe.sh says what it really is:
 //   ZERO_FB=/dev/fb1          another framebuffer
@@ -18,6 +18,7 @@
 #include <cstring>
 #include <string>
 
+#include "board.h"
 #include "hal/hal.h"
 #include "paths.h"
 
@@ -29,16 +30,18 @@ static size_t fbLen;
 static fb_var_screeninfo vinfo;
 static fb_fix_screeninfo finfo;
 static int rotate;              // quarter turns clockwise from our canvas to the framebuffer
+static int offX, offY;          // C-457: where the canvas sits on a bigger screen (in the middle)
 static bool shiftHeld;
 
 static bool testBit(const unsigned long *bits, int n) { return (bits[n / (8 * sizeof(long))] >> (n % (8 * sizeof(long)))) & 1; }
 
 static int openKeyboard() {
   if (const char *k = getenv("ZERO_KEYS")) return open(k, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
-  // M5Stack's launcher reads /dev/input/by-path/platform-3f804000.i2c-event: the TCA8418 on I2C1. Failing that, the
-  // first input device that has letter keys.
-  int fd = open("/dev/input/by-path/platform-3f804000.i2c-event", O_RDONLY | O_NONBLOCK | O_CLOEXEC);
-  if (fd >= 0) return fd;
+  // C-457: the board's own first (the Cardputer Zero's TCA8418 on I2C1, the GamePi20's buttons). Failing those, the
+  // first input device with letter keys -- or, on a pad, with a gamepad's A.
+  int fd = -1;
+  for (const char *const *in = board::INPUTS; *in; in++)
+    if ((fd = open(*in, O_RDONLY | O_NONBLOCK | O_CLOEXEC)) >= 0) return fd;
   DIR *d = opendir("/dev/input");
   if (!d) return -1;
   while (dirent *e = readdir(d)) {
@@ -47,7 +50,8 @@ static int openKeyboard() {
     int f = open(p.c_str(), O_RDONLY | O_NONBLOCK | O_CLOEXEC);
     if (f < 0) continue;
     unsigned long bits[(KEY_MAX + 1) / (8 * sizeof(long)) + 1] = {};
-    if (ioctl(f, EVIOCGBIT(EV_KEY, sizeof bits), bits) >= 0 && testBit(bits, KEY_A) && testBit(bits, KEY_Z)) { fd = f; break; }
+    if (ioctl(f, EVIOCGBIT(EV_KEY, sizeof bits), bits) >= 0 &&
+        (board::KEYBOARD ? testBit(bits, KEY_A) && testBit(bits, KEY_Z) : testBit(bits, BTN_A))) { fd = f; break; }
     close(f);
   }
   closedir(d);
@@ -59,7 +63,16 @@ bool begin(int, bool headless) {
   if (headless) return true;
   // C-444 / C-449: /dev/fb_lcd is M5Stack's udev link to the ST7789's framebuffer, whichever number it got -- with a
   // screen in the HDMI at boot the small screen need not be fb0. APPLaunch looks for it first too.
-  const char *path = getenv("ZERO_FB") ? getenv("ZERO_FB") : access("/dev/fb_lcd", F_OK) == 0 ? "/dev/fb_lcd" : "/dev/fb0";
+  // C-457: failing that, the framebuffer the panel-mipi-dbi driver made (the GamePi20's ST7789, by its sysfs name), so an
+  // HDMI framebuffer that came first is never drawn on by mistake; and last of all fb0
+  static std::string panel;
+  for (int n = 0; n < 4 && panel.empty(); n++) {
+    std::string name;
+    if (readText("/sys/class/graphics/fb" + std::to_string(n) + "/name", name) && name.find("mipi-dbi") != std::string::npos)
+      panel = "/dev/fb" + std::to_string(n);
+  }
+  const char *path = getenv("ZERO_FB") ? getenv("ZERO_FB") : access("/dev/fb_lcd", F_OK) == 0 ? "/dev/fb_lcd"
+                     : !panel.empty() ? panel.c_str() : "/dev/fb0";
   fbFd = open(path, O_RDWR | O_CLOEXEC);
   if (fbFd < 0) { perror(path); return false; }
   if (ioctl(fbFd, FBIOGET_VSCREENINFO, &vinfo) || ioctl(fbFd, FBIOGET_FSCREENINFO, &finfo)) { perror("framebuffer"); return false; }
@@ -67,7 +80,12 @@ bool begin(int, bool headless) {
   fbMem = (uint8_t *)mmap(nullptr, fbLen, PROT_READ | PROT_WRITE, MAP_SHARED, fbFd, 0);
   if (fbMem == MAP_FAILED) { fbMem = nullptr; perror("mmap"); return false; }
   if (const char *r = getenv("ZERO_ROTATE")) rotate = atoi(r) & 3;
-  else rotate = (vinfo.xres == (unsigned)W) ? 0 : (vinfo.xres == (unsigned)H && vinfo.yres == (unsigned)W) ? 1 : 0;
+  else rotate = (vinfo.xres >= (unsigned)W && vinfo.yres >= (unsigned)H) ? 0 : (vinfo.yres >= (unsigned)W && vinfo.xres >= (unsigned)H) ? 1 : 0;
+  // C-457: on a bigger screen (the GamePi20's 320x240) the canvas in the middle, the rest dark
+  const int fw = (rotate & 1) ? (int)vinfo.yres : (int)vinfo.xres, fh = (rotate & 1) ? (int)vinfo.xres : (int)vinfo.yres;
+  offX = fw > W ? (fw - W) / 2 : 0;
+  offY = fh > H ? (fh - H) / 2 : 0;
+  memset(fbMem, 0, fbLen);
   fprintf(stderr, "screen: %s %ux%u, %u bits, line %u bytes, turned %d\n", path, vinfo.xres, vinfo.yres,
           vinfo.bits_per_pixel, finfo.line_length, rotate);
   keyFd = openKeyboard();
@@ -83,11 +101,13 @@ void present(const uint16_t *px) {
     for (int x = 0; x < W; x++) {
       uint16_t s = px[y * W + x];
       uint16_t c = (uint16_t)(s << 8 | s >> 8);   // LovyanGFX keeps it high byte first
-      int fx = x, fy = y;
+      // the point on the screen as held, then turned onto the framebuffer
+      const int sx = x + offX, sy = y + offY, sw = W + 2 * offX, sh = H + 2 * offY;
+      int fx = sx, fy = sy;
       switch (rotate) {
-        case 1: fx = H - 1 - y; fy = x; break;
-        case 2: fx = W - 1 - x; fy = H - 1 - y; break;
-        case 3: fx = y; fy = W - 1 - x; break;
+        case 1: fx = sh - 1 - sy; fy = sx; break;
+        case 2: fx = sw - 1 - sx; fy = sh - 1 - sy; break;
+        case 3: fx = sy; fy = sw - 1 - sx; break;
       }
       if ((unsigned)fx >= vinfo.xres || (unsigned)fy >= vinfo.yres) continue;
       uint8_t *at = fbMem + (size_t)(fy + vinfo.yoffset) * finfo.line_length + (size_t)(fx + vinfo.xoffset) * (bpp / 8);
@@ -125,6 +145,12 @@ static Key keyOf(int code) {
     case KEY_FN: return Key::Fn;
     case KEY_UP: return Key::Up; case KEY_DOWN: return Key::Down;
     case KEY_LEFT: return Key::Left; case KEY_RIGHT: return Key::Right;
+    // C-457: a pad's buttons (tools/boards/gamepi20.sh sends these; a USB gamepad does too)
+    case BTN_A: return Key::PadA; case BTN_B: return Key::PadB; case BTN_X: return Key::PadX; case BTN_Y: return Key::PadY;
+    case BTN_TL: return Key::PadL; case BTN_TR: return Key::PadR;
+    case BTN_START: return Key::PadStart; case BTN_SELECT: return Key::PadSelect;
+    case BTN_DPAD_UP: return Key::Up; case BTN_DPAD_DOWN: return Key::Down;
+    case BTN_DPAD_LEFT: return Key::Left; case BTN_DPAD_RIGHT: return Key::Right;
     default: return Key::None;
   }
 }
@@ -177,8 +203,8 @@ std::string deviceId() {
   if (readText("/sys/class/net/wlan0/address", mac) && mac.size() >= 17) {
     std::string tail;
     for (char c : mac.substr(9, 8)) if (c != ':') tail += c;
-    return "cardputer-zero-" + tail;
+    return std::string(board::ID) + "-" + tail;
   }
-  return "cardputer-zero";
+  return board::ID;
 }
 }  // namespace hal

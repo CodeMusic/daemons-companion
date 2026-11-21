@@ -15,6 +15,8 @@
 #include "hub/mirror.h"
 #include "paths.h"
 #include "sound.h"
+#include "pages/parts.h"
+#include "board.h"
 
 using Clock = std::chrono::steady_clock;
 
@@ -124,8 +126,9 @@ struct Play : Page {
       canvas.printf("LV%d", v.level);
     }
     canvas.setTextColor(dim);
+    if (!board::KEYBOARD) { canvas.setCursor(2, 140); canvas.print("SELECT"); }   // C-457: the pair that leaves
     canvas.setCursor(2, 150);
-    canvas.print("ESC");
+    canvas.print(board::KEYBOARD ? "ESC" : "+START");
     canvas.setCursor(2, 160);
     canvas.print("MENU");   // DRAFT
     // right: the hour, the cell, and the save -- SAVED here, then SENT to the hub, or HERE when it stayed on the device

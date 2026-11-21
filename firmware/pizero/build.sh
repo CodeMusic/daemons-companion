@@ -12,10 +12,16 @@ run=0
 if [[ "${1:-}" == "window" || "${1:-}" == "device" ]]; then side=$1; shift; fi
 if [[ "${1:-}" == "run" ]]; then run=1; shift; fi
 if [[ $side == auto ]]; then
-  if [[ "$(uname -s)" == Linux && "$(uname -m)" == aarch64 ]]; then side=device; else side=window; fi
+  # aarch64, or armv6/armv7 (a first Pi Zero runs 32-bit): C-457
+  if [[ "$(uname -s)" == Linux && "$(uname -m)" =~ ^(aarch64|armv[67]) ]]; then side=device; else side=window; fi
 fi
+# C-457: the board (src/boards/): BOARD=gamepi20 ./build.sh; else the one kept in ~/.config/daemons/board on a device,
+# else the Cardputer Zero. Its build is build/<side>, or build/<side>-<board> for any board but the first.
+board=${BOARD:-$(cat ~/.config/daemons/board 2>/dev/null || echo cardputer-zero)}
+out=build/$side
+[[ $board != cardputer-zero ]] && out=build/$side-$board
 
-args=(-DCMAKE_BUILD_TYPE=Release)
+args=(-DCMAKE_BUILD_TYPE=Release -DZERO_BOARD="$board")
 [[ $side == window ]] && args+=(-DZERO_DEVICE=OFF)
 [[ "$(uname -s)" == Darwin && -d /opt/homebrew ]] && args+=(-DCMAKE_PREFIX_PATH=/opt/homebrew)
 command -v ninja >/dev/null && args+=(-G Ninja)
@@ -29,8 +35,8 @@ if [[ $side == device ]]; then
 fi
 jobs=${ZERO_JOBS:-$jobs}
 
-cmake -S . -B "build/$side" "${args[@]}" >/dev/null
-cmake --build "build/$side" -j "$jobs"
-ctest --test-dir "build/$side" --output-on-failure >/dev/null && echo "checks: all passed"
-echo "built: build/$side/daemons-zero"
-if (( run )); then exec "build/$side/daemons-zero" "$@"; fi
+cmake -S . -B "$out" "${args[@]}" >/dev/null
+cmake --build "$out" -j "$jobs"
+ctest --test-dir "$out" --output-on-failure >/dev/null && echo "checks: all passed"
+echo "built: $out/daemons-zero ($board)"
+if (( run )); then exec "$out/daemons-zero" "$@"; fi

@@ -22,6 +22,8 @@ echo "copying the source to $host:daemons-zero/src"
 # by content (-c), and without the Mac's times: a file that changed lands with the time it arrived, so the device's build
 # remakes exactly what changed (tar kept the Mac's times, older than the device's objects, and nothing was remade); the
 # device's own build/ is never touched, so a second install builds only what changed
+# C-457: the board, named once (BOARD=gamepi20 tools/install.sh ...) and kept on the device; the Cardputer Zero otherwise
+if [[ -n ${BOARD:-} ]]; then ssh "$host" "mkdir -p ~/.config/daemons && echo $BOARD > ~/.config/daemons/board"; fi
 ssh "$host" 'mkdir -p ~/daemons-zero/src'
 rsync -rc --delete --exclude /build/ --exclude '/build-*/' --exclude /shots/ --exclude '*.gba' --exclude '*.sav' \
   --exclude '*.bps' --exclude '*.deb' --exclude /patches.json --exclude .DS_Store "$here/" "$host:daemons-zero/src/"
@@ -30,7 +32,7 @@ scp -q "$repo/server/data/patches.json" "$host:daemons-zero/src/patches.json"
 ssh "$host" 'bash -s' <<'EOF'
 set -euo pipefail
 need=()
-for p in cmake g++ ninja-build pkg-config libcurl4-openssl-dev; do dpkg -s "$p" >/dev/null 2>&1 || need+=("$p"); done
+for p in cmake g++ ninja-build pkg-config libcurl4-openssl-dev rsync device-tree-compiler; do dpkg -s "$p" >/dev/null 2>&1 || need+=("$p"); done
 if ((${#need[@]})); then
   echo "installing on the device: ${need[*]}"
   if ! sudo -n true 2>/dev/null; then
@@ -43,6 +45,13 @@ cd ~/daemons-zero/src
 echo "building on the device (the first time fetches mGBA, LovyanGFX and miniaudio: a few minutes)"
 ./build.sh device
 deb=$(tools/make_deb.sh)
-if sudo -n true 2>/dev/null; then sudo -n dpkg -i "$deb" && echo "installed: DAEMONS is on HOME"
-else echo "built $deb -- to install it, on the device run:  sudo dpkg -i ~/daemons-zero/src/$deb"; fi
+board=$(cat ~/.config/daemons/board 2>/dev/null || echo cardputer-zero)
+setup=""
+# a board with no launcher is made ready once (its screen, buttons, sound, and DAEMONS at boot): tools/boards/<board>.sh
+[[ $board != cardputer-zero && -x tools/boards/$board.sh ]] && ! grep -q "DAEMONS $board\|DAEMONS GamePi20" /boot/firmware/config.txt /boot/config.txt 2>/dev/null \
+  && setup="sudo ~/daemons-zero/src/tools/boards/$board.sh && "
+if sudo -n true 2>/dev/null; then
+  sudo -n dpkg -i "$deb" && echo "installed"
+  [[ -n $setup ]] && sudo -n ~/daemons-zero/src/tools/boards/$board.sh && echo "made ready: now  sudo reboot"
+else echo "built $deb -- to install it, on the device run:  ${setup}sudo dpkg -i ~/daemons-zero/src/$deb"; fi
 EOF

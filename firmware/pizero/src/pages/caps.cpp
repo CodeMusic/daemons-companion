@@ -66,8 +66,8 @@ struct Caps : Page {
     int y = 50;
     if (!f.detail.empty()) { canvas.setCursor(6, y); canvas.print(upper(f.detail).substr(0, 51).c_str()); y += 11; }
     if (f.kind == caps::Kind::None) {
-      y += 2 + 10 * wrap("Switch the Zero off before fitting a cap: a CC1101 + NFC or a LoRa-1262. It is found when "
-                         "the Zero starts, or with ENTER here.", 6, y + 2, 51, 3, 10);                            // DRAFT
+      y += 2 + 10 * wrap(hint("Switch the Zero off before fitting a cap: a CC1101 + NFC or a LoRa-1262. It is found when "
+                         "the Zero starts, or with ENTER here."), 6, y + 2, 51, 3, 10);                            // DRAFT
     }
     for (auto &o : f.offers) {
       canvas.setCursor(6, y);
@@ -114,7 +114,7 @@ struct Caps : Page {
     canvas.setTextColor(DIM);
     canvas.setCursor(6, 160);
     std::string foot = !told.empty() ? upper(told) : !f.why.empty() ? upper(f.why)
-                       : f.kind == caps::Kind::Cc1101Nfc ? "Z C: BAND   F X: ANTENNA   ENTER: ASK AGAIN   ESC" : "ENTER: ASK AGAIN    ESC: BACK";   // DRAFT
+                       : f.kind == caps::Kind::Cc1101Nfc ? hint("Z C: BAND   F X: ANTENNA   ENTER: ASK AGAIN   ESC") : hint("ENTER: ASK AGAIN    ESC: BACK");   // DRAFT
     canvas.print(foot.substr(0, 52).c_str());
   }
 };

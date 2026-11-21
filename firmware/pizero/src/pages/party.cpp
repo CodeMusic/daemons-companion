@@ -74,7 +74,7 @@ struct Party : Page {
     }
     canvas.setTextColor(DIM);
     canvas.setCursor(6, 148);
-    canvas.print("Z C: THE OTHERS    ESC: BACK");
+    canvas.print(hint("Z C: THE OTHERS    ESC: BACK"));
   }
 };
 }  // namespace

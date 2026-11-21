@@ -1,4 +1,4 @@
-// C-377: DAEMONS on the Cardputer Zero. The loop: the keys to the page in front, the page's tick (the game's frames),
+// C-377: DAEMONS on the Cardputer Zero, and since C-457 every Linux board (src/board.h). The loop: the keys to the page in front, the page's tick (the game's frames),
 // and the canvas shown whenever it changed. SIGINT is APPLaunch's five-second press of Home: the save is kept first.
 //
 //   daemons-zero                       HOME (the device, or a window on a computer)
@@ -38,6 +38,7 @@
 #include <thread>
 
 #include "app.h"
+#include "board.h"
 #include "canvas.h"
 #include "caps/cap.h"
 #include "game/rom.h"
@@ -333,6 +334,7 @@ int main(int argc, char **argv) {
     KeyEvent e;
     while (hal::poll(e)) {
       held[(size_t)e.key] = e.down;
+      if (!board::forPage(e, held, now == PageId::Play)) continue;   // C-457: a pad read as the pages' keys
       p->key(e);
       switched = true;
       p = pageFor(now);
@@ -347,7 +349,7 @@ int main(int argc, char **argv) {
           if (want[(size_t)k] != held[(size_t)k]) {
             held[(size_t)k] = want[(size_t)k];
             KeyEvent s{ k, want[(size_t)k], want[(size_t)k] ? keyChar(k, false) : (char)0 };   // what it types, as a key would
-            p->key(s);
+            if (board::forPage(s, held, now == PageId::Play)) p->key(s);
             switched = true;
             p = pageFor(now);
           }

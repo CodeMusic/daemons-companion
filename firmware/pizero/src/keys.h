@@ -1,5 +1,5 @@
 #pragma once
-// C-378: the Cardputer Zero's keys by name, from either side (SDL on a computer, evdev on the device), and C-379's map
+// C-378: the keys by name (the Cardputer Zero's keyboard, and since C-457 a pad's buttons), from either side (SDL on a computer, evdev on the device), and C-379's map
 // from them to the GBA's ten. The device has no arrow keys: F Z X C are its arrows (printed on them; M5Stack's own apps
 // take them plain), and a computer's arrow keys stand in for them too.
 #include <cstdint>
@@ -11,6 +11,7 @@ enum class Key : uint8_t {
   N0, N1, N2, N3, N4, N5, N6, N7, N8, N9,
   Enter, Esc, Tab, Space, Backspace, Shift, Fn, Sym, Ctrl, Alt,
   Up, Down, Left, Right,
+  PadA, PadB, PadX, PadY, PadL, PadR, PadStart, PadSelect,   // C-457: a pad's buttons (the GamePi20), as board.h reads them
   Count
 };
 struct KeyEvent { Key key = Key::None; bool down = false; char ch = 0; };   // ch: what it types (Shift applied), or 0

@@ -1,0 +1,18 @@
+# C-457: DAEMONS at boot on a board with no launcher of its own (the GamePi20), as the user named after the @. It
+# draws on the small screen's framebuffer and reads the buttons through evdev, so it needs no desktop; SIGINT lets it
+# keep the save and send it to the hub before it stops (main.cpp), as APPLaunch's press of Home does on the Cardputer.
+[Unit]
+Description=DAEMONS on the device's own screen
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+User=%i
+ExecStart=/usr/bin/daemons-zero
+KillSignal=SIGINT
+TimeoutStopSec=5
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

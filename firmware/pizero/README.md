@@ -117,7 +117,9 @@ keys while running), `ZERO_KEYLOG=1` (print key codes it does not know).
 | | |
 |---|---|
 | `src/main.cpp` | the loop, the arguments, the shared drawing |
-| `src/hal/` | `window.cpp` (SDL) and `device.cpp` (framebuffer, evdev, power_supply): the only two halves that differ |
+| `src/hal/` | `window.cpp` (SDL) and `device.cpp` (framebuffer, evdev, power_supply): the two sides |
+| `src/board.h`, `src/boards/` | C-457: the board -- `cardputer-zero.cpp` or `gamepi20.cpp`, picked by CMake's `ZERO_BOARD` (`BOARD=gamepi20 ./build.sh`): its name, screen, keys or pad, and the game's keys (docs/PIBOARDS.md) |
+| `tools/boards/` | a board with no launcher made ready once on the device: `gamepi20.sh` (its screen, buttons and sound in config.txt) and `daemons@.service` (DAEMONS at boot) |
 | `src/canvas.*` | the 320x170 LovyanGFX sprite every page draws into, and a picture of it |
 | `src/keys.*` | the device's keys by name, and the game's map (`~/.config/daemons/keys.conf`, `A = L`) |
 | `src/sound.*` | miniaudio, and a ring between the game and the speaker |

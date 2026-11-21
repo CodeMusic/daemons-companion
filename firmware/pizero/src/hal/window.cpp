@@ -1,7 +1,10 @@
-// C-378: the computer's side -- the Cardputer Zero's 320x170 in an SDL window, three times over, and the computer's
-// keys taken as the device's (F1 is SYM and F2 is FN, as M5Stack's own simulator has them).
+// C-378: the computer's side -- the board's screen in an SDL window, three times over (C-457: the canvas in its middle
+// when the board's is bigger), and the computer's keys taken as the device's: F1 is SYM and F2 is FN, as M5Stack's own
+// simulator has them; a pad board's buttons are X (A), Z (B), S (X), A (Y), Q (L), W (R), RETURN (START), RIGHT
+// SHIFT (SELECT) and the arrows, as most emulators have them.
 #include <SDL.h>
 #include <string>
+#include "board.h"
 #include "hal/hal.h"
 
 namespace hal {
@@ -15,7 +18,9 @@ bool begin(int scale, bool headless) {
   if (headless) return true;
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) { fprintf(stderr, "SDL: %s\n", SDL_GetError()); return false; }
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");   // pixels stay pixels
-  win = SDL_CreateWindow("DAEMONS -- Cardputer Zero", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W * scale, H * scale, 0);
+  const std::string title = std::string("DAEMONS -- ") + board::NAME;
+  win = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, board::SCREEN_W * scale,
+                         board::SCREEN_H * scale, 0);
   if (!win) { fprintf(stderr, "SDL: %s\n", SDL_GetError()); return false; }
   ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (!ren) ren = SDL_CreateRenderer(win, -1, 0);
@@ -34,12 +39,29 @@ void present(const uint16_t *px) {
     for (int x = 0; x < W; x++) row[x] = (uint16_t)(src[x] << 8 | src[x] >> 8);
   }
   SDL_UnlockTexture(tex);
+  SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
   SDL_RenderClear(ren);
-  SDL_RenderCopy(ren, tex, nullptr, nullptr);
+  int ww, wh;
+  SDL_GetRendererOutputSize(ren, &ww, &wh);
+  const int s = ww / board::SCREEN_W;   // the board's screen fills the window; the canvas sits in its middle
+  SDL_Rect at{ (ww - W * s) / 2, (wh - H * s) / 2, W * s, H * s };
+  SDL_RenderCopy(ren, tex, nullptr, &at);
   SDL_RenderPresent(ren);
 }
 
+static Key padOf(SDL_Keycode k) {   // C-457: a pad board on a computer
+  switch (k) {
+    case SDLK_x: return Key::PadA; case SDLK_z: return Key::PadB; case SDLK_s: return Key::PadX; case SDLK_a: return Key::PadY;
+    case SDLK_q: return Key::PadL; case SDLK_w: return Key::PadR;
+    case SDLK_RETURN: return Key::PadStart; case SDLK_RSHIFT: return Key::PadSelect;
+    case SDLK_UP: return Key::Up; case SDLK_DOWN: return Key::Down; case SDLK_LEFT: return Key::Left; case SDLK_RIGHT: return Key::Right;
+    case SDLK_ESCAPE: return Key::Esc;   // the computer's way out, as on any board
+    default: return Key::None;
+  }
+}
+
 static Key keyOf(SDL_Keycode k) {
+  if (!board::KEYBOARD) return padOf(k);
   if (k >= SDLK_a && k <= SDLK_z) return (Key)((int)Key::A + (k - SDLK_a));
   if (k >= SDLK_0 && k <= SDLK_9) return (Key)((int)Key::N0 + (k - SDLK_0));
   switch (k) {
@@ -95,5 +117,5 @@ Power power() {
   return p;
 }
 const char *side() { return "window"; }
-std::string deviceId() { return "cardputer-zero-window"; }
+std::string deviceId() { return std::string(board::ID) + "-window"; }
 }  // namespace hal

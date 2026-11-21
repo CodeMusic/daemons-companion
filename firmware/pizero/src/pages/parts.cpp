@@ -1,6 +1,9 @@
 // C-381: the shared drawing.
 #include "pages/parts.h"
 
+#include <cstring>
+#include "board.h"
+
 #include <ArduinoJson.h>
 
 #include "app.h"
@@ -86,4 +89,39 @@ std::string replyWords(const Reply &r, const char *field) {
   if (r.ok()) return read && d[field].is<const char *>() ? d[field].as<const char *>() : "";
   if (read && d["error"].is<const char *>()) return d["error"].as<const char *>();
   return !r.error.empty() ? r.error : "the hub said " + std::to_string(r.status);   // DRAFT
+}
+
+// C-457: whole words only (ENTER, ESC, TAB, BACKSPACE, and the printed arrows Z C and F X as a pair)
+const char *hint(const char *words) {
+  if (board::KEYBOARD) return words;
+  static std::string kept[4];
+  static int next;
+  std::string &out = kept[next++ & 3];
+  out.clear();
+  const std::string in = words;
+  auto isWord = [](char c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'); };
+  const struct { const char *from; const char *to; } fixed[] = { { "Z C", "LEFT RIGHT" }, { "F X", "UP DOWN" } };
+  size_t i = 0;
+  while (i < in.size()) {
+    bool done = false;
+    if (i == 0 || !isWord(in[i - 1])) {
+      for (auto &f : fixed) {
+        size_t n = strlen(f.from);
+        if (in.compare(i, n, f.from) == 0 && (i + n == in.size() || !isWord(in[i + n]))) { out += f.to; i += n; done = true; break; }
+      }
+      if (!done) {
+        size_t j = i;
+        while (j < in.size() && isWord(in[j])) j++;
+        if (j > i) {
+          const std::string w = in.substr(i, j - i);
+          Key k = w == "ENTER" ? Key::Enter : w == "ESC" ? Key::Esc : w == "TAB" ? Key::Tab : w == "BACKSPACE" ? Key::Backspace : Key::None;
+          out += k == Key::None ? w : board::word(k);
+          i = j;
+          done = true;
+        }
+      }
+    }
+    if (!done) out += in[i++];
+  }
+  return out.c_str();
 }

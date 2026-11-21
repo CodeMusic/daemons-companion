@@ -6,7 +6,7 @@
 #include "keys.h"
 
 namespace hal {
-constexpr int W = 320, H = 170;   // the Cardputer Zero's screen, turned as it is held
+constexpr int W = 320, H = 170;   // the canvas every page draws: the Cardputer Zero's screen, and the middle of a bigger one (C-457)
 
 bool begin(int scale, bool headless);         // headless: nothing shown and no keys read (checks, pictures)
 void present(const uint16_t *swapped565);     // the canvas as LovyanGFX keeps it: RGB565, high byte first
@@ -17,5 +17,5 @@ void end();
 struct Power { int percent = -1; bool charging = false; };   // -1: not known
 Power power();
 const char *side();                           // "window" or "device"
-std::string deviceId();                       // "cardputer-zero-<6 hex>", from the machine, as the boards name themselves
+std::string deviceId();                       // "<board::ID>-<6 hex>", from the machine, as the boards name themselves
 }

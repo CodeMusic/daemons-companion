@@ -44,7 +44,7 @@ struct Step : Page {
     Reply r;
     if (!sending.done(r)) return false;
     if (!r.ok()) answer = replyWords(r, "error");
-    else answer = undoing ? "Taken back." : "Done. BACKSPACE takes it back.";
+    else answer = undoing ? "Taken back." : hint("Done. BACKSPACE takes it back.");
     return true;
   }
   void draw() override {
@@ -82,7 +82,7 @@ struct Step : Page {
     }
     canvas.setTextColor(answer.empty() ? DIM : SOFT);
     canvas.setCursor(6, 140);
-    canvas.print(answer.empty() ? "ENTER: DONE    ESC: BACK" : upper(answer).substr(0, 51).c_str());
+    canvas.print(answer.empty() ? hint("ENTER: DONE    ESC: BACK") : upper(answer).substr(0, 51).c_str());
   }
 };
 }  // namespace

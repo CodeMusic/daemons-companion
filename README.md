@@ -250,6 +250,7 @@ I would go back now and then. A daemon likes to know the way home.
 | [CodeMusic/pokefirered-daemons](https://github.com/CodeMusic/pokefirered-daemons) | the game's engine |
 | [CodeMusic/gpt-play-pokemon-firered-daemons](https://github.com/CodeMusic/gpt-play-pokemon-firered-daemons) | the harness that lets a model play it |
 | [CodeMusic/daemons-eudaimonia](https://github.com/CodeMusic/daemons-eudaimonia) | where EUDAIMONIA is to be built, PRAXIS and ARETE used together (docs/PROJECTS.md, section 10); today the DAEMONS playground, the game in a browser, for demos and beta tests, with a companion of its own beside it |
+| [CodeMusic/daemons-praxis](https://github.com/CodeMusic/daemons-praxis) | PRAXIS's engine, under the companion's GOALS and, to come, EUDAIMONIA: one log of every change, merged across your phone and your hub, with ARETE as its points |
 | **CodeMusic/daemons-companion** | this: where your daemon goes when it leaves the game |
 
 **Nothing of Nintendo's is in here.** The daemon art it shows is DAEMONS' own -- every sprite in

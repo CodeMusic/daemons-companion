@@ -2,8 +2,8 @@
 
 *Started 2026-11-19 (the user: "let's start designing this management system which is daemon gamified and 'projects'
 within it can take many forms (from life management project, to learning, to cooking recipies, etc) and for the ones
-where you define points you earn rewards"). **Built so far: the engine (C-429) and GOALS on it, earning ARETE (C-430);
-the rest is design.** A decision recorded here is one the user made;
+where you define points you earn rewards"). **Built so far: the engine (C-429), GOALS on it, earning ARETE (C-430), and
+the engine in its own repository, daemons-praxis (C-435); the rest is design.** A decision recorded here is one the user made;
 everything marked OPEN is a question for them; every in-app word is DRAFT.*
 
 **Named by the user, 2026-11-19, by multiple choice: PRAXIS, and its points ARETE** -- Aristotle's pair: *praxis* is
@@ -100,8 +100,7 @@ server/src/
   commons/         THE COMMONS, accounts, the exchange, shared creations
   library/         the books, their recordings, the manual
   site/            THE ENGINE ROOM, JOBS, THE HANDS, the site fetch
-packages/
-  praxis/          PRAXIS's engine (section 4): imports nothing from the companion
+(PRAXIS's engine, section 4, is not here: it is its own repository, daemons-praxis, pinned by tag -- C-435)
 
 app/
   shared/          ui/ (today's ui/), pages/ (today's screens/shared/)
@@ -116,9 +115,10 @@ app/
 - **Mind and machine become physical.** `machine/` holds every MACHINE file; `psyche/`, `damagotchi/` and
   `lifemanagement/` hold MIND and may not import `machine/`. The test gets simpler (a folder rule) and keeps its
   per-file sides for `app/`. *This supersedes C-387's "no folder split", by the user's ask of 2026-11-19.*
-- **The engine is a package of its own**, `packages/praxis/`, with no import from the companion, so the site, the app,
-  the hub and one day a Redmine replacement all use the one engine. *Decided by the user, 2026-11-19: a package here
-  for now -- "before long we will make it its own repo"*, which the no-import rule keeps a `git mv` away.
+- **The engine is a repository of its own**, **daemons-praxis** (C-435), with no import from the companion, so the site,
+  the app, the hub and one day a Redmine replacement all use the one engine, each pinning it by tag. *Decided by the
+  user, 2026-11-19: a package here for now -- "before long we will make it its own repo"*. It was a folder here,
+  `packages/praxis`, until GOALS had settled its API (C-430), and came out with its history on 2026-11-20.
 - **Moved gradually, never in one sweep.** Other lanes commit to the companion every day, so each domain moves in a
   move-only commit (`git mv`, imports fixed, `LAYOUT.md` updated in the same commit -- C-292) when its files are not in
   flight. New code goes into the new folders from the start.
@@ -162,12 +162,18 @@ fields. A goal's depth is whatever the person needs: milestones inside milestone
 Every change is an event, and **the tables are a fold of the events** -- they can be rebuilt from the log at any time.
 
 ```
-{ id, space, item, op, field?, value?, actor, replica, hlc }
+{ v, id, space, item, op, field?, value?, actor, replica, hlc }
   op: make | set | move | link | unlink | state | note | effort | award | spend | propose | accept | decline | archive
 ```
 
 History is the log (Redmine's journals, for free). Undo is a compensating event. Sync is sending events (section 5).
 An AI's proposal is an event marked *proposed* that counts only once accepted.
+
+**Every event carries its format, `v`** (C-435), because replicas run different builds: a phone on last month's
+release syncs with a hub on today's. An event without one is format 1, which is what C-430 wrote before the field.
+A build folds every format up to its own. An event of a newer format is kept and sent on as it came, never folded,
+until a build that reads it opens the database. Its envelope (everything but what the op says) is the same in every
+format, so an older build can still keep, order and relay it. The rules are in daemons-praxis's README.
 
 ### 4.5 Ids
 
@@ -332,10 +338,11 @@ the place where PRAXIS and ARETE are used together. Its subdomain sits under dae
   - with the password and a backup agreement ticked, straight from the release.
 
   The password is kept hashed on the server, never in a repository.
-- **The engine moves to its own repository, daemons-praxis, once C-430 is done** (C-435), and the companion and the
-  site each pin it by tag. While one repository uses it, a folder here is cheaper: one commit changes the engine and
-  its first user together. Once two do, it needs its own repository: npm can install a repository by tag but not a
-  folder inside one, and replicas running different builds need an event format with a version both sides can read.
+- **The engine is its own repository, daemons-praxis** (C-435, 2026-11-20, once C-430 was done), and the companion
+  and the site each pin it by tag. While one repository used it, a folder here was cheaper: one commit changed the
+  engine and its first user together. Once two do, it needs its own repository: npm can install a repository by tag
+  but not a folder inside one, and replicas running different builds need an event format with a version both sides
+  can read -- so every event carries its format (section 4.4).
 
 **Why EUDAIMONIA.** For Aristotle, *eudaimonia* is living well and doing well (*eu prattein*, *Nicomachean Ethics* I.4).
 It is activity in accordance with *arete* over a whole life (I.7). That is PRAXIS and ARETE held together. In DAEMONS,
@@ -363,19 +370,19 @@ eudaimonia, and its BALANCE page holds the week's seven pairs, which THE WEEK'S 
 5. **The JOURNAL, the DREAM JOURNAL, TENDING and MEETINGS** onto it; THE WEEK'S BALANCE. **C-432**
 6. **Forms you make yourself**; LEARNING and RECIPES; the REWARD SHELF. **C-433**
 7. **The site, EUDAIMONIA** (section 10): the rename **C-438**, the front door **C-439**, accounts **C-436**, THE
-   EASTER EGG **C-437**, the dashboard **C-411**; the engine's own repository once C-430 is done **C-435**; the Redmine
+   EASTER EGG **C-437**, the dashboard **C-411**; the engine's own repository **C-435**, *done 2026-11-20 (daemons-praxis v0.1.0)*; the Redmine
    bridge and a cloud replica, encrypted **C-434**. *The rename, the dashboard's frame, sign-in and the easter egg need
    no engine, so they can run beside phases 3 to 6.*
 
 ## 13. Decided, and OPEN
 
 **Decided by the user, 2026-11-19, by multiple choice:** the names, **PRAXIS** and **ARETE**; the engine a package
-here, **`packages/praxis/`**, its own repository before long; **our own small event log** for sync; **domains, with
+here, **`packages/praxis`**, its own repository before long (it is: C-435); **our own small event log** for sync; **domains, with
 `psyche/` and `machine/`** for the folders.
 
 **Decided by the user, 2026-11-20, by multiple choice:**
 - The site is **EUDAIMONIA**, in **daemons-eudaimonia** (daemons-playground renamed).
-- The engine moves to its own repository, **daemons-praxis, once C-430 is done**.
+- The engine moves to its own repository, **daemons-praxis, once C-430 is done**. *Done (C-435).*
 - On the public site, the game comes **from the player's own cart's file, patched in the browser**, or, with the
   password and a backup agreement ticked, straight from the release.
 - **Goals finished before the move keep the ARETE they were paid** (C-430): every old finish is paid by its rule,

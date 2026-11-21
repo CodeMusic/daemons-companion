@@ -14,7 +14,7 @@
 //   THRIVE          the week's finishes, read from the ledger -- and, for the days before the move, from the log as it
 //                   always was (today's values for today's history)
 //   the old tables  goals, subitems and steps are read into events once, each at its own time, and left as they were
-import { hlcIso, parseHlc, Praxis, type Form, type Item, type StateDef } from "../../packages/praxis/src/index.js";
+import { hlcIso, parseHlc, Praxis, type Form, type Item, type StateDef } from "@daemons/praxis";
 import type { Goal, Plan, Step, Store, SubItem } from "./store.js";
 
 /** what a finish gives the daemon (core.ts gives it): its time together (the log's "step": a meal, training, its mood),

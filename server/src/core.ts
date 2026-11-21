@@ -46,7 +46,7 @@ import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass
 import { toneOf } from "./spirits.js";   // C-296: the tone is part of what a picture is
 import type { Spirits } from "./save/reader.js";
 import { genderOf } from "./ai/gender.js";   // C-359
-import { SHORT } from "../../packages/praxis/src/index.js";   // C-430: an entry is an item's short title
+import { SHORT } from "@daemons/praxis";   // C-430: an entry is an item's short title
 import { ruleOf, type DaemonGets } from "./goals.js";        // C-430: what a finish gives the daemon
 
 // the key a device files a daemon's picture under: changes when the picture would -- its species, its moves (the

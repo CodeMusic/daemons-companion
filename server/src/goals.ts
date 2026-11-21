@@ -255,6 +255,12 @@ export class Goals {
     return before + this.px.ledger(this.life, { since: Math.max(since.getTime(), cut) }).filter((e) => finishes(e) && e.kind === kind).length;
   }
 
+  /** C-455: the ARETE earned in a span (MENTIONS' numbers) -- awards not taken back, by when they were given */
+  earnedBetween(from: Date, to: Date): number {
+    const until = String(Math.max(0, Math.floor(to.getTime()))).padStart(18, "0");
+    return this.px.ledger(this.life, { since: from.getTime() }).filter((e) => e.op === "award" && !e.back && e.hlc < until)
+      .reduce((n, e) => n + e.points, 0);
+  }
   /** ARETE: held now, earned today and this week, and the rules it is earned by */
   arete(now = new Date(this.store.now())) {
     const earned = (since: number) => this.px.ledger(this.life, { since }).filter((e) => e.op === "award" && !e.back).reduce((n, e) => n + e.points, 0);

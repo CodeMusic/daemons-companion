@@ -12,7 +12,7 @@ import { lastWake } from "./persona.js";
 export const KEPT_MOST = 40;
 export const RETRY_MIN = 60;
 
-const DAY_WORDS: [string[], string, string][] = [
+export const DAY_WORDS: [string[], string, string][] = [   // C-455: MENTIONS counts by these too
   [["feed"], "a meal", "meals"], [["water"], "a drink", "drinks"], [["train"], "a training", "trainings"],
   [["sleep"], "a bedtime", "bedtimes"], [["wake"], "a waking", "wakings"],
   [["walk"], "a walk", "walks"], [["routine"], "a routine kept", "routines kept"], [["talk", "talkfirst"], "a talk", "talks"],

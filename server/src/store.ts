@@ -187,6 +187,8 @@ export class Store {
   goalsDoneBetween(from: Date, to: Date) { return this.life.doneBetween(from, to); }
   // C-207, C-430: the goals (or steps) finished since a time, for THRIVE
   finishedSince(kind: "goal" | "step", since: Date): number { return this.life.finishedSince(kind, since); }
+  // C-455: the ARETE earned in a span, for MENTIONS FROM YOUR DAEMON
+  areteBetween(from: Date, to: Date): number { return this.life.earnedBetween(from, to); }
   addMilestone(goal: number, title: string): number { return this.life.addMilestone(goal, title); }
   addStep(goal: number, text: string, milestone?: number): number | null { return this.life.addStep(goal, text, milestone); }
   removeStep(id: number) { this.life.removeStep(id); }

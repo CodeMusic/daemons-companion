@@ -17,6 +17,7 @@ import { ForkKey, SingingBowl, type BowlOf } from "../../ui/bowl";   // C-351
 import { CalendarSprite } from "../../ui/calendarSprite";   // C-353
 import { CalendarScreen } from "./Calendar";   // C-354
 import { useMonth } from "../../state/month";   // C-352, C-355
+import { MentionsCard } from "../library/Mentions";   // C-455
 
 export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload: () => void; ink: string; goTo: (t: (typeof TABS)[number]) => void }) {
   const witching = useWitching();                           // C-237: in the hour the day's line is turned under
@@ -60,6 +61,7 @@ export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload
       {day.theme ? <Theme reset><Theme name={day.theme as any}>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></Theme></Theme>
         : <>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></>}
       <TendingCard />
+      <MentionsCard />{/* C-455: the newest letter from your daemon, until it is read */}
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
         <Eyebrow>THE ONE THING</Eyebrow>
         {today.next ? (

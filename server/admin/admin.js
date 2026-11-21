@@ -385,7 +385,10 @@ async function drawMind() {
       <div class="row"><span class="dot" style="border:1.5px dashed ${kindOf(p.kind)[0]}"></span><span class="grow ${p.on ? "" : "faint"}">${esc(p.title)}</span>
         <button class="pill ${p.on ? "on" : ""}" data-act="plan" data-plan="${esc(p.id)}" data-on="${p.on ? "" : "1"}">${p.on ? "ON" : "OFF"}</button>
         <button class="pill" data-act="plan" data-plan="${esc(p.id)}" data-now="1">NOW</button></div>
-      <div class="small">${esc(p.said)} ${p.on ? `Next: ${esc(new Date(p.next).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" }))}.` : "Off."}${p.last ? ` Last: ${ago(p.last, now)}.` : ""}</div></div>`).join("") || `<p class="small">No plans.</p>`}</div></div>
+      <div class="small">${esc(p.said)} ${p.on ? `${p.gate ? "Next day" : "Next"}: ${esc(new Date(p.next).toLocaleString([], p.gate ? { weekday: "long", month: "short", day: "numeric" } : { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}.` : "Off."}${p.last && !p.gate ? ` Last: ${ago(p.last, now)}.` : ""}</div>
+      ${p.every ? `<div class="row" style="margin-top:6px;flex-wrap:wrap;gap:4px"><span class="small grow">${esc((p.cadence ?? "").toUpperCase())}</span>
+        ${CADENCES.map(([e, said]) => `<button class="pill ${p.every === e ? "on" : ""}" data-act="cadence" data-plan="${esc(p.id)}" data-every="${e}" data-times="1">${said}</button>`).join("")}
+        ${p.every !== "day" ? `<button class="pill" data-act="cadence" data-plan="${esc(p.id)}" data-every="${p.every}" data-times="${Math.max(1, (p.times ?? 1) - 1)}">−</button><button class="pill" data-act="cadence" data-plan="${esc(p.id)}" data-every="${p.every}" data-times="${(p.times ?? 1) + 1}">+</button>` : ""}</div>` : ""}</div>`).join("") || `<p class="small">No plans.</p>`}</div></div>
     ${note()}`;
 }
 ACTS.who = (d) => { ui.who = d.who; };
@@ -402,6 +405,9 @@ ACTS.pick = (d) => { if (d.id) goTo({ type: "task", id: d.id }, false); else ui.
 ACTS.crumb = (d) => { ui.trail = (ui.trail ?? []).slice(0, Number(d.i) + 1); };
 ACTS.task = async (d) => { await api("/api/mind/tasks", { id: d.id, act: d.a }); said(""); if (d.a === "forget") ui.trail = (ui.trail ?? []).slice(0, -1); };
 ACTS.clear = async () => { await api("/api/mind/tasks", { act: "clear", ...(ui.who && ui.who !== "all" ? { user: ui.who } : {}) }); said("Cleared."); };
+// C-455: every plan's cadence -- a day, a week, a month, three months or a year, and n times in it (− and +); DRAFT
+const CADENCES = [["day", "DAY"], ["week", "WEEK"], ["month", "MONTH"], ["quarter", "3 MONTHS"], ["year", "YEAR"]];
+ACTS.cadence = async (d) => { await api("/api/mind/tasks", { act: "plan", plan: d.plan, every: d.every, times: Number(d.times) }); said(""); };
 ACTS.plan = async (d) => { await api("/api/mind/tasks", { act: "plan", plan: d.plan, ...(d.now ? { now: true } : { on: !!d.on }) }); said(d.now ? "Started." : ""); };
 
 // ---- THE HOUSE (C-158, C-167) ----

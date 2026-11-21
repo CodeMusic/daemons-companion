@@ -146,7 +146,8 @@ import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; 
 import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
-import { isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later
+import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later; C-455: cadence
+import { SPAN, SPANS, writeMention, type Span } from "./mentions.js";   // C-455: MENTIONS FROM YOUR DAEMON
 import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
 import { readSubtle } from "./save/subtle.js";   // C-204
 import { sayable } from "./ai/say.js";   // C-270
@@ -954,6 +955,24 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     });
     return { digest: d, task: w.task };
   };
+  // C-455: MENTIONS FROM YOUR DAEMON (mentions.ts) -- the carried daemon's letter about the span just gone, in the voice of
+  // its persona of the day; the plain letter is kept at once, so no mind (or one that fails) still leaves its page
+  const writeMentions = (span: Span, plan?: string): string | null => {
+    const ecfg: Config = { ...cfg, savePath: savePathOf(cfg, store) };
+    let d: { personality: number; species: number; nickname?: string; name?: string } | null = null;
+    try { d = core.carriedDaemon(hostOf(ecfg), store, "") as any; } catch { d = null; }
+    let pn: ReturnType<typeof personaNow> = null;
+    try { pn = d ? personaNow(d.personality) : null; } catch { pn = null; }   // the first round runs before personaNow is made
+    const who = { personality: d ? d.personality >>> 0 : null, species: d?.species ?? null,
+                  nickname: pn?.facts.nickname || d?.nickname || "your daemon", persona: pn?.persona.text ?? null };
+    const mind = writerNow();
+    if (!mind) { void writeMention(store, span, new Date(), who, null, "words"); return null; }
+    const w = ledgered({ kind: "mentions", title: `${SPAN[span].title} from ${who.nickname}`, mind, plan: plan ?? `mentions.${span}` });   // DRAFT
+    writeMention(store, span, new Date(), who, (sys, user, most) => w.write(sys, user, most), mind)
+      .then((m) => w.end(m.by === "words" ? "failed" : "done", m.by === "words" ? { error: "no words came; the plain letter kept" } : {}))   // DRAFT
+      .catch((e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }));
+    return null;
+  };
   // C-319 later: THE MIND's plans (ai/schedule.ts) -- each run when it falls due, checked every minute; a plan first seen
   // starts from now (no run for a time that passed before it existed). A plan with nothing to do says so in the ledger.
   const PLAN_RUN: Record<string, () => string | null> = {
@@ -963,6 +982,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       tellSpan(s.from, s.to, "the house", "the hub", undefined, "whatsnew.week");
       return null;
     },
+    ...Object.fromEntries(SPANS.map((sp) => [`mentions.${sp}`, () => writeMentions(sp)])),   // C-455
   };
   const runPlan = (id: string) => {
     const p = plans((k) => store.getSetting(k)).find((x) => x.id === id);
@@ -1398,6 +1418,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const tellDream = (ecfg: Config, dream: { id: number; from: string; to: string; hours: number; stirs: number; tucked: boolean; by: string }, deviceId: string) => {
     const d = core.carriedDaemon(hostOf(ecfg), store, deviceId);
     if (!d || dream.by !== "words" || telling.has(dream.id)) return;
+    // C-455: only on the nights DREAMS TOLD's cadence picks (the morning the night ended); every night is still written
+    const toldPlan = plans((k) => store.getSetting(k)).find((x) => x.id === "dreams.told");
+    if (toldPlan && !fallsOn(toldPlan, new Date(dream.to))) return;
     telling.add(dream.id);
     const day = dayBefore(store, dream.from), who = dreamerOf(ecfg, deviceId), p = ringed(talkProvider(), store.getSetting("mind.ring.dream"));   // C-307
     const self = dreamerSaid(who), ask = dreamAsk(dream, day, who), text = `${self}\n${ask}`;
@@ -2000,11 +2023,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                        ...(TALK_HEALTH.endpoints ?? []).map((h) => ({ name: endpointsIn((k) => store.getSetting(k)).find((e) => e.id === h.id)?.name ?? h.id, ok: h.ok })),
                        ...(TALK_HEALTH.n8n ? [{ name: "n8n", ok: TALK_HEALTH.n8n.ok }] : [])];
         const now = new Date(), ps = plans((k) => store.getSetting(k));   // C-319 later: LATER -- each plan's next time
-        const later = ps.filter((p) => p.on).map((p) => planTask(p, now, writerNow() ?? undefined));
+        const later = ps.filter((p) => p.on && !p.gate).map((p) => planTask(p, now, writerNow() ?? undefined));
         return send(res, 200, { tasks: [...(user ? all.filter((t) => t.user === user) : all).slice(0, 150), ...later], users: usersOf(all), minds,
                                 kinds: TASK_KINDS,   // C-400: every kind's colour and name, from the one table
                                 load: talkJobs.load, at: now.toISOString(),
-                                plans: ps.map((p) => ({ id: p.id, kind: p.kind, title: p.title, said: p.said, on: p.on, last: p.last ?? null, next: nextDue(p, now).toISOString() })) });
+                                plans: ps.map((p) => ({ id: p.id, kind: p.kind, title: p.title, said: p.said, on: p.on, last: p.last ?? null, next: nextDue(p, now).toISOString(),
+                                                          every: p.every, times: p.times ?? 1, cadence: cadenceSaid(p), gate: !!p.gate })) });   // C-455
+      }
+      // C-455: a MENTIONS letter written now -- {span: "day" | "month" | "season" | "year"}; it comes into its book
+      if (req.method === "POST" && path === "/api/mentions") {
+        const b = await body(req), sp = String(b.span ?? "day") as Span;
+        if (!SPANS.includes(sp)) return send(res, 400, { error: "a span is day, month, season or year" });   // DRAFT
+        writeMentions(sp, "asked");
+        return send(res, 202, { writing: sp });
       }
       // C-319: a task managed -- {id, act: "stop" | "retry" | "forget"}, or {act: "clear", user?} for the settled
       if (req.method === "POST" && path === "/api/mind/tasks") {
@@ -2015,6 +2046,13 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           if (relayed) return send(res, 403, { error: "that is THE ENGINE ROOM's, on the home network and the tailnet only" });   // C-330, DRAFT
           const pid = String(b.plan ?? "");
           if (typeof b.on === "boolean" && !keepPlan((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), pid, { on: b.on })) return send(res, 404, { error: "no such plan" });
+          // C-455: {every, times} -- the plan's cadence; {every: null} returns it to its own
+          if (b.every !== undefined) {
+            const c = b.every === null ? null : cadenceOk({ every: b.every, times: b.times });
+            if (b.every !== null && !c) return send(res, 400, { error: "a cadence is day, week, month, quarter or year, and a number of times that fits in it" });   // DRAFT
+            if (!keepPlan((k) => store.getSetting(k), (k, v) => store.setSetting(k, v), pid, { cadence: c })) return send(res, 404, { error: "no such plan" });
+          }
+          if (b.now === true && plans((k) => store.getSetting(k)).find((x) => x.id === pid)?.gate) return send(res, 400, { error: "that one is never run; it only picks the days" });   // C-455, DRAFT
           if (b.now === true && !runPlan(pid)) return send(res, 404, { error: "no such plan" });
           return send(res, 200, { plans: plans((k) => store.getSetting(k)) });
         }

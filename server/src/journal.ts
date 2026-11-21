@@ -56,6 +56,14 @@ function tables(store: Store) {
 
 const clean = (s: unknown, most: number) => String(s ?? "").replace(/\r\n/g, "\n").trim().slice(0, most);
 
+// C-455: the entries the player wrote in a span, in their own journals and their dream journals (MENTIONS' numbers)
+export function entriesBetween(store: Store, from: Date, to: Date): { standard: number; dream: number } {
+  tables(store);
+  const rows = store.db.prepare("SELECT j.kind AS kind, COUNT(*) AS n FROM journal_entries e JOIN journals j ON j.id = e.journal " +
+    "WHERE e.at >= ? AND e.at < ? GROUP BY j.kind").all(from.toISOString(), to.toISOString()) as { kind: string; n: number }[];
+  return { standard: Number(rows.find((r) => r.kind !== "dream")?.n ?? 0), dream: Number(rows.find((r) => r.kind === "dream")?.n ?? 0) };
+}
+
 // ---- the journals ---------------------------------------------------------------------------------------------------
 export function journalsOf(store: Store): JournalRow[] {
   tables(store);

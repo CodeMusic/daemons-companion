@@ -63,8 +63,9 @@ import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF 
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs"];
+import { BOOK as MENTIONS_BOOK, markRead, mentionsOf, newestUnread } from "./mentions.js";   // C-455
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -128,6 +129,8 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/school") return ok(SCHOOL);     // C-137: CALLOW SCHOOL's floors and the paper, for the Tab5
     if (path === "/api/marks") return ok(MARKS);
     // C-456: the DREAM-BOOKS -- a volume a month for each daemon, every page as DREAMS shows it
+    // C-455: MENTIONS FROM YOUR DAEMON -- every letter kept (newest first), and TODAY's: the newest not yet read
+    if (path === "/api/mentions") return ok({ book: MENTIONS_BOOK, mentions: mentionsOf(store), unread: newestUnread(store, now) });
     if (path === "/api/dreambooks") return ok({ volumes: dreamBooks(store).map((v) => ({ ...v, dreams: v.dreams.map(({ left: _l, right: _r, ...d }) => ({
       ...d, title: titleOf(d), day: dayOfDream(d), centre: centreOf(d), dayColour: weekJson.days[new Date(d.from || d.at).getDay()].colour })) })) });
     if (path === "/api/dreams") return ok({ dreams: dreamsOf(store).map((d) => ({ ...d, title: titleOf(d), day: dayOfDream(d), centre: centreOf(d), dayColour: weekJson.days[new Date(d.from || d.at).getDay()].colour })) });   // C-200: the dream journal, the newest first; C-308: each titled
@@ -384,6 +387,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
     // C-298: the JOURNAL. SUMMARIZE (and again) answer {writing: chapter}: whoever answered writes the page after --
     // the hub's background thinker (api.ts), or a phone hosting alone, plainly (app/platform/local.ts)
+    if (path === "/api/mentions/read") {            // C-455: a letter read on TODAY ({id}); it stays in its book
+      return markRead(store, Number(b?.id)) ? ok({ unread: newestUnread(store, now) }) : no(404, "no such letter");   // DRAFT
+    }
     if (path.startsWith("/api/journal")) {
       const said = (r: unknown) => typeof r === "string" ? no(r.startsWith("no such") ? 404 : 400, r) : null;
       if (path === "/api/journal") { const r = newJournal(store, b.title, now, b.kind); return said(r) ?? ok(r, 201); }   // C-356: {kind: "standard" | "dream"}

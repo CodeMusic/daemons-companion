@@ -288,6 +288,10 @@ C-187's rules, unchanged:
 **The caps** (the CC1101 + NFC, the LoRa-1262) are one layer for every board, in **docs/CAPS.md** (C-444 to C-448),
 with the roll call between the user's own devices (C-447).
 
+**The LLM630 Compute Kit on its back** (C-453, the user, 2026-11-21): the Kit and its camera in a 3D-printed housing
+under the cap's lip, joined by a network over USB, so the pair thinks, hears, speaks, sees and acts with no internet
+and no phone -- **docs/ZEROKIT.md** (C-458 to C-467).
+
 ## THE DESK: the Zero on a television (C-449 to C-452)
 
 *The user, 2026-11-21: when a monitor or TV is plugged into the Zero's HDMI, a separate, full-size daemon desktop on

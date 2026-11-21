@@ -474,6 +474,18 @@
   "pocket": "POCKET_ITEMS",
   "importance": 0
  },
+ "99": {
+  "name": "WAVEFORM",
+  "description": "Something for a mind to sing back. Some daemons take a new form when given one.",
+  "pocket": "POCKET_ITEMS",
+  "importance": 0
+ },
+ "100": {
+  "name": "UTTERANCE",
+  "description": "Something said, for a mind to answer. Some daemons take a new form when given one.",
+  "pocket": "POCKET_ITEMS",
+  "importance": 0
+ },
  "103": {
   "name": "TINYMUSHROOM",
   "description": "A small, rare mushroom. The ROUTINE ARCHIVIST on TWO ISLAND takes two for one lesson.",

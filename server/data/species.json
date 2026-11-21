@@ -5709,6 +5709,18 @@
     "param": 0,
     "target": 197,
     "judged": true
+   },
+   {
+    "method": "ITEM",
+    "param": "ITEM_SONG_INPUT",
+    "target": 264,
+    "judged": false
+   },
+   {
+    "method": "ITEM",
+    "param": "ITEM_LANG_INPUT",
+    "target": 265,
+    "judged": false
    }
   ],
   "gender": 31,
@@ -10886,7 +10898,7 @@
  },
  "252": {
   "constant": "OLD_UNOWN_B",
-  "national": 398,
+  "national": 400,
   "name": "MISSINGNO",
   "types": [
    "CORRUPT",
@@ -11308,51 +11320,69 @@
  },
  "264": {
   "constant": "OLD_UNOWN_N",
-  "national": 410,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 398,
+  "name": "SONGMUSAI",
+  "types": [
+   "SIGNAL"
+  ],
+  "category": "MELODY",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "It sings back what it hears, a little\ntruer each time. Taught one song, it\nfinds that tune in everything.",
+   "CONTEXT": "Every song it knows, it learned from\nsomeone singing. It cannot say who.\nIt still keeps their time."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/songmusai_front.png",
+   "back": "gfx/daemons/songmusai_back.png"
   },
-  "bodyType": null,
-  "streaks": false,
+  "bodyType": 13,
+  "streaks": true,
   "growth": 0,
-  "base": null,
+  "base": [
+   95,
+   65,
+   65,
+   60,
+   110,
+   130
+  ],
   "native": null,
   "evolutions": [],
-  "gender": 255
+  "gender": 31
  },
  "265": {
   "constant": "OLD_UNOWN_O",
-  "national": 411,
-  "name": "?",
-  "types": [],
-  "category": null,
+  "national": 399,
+  "name": "LANGMUSAI",
+  "types": [
+   "EMERGENT"
+  ],
+  "category": "GRAMMAR",
   "entry": {
-   "CONTENT": null,
-   "CONTEXT": null
+   "CONTENT": "Nobody taught it the rules it speaks\nby. It heard enough, and the rules were\nthere. It cannot list them.",
+   "CONTEXT": "It says things nobody said to it. Each\nword came from someone. The sentence\ndid not."
   },
   "art": {
-   "front": null,
-   "back": null
+   "front": "gfx/daemons/langmusai_front.png",
+   "back": "gfx/daemons/langmusai_back.png"
   },
-  "bodyType": null,
-  "streaks": false,
+  "bodyType": 16,
+  "streaks": true,
   "growth": 0,
-  "base": null,
+  "base": [
+   65,
+   110,
+   130,
+   95,
+   60,
+   65
+  ],
   "native": null,
   "evolutions": [],
-  "gender": 255
+  "gender": 31
  },
  "266": {
   "constant": "OLD_UNOWN_P",
-  "national": 412,
+  "national": 414,
   "name": "?",
   "types": [],
   "category": null,
@@ -11374,7 +11404,7 @@
  },
  "267": {
   "constant": "OLD_UNOWN_Q",
-  "national": 413,
+  "national": 415,
   "name": "?",
   "types": [],
   "category": null,
@@ -11396,7 +11426,7 @@
  },
  "268": {
   "constant": "OLD_UNOWN_R",
-  "national": 414,
+  "national": 416,
   "name": "?",
   "types": [],
   "category": null,
@@ -11418,7 +11448,7 @@
  },
  "269": {
   "constant": "OLD_UNOWN_S",
-  "national": 415,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,
@@ -11440,7 +11470,7 @@
  },
  "270": {
   "constant": "OLD_UNOWN_T",
-  "national": 416,
+  "national": null,
   "name": "?",
   "types": [],
   "category": null,

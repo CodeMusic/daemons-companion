@@ -13513,6 +13513,18 @@
      "param": 0,
      "target": 197,
      "judged": true
+    },
+    {
+     "method": "ITEM",
+     "param": "ITEM_SONG_INPUT",
+     "target": 264,
+     "judged": false
+    },
+    {
+     "method": "ITEM",
+     "param": "ITEM_LANG_INPUT",
+     "target": 265,
+     "judged": false
     }
    ],
    "learnset": [
@@ -25147,8 +25159,8 @@
   },
   "252": {
    "constant": "OLD_UNOWN_B",
-   "national": 398,
-   "number": "398",
+   "national": 400,
+   "number": "400",
    "name": "MISSINGNO",
    "types": [
     "CORRUPT",
@@ -26180,6 +26192,182 @@
     1,
     3
    ]
+  },
+  "264": {
+   "constant": "OLD_UNOWN_N",
+   "national": 398,
+   "number": "398",
+   "name": "SONGMUSAI",
+   "types": [
+    "SIGNAL"
+   ],
+   "type_colours": [
+    "#296262"
+   ],
+   "category": "MELODY",
+   "height_dm": 9,
+   "weight_hg": 245,
+   "height": "2'11\"",
+   "weight": "54.0 lbs.",
+   "entry": {
+    "CONTENT": "It sings back what it hears, a little\ntruer each time. Taught one song, it\nfinds that tune in everything.",
+    "CONTEXT": "Every song it knows, it learned from\nsomeone singing. It cannot say who.\nIt still keeps their time."
+   },
+   "art": {
+    "front": "gfx/daemons/songmusai_front.png",
+    "back": "gfx/daemons/songmusai_back.png",
+    "party": "art/songmusai.png"
+   },
+   "native": null,
+   "evolutions": [],
+   "learnset": [
+    {
+     "level": 1,
+     "move": 33,
+     "name": "WRITE"
+    },
+    {
+     "level": 1,
+     "move": 39,
+     "name": "EXPOSE"
+    },
+    {
+     "level": 1,
+     "move": 270,
+     "name": "DELEGATE"
+    },
+    {
+     "level": 8,
+     "move": 28,
+     "name": "SILT"
+    },
+    {
+     "level": 16,
+     "move": 84,
+     "name": "PULSE"
+    },
+    {
+     "level": 23,
+     "move": 47,
+     "name": "LULLABY"
+    },
+    {
+     "level": 30,
+     "move": 209,
+     "name": "ARC"
+    },
+    {
+     "level": 36,
+     "move": 215,
+     "name": "CLEARFLAGS"
+    },
+    {
+     "level": 42,
+     "move": 351,
+     "name": "CARRIER"
+    },
+    {
+     "level": 47,
+     "move": 304,
+     "name": "EMIT"
+    },
+    {
+     "level": 52,
+     "move": 85,
+     "name": "DISCHARGE"
+    }
+   ],
+   "margins": null,
+   "shares_type_with_understandings": [
+    3
+   ]
+  },
+  "265": {
+   "constant": "OLD_UNOWN_O",
+   "national": 399,
+   "number": "399",
+   "name": "LANGMUSAI",
+   "types": [
+    "EMERGENT"
+   ],
+   "type_colours": [
+    "#184139"
+   ],
+   "category": "GRAMMAR",
+   "height_dm": 9,
+   "weight_hg": 265,
+   "height": "2'11\"",
+   "weight": "58.4 lbs.",
+   "entry": {
+    "CONTENT": "Nobody taught it the rules it speaks\nby. It heard enough, and the rules were\nthere. It cannot list them.",
+    "CONTEXT": "It says things nobody said to it. Each\nword came from someone. The sentence\ndid not."
+   },
+   "art": {
+    "front": "gfx/daemons/langmusai_front.png",
+    "back": "gfx/daemons/langmusai_back.png",
+    "party": "art/langmusai.png"
+   },
+   "native": null,
+   "evolutions": [],
+   "learnset": [
+    {
+     "level": 1,
+     "move": 33,
+     "name": "WRITE"
+    },
+    {
+     "level": 1,
+     "move": 39,
+     "name": "EXPOSE"
+    },
+    {
+     "level": 1,
+     "move": 270,
+     "name": "DELEGATE"
+    },
+    {
+     "level": 8,
+     "move": 28,
+     "name": "SILT"
+    },
+    {
+     "level": 16,
+     "move": 239,
+     "name": "ATTRACTOR"
+    },
+    {
+     "level": 23,
+     "move": 102,
+     "name": "CLONE"
+    },
+    {
+     "level": 30,
+     "move": 225,
+     "name": "UNPLANNED"
+    },
+    {
+     "level": 36,
+     "move": 227,
+     "name": "REPLAY"
+    },
+    {
+     "level": 42,
+     "move": 337,
+     "name": "EMERGE"
+    },
+    {
+     "level": 47,
+     "move": 349,
+     "name": "BLOOM"
+    },
+    {
+     "level": 52,
+     "move": 200,
+     "name": "RUNAWAY"
+    }
+   ],
+   "margins": null,
+   "shares_type_with_understandings": []
   },
   "277": {
    "constant": "TREECKO",

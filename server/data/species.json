@@ -11347,7 +11347,30 @@
   ],
   "native": null,
   "evolutions": [],
-  "gender": 31
+  "gender": 31,
+  "said": "Hum it once. I have it now. Listen, the rain is keeping time with us.",
+  "seasons": {
+   "winter": {
+    "art": "species/songmusai_winter.png",
+    "entry": "In winter it hums under the snow, too low\nto hear. In spring the brooks turn out to\nknow the tune.",
+    "final": true
+   },
+   "spring": {
+    "art": "species/songmusai_spring.png",
+    "entry": "Every spring it learns one new song by ear\nfrom whoever sings nearest. It gets the\nwords wrong. Never the time.",
+    "final": true
+   },
+   "summer": {
+    "art": "species/songmusai_summer.png",
+    "entry": "On long evenings it sings across the\nwater. Something far off sings back, a\nbeat late. They keep the same time.",
+    "final": true
+   },
+   "autumn": {
+    "art": "species/songmusai_autumn.png",
+    "entry": "In autumn it sings the year's songs over,\nslower each time, until it knows which\nones it will keep.",
+    "final": true
+   }
+  }
  },
  "265": {
   "constant": "OLD_UNOWN_O",
@@ -11378,7 +11401,30 @@
   ],
   "native": null,
   "evolutions": [],
-  "gender": 31
+  "gender": 31,
+  "said": "I have a word for this. You have not heard it yet. Say it back to me. There, now it is ours.",
+  "seasons": {
+   "winter": {
+    "art": "species/langmusai_winter.png",
+    "entry": "In winter it says very little. What it says\nis new. By spring the whole burrow is\nsaying it too.",
+    "final": true
+   },
+   "spring": {
+    "art": "species/langmusai_spring.png",
+    "entry": "Each spring it hears a word it never\nheard and uses it right the first time.\nAsked where from, it has no answer.",
+    "final": true
+   },
+   "summer": {
+    "art": "species/langmusai_summer.png",
+    "entry": "All summer it trades words with one other\nthat nobody else can follow. Neither made\nthem up. They were just there.",
+    "final": true
+   },
+   "autumn": {
+    "art": "species/langmusai_autumn.png",
+    "entry": "Each autumn the marks on its tail grow a\nline. Nobody can read them. It reads them\naloud, and the others nod.",
+    "final": true
+   }
+  }
  },
  "266": {
   "constant": "OLD_UNOWN_P",

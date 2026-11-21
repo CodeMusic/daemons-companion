@@ -97,7 +97,8 @@ export class Goals {
 
   /** every row of goals, subitems and steps the LIFE space does not hold yet, made into events at its own time: made
    *  when its goal was, done (and paid, under that day's cap) when it was done, set aside when it was. Rows already held
-   *  are never read again, so it runs once; rows an older server added later are read the next time. */
+   *  are never read again, so it runs once; rows an older server added later are read the next time. Old finishes keep
+   *  the ARETE they are paid here (the user, 2026-11-20, by multiple choice: "Keep them"). */
   private bringIn(): Moved {
     const store = this.store, db = store.db;
     const rows = (sql: string) => db.prepare(sql).all() as Row[];

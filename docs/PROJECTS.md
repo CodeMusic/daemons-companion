@@ -378,6 +378,8 @@ here, **`packages/praxis/`**, its own repository before long; **our own small ev
 - The engine moves to its own repository, **daemons-praxis, once C-430 is done**.
 - On the public site, the game comes **from the player's own cart's file, patched in the browser**, or, with the
   password and a backup agreement ticked, straight from the release.
+- **Goals finished before the move keep the ARETE they were paid** (C-430): every old finish is paid by its rule,
+  under that day's cap, as it is read in -- no one starts at 0.
 
 **OPEN:**
 

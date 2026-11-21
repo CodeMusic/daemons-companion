@@ -349,7 +349,9 @@ String http(const char *method, const String &path, const String &body, bool *ok
   if (!online()) return "";
   if (awayNow && outboxTask && loopTask && xTaskGetCurrentTaskHandle() == loopTask && relaySet() && !usbLive())
     return deferredHttp(method, path, body, ok);
+  uint32_t asked = millis();                           // C-443: a press that waits on this is a watch that seems frozen
   NetHeld held;
+  uint32_t heldAt = millis();
   int code = -1;
   String out;
   if (serverUrl.length() && !viaRelay()) {
@@ -371,6 +373,9 @@ String http(const char *method, const String &path, const String &body, bool *ok
   } else if (code > 0) { awayAt = 0; awayNow = false; }
   lastCode = code;
   if (ok) *ok = code == 200;
+  if (millis() - asked > 1500)
+    Serial.printf("net: slow %s %s %lu ms (%lu waiting its turn) code %d %s\n", method, path.c_str(), (unsigned long)(millis() - asked),
+                  (unsigned long)(heldAt - asked), code, awayNow ? "away" : "home");
   return out;
 }
 

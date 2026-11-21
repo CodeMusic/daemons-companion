@@ -105,6 +105,8 @@ static bool havePmu = false, haveRtc = false, haveAccel = false, haveTouch = fal
 static volatile bool pmuIrq = false;
 static int offsetMin = 0;                 // the local offset from UTC, kept for when the server is away
 static bool clockSet = false;
+static bool haveRtcTime = false;          // C-443: the RTC said it kept time, so the clock began from it
+static bool clockFromState = false;       // C-443: a state has set the clock since the watch started
 
 #if defined(BOARD_TWATCH_ULTRA)
 // C-173: the fuel gauge's model of the Ultra's 1100 mAh cell, LilyGO's (LilyGoWatchUltra.cpp, BATTER_PARAMS). Without it
@@ -222,8 +224,17 @@ void watchBegin() {
   Preferences p; p.begin("watch", true); offsetMin = p.getInt("offset", 0); p.end();
   haveRtc = rtc.begin(Wire, board.sda, board.scl);
   if (haveRtc) {                                       // the clock kept time while the watch slept: start from it
+#if defined(BOARD_TWATCH_ULTRA)
+    // C-443: nothing ever started the PCF85063A, and a clock whose oscillator stopped holds the hour it was last told --
+    // so a watch that started again came up hours behind until a state reached it
+    bool running = rtc.isRunning(), whole = rtc.isClockIntegrityGuaranteed();
+    if (!running) rtc.start();
+    Serial.printf("clock: the RTC was %s, %s\n", running ? "running" : "stopped (started now)", whole ? "its time kept" : "its time lost");
+    if (!running || !whole) haveRtcTime = false; else
+#endif
+    haveRtcTime = true;
     RTC_DateTime d = rtc.getDateTime();
-    if (d.getYear() >= 2025) {
+    if (haveRtcTime && d.getYear() >= 2025) {
       struct tm t = {}; t.tm_year = d.getYear() - 1900; t.tm_mon = d.getMonth() - 1; t.tm_mday = d.getDay();
       t.tm_hour = d.getHour(); t.tm_min = d.getMinute(); t.tm_sec = d.getSecond();
       setenv("TZ", "UTC0", 1); tzset();
@@ -300,14 +311,28 @@ void watchSetClock(time_t epoch, int offsetMinutes) {
   static time_t taken = 0;
   if (epoch < 1700000000 || epoch == taken) return;
   taken = epoch;
+  // C-443 (the user, 2026-11-21: "9:33 but it actually is 11:33", then 14 minutes behind): a state's clock is stamped
+  // as it is sent, so one that sets the watch back is a copy that waited somewhere (a phone in the background, a queue)
+  // -- once a state has set the clock, one going back more than two minutes is not taken, unless three agree, five
+  // minutes apart at least, so a watch truly ahead is still put right
+  long diff = (long)(epoch - time(nullptr));
+  static uint32_t backFirst = 0; static int backSeen = 0; static long backBy = 0;
+  if (clockFromState && diff < -120) {
+    if (!backSeen || labs(diff - backBy) > 60) { backSeen = 0; backFirst = millis(); backBy = diff; }
+    backSeen++;
+    Serial.printf("clock: a state %ld s behind, not taken (%d)\n", -diff, backSeen);
+    if (backSeen < 3 || millis() - backFirst < 300000) return;
+  }
+  backSeen = 0;
+  if (labs(diff) > 30) Serial.printf("clock: set %+ld s by a state\n", diff);
   struct timeval tv = { epoch, 0 }; settimeofday(&tv, nullptr);
-  clockSet = true;
+  clockSet = true; clockFromState = true;
   if (offsetMinutes != offsetMin) {
     offsetMin = offsetMinutes;
     Preferences p; p.begin("watch", false); p.putInt("offset", offsetMin); p.end();
   }
   static time_t written = 0;                           // the RTC once an hour is plenty
-  if (haveRtc && labs(epoch - written) > 3600) {
+  if (haveRtc && labs(epoch - written) > 600) {      // C-443: every ten minutes, so a watch that starts again is close
     written = epoch;
     struct tm u; gmtime_r(&epoch, &u);
     rtc.setDateTime(u.tm_year + 1900, u.tm_mon + 1, u.tm_mday, u.tm_hour, u.tm_min, u.tm_sec);

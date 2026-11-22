@@ -1,11 +1,11 @@
 // GOALS, JOURNEY's first section (C-298) -- the one goal, its steps and milestones, and WALKING. (C-157: out of App.tsx.)
 import { useCallback, useEffect, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
-import { GoalNow, Step, Walk } from "../../state/types";
-import { Action, Card, Entry, Eyebrow, Small } from "../../ui/ui";
-import { useApi, useFresh } from "../../platform/useApi";
-import { useSubtleInk } from "../../state/look";
+import { api } from "../platform/net";
+import { GoalNow, Step, Walk } from "../state/types";
+import { Action, Card, Entry, Eyebrow, Small } from "../ui/ui";
+import { useApi, useFresh } from "../platform/useApi";
+import { useSubtleInk } from "../state/look";
 
 // C-357 (4), SLOW WRITES (the user's pick, 2026-11-12): once the save holds THE SUBTLE LAYER, the goal weathers a mark in
 // -- a layer for each day a step was ticked, however many that day, seven to a mark (server/src/weathering.ts). In the

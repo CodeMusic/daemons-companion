@@ -2,10 +2,10 @@
 // centre's tending in the book's own words, and the week's climb, root to crown (server/src/lifemanagement/tending.ts). In the book's one
 // purple -- never a colour for a centre (the book's rule 3). Every word DRAFT.
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
-import { useApi } from "../../platform/useApi";
-import { useSubtleInk } from "../../state/look";
-import { Action, Card, Eyebrow, Small } from "../../ui/ui";
+import { api } from "../platform/net";
+import { useApi } from "../platform/useApi";
+import { useSubtleInk } from "../state/look";
+import { Action, Card, Eyebrow, Small } from "../ui/ui";
 
 type Tending = { held: boolean; day?: string; centre?: string; page?: string | null; tending?: string | null;
                  done?: { at: string; by: "you" | "walk" | "dream" } | null;

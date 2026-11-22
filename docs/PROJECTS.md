@@ -108,7 +108,7 @@ server/src/
 app/
   shared/          ui/ (today's ui/), pages/ (today's screens/shared/)
   damagotchi/      today's screens/daemon/
-  lifemanagement/  today's screens/journey/, with TENDING from screens/today/
+  lifemanagement/  today's screens/journey/, with TENDING from screens/today/ (moved, C-428)
   ...              platform/, state/, shell/ and sound/ stay where they are; the other tabs stay as they are
 ```
 

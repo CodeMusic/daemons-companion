@@ -4,9 +4,9 @@
 // Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
-import { useApi } from "../../platform/useApi";
-import { Action, Art, Card, Choice, Entry, Eyebrow, Pending, Small } from "../../ui/ui";
+import { api } from "../platform/net";
+import { useApi } from "../platform/useApi";
+import { Action, Art, Card, Choice, Entry, Eyebrow, Pending, Small } from "../ui/ui";
 
 type Reward = { id: number; title: string; price: number; times: "once" | "any"; note: string; taken: boolean;
                 spends: { key: string; at: string; undoable: boolean }[] };

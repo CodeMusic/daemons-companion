@@ -4,9 +4,9 @@
 // THE COMMONS as its shape alone, and a friend's TAKEN as your own (server/src/lifemanagement/myforms.ts). Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
-import { useApi } from "../../platform/useApi";
-import { Action, Card, Choice, Entry, Eyebrow, Pending, Small } from "../../ui/ui";
+import { api } from "../platform/net";
+import { useApi } from "../platform/useApi";
+import { Action, Card, Choice, Entry, Eyebrow, Pending, Small } from "../ui/ui";
 
 type FieldType = "text" | "long" | "number" | "date" | "rating" | "choice";
 type MineField = { key?: string; title: string; type: FieldType; choices?: string[] | string };

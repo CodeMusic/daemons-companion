@@ -27,7 +27,8 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 |---|---|
 | `App.tsx`, `index.ts` | `App` (pairing, the look, the providers) and `Shell`, which wires `shell/` together |
 | `shell/` | the tab strip, the beside split's panes and sizes (`panes.tsx`, `split.ts`), the background syncs (`sync.ts`) |
-| `screens/<tab>/` | each tab's page and the pages only it opens: `today/`, `daemon/`, `journey/` (GOALS, the JOURNAL), `library/`, `you/`, `places/`, `settings/`, `game/`, `dev/` |
+| `screens/<tab>/` | each tab's page and the pages only it opens: `today/`, `daemon/`, `library/`, `you/`, `places/`, `settings/`, `game/`, `dev/` |
+| `lifemanagement/` | C-428: the JOURNEY tab (`Journey.tsx`) and its sections -- GOALS, the JOURNAL, RECIPES, LEARNING, MINE, ARETE and THE REWARD SHELF -- with TODAY's TENDING and THE WEEK'S BALANCE |
 | `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index`, and `OwnVoice` (a daemon telling of itself over its card) |
 | `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud (and the voice button that says if a voice is made, `voiceButton.tsx`), the book recordings (the voice module, in the open book's look: `bookLook.tsx`, and the paragraph being said, `spoken.tsx`, C-309), the books' covers and pictures from the game, HALFTONE's two tones (`tone.tsx`), the LOGS, WHAT'S NEW (`whatsnew.tsx`, C-318), the link to THE ENGINE ROOM where the hub's admin is kept (`engineRoom.tsx`, C-330), THE BATTLE over every screen (`battle.tsx`, C-328), a daemon's song on its staves and sung (`staff.tsx`, C-419) |
 | `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |

@@ -5,8 +5,8 @@
 // first finish earns its virtue 2 ARETE more (server/src/lifemanagement/balance.ts, practice.ts). Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { useApi } from "../../platform/useApi";
-import { Card, Eyebrow, Pending, Small } from "../../ui/ui";
+import { useApi } from "../platform/useApi";
+import { Card, Eyebrow, Pending, Small } from "../ui/ui";
 
 type Acts = { goals: number; tended: number; entries: number; dreams: number; actions?: number; learning?: number; cooked?: number; mine?: number };
 type Day = { day: string; date: string; virtue: string; shadow: string; today: boolean; ahead: boolean; lived: boolean; acts: Acts };

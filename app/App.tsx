@@ -18,7 +18,7 @@ import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from 
 import { bumpFresh } from "./platform/useApi";   // C-344
 import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
 import { openWhatsNew, useWhatsNewDue, WhatsNewOverlay } from "./ui/whatsnew";   // C-318
-import { JourneyScreen } from "./screens/journey/Journey";   // C-298: GOALS and the JOURNAL
+import { JourneyScreen } from "./lifemanagement/Journey";   // C-298: GOALS and the JOURNAL
 import { LibraryScreen } from "./screens/library/Library";
 import { PairScreen } from "./screens/settings/Pair";
 import { GameView } from "./screens/game/Game";

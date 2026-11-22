@@ -11,8 +11,8 @@ import { Under } from "../shared/Reads";   // C-204
 import { useWitching } from "../shared/Witching";   // C-237
 import { EMERALD, hourLine } from "../../../server/src/witching";
 import { useFresh } from "../../platform/useApi";   // C-344
-import { TendingCard } from "./Tending";   // C-357 (3)
-import { WeekBalanceCard } from "./Balance";   // C-432
+import { TendingCard } from "../../lifemanagement/Tending";   // C-357 (3)
+import { WeekBalanceCard } from "../../lifemanagement/Balance";   // C-432
 import { useDay } from "../../ui/ui";
 import { ForkKey, SingingBowl, type BowlOf } from "../../ui/bowl";   // C-351
 import { CalendarSprite } from "../../ui/calendarSprite";   // C-353

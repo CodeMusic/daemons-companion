@@ -3,7 +3,7 @@
 // row, GOALS first (the one goal, its steps, WALKING) and the JOURNAL. A new section is one more pair in SECTIONS.
 import { useState } from "react";
 import { YStack } from "tamagui";
-import { Segments } from "../../ui/ui";
+import { Segments } from "../ui/ui";
 import { GoalsScreen } from "./Goals";
 import { JournalSection } from "./Journal";
 import { AreteSection } from "./Arete";   // C-433

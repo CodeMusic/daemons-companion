@@ -55,26 +55,39 @@ daemons-praxis, so the engine's part is a file of its own on a branch, tagged on
 C-434 was also the last item of another session's app loop; it is claimed here when this loop starts. Worked top down:
 build, test, deploy the hub, commit by path, push, close in Redmine.
 
-1. **What stays, written down** -- C-434 is the encrypted cloud replica alone (its note in Redmine says why).
+1. ~~**What stays, written down**~~ -- C-434 is the encrypted cloud replica alone (its note in Redmine says why).
    PROJECTS.md section 5 says what the relay sees (which space, which replica, when, how big) and never sees (every
-   title, field, value and blob). **Done when** both say so.
+   title, field, value and blob). **Done when** both say so. ***Done*** *(Redmine retitled "PRAXIS 7: the encrypted cloud
+   replica", with the user's three answers; PROJECTS.md 5, "Built (C-434)", 103374fe).*
 2. **Sealed spaces in daemons-praxis** -- a key per space. An event's content is sealed with XChaCha20-Poly1305
    (`@noble/ciphers`, pure JS, the same on Hermes and Node); its space, replica and clock stay open, so an exchange can
    still say what it has seen. A blob is sealed and named by the hash of what is stored, so two copies of one photo
    cannot be matched. **Done when** a keyless replica keeps, orders and passes on what a keyed one then folds byte for
-   byte, the keyless one's database holds no title, and both pins move to the tag in one commit.
+   byte, the keyless one's database holds no title, and both pins move to the tag in one commit. ***Done*** *(daemons-praxis
+   v0.5.0, 2e3d17f + 38dfeeb; both pins 103374fe, proved by npm ci. Changed on the way: the engine imports no package, so
+   the app brings the cipher -- ChaCha20-Poly1305, Node's own on the hub -- and a blob is named by a keyed hash of its own
+   hash, not of its sealed bytes, so a hub restoring with nothing but the keys can ask for it).*
 3. **The relay** -- keeps sealed events and blobs per space and answers the exchange, holding no key. It takes any URL:
    roverbyteseer under a login agent for now, then behind C-278's public address with the tailnet as a fallback, with
    no change of code. Each replica signs in with its own token. **Done when** `/relay/status` answers on roverbyteseer.
+   ***Done*** *(THE VAULT, a DRAFT name -- "the relay" already means n8n's here: http://roverbyteseer:4760, LaunchAgent
+   ca.codemusic.daemons.vault, run from a worktree of its own there so the commons' checkout is untouched; each household
+   by its token, only the token's SHA-256 kept; `/vault/status` answers; 103374fe).*
 4. **Keys and the recovery code** -- a space's key is made with the space; the phone keeps it in its keychain, the hub
    in its data folder (mode 600), and the hub hands the phone HOME's keys when it pairs. One recovery code (at least 128
    bits, behind a slow key derivation), shown once, wraps every key the household holds, and the wrapped keys go to the
    relay too, so the code alone restores. THIS PHONE spaces never reach the relay, as their reach says; PUBLIC ones are
-   not sealed. **Done when** tested, and a scratch phone paired to a scratch hub holds the keys.
+   not sealed. **Done when** tested, and a scratch phone paired to a scratch hub holds the keys. ***The hub's half done***
+   *(backup.json beside the database, mode 600; a 28-letter code, 140 bits, scrypt; the keyring at the vault, a new
+   generation per new space; 103374fe, caa77c36). **The phone's half is not done**: it holds keys only once it talks to
+   the vault itself, which is PROJECTS.md 5's "Not yet".*
 5. **Back up and restore, proved** -- the hub sends its HOME and SHARED spaces to the relay a minute after each change.
    A fresh scratch hub given only the recovery code restores GOALS and ARETE field for field; one without it gets
    nothing it can read. Scratch companions only. **Done when** the check passes, the hub is deployed with the backup
-   off, and C-434 is closed with its commits.
+   off, and C-434 is closed with its commits. ***Done*** *(on scratch hubs over HTTP: one restored from the code alone
+   served the same GOALS byte for byte and the same ARETE, a step ticked there reached the first through the vault, a
+   wrong code got nothing, and the vault's disk held no readable word; qa 22Nov2026 C434. The hub deployed with the
+   backup off, its vault set on it at home: SETTINGS, BACKUP turns it on).*
 
 Needs the user: turning the backup on for their own hub once 5 passes, and writing the recovery code down when it is
 shown.

@@ -11,12 +11,13 @@ import { parseHlc } from "@daemons/praxis";
 import type { Store } from "./store.js";
 import { localDate, WEEK } from "./practice.js";
 
-export type Acts = { goals: number; tended: number; entries: number; dreams: number; actions: number };
+export type Acts = { goals: number; tended: number; entries: number; dreams: number; actions: number; learning: number; cooked: number };
 export type BalanceDay = { day: string; date: string; virtue: string; shadow: string; today: boolean; ahead: boolean;
                            lived: boolean; acts: Acts };
 
-const none = (): Acts => ({ goals: 0, tended: 0, entries: 0, dreams: 0, actions: 0 });
-const KIND_ACT: Record<string, keyof Acts> = { step: "goals", milestone: "goals", goal: "goals", tended: "tended", entry: "entries", dream: "dreams", action: "actions" };
+const none = (): Acts => ({ goals: 0, tended: 0, entries: 0, dreams: 0, actions: 0, learning: 0, cooked: 0 });
+const KIND_ACT: Record<string, keyof Acts> = { step: "goals", milestone: "goals", goal: "goals", tended: "tended", entry: "entries", dream: "dreams", action: "actions",
+                                            lesson: "learning", card: "learning", cooked: "cooked" };   // C-433
 
 export function weekBalance(store: Store, now = new Date(store.now())) {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());   // this Sunday, 00:00
@@ -25,7 +26,7 @@ export function weekBalance(store: Store, now = new Date(store.now())) {
   // every finish since Sunday, in every space (a finish past its day's cap is still in the ledger, at nothing)
   for (const e of store.life.px.ledger(undefined, { since: start.getTime() })) {
     const k = e.kind ? KIND_ACT[e.kind] : undefined;
-    if (e.op !== "award" || e.back || !k || !e.key.startsWith("finish:")) continue;
+    if (e.op !== "award" || e.back || !k || !(e.key.startsWith("finish:") || e.key.startsWith("review:"))) continue;   // a card reviewed (C-433)
     const ms = parseHlc(e.hlc)?.ms;
     if (ms !== undefined) add(ms, k);
   }
@@ -33,7 +34,7 @@ export function weekBalance(store: Store, now = new Date(store.now())) {
     const on = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i), date = localDate(on);
     const a = acts.get(date) ?? none();
     return { day: w.day, date, virtue: w.virtue, shadow: w.shadow, today: i === now.getDay(), ahead: i > now.getDay(),
-             lived: a.goals + a.tended + a.entries + a.dreams + a.actions > 0, acts: a };
+             lived: Object.values(a).some((n) => n > 0), acts: a };
   });
   const today = days[now.getDay()];
   const key = `virtue:${today.date}`;

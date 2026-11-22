@@ -144,6 +144,7 @@ import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond'
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
 import { readRecipePage } from "./recipes.js";   // C-433
+import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, newCourse, proposeSyllabus, readSyllabus, SYLLABUS_ASK, tutorState } from "./learning.js";   // C-433
 import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
@@ -3138,6 +3139,37 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (existsSync(noteWav(id))) unlinkSync(noteWav(id));
         forgetVoiceNote(store, id);
         return send(res, 200, { ok: true });
+      }
+      // C-433: LEARNING's TUTOR -- a course made and its syllabus asked of the household's mind (the Tiiny first), proposed
+      // for the person to accept, edit or decline; asked again; a lesson's words written when it is first opened. With no
+      // mind, a course is made and everything is added by hand.
+      if (req.method === "POST" && (path === "/api/learning/course" || path === "/api/learning/tutor")) {
+        const b = await body(req);
+        const c = path.endsWith("course") ? newCourse(store, b.subject) : store.life.px.item(String(b.course ?? ""));
+        if (typeof c === "string") return send(res, 400, { error: c });
+        if (!c || c.kind !== "course") return send(res, 404, { error: "no such course" });   // DRAFT
+        if (!house.any) { tutorState(store, c.id, "none"); return send(res, 200, learningView(store)); }
+        tutorState(store, c.id, "asking");
+        const subject = String(c.fields.subject ?? c.title);
+        const w = ledgered({ kind: "tutor", title: `a syllabus for ${subject.slice(0, 40)}` });   // DRAFT
+        w.write(SYLLABUS_ASK, `The subject: ${subject}`, 900)
+          .then((t) => {
+            const syl = t ? readSyllabus(t) : [];
+            if (!syl.length) { tutorState(store, c.id, "failed", "The tutor gave no syllabus this time. Ask again."); w.end("failed", { error: "no syllabus" }); return; }   // DRAFT
+            proposeSyllabus(store, c.id, syl); w.end("done");
+          }, (e) => { tutorState(store, c.id, "failed", (e as Error)?.message ?? "It could not be asked."); w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); });   // DRAFT
+        return send(res, 200, learningView(store));
+      }
+      if (req.method === "POST" && path === "/api/learning/lesson/write") {
+        const id = String((await body(req)).id ?? ""), l = lessonOf(store, id);
+        if (!l) return send(res, 404, { error: "no such lesson" });                           // DRAFT
+        if (l.body || l.writing || !house.any) return send(res, 200, l);
+        lessonWriting(store, id, true);
+        const w = ledgered({ kind: "tutor", title: `the lesson ${l.title.slice(0, 40)}` });     // DRAFT
+        w.write(LESSON_ASK, `The course: ${l.subject || l.course}. The module: ${l.module}. The lesson: ${l.title}.`, 500)
+          .then((t) => { if (t && t.trim()) { lessonWritten(store, id, t); w.end("done"); } else { lessonWriting(store, id, false); w.end("failed", { error: "nothing written" }); } },
+                (e) => { lessonWriting(store, id, false); w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); });
+        return send(res, 200, lessonOf(store, id));
       }
       // C-433: a recipe page's link read -- fetched here (a phone alone cannot), its schema.org Recipe laid out to be kept.
       // Only a page on the open web: never this machine, the home network or the tailnet, and at most 3 MB, in 15 s.

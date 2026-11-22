@@ -29,15 +29,21 @@ deploy the hub, commit by path, push, close in Redmine.
 1. **C-470 your daemon, not the save's first** -- a request that names no device is answered with the daemon of the
    device used most recently (or one named in SETTINGS), not the save's first away: the site in a browser stops
    flipping to OVERLOADED, and MENTIONS are written by your daemon (the first DAILY MENTIONS, 2026-11-22, was
-   OVERLOADED's).
+   OVERLOADED's). ***DONE*** (27849075, closed) ***and refined*** (38c572e0): the device last USED (a POST) over the one
+   only heard -- on the hub the T-Watch Ultra polls every few seconds and was answering as EMERGENCE. Hub cd0dafd9.
 2. **C-455 the reviews, closed** -- the first DAILY MENTIONS was written on the hub at 02:00 (the Tiiny, in the
-   daemon's voice), which is what it waited on; once C-470 has it written by the right daemon, closed.
+   daemon's voice), which is what it waited on; once C-470 has it written by the right daemon, closed. ***Open***:
+   waits on the first letter after the deploy written by the daemon you expect (a care from the phone, or YOUR DAEMON
+   named on the DEVICES card, decides it).
 3. **C-419 (3) PLAY summons** -- the instrument's freestyle recognises a daemon's song in its key and the daemon comes
-   (the game's T-598 is closed); its QUOTATION is said once T-599 has written them, kept in the INDEX.
+   (the game's T-598 is closed); its QUOTATION is said once T-599 has written them, kept in the INDEX. ***BUILT***
+   (f1e78c65, DAEMONS e80723ec; hub and site): a seen daemon's opening on its wheel and it comes, sings and goes; kept
+   by POST /api/play/summoned. Its QUOTATION waits on T-599; the phone, on the next TestFlight.
 4. **Yours to check, then closed** -- C-456 DREAM-BOOKS (a look in the LIBRARY), C-423 (a battle's end sings what each
    song learned: hear it once), C-364 and C-365 (the phone test, guided).
 5. **C-454 RESEARCH, first slice** -- a study with its hypothesis, expert, sources, talk and findings, drawing on the
-   journal and GOALS (docs/RESEARCH.md) -- last, once C-432 and C-469 have landed in PRAXIS.
+   journal and GOALS (docs/RESEARCH.md) -- last, once C-432 and C-469 have landed in PRAXIS. ***Not started***: C-432
+   was still in progress when this loop reached it.
 
 ## Today's goals -- 2026-11-18, THE ENGINE ROOM
 

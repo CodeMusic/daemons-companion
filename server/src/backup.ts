@@ -25,7 +25,7 @@ import type { Store } from "./store.js";
 /** where this hub's vault is, and its household's token there (config.json's `vault`) */
 export interface VaultConfig { url: string; token: string }
 /** backup.json: what the hub keeps to back up -- the vault it backs up to, the wrapping key its code made, each space's key */
-interface Kept { vault: string; wrapping: string; keys: Record<string, string>; generation: number; since: string }
+interface Kept { vault: string; token?: string; wrapping: string; keys: Record<string, string>; generation: number; since: string }
 export interface BackupStatus {
   on: boolean; vault: string | null; since?: string; spaces?: number;
   last?: string; sent?: number; taken?: number; unread?: number; blobs?: number; error?: string;
@@ -33,6 +33,19 @@ export interface BackupStatus {
 
 /** the reaches a backup keeps */
 export const BACKED: readonly Reach[] = ["home", "shared"];
+/** the vault set on the site (SETTINGS, BACKUP), when config.json names none: its address and the household's token,
+ *  in the hub's settings beside the relay's */
+export function vaultOf(store: Store): VaultConfig | null {
+  const url = store.getSetting("vault.url"), token = store.getSetting("vault.token");
+  return url && token ? { url, token } : null;
+}
+export function setVault(store: Store, url: string, token: string) {
+  if (!/^https?:\/\/[^\s/]+(:\d+)?\/?$/.test(url)) throw new Error("the vault's address, e.g. http://roverbyteseer:4760");   // DRAFT
+  if (!/^[A-Za-z0-9_-]{20,200}$/.test(token)) throw new Error("the household's token, as the vault printed it");   // DRAFT
+  store.setSetting("vault.url", url.replace(/\/+$/, ""));
+  store.setSetting("vault.token", token);
+}
+
 /** backup.json beside a database, or nowhere for one in memory */
 export const backupFile = (database: string) => (database === ":memory:" ? null : join(dirname(database), "backup.json"));
 
@@ -49,21 +62,25 @@ export class Backup {
   private busy = false;
   private last: Omit<BackupStatus, "on" | "vault" | "since" | "spaces"> = {};
 
+  /** `vault`: where this hub's vault is -- config.json's, or the one set on the site (vaultOf) -- read at each use */
   constructor(private readonly store: Store, private readonly blobs: BlobStore, private readonly file: string | null,
-              private readonly vault: VaultConfig | null, private readonly f: typeof fetch = fetch) {
+              private readonly vaultIs: VaultConfig | null | (() => VaultConfig | null), private readonly f: typeof fetch = fetch) {
     this.kept = file && existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null;
   }
 
   get on() { return !!this.kept; }
+  private get vault(): VaultConfig | null { return typeof this.vaultIs === "function" ? this.vaultIs() : this.vaultIs; }
 
   status(): BackupStatus {
     const k = this.kept;
     return { on: !!k, vault: k?.vault ?? this.vault?.url ?? null, ...(k ? { since: k.since, spaces: Object.keys(k.keys).length } : {}), ...this.last };
   }
 
+  /** the vault this backup began with (and the token it was given then), or the one set now */
   private peer(): Peer & BlobPeer {
-    if (!this.vault) throw new Error("no vault is set for this hub");   // DRAFT
-    return hubPeer(this.kept?.vault ?? this.vault.url, this.vault.token, this.f);
+    const url = this.kept?.vault ?? this.vault?.url, token = this.kept?.token ?? this.vault?.token;
+    if (!url || !token) throw new Error("no vault is set for this hub");   // DRAFT
+    return hubPeer(url, token, this.f);
   }
 
   /** turn the backup on: a recovery code, the keyring kept at the vault, the first exchange. The code is returned once
@@ -72,7 +89,7 @@ export class Backup {
     if (this.kept) throw new Error("the backup is on already");   // DRAFT
     if (!this.vault || !this.file) throw new Error("no vault is set for this hub");   // DRAFT
     const code = recoveryCode();
-    const kept: Kept = { vault: this.vault.url, wrapping: toBase64(wrappingKey(code)), keys: {}, generation: -1, since: new Date(this.store.now()).toISOString() };
+    const kept: Kept = { vault: this.vault.url, token: this.vault.token, wrapping: toBase64(wrappingKey(code)), keys: {}, generation: -1, since: new Date(this.store.now()).toISOString() };
     await this.keyring(kept);                         // throws, keeping nothing, if the vault will not take it
     this.kept = kept;
     write(this.file, kept);
@@ -142,7 +159,7 @@ export async function restore(o: { database: string; vault: VaultConfig; code: s
     const r = await syncSealed(local(px, blobs), vault, { keys, cipher: chacha, named: (s) => px.blobs([s]) });
     for (const s of px.spaces()) if (keys.has(s.id) && s.keeper && s.keeper !== px.replica) px.setSpace(s.id, "keeper", px.replica);
     const file = backupFile(o.database);
-    if (file) write(file, { vault: o.vault.url, wrapping: toBase64(wrapping), generation, since: new Date().toISOString(),
+    if (file) write(file, { vault: o.vault.url, token: o.vault.token, wrapping: toBase64(wrapping), generation, since: new Date().toISOString(),
                            keys: Object.fromEntries([...keys].map(([s, k]) => [s, toBase64(k)])) });
     return { spaces: keys.size, events: r.toA, blobs: r.blobsToA, generation };
   } finally {

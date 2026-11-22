@@ -267,7 +267,9 @@ soon to give way to something easier for new players and stay as a fallback; a r
 - **THE VAULT** (`server/src/vault.ts`, `hub/vault.sh`): answers the same exchange as the hub (`/api/praxis/`), each
   household by its own token (only the token's SHA-256 is kept) in a database of its own, and refuses an open event sent
   by mistake. It takes any address, so it moves behind C-278's public one with no change of code.
-- **The hub's backup** (`server/src/backup.ts`; the site's SETTINGS, BACKUP): off until turned on. Turning it on makes a
+- **The hub's backup** (`server/src/backup.ts`; the site's SETTINGS, BACKUP): its vault's address and the household's
+  token (`hub/vault.sh add NAME` prints it once) in config.json's `vault`, or set on the site at home. Off until turned
+  on. Turning it on makes a
   key for every HOME and SHARED space and a **recovery code** (28 letters, 140 bits) shown once and kept nowhere; the
   keys live in `backup.json` beside the database (mode 600, never in it) and travel only wrapped under the code's key,
   as a keyring at the vault (the next generation each time a space is added). Then once a minute the hub and the vault

@@ -44,6 +44,24 @@ describe("the recovery code", () => {
   });
 });
 
+describe("where the vault is", () => {
+  it("comes from config.json, or from the hub's settings once set on the site, checked", async () => {
+    const { setVault, vaultOf } = await import("../src/backup.js");
+    const s = new Store(":memory:");
+    expect(vaultOf(s)).toBeNull();
+    expect(() => setVault(s, "roverbyteseer:4760", TOKEN)).toThrow(/address/);
+    expect(() => setVault(s, "http://roverbyteseer:4760", "short")).toThrow(/token/);
+    setVault(s, "http://roverbyteseer:4760/", TOKEN);
+    expect(vaultOf(s)).toEqual({ url: "http://roverbyteseer:4760", token: TOKEN });
+    // read at each use, so a vault set after the server started is the one the backup turns on with
+    let now: { url: string; token: string } | null = null;
+    const b = new Backup(s, blobsBeside(":memory:"), null, () => now);
+    expect(b.status().vault).toBeNull();
+    now = vaultOf(s);
+    expect(b.status().vault).toBe("http://roverbyteseer:4760");
+  });
+});
+
 describe("C-434: the backup to THE VAULT", () => {
   const hubDb = join(dir, "hub", "companion.sqlite");
   let code = "";

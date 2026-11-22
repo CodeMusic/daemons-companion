@@ -1,6 +1,6 @@
 // C-434: a new hub from THE VAULT with nothing but the household's recovery code (backup.ts restore()). Run it before the
 // new hub's server first starts, on the database its config names, with the vault's address and the household's token in
-// that config (`vault`):
+// that config (`vault`), or in VAULT_URL and VAULT_TOKEN (kept out of the command line, which others can read):
 //   COMPANION_CONFIG=/path/config.json npx tsx src/restore_main.ts XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX
 // It fills a database that holds no PRAXIS events yet, and writes backup.json beside it, so the backup carries on.
 import { existsSync } from "node:fs";
@@ -12,8 +12,9 @@ if (named && !existsSync(named)) { console.error(`COMPANION_CONFIG names ${named
 const cfg = loadConfig(named);
 const code = process.argv.slice(2).join("");
 if (!code) { console.error("restore_main.ts CODE: the recovery code shown when the backup was turned on"); process.exit(64); }
-if (!cfg.vault) { console.error("the config names no vault ({ \"vault\": { \"url\": ..., \"token\": ... } })"); process.exit(64); }
+const vault = cfg.vault ?? (process.env.VAULT_URL && process.env.VAULT_TOKEN ? { url: process.env.VAULT_URL, token: process.env.VAULT_TOKEN } : null);
+if (!vault) { console.error("no vault: config.json's \"vault\": { url, token }, or VAULT_URL and VAULT_TOKEN"); process.exit(64); }
 if (cfg.database === ":memory:") { console.error("restore into a database file, not one in memory"); process.exit(64); }
-restore({ database: cfg.database, vault: cfg.vault, code }).then(
+restore({ database: cfg.database, vault, code }).then(
   (r) => console.log(`restored ${r.spaces} space(s): ${r.events} event(s), ${r.blobs} blob(s), keyring generation ${r.generation}`),
   (e) => { console.error(String(e?.message ?? e)); process.exit(1); });

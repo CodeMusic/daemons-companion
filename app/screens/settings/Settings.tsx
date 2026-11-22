@@ -429,8 +429,13 @@ type BackupStatus = { on: boolean; vault: string | null; since?: string; spaces?
 export function BackupCard({ ink }: { ink: string }) {
   const [b, setB] = useState<BackupStatus | null>(null);
   const [code, setCode] = useState<string | null>(null), [said, setSaid] = useState(""), [busy, setBusy] = useState(false);
+  const [url, setUrl] = useState(""), [token, setToken] = useState("");
   useEffect(() => { api<BackupStatus>("/api/settings/backup").then(setB).catch(() => {}); }, []);
   if (!b) return null;
+  const setVault = async () => {
+    try { setB(await api<BackupStatus>("/api/settings/backup/vault", { url, token })); setToken(""); setSaid(""); }
+    catch (e) { setSaid((e as Error).message); }
+  };
   const turnOn = async () => {
     setBusy(true);
     try { const x = await api<BackupStatus & { code: string }>("/api/settings/backup/on", {}); setCode(x.code); setB(x); setSaid(""); }
@@ -441,7 +446,14 @@ export function BackupCard({ ink }: { ink: string }) {
   return (
     <Card>
       <Eyebrow>BACKUP</Eyebrow>
-      {!b.vault ? <Small>No vault is set for this hub yet. DRAFT</Small>
+      {!b.vault ? <>
+          <Small>No vault is set for this hub yet: its address, and this household's token there (THE VAULT prints it once). DRAFT</Small>
+          <Input value={url} onChangeText={setUrl} placeholder="http://roverbyteseer:4760" autoCapitalize="none" autoCorrect={false}
+                 backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+          <Input value={token} onChangeText={setToken} placeholder="the household's token" autoCapitalize="none" autoCorrect={false} secureTextEntry
+                 backgroundColor="$color1" borderColor="$color6" color="$color12" fontSize={15} />
+          <Action label="Save" ink={ink} onPress={setVault} />
+        </>
         : !b.on ? <>
           <Small>{`Keeps your goals and their ARETE sealed at THE VAULT (${b.vault}), which can never read them. You get a recovery code once: with it alone, a new hub gets everything back. DRAFT`}</Small>
           <Action label={busy ? "Turning on..." : "Turn on"} ink={ink} onPress={turnOn} />

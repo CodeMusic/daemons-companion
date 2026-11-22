@@ -106,7 +106,7 @@ import * as X from "./exchange.js";                               // C-218, C-21
 import { takeBlob } from "@daemons/praxis";
 import { blobsBeside, sha256 as sha256hex } from "./blobstore.js";   // C-431: PRAXIS's blobs, by their SHA-256
 import { praxisRoute } from "./praxissync.js";                      // C-431: PRAXIS's SYNC
-import { Backup, backupFile } from "./backup.js";                    // C-434: the backup to THE VAULT, sealed
+import { Backup, backupFile, setVault, vaultOf } from "./backup.js";                    // C-434: the backup to THE VAULT, sealed
 import { KEYS } from "./keys.js";
 import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./manual.js";   // C-233 on the devices
@@ -752,7 +752,7 @@ async function findRokus(wait = 2000): Promise<{ host: string; name: string }[]>
 }
 const LOCAL_ONLY = ["/api/pair/code", "/api/pair/phones", "/api/pair/forget", "/api/settings/network",
                     "/api/settings/pick", "/api/settings/reveal", "/api/settings/relay", "/api/settings/home",
-                    "/api/settings/backup", "/api/settings/backup/on", "/api/settings/backup/now"];   // C-434
+                    "/api/settings/backup", "/api/settings/backup/on", "/api/settings/backup/now", "/api/settings/backup/vault"];   // C-434
 // C-56: the user's n8n carries a phone's requests here from anywhere, marking each with the relay's secret. A relayed
 // request is an INTERNET request: a paired phone's key for everything (the device's own door included), no pairing,
 // nothing that is this machine's alone.
@@ -859,7 +859,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   useLanInterface(cfg.lanInterface);                           // C-180: never the Module LLM's link
   const blobs = blobsBeside(cfg.database);                     // C-431: PRAXIS's blobs, in blobs/ beside the database
   // C-434: the backup to THE VAULT -- off until turned on (on this machine or a paired ENGINE ROOM), then once a minute
-  const backup = new Backup(store, blobs, backupFile(cfg.database), cfg.vault ?? null);
+  const backup = new Backup(store, blobs, backupFile(cfg.database), () => cfg.vault ?? vaultOf(store));
   setInterval(() => { if (backup.on) void backup.run(); }, 60_000).unref();
   const devices = new Devices(store);                          // C-80: every device by its own name (devices.ts)
   const widgetOwners = new Map<string, string>();               // which paired phone each widget is on (by its name)
@@ -1821,6 +1821,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // paired ENGINE ROOM, never through the relay (LOCAL_ONLY); the recovery code is in the answer to turning it on, once.
       if (req.method === "GET" && path === "/api/settings/backup") return send(res, 200, backup.status());
       if (req.method === "POST" && path === "/api/settings/backup/now") return send(res, 200, await backup.run());
+      if (req.method === "POST" && path === "/api/settings/backup/vault") {   // where the vault is, and this household's token
+        if (cfg.vault) return send(res, 409, { error: "this hub's config.json names its vault", ...backup.status() });   // DRAFT
+        if (backup.on) return send(res, 409, { error: "the backup is on: its vault stays the one it began with", ...backup.status() });   // DRAFT
+        const b = await body(req);
+        try { setVault(store, String(b.url ?? "").trim(), String(b.token ?? "").trim()); }
+        catch (e) { return send(res, 400, { error: String((e as Error)?.message ?? e) }); }
+        return send(res, 200, backup.status());
+      }
       if (req.method === "POST" && path === "/api/settings/backup/on") {
         try { return send(res, 200, { code: await backup.turnOn(), ...backup.status() }); }
         catch (e) { return send(res, 409, { error: String((e as Error)?.message ?? e), ...backup.status() }); }

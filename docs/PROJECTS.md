@@ -277,8 +277,8 @@ soon to give way to something easier for new players and stay as a fallback; a r
   tending and the rest as C-432 and C-433 move them onto it.
 - **A new hub from the code alone** (`server/src/restore_main.ts`): the keyring opened, every space's events and blobs
   taken back, and the new hub made the keeper of each space, so it numbers what comes next; the backup carries on.
-- **Not yet:** the phone talking to the vault itself (its keys from the hub at pairing, a pure-JS cipher), membership
-  of SHARED spaces, and the vault behind a public address.
+- **Not yet:** the phone talking to the vault itself (its keys from the hub at pairing, a pure-JS cipher; **C-477**),
+  membership of SHARED spaces, and the vault behind a public address.
 
 ## 6. ARETE: the daemon's economy
 

@@ -337,7 +337,12 @@ class Link {
         try { this.say("PARTYART " + JSON.stringify(await this.ask(path))); } catch { /* the reel keeps its piece */ }
     } else if (word === "INTERACT") {
       const [kind, ...detail] = rest.split(" ");
-      try { await this.flush(); await this.ask("/api/device/interact", { kind, detail: detail.join(" ") }); await this.sendState(); }
+      try {
+        await this.flush();
+        const r = await this.ask<{ song?: object }>("/api/device/interact", { kind, detail: detail.join(" ") });
+        if (r?.song) this.say("SONG " + JSON.stringify(r.song));   // C-479: a TRAIN, sung on the board as it knows it
+        await this.sendState();
+      }
       catch { await this.later("/api/device/interact", { kind, detail: detail.join(" ") }); }
     } else if (word === "LISTEN") {                         // C-15: one listen of the board's meeting radio
       const [started, devices, beacons] = rest.split(" ").map(Number);

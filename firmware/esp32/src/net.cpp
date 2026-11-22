@@ -25,6 +25,7 @@
 #include "casino.h"
 #include "glass.h"
 #include "sound.h"
+#include "song.h"            // C-479
 #include "../../common/relay_ca.h"   // one copy for every board and the Tab5
 // C-33, C-52: the Wi-Fi is set at run time -- from the site, down the cable, or on the board (UPLINK / TEACH A NETWORK) --
 // and kept in the board's own flash. A secrets.h, if there is one, is only the default for a board that has none yet.
@@ -630,7 +631,8 @@ void handleLine(String line, bool fromPhone) {
   else if (line.startsWith("PARTYART ")) {           // C-149: a party daemon, for the CASINO's reels
     if (!casinoTakeArt(line.c_str() + 9)) takeArt(line.substring(9));   // C-241: or fetched ahead (fetchPartyArt), kept by its artKey
   }
-  else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));   // C-50, from the bridge
+  else if (line.startsWith("CELEBRATE ")) celebrate(line.substring(10));
+  else if (line.startsWith("SONG ")) trainSongTake(line.c_str() + 5);   // C-479: a TRAIN's song, from the phone or the cable   // C-50, from the bridge
   else if (line == "SHOT" && !fromPhone) { if (dirty && !asleep) draw(); shot(); }   // C-121: what it shows now, not before the line ahead of it
   else if (line == "LIST") { reply("ROUTINES " + routinesJson()); reply("REMOTES " + flareRemotesJson());
                              reply("NETWORKS " + networksJson(!fromPhone)); }
@@ -863,6 +865,14 @@ static QueueHandle_t outbox = nullptr;
 static volatile bool sending = false;
 static String *stateMail = nullptr;                    // from the task, for the loop
 static String *saidMail = nullptr;                     // C-196: the daemon's own line after a care, for the loop
+static String *songMail = nullptr;                     // C-479: a TRAIN's song, for the loop to sing
+// C-479: the "song" in a care's answer, as its own JSON -- "" when there is none
+static String songIn(const String &answer) {
+  if (answer.indexOf("\"song\"") < 0) return "";
+  JsonDocument d;
+  if (deserializeJson(d, answer) || d["song"].isNull()) return "";
+  String out; serializeJson(d["song"], out); return out;
+}
 static const uint32_t SAID_MS = 3500;                  // long enough to read 36 characters
 // C-196 (C-180 (2)): a care's answer carries `said`, a line written for the daemon's mood and the day (no model)
 // C-204: and `under`, once the save holds THE SUBTLE LAYER -- carried after it, past a unit separator
@@ -902,7 +912,12 @@ static bool sendOne() {
     uint32_t t0 = millis();
     String answer = http("POST", "/api/device/interact", body, &ok);
     code = lastCode;
-    String said = ok ? saidIn(answer) : "";
+    String said = ok ? saidIn(answer) : "", song = ok ? songIn(answer) : "";
+    if (song.length()) {                                 // C-479
+      String *m = new String(song);
+      portENTER_CRITICAL(&mailMux); String *old = songMail; songMail = m; portEXIT_CRITICAL(&mailMux);
+      delete old;
+    }
     if (said.length()) {
       String *m = new String(said);
       portENTER_CRITICAL(&mailMux); String *old = saidMail; saidMail = m; portEXIT_CRITICAL(&mailMux);
@@ -954,8 +969,9 @@ void report(const String &kind, const String &detail) {
     String body; serializeJson(d, body);
     String answer = http("POST", "/api/device/interact", body);
     if (answer.length()) {
-      String said = saidIn(answer);
+      String said = saidIn(answer), song = songIn(answer);
       if (said.length()) sayMail(said);
+      if (song.length()) trainSongTake(song.c_str());   // C-479
       httpState("GET", "/api/device/state", "");   // its new life
     }
     return;
@@ -1000,6 +1016,8 @@ void reportLoop() {
   }
   portENTER_CRITICAL(&mailMux); String *s = saidMail; saidMail = nullptr; portEXIT_CRITICAL(&mailMux);
   if (s) { sayMail(*s); delete s; }
+  portENTER_CRITICAL(&mailMux); String *g = songMail; songMail = nullptr; portEXIT_CRITICAL(&mailMux);
+  if (g) { trainSongTake(g->c_str()); delete g; }      // C-479
   if (outbox && uxQueueMessagesWaiting(outbox) && bridgeLive() && (!netLock || xSemaphoreTakeRecursive(netLock, 0) == pdTRUE)) {
     Told t;
     while (xQueueReceive(outbox, &t, 0) == pdTRUE) bridge(String("INTERACT ") + t.kind + " " + t.detail);

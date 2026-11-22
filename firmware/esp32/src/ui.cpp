@@ -6,6 +6,7 @@
 #include "radios.h"
 #include "link.h"
 #include "sound.h"
+#include "song.h"            // C-479
 #include "leds.h"
 #include "glass.h"
 #include "expression.h"
@@ -435,6 +436,7 @@ static void faceDaemon(int cx, int floorY, int sc, int room, int markTop) {   //
   else witchPie(ax + side / 2, ay + side / 2, side * 38 / 100, side * 42 / 100);   // C-237: the hour, counting down (only in the hour)
   if (costumeNow()) indexArtDraw(ax, ay, sc); else drawArt(ax, ay, sc, right);     // C-240: in its costume
   drawMark(ax, ay, sc, right, markTop);
+  trainSongDraw(ax + side / 2, ay + side / 2, side);              // C-479: TRAIN's notes rising, the error flying back
   if (witching) witchShimmer(ax + side / 2, ay + side / 2, side);
   else creatorRim(ax + side / 2, ay + side / 2, side);                                   // C-295: THE CREATOR'S HOUR, a gold rim
   drawThriveMarks(ax, ay, side);                                                          // C-207: its stars and its moon
@@ -1013,6 +1015,7 @@ void draw() {
         else creatorRim(ax + side / 2, ay + side / 2, side);                     // C-295
         drawMark(ax, ay, sc, right, y);                        // C-119: zz, a heart, a drop ... above its head, inside the den
         canvas.clearClipRect();
+        trainSongDraw(ax + side / 2, ay + side / 2, side);       // C-479: over the den, not clipped to it
       };
       if (board.round) {                                       // C-102: the Dial -- large in the middle of the circle
         inDen(0, 26, W, H - 26, 2, 156);

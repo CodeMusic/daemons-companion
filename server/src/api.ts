@@ -115,6 +115,7 @@ import { accountsRelay } from "./accountslink.js";   // C-226
 import { BATTLE_PATHS, battleRoute } from "./battleroute.js";   // C-328
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
+import { boardSong } from "./ownsong.js";   // C-479: a board's TRAIN, sung on the board
 import { gameDream, mindNow } from "./mind.js";   // C-254: the mind portal
 import { isLineKind, writtenLine, type LineKind, saying } from "./lines.js";
 import { appNight, handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
@@ -3597,7 +3598,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         store.logInteraction(kind, typeof b.detail === "string" ? b.detail.slice(0, 80) : null, new Date(),
                              core.careOwner(hostOf(ecfg), store, kind, deviceId));   // C-415: the daemon it was for
         core.careGiven(hostOf(ecfg), store, kind, deviceId);                // C-185: a care given is the bond's
-        return send(res, 200, { last: store.lastInteraction(), ...(isLineKind(kind) ? saying(careLine(kind), bookHeld(ecfg)) : {}) });   // C-180: its answer, at once; C-204: and under it
+        // C-479: a board's TRAIN is a lesson as the app's is (C-418) -- it teaches, and the board sings it
+        const taught = kind === "train" ? core.trainSong(hostOf(ecfg), store, deviceId) : null;
+        const song = taught ? boardSong(taught) : null;
+        return send(res, 200, { last: store.lastInteraction(), ...(isLineKind(kind) ? saying(careLine(kind), bookHeld(ecfg)) : {}),
+                                ...(song ? { song } : {}) });   // C-180: its answer, at once; C-204: and under it
       }
       // C-29: the save path -- read it, set it, open a native file picker (Mac), or reveal the folder in Finder.
       if (req.method === "GET" && path === "/api/settings") return send(res, 200, settingsView(ecfg, store, isLoopback(req.socket.remoteAddress)));

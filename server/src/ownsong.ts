@@ -124,6 +124,27 @@ export function lesson(species: number, exp: number, growth: number, trainsToday
   return { part, stage: song.length, before, after, gain, counted, adjusted, perfect: after >= 1, ready: after >= 1 && evolves };
 }
 
+/**
+ * C-479 (the user, 2026-11-22, of the watch: "the daemon tries to play its song but based on its exp it only gets some
+ * notes right ... music notes come from him ... if some of it was wrong u would see the green binary back propagation
+ * flow back into him"): a lesson as a board plays it -- each note as it was sung (a note not yet learned is one of its
+ * static's candidates, so it may be wrong), how long, whether it was right, and the colour of the pitch sung; then the
+ * groups carried back. Small enough for a watch over Bluetooth.
+ */
+export interface BoardSong { bpm: number; before: number; after: number; gain: number; counted: boolean; perfect: boolean;
+                             ready: boolean; notes: [number, number, number, number][]; bits: string[] }
+export function boardSong(l: Lesson, pick: () => number = Math.random): BoardSong | null {
+  if (!l.part) return null;
+  const msOf = (beats: number) => Math.round((beats * 60000) / Math.max(30, l.part!.bpm || 96));
+  const notes = heardAt(l.part, l.before).map(({ midi, beats, sure, candidates }): [number, number, number, number] => {
+    const sung = sure >= 1 ? midi : candidates[Math.floor(pick() * candidates.length)] ?? midi;
+    return [sung, msOf(beats), sung === midi ? 1 : 0, parseInt((noteColours(sung)[0] ?? "#888888").slice(1), 16)];
+  });
+  const r2 = (x: number) => Math.round(x * 100) / 100;
+  return { bpm: l.part.bpm, before: r2(l.before), after: r2(l.after), gain: l.gain, counted: l.counted, perfect: l.perfect,
+           ready: l.ready, notes, bits: l.adjusted.map((a) => a.bits) };
+}
+
 /** A note's colours as SYNESTHESIA draws it: one for a white key, the two either side for a black key. */
 export const noteColours = (midi: number): string[] => SONGS.colours[String(((midi % 12) + 12) % 12)] ?? ["#888888"];
 export const BINARY = () => SONGS.binary;

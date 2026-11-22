@@ -6,6 +6,7 @@
 #include "radios.h"
 #include "leds.h"
 #include "sound.h"
+#include "song.h"            // C-479
 #include "link.h"
 #include "meet.h"
 #include "lora.h"
@@ -117,6 +118,7 @@ void loop() {
   if (netsDue && (usbLive() || online()) && (!netsAt || now - netsAt > 10000)) { netsAt = now; reportNetworks(); }   // C-178: the first at once
   if (phoneSeen && !linkPhoneHere()) { phoneSeen = 0; dirty = true; }   // C-57: gone; the next one proves itself again
   ledsLoop();
+  trainSongLoop(millis());                  // C-479: TRAIN's song, a note at a time
   soundLoop();                              // C-121: the tune task's dance shown; C-75: the DAC let go between sounds
   static bool wasUndoable = false;
   if (wasUndoable != undoable()) { wasUndoable = undoable(); dirty = true; }

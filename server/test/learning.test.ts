@@ -80,3 +80,36 @@ describe("C-433: LEARNING", () => {
     expect(review(store, card.id, "again", day(19, 10))).toEqual({ due: "2026-11-19", interval: 0 });
   });
 });
+
+import { markQuiz, plainMark, quizOf, readMarks } from "../src/learning.js";
+
+describe("C-433: QUIZZES", () => {
+  it("marks plainly by the answer's own words, and reads the TUTOR's marks leniently", () => {
+    expect(plainMark({ q: "Good morning", answer: "Buenos días" }, "buenos dias")).toEqual({ right: true, note: "" });
+    expect(plainMark({ q: "How many vowels?", answer: "Five: a, e, i, o, u" }, "five")).toMatchObject({ right: true });
+    expect(plainMark({ q: "How many vowels?", answer: "Five: a, e, i, o, u" }, "four")).toMatchObject({ right: false, note: "Five: a, e, i, o, u" });
+    expect(plainMark({ q: "Silent letter?", answer: "h" }, "nope")).toMatchObject({ right: false });
+    expect(readMarks("Sure!\n1: RIGHT\n2. WRONG - five vowels\n3) correct", 3)).toEqual([{ right: true, note: "" }, { right: false, note: "five vowels" }, { right: true, note: "" }]);
+    expect(readMarks("1: RIGHT", 2)).toBeNull();
+  });
+  it("asks a lesson's cards, passes at two thirds right, and pays 5 once", () => {
+    const { store } = fresh(day(18, 9).getTime());
+    const c = newCourse(store, "Spanish") as { id: string };
+    addTo(store, { kind: "module", parent: c.id, title: "Greetings" });
+    const mod = learningView(store).courses[0].modules[0];
+    addTo(store, { kind: "lesson", parent: mod.id, title: "Hello" });
+    const les = learningView(store).courses[0].modules[0].kids[0];
+    expect(quizOf(store, les.id)).toMatch(/no cards/);
+    for (const [q, a] of [["Hello", "Hola"], ["Good morning", "Buenos días"], ["Goodbye", "Adiós"]]) addTo(store, { kind: "card", parent: les.id, title: q, back: a });
+    const quiz = quizOf(store, les.id);
+    if (typeof quiz === "string" || !quiz) throw new Error(String(quiz));
+    expect(quiz.questions).toEqual(["Hello", "Good morning", "Goodbye"]);
+    const before = store.life.arete().held;
+    expect(markQuiz(store, quiz.id, ["hola", "no idea", "nope"], null, "plain", day(18, 10))).toMatchObject({ right: 1, of: 3, pass: false, passed: false });
+    expect(store.life.arete().held).toBe(before);
+    expect(markQuiz(store, quiz.id, ["hola", "buenos dias", "x"], null, "plain", day(18, 11))).toMatchObject({ right: 2, pass: true, passed: true, tries: 2 });
+    expect(store.life.arete().held).toBe(before + 5 + DAY_VIRTUE);
+    markQuiz(store, quiz.id, ["hola", "buenos dias", "adios"], null, "plain", day(18, 12));
+    expect(store.life.arete().held).toBe(before + 5 + DAY_VIRTUE);     // passed once, paid once
+  });
+});

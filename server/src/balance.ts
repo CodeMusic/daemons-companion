@@ -17,7 +17,7 @@ export type BalanceDay = { day: string; date: string; virtue: string; shadow: st
 
 const none = (): Acts => ({ goals: 0, tended: 0, entries: 0, dreams: 0, actions: 0, learning: 0, cooked: 0 });
 const KIND_ACT: Record<string, keyof Acts> = { step: "goals", milestone: "goals", goal: "goals", tended: "tended", entry: "entries", dream: "dreams", action: "actions",
-                                            lesson: "learning", card: "learning", cooked: "cooked" };   // C-433
+                                            lesson: "learning", card: "learning", quiz: "learning", cooked: "cooked" };   // C-433
 
 export function weekBalance(store: Store, now = new Date(store.now())) {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());   // this Sunday, 00:00

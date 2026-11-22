@@ -13,15 +13,17 @@ import { dayVirtue, ensureSpace, localDate, midnight } from "./practice.js";
 const TEXT = { type: "text" as const }, LONG = { type: "long" as const }, NUM = { type: "number" as const };
 const OPEN = { name: "open", phase: "open" as const }, DONE = { name: "done", phase: "done" as const };
 export const LEARNING: Form = {
-  name: "learning", version: 1,
+  name: "learning", version: 2,   // 2: QUIZ (C-433)
   kinds: {
     course: { title: "Course", prefix: "COURSE", states: [OPEN, DONE], fields: { subject: TEXT, tutor: TEXT, error: TEXT } },
     module: { title: "Module", prefix: "MODULE", states: [OPEN, DONE] },
     lesson: { title: "Lesson", prefix: "LESSON", states: [OPEN, DONE], fields: { body: LONG, writing: TEXT } },
     card: { title: "Card", prefix: "CARD", states: [OPEN], fields: { back: LONG, interval: NUM, ease: NUM, reps: NUM } },   // its due date the engine's own `due`
+    quiz: { title: "Quiz", prefix: "QUIZ", states: [OPEN, { name: "passed", phase: "done" }],
+            fields: { questions: LONG, answers: LONG, marks: LONG, by: TEXT, tries: NUM } },
   },
   views: [{ name: "syllabus" }, { name: "review" }],
-  rules: [{ kind: "lesson", arete: 3, cap: 9, daemon: [] }, { kind: "card", arete: 1, cap: 20, daemon: [] }],
+  rules: [{ kind: "lesson", arete: 3, cap: 9, daemon: [] }, { kind: "card", arete: 1, cap: 20, daemon: [] }, { kind: "quiz", arete: 5, cap: 15, daemon: [] }],
 };
 export const MOST = { subject: 80, title: 120, back: 600, body: 6000 };
 const SPACES = new WeakMap<Store, string>();
@@ -270,4 +272,75 @@ export function tutorState(store: Store, course: string, state: "asking" | "fail
   if (!c) return;
   const px = store.life.px;
   px.transaction(() => { px.set(c.id, "tutor", state); px.set(c.id, "error", error.slice(0, 200)); });
+}
+
+// ---- QUIZZES: a lesson's cards asked as questions; marked by THE TUTOR (api.ts) when the household's mind is here, by
+// a plain match of the words otherwise. Passed at two thirds right: 5 ARETE (fifteen a day pay), once, and the day's virtue.
+export type Question = { q: string; answer: string };
+export type Mark = { right: boolean; note: string };
+const words = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]+/g, " ").split(/\s+/).filter((w) => w.length > 1);
+// right when most of the answer's own words are in what was given (or the whole short answer is)
+export function plainMark(q: Question, given: string): Mark {
+  const want = words(q.answer), got = new Set(words(given));
+  const hit = want.filter((w) => got.has(w)).length;
+  const right = !!want.length && (hit / want.length >= 0.6 || (want.length <= 2 && hit >= 1));
+  return { right, note: right ? "" : q.answer };
+}
+export function quizOf(store: Store, lesson: unknown) {
+  const l = itemIn(store, lesson, "lesson");
+  if (!l) return "no such lesson";                                                              // DRAFT
+  const px = store.life.px, cards = px.items(l.space, { parent: l.id, kind: "card", archived: false });
+  if (!cards.length) return "this lesson has no cards to ask yet";                              // DRAFT
+  const had = px.items(l.space, { parent: l.id, kind: "quiz", archived: false })[0];
+  const questions: Question[] = cards.slice(0, 5).map((c) => ({ q: c.title, answer: str(c.fields.back) }));
+  if (!had) px.make(l.space, "quiz", { title: `${l.title}: a quiz`.slice(0, 400), questions: JSON.stringify(questions), answers: "", marks: "", by: "", tries: 0 }, { parent: l.id });
+  else px.set(had.id, "questions", JSON.stringify(questions));                                  // the cards as they are now
+  return quizView(store, l.id);
+}
+export function quizView(store: Store, lesson: string) {
+  const px = store.life.px, l = itemIn(store, lesson, "lesson"), q = l ? px.items(l.space, { parent: l.id, kind: "quiz", archived: false })[0] : null;
+  if (!q) return null;
+  const parse = <T,>(v: unknown, d: T): T => { try { return (JSON.parse(str(v)) as T) ?? d; } catch { return d; } };
+  const questions = parse<Question[]>(q.fields.questions, []);
+  return { id: q.id, lesson, passed: q.phase === "done", tries: Number(q.fields.tries ?? 0), by: str(q.fields.by),
+           questions: questions.map((x) => x.q), answers: parse<string[]>(q.fields.answers, []), marks: parse<Mark[]>(q.fields.marks, []) };
+}
+export function quizQuestions(store: Store, quiz: unknown): Question[] | null {
+  const q = itemIn(store, quiz, "quiz");
+  if (!q) return null;
+  try { return JSON.parse(str(q.fields.questions)) as Question[]; } catch { return []; }
+}
+// the answers kept and marked (marks by the TUTOR or by plainMark); passed at two thirds right, paid once
+export function markQuiz(store: Store, quiz: unknown, answers: unknown, marks: Mark[] | null, by: string, now = new Date(store.now())) {
+  const q = itemIn(store, quiz, "quiz"), qs = quizQuestions(store, quiz);
+  if (!q || !qs) return "no such quiz";                                                         // DRAFT
+  const given = (Array.isArray(answers) ? answers : []).map((a) => String(a ?? "").slice(0, 300));
+  const m = qs.map((x, i) => marks?.[i] ?? plainMark(x, given[i] ?? ""));
+  const right = m.filter((x) => x.right).length, pass = right >= Math.ceil((qs.length * 2) / 3);
+  const px = store.life.px;
+  px.transaction(() => {
+    px.set(q.id, "answers", JSON.stringify(given)); px.set(q.id, "marks", JSON.stringify(m)); px.set(q.id, "by", by);
+    px.set(q.id, "tries", Number(q.fields.tries ?? 0) + 1);
+    if (pass && q.phase !== "done") {
+      const paid = px.ledger(q.space, { since: midnight(now.getTime()) }).filter((e) => e.op === "award" && !e.back && e.kind === "quiz" && e.key.startsWith("finish:")).reduce((n, e) => n + e.points, 0);
+      px.state(q.id, "passed", { pay: Math.max(0, Math.min(5, 15 - paid)), reason: "finish" });
+      dayVirtue(px, q.id, now);
+    }
+  });
+  return { ...quizView(store, q.parent!)!, right, of: qs.length, pass };
+}
+export const MARK_ASK = "You mark a learner's short answers kindly. For each numbered item, answer on its own line exactly " +
+  "\"<n>: RIGHT\" or \"<n>: WRONG - <the right answer in a few words>\". Meaning matters, not spelling or wording.";
+export function markAsk(qs: Question[], given: string[]) {
+  return qs.map((x, i) => `${i + 1}. Question: ${x.q}\n   Expected: ${x.answer}\n   Given: ${given[i] ?? ""}`).join("\n");
+}
+export function readMarks(text: string, n: number): Mark[] | null {
+  const out: (Mark | null)[] = Array.from({ length: n }, () => null);
+  for (const line of text.split("\n")) {
+    const m = /^\D*(\d+)\s*[:.)-]\s*(RIGHT|WRONG|CORRECT|INCORRECT)\b\s*[-:]?\s*(.*)$/i.exec(line.trim());
+    if (!m) continue;
+    const i = Number(m[1]) - 1, ok = /^(RIGHT|CORRECT)$/i.test(m[2]);
+    if (i >= 0 && i < n) out[i] = { right: ok, note: ok ? "" : m[3].trim().slice(0, 200) };
+  }
+  return out.every((x) => x) ? (out as Mark[]) : null;
 }

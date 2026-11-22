@@ -72,6 +72,43 @@ function Adder({ kind, parent, ink, onView }: { kind: "module" | "lesson" | "car
   );
 }
 
+type Quiz = { id: string; lesson: string; passed: boolean; tries: number; by: string; questions: string[]; answers: string[];
+              marks: { right: boolean; note: string }[]; right?: number; of?: number; pass?: boolean };
+function QuizCard({ lesson, ink, onClose }: { lesson: string; ink: string; onClose: () => void }) {
+  const [q, setQ] = useState<Quiz | null>(null), [given, setGiven] = useState<string[]>([]), [said, setSaid] = useState(""), [marking, setMarking] = useState(false);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    api<{ quiz: Quiz }>("/api/learning/quiz", { lesson }).then((r) => { setQ(r.quiz); setGiven(r.quiz.questions.map(() => "")); }).catch((e) => setSaid((e as Error).message));
+  }, [lesson]);
+  if (said && !q) return <Card gap={8}><Eyebrow>QUIZ</Eyebrow><Small>{said}</Small><Action label="BACK" onPress={onClose} /></Card>;
+  if (!q) return <Pending title="QUIZ" height={220} />;
+  const mark = async () => {
+    setMarking(true); setSaid("");
+    try { const r = await api<{ quiz: Quiz }>("/api/learning/quiz/answer", { quiz: q.id, answers: given }); setQ(r.quiz); setDone(true); }
+    catch (e) { setSaid((e as Error).message); } finally { setMarking(false); }
+  };
+  return (
+    <Card gap={10}>
+      <XStack justifyContent="space-between"><Eyebrow>QUIZ</Eyebrow><Small color="$color10">{q.passed ? "passed" : q.tries ? `tried ${q.tries}×` : ""}</Small></XStack>
+      {q.questions.map((text, i) => (
+        <YStack key={i} gap={4}>
+          <Text fontSize={16} fontWeight="600" color="$color12">{`${i + 1}. ${text}`}</Text>
+          <Entry value={given[i] ?? ""} onChange={(t) => setGiven((g) => g.map((x, k) => (k === i ? t : x)))} onSubmit={() => {}} placeholder="your answer" limit={300} />
+          {done && q.marks[i] ? <Small color={q.marks[i].right ? ink : "$color9"}>{q.marks[i].right ? "Right." : `Not quite: ${q.marks[i].note}`}</Small> : null}
+        </YStack>
+      ))}
+      {done && q.of ? <Text fontSize={17} fontWeight="700" color={ink}>{q.pass ? `${q.right} of ${q.of}: passed. A quiz pays 5 ARETE the first time it is passed.` : `${q.right} of ${q.of}. Two thirds passes: try again when you are ready.`}</Text> : null}
+      {done && q.by ? <Small color="$color10">{q.by === "tutor" ? "Marked by THE TUTOR." : "Marked by the words alone."}</Small> : null}
+      <XStack gap={8} flexWrap="wrap">
+        {!done ? <Action label={marking ? "MARKING…" : "MARK IT"} ink={ink} onPress={mark} />
+               : <Action label="TRY AGAIN" ink={ink} onPress={() => { setDone(false); setGiven(q.questions.map(() => "")); }} />}
+        <Action label="BACK" onPress={onClose} />
+      </XStack>
+      {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+
 function LessonPage({ id, ink, onClose }: { id: string; ink: string; onClose: () => void }) {
   const [l, setL] = useApi<Lesson>(`/api/learning/lesson?id=${encodeURIComponent(id)}`);
   useEffect(() => { if (l && !l.body && !l.writing) api<Lesson>("/api/learning/lesson/write", { id }).then(setL).catch(() => {}); }, [l?.id]);
@@ -80,7 +117,9 @@ function LessonPage({ id, ink, onClose }: { id: string; ink: string; onClose: ()
     const t = setInterval(() => { api<Lesson>(`/api/learning/lesson?id=${encodeURIComponent(id)}`).then(setL).catch(() => {}); }, 4000);
     return () => clearInterval(t);
   }, [l?.writing]);
+  const [quizzing, setQuizzing] = useState(false);
   if (!l) return <Pending title="A LESSON" height={220} />;
+  if (quizzing) return <QuizCard lesson={id} ink={ink} onClose={() => setQuizzing(false)} />;
   return (
     <Card gap={8}>
       <Small color="$color10">{`${l.course} › ${l.module}`}</Small>
@@ -91,6 +130,7 @@ function LessonPage({ id, ink, onClose }: { id: string; ink: string; onClose: ()
       <Adder kind="card" parent={id} ink={ink} onView={() => { api<Lesson>(`/api/learning/lesson?id=${encodeURIComponent(id)}`).then(setL).catch(() => {}); }} />
       <XStack gap={8} flexWrap="wrap">
         <Action label={l.done ? "NOT DONE" : "DONE"} ink={ink} onPress={async () => setL(await api<Lesson>("/api/learning/lesson/done", { id, done: !l.done }))} />
+        {l.cards.length ? <Action label="QUIZ" onPress={() => setQuizzing(true)} /> : null}
         <Action label="BACK" onPress={onClose} />
       </XStack>
     </Card>

@@ -144,7 +144,7 @@ import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond'
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
 import { readRecipePage } from "./recipes.js";   // C-433
-import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, newCourse, proposeSyllabus, readSyllabus, SYLLABUS_ASK, tutorState } from "./learning.js";   // C-433
+import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, MARK_ASK, markAsk, markQuiz, newCourse, proposeSyllabus, quizQuestions, readMarks, readSyllabus, SYLLABUS_ASK, tutorState, type Mark } from "./learning.js";   // C-433
 import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
@@ -1890,7 +1890,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return reply(res, await runSync(ecfg, store, { deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) }));
       if (req.method === "GET" && path === "/api/sync/heard") return send(res, 200, heardOf(store));   // C-261
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
-      if (handles(req.method ?? "", path) && path !== "/api/subtle/ask") {   // C-229: answered below, with the module and the voice
+      if (handles(req.method ?? "", path) && path !== "/api/subtle/ask"   // C-229: answered below, with the module and the voice
+          && !(path === "/api/learning/quiz/answer" && house.any)) {   // C-433: and a quiz, marked below by THE TUTOR
         const r = route(hostOf(ecfg), store, { method: req.method ?? "", path, deviceId, query: Object.fromEntries(url.searchParams),
                                                body: req.method === "POST" ? await body(req) : {} });
         const night = (r.body as { dream?: { id: number } } | null)?.dream;   // C-283: woken after a SLEEP -- its dream, told
@@ -3159,6 +3160,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             proposeSyllabus(store, c.id, syl); w.end("done");
           }, (e) => { tutorState(store, c.id, "failed", (e as Error)?.message ?? "It could not be asked."); w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); });   // DRAFT
         return send(res, 200, learningView(store));
+      }
+      // C-433: a quiz's answers marked by THE TUTOR (for meaning, kindly), at most 45 s; plainly when it cannot
+      if (req.method === "POST" && path === "/api/learning/quiz/answer" && house.any) {
+        const b = await body(req), qs = quizQuestions(store, b.quiz);
+        if (!qs) return send(res, 404, { error: "no such quiz" });                             // DRAFT
+        const given = (Array.isArray(b.answers) ? b.answers : []).map((a: unknown) => String(a ?? "").slice(0, 300));
+        const w = ledgered({ kind: "tutor", title: "a quiz marked", quick: true });             // DRAFT
+        let marks: Mark[] | null = null;
+        try {
+          const t = await Promise.race([w.write(MARK_ASK, markAsk(qs, given), 300), new Promise<null>((r) => setTimeout(() => r(null), 45000))]);
+          marks = t ? readMarks(t, qs.length) : null;
+          w.end(marks ? "done" : "failed", marks ? undefined : { error: "no marks" });
+        } catch (e) { w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); }
+        const r = markQuiz(store, b.quiz, given, marks, marks ? "tutor" : "plain");
+        return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, { quiz: r });
       }
       if (req.method === "POST" && path === "/api/learning/lesson/write") {
         const id = String((await body(req)).id ?? ""), l = lessonOf(store, id);

@@ -19,6 +19,9 @@ export interface Config {
   // C-64: the user's n8n, where daemon/talk and daemon/voice run (seer/n8n, the local cloud). At home, the internal one; the
   // shared secret from the environment variable named here, or `secret` itself in config.json (never committed).
   talk: { url: string | null; secretEnv: string; secret?: string; localModel?: string };   // localModel: LM Studio's name for it
+  // C-434: THE VAULT this hub backs up to (vault.ts) -- its address and this household's token there (hub/vault.sh add
+  // NAME prints it once). Unset, there is no backup to turn on.
+  vault?: { url: string; token: string } | null;
 }
 
 export const DEFAULTS: Config = {

@@ -52,7 +52,7 @@ export function SettingsScreen({ ink }: { ink: string }) {
           <VersionCard ink={ink} />
           {ALONE ? <CompanionOnAComputerCard ink={ink} /> : null}
           {/* C-287: the site at home's own cards -- PAIR A PHONE, the relay, HOME ASSISTANT (they were added in App.tsx) */}
-          {SITE_HOME ? <><PairCard ink={ink} /><RelayCard ink={ink} /><HomeAssistantCard ink={ink} /></> : null}
+          {SITE_HOME ? <><PairCard ink={ink} /><RelayCard ink={ink} /><BackupCard ink={ink} /><HomeAssistantCard ink={ink} /></> : null}
           <DevModeCard ink={ink} />{/* C-268: on the site too, for its LOGS and </> */}
           <LeaveCompanionCard ink={ink} />
         </YStack>
@@ -418,6 +418,40 @@ export function RelayCard({ ink }: { ink: string }) {
       <Small>The relay's secret (n8n sends it as x-companion-relay):</Small>
       {/* selectable is the phone's; on the web it reached the DOM as an unknown attribute, so the web gets user-select */}
       <Text fontFamily="$mono" fontSize={13} color="$color12" {...(Platform.OS === "web" ? { userSelect: "text" } : { selectable: true })}>{r.secret}</Text>
+      {said ? <Small>{said}</Small> : null}
+    </Card>
+  );
+}
+
+// ---- C-434, on the site: THE BACKUP -- every HOME and SHARED space kept sealed at THE VAULT, which holds no key. Off until
+// turned on; the recovery code is in the answer to turning it on, shown here once and kept nowhere (the user, 2026-11-22). ----
+type BackupStatus = { on: boolean; vault: string | null; since?: string; spaces?: number; last?: string; error?: string };
+export function BackupCard({ ink }: { ink: string }) {
+  const [b, setB] = useState<BackupStatus | null>(null);
+  const [code, setCode] = useState<string | null>(null), [said, setSaid] = useState(""), [busy, setBusy] = useState(false);
+  useEffect(() => { api<BackupStatus>("/api/settings/backup").then(setB).catch(() => {}); }, []);
+  if (!b) return null;
+  const turnOn = async () => {
+    setBusy(true);
+    try { const x = await api<BackupStatus & { code: string }>("/api/settings/backup/on", {}); setCode(x.code); setB(x); setSaid(""); }
+    catch (e) { setSaid((e as Error).message); }
+    finally { setBusy(false); }
+  };
+  const when = (iso?: string) => (iso ? new Date(iso).toLocaleString() : "");
+  return (
+    <Card>
+      <Eyebrow>BACKUP</Eyebrow>
+      {!b.vault ? <Small>No vault is set for this hub yet. DRAFT</Small>
+        : !b.on ? <>
+          <Small>{`Keeps your goals and their ARETE sealed at THE VAULT (${b.vault}), which can never read them. You get a recovery code once: with it alone, a new hub gets everything back. DRAFT`}</Small>
+          <Action label={busy ? "Turning on..." : "Turn on"} ink={ink} onPress={turnOn} />
+        </>
+        : <Small>{`On since ${when(b.since)}: ${b.spaces ?? 0} space(s) kept sealed at ${b.vault}.${b.last ? ` Last kept ${when(b.last)}.` : ""}${b.error ? ` ${b.error}` : ""} DRAFT`}</Small>}
+      {code ? <>
+        <Small>Your recovery code. Write it down now: it is shown only this once, and kept nowhere. DRAFT</Small>
+        <Text fontFamily="$mono" fontSize={17} color="$color12" {...(Platform.OS === "web" ? { userSelect: "text" } : { selectable: true })}>{code}</Text>
+        <Action label="I wrote it down" ink={ink} onPress={() => setCode(null)} />
+      </> : null}
       {said ? <Small>{said}</Small> : null}
     </Card>
   );

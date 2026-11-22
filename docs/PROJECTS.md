@@ -248,13 +248,35 @@ blob plus the event that says what made it (the recipe, the mind, the persona of
 
 **Not yet:** a paired phone is still a thin client of the hub (the app asks the hub, and keeps what it saw), so it is a
 replica only while it hosts alone; making it one all the time -- answering from its own copy and syncing in the
-background -- is the next step. Membership (who may hold a SHARED space), a cloud replica (C-434), and saves on the same
-rails (the save's own sync is C-364 and C-365's, in flight) are later.
+background -- is the next step. Membership (who may hold a SHARED space) and saves on the same rails (the save's own
+sync is C-364 and C-365's, in flight) are later.
 
 **Who sees what.** Each space has a reach: **THIS PHONE** (never leaves it), **HOME** (the hub's household), **SHARED**
-(named members), **PUBLIC** (THE COMMONS). A cloud would keep encrypted events and blobs -- a key per space, kept in the
-phone's keychain -- and could relay and back up without reading. Which minds may read a space is the space's own
-setting: a THIS PHONE space reaches only the phone's own mind. Nothing calls a paid model unless it is turned on.
+(named members), **PUBLIC** (THE COMMONS). Which minds may read a space is the space's own setting: a THIS PHONE space
+reaches only the phone's own mind. Nothing calls a paid model unless it is turned on.
+
+**Built (C-434, 2026-11-22; daemons-praxis v0.5.0): THE VAULT and the backup** (*the user, 2026-11-22, by multiple
+choice: the both-ways Redmine bridge dropped for E-9 to E-11; the vault on roverbyteseer for now, since the tailnet is
+soon to give way to something easier for new players and stay as a fallback; a recovery code, shown once*). DRAFT names.
+
+- **Sealed spaces** (the engine's `seal.ts`): a key per space; an event's item, op, field, value and actor sealed in a
+  box (ChaCha20-Poly1305) bound to what stays open. **What the vault sees:** which space, which replica wrote each
+  event, when, its id, and how big each box and blob is. **What it never sees:** any title, field, value, actor, kind or
+  state, any blob's bytes or its own hash, any key. A sealed event is of a format no build reads, so the vault is an
+  ordinary PRAXIS replica that keeps, orders and passes it on unfolded.
+- **THE VAULT** (`server/src/vault.ts`, `hub/vault.sh`): answers the same exchange as the hub (`/api/praxis/`), each
+  household by its own token (only the token's SHA-256 is kept) in a database of its own, and refuses an open event sent
+  by mistake. It takes any address, so it moves behind C-278's public one with no change of code.
+- **The hub's backup** (`server/src/backup.ts`; the site's SETTINGS, BACKUP): off until turned on. Turning it on makes a
+  key for every HOME and SHARED space and a **recovery code** (28 letters, 140 bits) shown once and kept nowhere; the
+  keys live in `backup.json` beside the database (mode 600, never in it) and travel only wrapped under the code's key,
+  as a keyring at the vault (the next generation each time a space is added). Then once a minute the hub and the vault
+  exchange what the other lacks. **What it keeps is what is on PRAXIS**: GOALS and their ARETE today; the journals,
+  tending and the rest as C-432 and C-433 move them onto it.
+- **A new hub from the code alone** (`server/src/restore_main.ts`): the keyring opened, every space's events and blobs
+  taken back, and the new hub made the keeper of each space, so it numbers what comes next; the backup carries on.
+- **Not yet:** the phone talking to the vault itself (its keys from the hub at pairing, a pure-JS cipher), membership
+  of SHARED spaces, and the vault behind a public address.
 
 ## 6. ARETE: the daemon's economy
 
@@ -468,7 +490,7 @@ meetings with it, which is the editions' own pair, CONTENT and CONTEXT.
 6. **Forms you make yourself**; LEARNING and RECIPES; the REWARD SHELF. **C-433**
 7. **The site, EUDAIMONIA** (section 10): the rename **C-438**, the front door **C-439**, accounts **C-436**, THE
    EASTER EGG **C-437**, the dashboard **C-411**; the engine's own repository **C-435**, *done 2026-11-20 (daemons-praxis v0.1.0)*; the Redmine
-   bridge and a cloud replica, encrypted **C-434**. *The rename, the dashboard's frame, sign-in and the easter egg need
+   bridge and a cloud replica, encrypted **C-434**, *the vault and the backup built 2026-11-22 (section 5); the bridge dropped for E-9 to E-11*. *The rename, the dashboard's frame, sign-in and the easter egg need
    no engine, so they can run beside phases 3 to 6.* **Off Redmine** (2026-11-22, the priority): the mirror **E-9**,
    tickets in EUDAIMONIA **E-10**, the cut-over **E-11** (the user's call).
 8. **WORKING MEMORY** (section 8): the form and your daemon's own **C-469**; the agents' **E-12**, after E-9.

@@ -54,6 +54,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `src/save/` | reading a DAEMONS save, and writing to it (`writer.ts`) |
 | `src/game/` | the player's ROM: patches, hashes, the live save and its mirror |
 | `src/commons*.ts` | THE COMMONS, which runs on its own machine |
+| `src/vault*.ts`, `src/backup.ts`, `src/sealing.ts`, `src/restore_main.ts` | THE VAULT (C-434), PRAXIS's encrypted relay on its own machine, holding no key; the hub's backup to it, the recovery code, and a new hub restored from the code alone (Node only) |
 | `src/jobs.ts`, `src/hands_main.ts`, `src/sitefetch.ts` | THE ENGINE ROOM's JOBS and THE HANDS that run them on the computer, and the site the hub fetches from the release (C-342) |
 | `src/admin.ts`, `admin/` | THE ENGINE ROOM (C-330): the hub's admin -- one installable web app the server serves at `/admin/` (its page, script, manifest, worker and icons, the icons drawn by `tools/admin_icons.py`), never through the relay |
 | `src/synesthesia.ts`, `src/drift.ts` | SYNESTHESIA (C-385): the week's seven and the year's twelve -- day, month, note, colour, hertz, ordinal -- translated into one another; DRIFT DOWN's carrier and beats from it (C-386), for the phone and the hub's exports alike |
@@ -110,7 +111,7 @@ is added here in the same commit; when one file starts to hold both, split it (t
 | Folder | What it is |
 |---|---|
 | `seer/` | the local cloud: the always-on machine beside the hub (LiteLLM, n8n and its workflows, the Tiiny's voice, sleep sounds, ACE-Step, local models, ComfyUI, the link cable's two games in `seer/linkhost/`, C-221), set up by `seer/bindSeer.sh` from one settings file (`seer/README.md`); a folder for each part |
-| `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), its name (`rename.sh`), THE COMMONS (`commons.sh`), THE HANDS on the computer (`hands.sh`, C-342) and the boards on its cable (`boards.py`, C-406), a node of THE MESH on a Mac (`mesh.sh`, C-360), backups |
+| `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), its name (`rename.sh`), THE COMMONS (`commons.sh`), THE VAULT (`vault.sh`, C-434), THE HANDS on the computer (`hands.sh`, C-342) and the boards on its cable (`boards.py`, C-406), a node of THE MESH on a Mac (`mesh.sh`, C-360), backups |
 | `n8n/` | the n8n relay workflow (C-56) a phone away from home reaches the companion through |
 | `docs/` | the design: `PLAN.md`, `vision.md`, one file per subject (devices, hardware, the hub, trading, the Cardputer Zero, ...) |
 | `wiki/` | the public wiki, published by `wiki/publish.sh` |

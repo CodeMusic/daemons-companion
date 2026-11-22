@@ -50,7 +50,14 @@ bool Chip::tune(double mhz) {
          strobe(SCAL) && (std::this_thread::sleep_for(std::chrono::milliseconds(1)), true);
 }
 bool Chip::idle() { return strobe(SIDLE); }
-bool Chip::listen() { return strobe(SRX); }
+bool Chip::listen() {   // into RX, and waits out the calibration on the way (MARCSTATE 0x0D is RX), at most 5 ms
+  if (!strobe(SRX)) return false;
+  for (int i = 0; i < 50; i++) {
+    if ((status(MARCSTATE) & 0x1F) == 0x0D) return true;
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+  }
+  return false;
+}
 int Chip::rssiDbm() {
   int r = status(RSSI);
   if (r >= 128) r -= 256;

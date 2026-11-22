@@ -8,6 +8,7 @@
 #ifdef __linux__
 #include <fcntl.h>
 #include <linux/gpio.h>
+#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 #include <linux/spi/spidev.h>
 #include <sys/ioctl.h>

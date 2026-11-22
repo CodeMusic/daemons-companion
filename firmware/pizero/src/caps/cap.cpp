@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
+#include <thread>
 
 #include "caps/bus.h"
 #include "caps/cc1101.h"
@@ -58,14 +59,19 @@ void writeConf() {
 // The cap's power, as M5Stack's apps put it on: the header's two shared lines to the cap (not USB), its 5 V, POWER_EN
 std::string powerOn() {
   std::string note, v;
-  if (bus::sysfsRead(std::string(LEDS) + "ext_usb_gpio_fun/brightness", v) && v != "0" &&
+  bool woke = false;   // anything switched on just now: the cap needs a moment before its chips answer
+  if (bus::sysfsRead(std::string(LEDS) + "ext_usb_gpio_fun/brightness", v) && v != "0" && (woke = true) &&
       !bus::sysfsWrite(std::string(LEDS) + "ext_usb_gpio_fun/brightness", "0"))
     note += "the header's lines are with USB (" + bus::lastError() + "); ";
-  if (bus::sysfsRead(std::string(LEDS) + "ext_5v_out/brightness", v) && v == "0" &&
+  if (bus::sysfsRead(std::string(LEDS) + "ext_5v_out/brightness", v) && v == "0" && (woke = true) &&
       !bus::sysfsWrite(std::string(LEDS) + "ext_5v_out/brightness", "1"))
     note += "the cap's 5 V is off (" + bus::lastError() + "); ";
-  if (powerLine.fd < 0 && !powerLine.request(GPIO_CHIP, { POWER_EN }, { 1 }, "daemons-cap"))
-    note += "POWER_EN not held (" + bus::lastError() + "); ";
+  if (powerLine.fd < 0) {
+    woke = true;
+    if (!powerLine.request(GPIO_CHIP, { POWER_EN }, { 1 }, "daemons-cap")) note += "POWER_EN not held (" + bus::lastError() + "); ";
+  }
+  // seen on the device 2026-11-21: asked at once after its 5 V came on, the CC1101 read as no cap at all
+  if (woke) std::this_thread::sleep_for(std::chrono::milliseconds(60));
   return note;
 }
 

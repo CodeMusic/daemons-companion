@@ -12,6 +12,8 @@
 // questions are written. Every word DRAFT. No node: imports (it runs on the phone, hosting alone).
 import type { Subtle } from "./save/subtle.js";
 import type { Store } from "./store.js";
+import { Praxis, type Form, type Item } from "@daemons/praxis";
+import { ensureSpace } from "./practice.js";
 import { guidePages } from "./guideask.js";
 
 export type Day = { day: string; chakra: string; note: string; theme: string };
@@ -92,16 +94,62 @@ export function todaysQuestion(date: string, day: Day): Today {
   return { date, question: fill(DAILY[hash(date) % DAILY.length], day), centre: day.chakra, note: day.note, word: day.theme };
 }
 export type Kept = Today & { answer: string; at: string };
-const KEEP = 120;
+// C-432 (PRAXIS 5): every answer is an item in THE SUBTLE QUESTION's space, one a day (answered again, the day's is set
+// again, its earlier words kept in the log). What `subtle.journal` held is read in once, each at its own time.
+const TEXT = { type: "text" as const }, LONG = { type: "long" as const };
+export const SUBTLE_QUESTION: Form = {
+  name: "subtle-question", version: 1,
+  kinds: { answer: { title: "An answer", prefix: "ASKED", states: [{ name: "answered", phase: "done" }],
+                     fields: { date: TEXT, question: LONG, centre: TEXT, note: TEXT, word: TEXT, card: LONG, answer: LONG, at: TEXT } } },
+  views: [{ name: "feed" }],
+};
+const SPACES = new WeakMap<Store, string>();
+const fieldsOf = (k: Kept) => ({ date: k.date, question: k.question, centre: k.centre, note: k.note, word: k.word,
+                                 card: k.card ? JSON.stringify(k.card) : "", answer: k.answer, at: k.at });
+function askedSpace(store: Store): string {
+  const had = SPACES.get(store);
+  if (had) return had;
+  const px = store.life.px, space = ensureSpace(px, SUBTLE_QUESTION, { title: "The subtle question", prefix: "ASK" });
+  const held = new Set(px.items(space, { kind: "answer" }).map((it) => String(it.fields.date)));
+  let old: Kept[] = [];
+  try { const l = JSON.parse(store.getSetting("subtle.journal") ?? "[]"); old = Array.isArray(l) ? l : []; } catch { /* none */ }
+  old = old.filter((k) => k?.date && !held.has(k.date));
+  if (old.length) {
+    let at = store.now();
+    const then = new Praxis(store.db, { now: () => at });
+    then.transaction(() => {
+      for (const k of old.sort((x, y) => x.date.localeCompare(y.date))) {
+        at = Math.min(store.now(), Date.parse(k.at) || store.now());
+        then.make(space, "answer", { title: k.date, ...fieldsOf(k) });
+      }
+    });
+    store.life.reclock();                       // the store's clock past what was read in
+  }
+  SPACES.set(store, space);
+  return space;
+}
+const asKept = (it: Item): Kept => {
+  const f = it.fields, k: Kept = { date: String(f.date), question: String(f.question ?? ""), centre: String(f.centre ?? ""),
+    note: String(f.note ?? ""), word: String(f.word ?? ""), answer: String(f.answer ?? ""), at: String(f.at ?? "") };
+  if (f.card) try { k.card = JSON.parse(String(f.card)); } catch { /* none */ }
+  return k;
+};
 export function journalOf(store: Store): Kept[] {
-  try { const l = JSON.parse(store.getSetting("subtle.journal") ?? "[]"); return Array.isArray(l) ? l : []; } catch { return []; }
+  const space = askedSpace(store);
+  return store.life.px.items(space, { kind: "answer", archived: false }).map(asKept).sort((a, b) => b.date.localeCompare(a.date));
 }
 // one answer a day: answered again, the day's is replaced
 export function keepAnswer(store: Store, t: Today, answer: string, now = new Date()): Kept | string {
   const a = answer.replace(/\s+/g, " ").trim().slice(0, 500);
   if (!a) return "an answer is a few words";
   const k: Kept = { ...t, answer: a, at: now.toISOString() };
-  store.setSetting("subtle.journal", JSON.stringify([k, ...journalOf(store).filter((x) => x.date !== t.date)].slice(0, KEEP)));
+  const space = askedSpace(store), px = store.life.px;
+  const had = px.items(space, { kind: "answer", archived: false }).find((it) => it.fields.date === t.date);
+  px.transaction(() => {
+    if (!had) { px.make(space, "answer", { title: t.date, ...fieldsOf(k) }); return; }
+    const was = fieldsOf(asKept(had)), now_ = fieldsOf(k);
+    for (const [f, v] of Object.entries(now_)) if ((was as Record<string, string>)[f] !== v) px.set(had.id, f, v);
+  });
   return k;
 }
 

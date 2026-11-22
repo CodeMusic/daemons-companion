@@ -143,7 +143,7 @@ import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
-import { allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
+import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
 import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later; C-455: cadence
@@ -3125,6 +3125,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (existsSync(noteWav(id))) unlinkSync(noteWav(id));
         forgetVoiceNote(store, id);
         return send(res, 200, { ok: true });
+      }
+      if (req.method === "POST" && path === "/api/meeting/action") {  // C-432: an action item done, or open again -- {meeting, action, done}
+        const b = await body(req);
+        const m = actionDone(store, Number(b.meeting), Number(b.action), b.done !== false);
+        return m ? send(res, 200, { meeting: m }) : send(res, 404, { error: "no such action item" });   // DRAFT
       }
       if (req.method === "POST" && path === "/api/meeting/forget") {  // the meeting and its recording, gone
         const id = Number((await body(req)).id);

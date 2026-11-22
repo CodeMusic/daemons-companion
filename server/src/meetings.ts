@@ -10,6 +10,8 @@
 // words to the models are the companion's own, never shown; what comes back is the user's. No node: imports (the
 // audio itself is kept on disk by api.ts, never here). Every word shown is DRAFT.
 import type { Store } from "./store.js";
+import { Praxis, type Form, type Item } from "@daemons/praxis";
+import { ensureSpace, dayVirtue } from "./practice.js";
 
 export type MeetingState = "recording" | "hearing" | "writing" | "done" | "failed";
 export type Meeting = {
@@ -20,28 +22,117 @@ export type Meeting = {
   daemon: string;                                            // who dreamt it (its nickname)
   audio: boolean;                                            // its recording is still kept
   from?: "watch" | "phone" | "memo";                         // C-316: recorded on the watch (unset), on the phone, or a voice memo given
+  actionItems?: { id: number; text: string; done: boolean }[];   // C-432: each action an item, finished when done
 };
-const KEEP = 200;
-export function meetingsOf(store: Store): Meeting[] {
-  try { const l = JSON.parse(store.getSetting("meetings") ?? "[]"); return Array.isArray(l) ? l : []; } catch { return []; }
+// C-432 (PRAXIS 5): every meeting is an item in the MEETINGS space, numbered as its id always was (MEETING-3), its state
+// its progress (recording, hearing, writing, then done -- or failed, set aside), and each of its ACTION ITEMS an item of
+// its own under it, finished when it is done (1 ARETE; PROJECTS.md 8: "actions done"). What the `meetings` setting held is
+// read in once, each meeting at its own time, and left as it was. Every call below keeps the shape it always had.
+const LONG = { type: "long" as const }, TEXT = { type: "text" as const };
+export const MEETINGS: Form = {
+  name: "meetings", version: 1,
+  kinds: {
+    meeting: { title: "Meeting", prefix: "MEETING",
+      states: [{ name: "recording", phase: "doing" }, { name: "hearing", phase: "doing" }, { name: "writing", phase: "doing" },
+               { name: "done", phase: "done" }, { name: "failed", phase: "aside" }],
+      fields: { device: TEXT, startedAt: TEXT, endedAt: TEXT, parts: LONG, error: TEXT, summary: LONG, takeaways: LONG,
+                daydream: LONG, daemon: TEXT, audio: TEXT, from: TEXT } },
+    action: { title: "Action item", prefix: "ACTION", states: [{ name: "open", phase: "open" }, { name: "done", phase: "done" }] },
+  },
+  views: [{ name: "feed" }],
+  rules: [{ kind: "action", arete: 1, cap: 10, daemon: [] }],
+};
+const SPACES = new WeakMap<Store, string>();
+const json = <T,>(v: unknown, d: T): T => { try { const x = JSON.parse(String(v ?? "")); return x ?? d; } catch { return d; } };
+function fieldsOf(m: Meeting): Record<string, unknown> {
+  return { device: m.device, startedAt: m.startedAt, endedAt: m.endedAt ?? "", parts: JSON.stringify(m.parts), error: m.error ?? "",
+           summary: m.summary, takeaways: JSON.stringify(m.takeaways), daydream: m.daydream, daemon: m.daemon,
+           audio: m.audio ? "1" : "0", from: m.from ?? "" };
 }
-function keep(store: Store, list: Meeting[]) { store.setSetting("meetings", JSON.stringify(list.slice(0, KEEP))); }
-export const meetingOf = (store: Store, id: number) => meetingsOf(store).find((m) => m.id === id) ?? null;
-function update(store: Store, id: number, f: (m: Meeting) => void): Meeting | null {
-  const list = meetingsOf(store), m = list.find((x) => x.id === id);
-  if (!m) return null;
-  f(m); keep(store, list);
+function meetingsSpace(store: Store): string {
+  const had = SPACES.get(store);
+  if (had) return had;
+  const px = store.life.px, space = ensureSpace(px, MEETINGS, { title: "Meetings", prefix: "MEET" });
+  const held = new Set(px.items(space, { kind: "meeting" }).map((it) => it.number));
+  const old = json<Meeting[]>(store.getSetting("meetings"), []).filter((m) => m && Number.isInteger(m.id) && !held.has(m.id));
+  if (old.length) {
+    let at = store.now();
+    const then = new Praxis(store.db, { now: () => at });
+    then.transaction(() => {
+      for (const m of old.sort((x, y) => x.id - y.id)) {
+        at = Math.min(store.now(), Date.parse(m.endedAt ?? m.startedAt) || store.now());
+        const id = then.make(space, "meeting", { title: m.title || "MEETING", ...fieldsOf(m) }, { number: m.id });
+        then.state(id, m.state);
+        for (const a of m.actions ?? []) then.make(space, "action", { title: String(a).slice(0, 400) || "-" }, { parent: id });
+      }
+    });
+    store.life.reclock();                       // the store's clock past what was read in
+  }
+  SPACES.set(store, space);
+  return space;
+}
+function asMeeting(px: Praxis, it: Item): Meeting {
+  const f = it.fields, kids = px.items(it.space, { parent: it.id, kind: "action", archived: false });
+  const m: Meeting = { id: it.number as number, device: String(f.device ?? ""), startedAt: String(f.startedAt ?? ""),
+    endedAt: f.endedAt ? String(f.endedAt) : null, title: it.title, parts: json<(string | null)[]>(f.parts, []),
+    state: it.state as MeetingState, summary: String(f.summary ?? ""), takeaways: json<string[]>(f.takeaways, []),
+    actions: kids.map((k) => k.title), daydream: String(f.daydream ?? ""), daemon: String(f.daemon ?? ""), audio: f.audio !== "0" };
+  if (f.error) m.error = String(f.error);
+  if (f.from) m.from = f.from as Meeting["from"];
+  m.actionItems = kids.map((k) => ({ id: k.number as number, text: k.title, done: k.phase === "done" }));
   return m;
+}
+export function meetingsOf(store: Store): Meeting[] {
+  const space = meetingsSpace(store), px = store.life.px;
+  return px.items(space, { kind: "meeting", archived: false }).map((it) => asMeeting(px, it)).sort((a, b) => b.id - a.id);
+}
+const itemOf = (store: Store, id: number) => { const space = meetingsSpace(store), it = store.life.px.numbered(space, id, "meeting"); return it && !it.archived ? it : null; };
+// a meeting changed by `f`, and what changed written back as events: its fields, its title, its state, its action items
+function keepChanged(store: Store, it: Item, was: Meeting, now: Meeting) {
+  const px = store.life.px, a = fieldsOf(was), b = fieldsOf(now);
+  for (const k of Object.keys(b)) if (a[k] !== b[k]) px.set(it.id, k, b[k]);
+  if (now.title !== was.title && now.title.trim()) px.set(it.id, "title", now.title.slice(0, 400));
+  if (now.state !== was.state) px.state(it.id, now.state);
+  if (JSON.stringify(now.actions) !== JSON.stringify(was.actions)) {
+    for (const k of px.items(it.space, { parent: it.id, kind: "action", archived: false })) px.archive(k.id);
+    for (const t of now.actions) px.make(it.space, "action", { title: String(t).slice(0, 400) || "-" }, { parent: it.id });
+  }
+}
+export const meetingOf = (store: Store, id: number) => { const it = itemOf(store, id); return it ? asMeeting(store.life.px, it) : null; };
+function update(store: Store, id: number, f: (m: Meeting) => void): Meeting | null {
+  const it = itemOf(store, id);
+  if (!it) return null;
+  const px = store.life.px, was = asMeeting(px, it), m: Meeting = JSON.parse(JSON.stringify(was));
+  f(m);
+  px.transaction(() => keepChanged(store, it, was, m));
+  return meetingOf(store, id);
+}
+// C-432: an action item done (or not), by its number -- 1 ARETE, and the day's virtue if it is the day's first finish
+export function actionDone(store: Store, meeting: number, action: number, done: boolean, now = new Date()): Meeting | null {
+  const m = itemOf(store, meeting);
+  if (!m) return null;
+  const px = store.life.px, a = px.numbered(m.space, action, "action");
+  if (!a || a.archived || a.parent !== m.id) return null;
+  px.transaction(() => {
+    if (done && a.phase !== "done") {
+      const paid = px.ledger(m.space, { since: new Date(now).setHours(0, 0, 0, 0) }).filter((e) => e.op === "award" && !e.back && e.kind === "action" && e.key.startsWith("finish:")).reduce((n, e) => n + e.points, 0);
+      px.state(a.id, "done", { pay: Math.max(0, Math.min(1, 10 - paid)), reason: "finish" });
+      dayVirtue(px, a.id, now);
+    } else if (!done && a.phase === "done") {
+      px.state(a.id, "open");
+      for (const e of px.ledger(m.space).filter((x) => x.item === a.id && !x.back && x.key.startsWith("virtue:"))) px.takeBack(a.id, "award", e.key);
+    }
+  });
+  return meetingOf(store, meeting);
 }
 
 export function startMeeting(store: Store, device: string, daemon: string, now = new Date(),
                              from?: "phone" | "memo", title?: string): Meeting {
-  const list = meetingsOf(store);
-  const m: Meeting = { id: (list[0]?.id ?? 0) + 1, device, startedAt: now.toISOString(), endedAt: null,
+  const m: Meeting = { id: 0, device, startedAt: now.toISOString(), endedAt: null,
     title: title?.trim().slice(0, 60) || `MEETING ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,   // DRAFT, until the write-up names it
     parts: [], state: "recording", summary: "", takeaways: [], actions: [], daydream: "", daemon, audio: true, ...(from ? { from } : {}) };
-  keep(store, [m, ...list]);
-  return m;
+  const space = meetingsSpace(store), px = store.life.px, id = px.make(space, "meeting", { title: m.title, ...fieldsOf(m) });
+  return asMeeting(px, px.item(id)!);
 }
 // a part heard: its words in its place (parts can arrive out of order, from the card after the meeting)
 export function partHeard(store: Store, id: number, n: number, words: string) {
@@ -70,7 +161,7 @@ export function setState(store: Store, id: number, state: MeetingState, error?: 
 // C-316: a voice memo knows when it ended (its file's date), not when it began -- set once its length is known
 export function beganAt(store: Store, id: number, at: Date) { return update(store, id, (m) => { m.startedAt = at.toISOString(); }); }
 export function audioGone(store: Store, id: number) { return update(store, id, (m) => { m.audio = false; }); }
-export function forgetMeeting(store: Store, id: number) { keep(store, meetingsOf(store).filter((m) => m.id !== id)); }
+export function forgetMeeting(store: Store, id: number) { const it = itemOf(store, id); if (it) store.life.px.archive(it.id); }   // archived, the log keeps it
 
 // ---- the write-up -----------------------------------------------------------------------------------------------------
 export type Writer = (system: string, user: string, maxTokens: number) => Promise<string>;

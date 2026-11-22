@@ -84,7 +84,7 @@ const MOVED = "goals.praxis";
 type Row = Record<string, any>;
 
 export class Goals {
-  readonly px: Praxis;
+  px: Praxis;
   readonly life: string;
   private readonly moved: Moved;
 
@@ -95,6 +95,10 @@ export class Goals {
     this.life = lifeOf(this.px)!;
     if ((this.px.space(this.life)!.form?.version ?? 0) < LIFE.version) this.px.adopt(this.life, LIFE);
   }
+
+  /** C-432: a clock past every event another copy of the engine wrote here (a space's old settings read in at their own
+   *  times, as bringIn does): this one's next event is then ordered after them */
+  reclock() { this.px = new Praxis(this.store.db, { now: this.store.now }); }
 
   // ---- the old tables, read once ------------------------------------------------------------------------------------
 

@@ -14,7 +14,7 @@ import { Action, Card, Eyebrow, Small } from "../../ui/ui";
 type Meeting = { id: number; startedAt: string; endedAt: string | null; title: string; parts: (string | null)[];
                  state: "recording" | "hearing" | "writing" | "done" | "failed"; error?: string;
                  summary: string; takeaways: string[]; actions: string[]; daydream: string; daemon: string; audio: boolean;
-                 from?: "phone" | "memo" };
+                 from?: "phone" | "memo"; actionItems?: { id: number; text: string; done: boolean }[] };   // C-432: each action an item
 const STATE = { recording: "Recording…", hearing: "Listening to it…", writing: "Writing it up…", done: "", failed: "Not written up" };   // DRAFT
 const dayOf = (iso: string) => new Date(iso).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" });
 const timeOf = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -45,7 +45,19 @@ function MeetingCard({ m, ink, reload }: { m: Meeting; ink?: string; reload: () 
             <ReadAloud id={`meeting-${m.id}`} paragraphs={[m.title, m.summary, ...m.actions.map((a) => `Action: ${a}`)]} ink={ink} />
           </YStack>) : null}
           {m.takeaways.length ? <YStack gap={4}><Eyebrow>TAKE-AWAYS</Eyebrow><Bullets items={m.takeaways} /></YStack> : null}
-          {m.actions.length ? <YStack gap={4}><Eyebrow>ACTION ITEMS</Eyebrow><Bullets items={m.actions} /></YStack> : null}
+          {m.actionItems?.length ? (                   /* C-432: each action an item, ticked done (1 ARETE) or open again */
+            <YStack gap={4}><Eyebrow>ACTION ITEMS</Eyebrow>
+              {m.actionItems.map((a) => (
+                <XStack key={a.id} gap={10} alignItems="flex-start" cursor="pointer" role="checkbox" aria-checked={a.done}
+                        onPress={async () => { await api("/api/meeting/action", { meeting: m.id, action: a.id, done: !a.done }); reload(); }}>
+                  <YStack width={18} height={18} marginTop={2} borderRadius={4} borderWidth={1.5} borderColor={ink ?? "$color10"}
+                          backgroundColor={a.done ? (ink ?? "$color10") : "transparent"} />
+                  <Text flex={1} fontSize={15} lineHeight={22} color={a.done ? "$color10" : "$color12"}
+                        textDecorationLine={a.done ? "line-through" : "none"}>{a.text}</Text>
+                </XStack>
+              ))}
+            </YStack>
+          ) : m.actions.length ? <YStack gap={4}><Eyebrow>ACTION ITEMS</Eyebrow><Bullets items={m.actions} /></YStack> : null}
           {m.daydream ? (<YStack gap={4}>
             <Eyebrow>{`${m.daemon || "ITS"} DAY-DREAM`}</Eyebrow>
             <Text fontSize={15} lineHeight={22} fontStyle="italic" color="$color11">{m.daydream}</Text>

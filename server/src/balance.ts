@@ -1,7 +1,7 @@
 // C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
 // C-432 (PRAXIS 5): THE WEEK'S BALANCE (docs/PROJECTS.md 6; the user, 2026-11-22, by multiple choice). Each weekday has
 // its virtue over its shadow (data/week.json). A virtue is LIVED when something the companion counts was done on its own
-// day -- a step, a milestone or a goal finished, the centre tended, a journal entry, a dream written; its shadow is
+// day -- a step, a milestone or a goal finished, the centre tended, a journal entry, a dream written, a meeting's action done; its shadow is
 // UNTENDED when its day passed with nothing. Lit, never scolded (T-418): nothing is taken for a day missed, and the words
 // never say a virtue cures its shadow. Shown on TODAY under the day's centre, Sunday first, as the week's climb is.
 //
@@ -11,12 +11,12 @@ import { parseHlc } from "@daemons/praxis";
 import type { Store } from "./store.js";
 import { localDate, WEEK } from "./practice.js";
 
-export type Acts = { goals: number; tended: number; entries: number; dreams: number };
+export type Acts = { goals: number; tended: number; entries: number; dreams: number; actions: number };
 export type BalanceDay = { day: string; date: string; virtue: string; shadow: string; today: boolean; ahead: boolean;
                            lived: boolean; acts: Acts };
 
-const none = (): Acts => ({ goals: 0, tended: 0, entries: 0, dreams: 0 });
-const KIND_ACT: Record<string, keyof Acts> = { step: "goals", milestone: "goals", goal: "goals", tended: "tended", entry: "entries", dream: "dreams" };
+const none = (): Acts => ({ goals: 0, tended: 0, entries: 0, dreams: 0, actions: 0 });
+const KIND_ACT: Record<string, keyof Acts> = { step: "goals", milestone: "goals", goal: "goals", tended: "tended", entry: "entries", dream: "dreams", action: "actions" };
 
 export function weekBalance(store: Store, now = new Date(store.now())) {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());   // this Sunday, 00:00
@@ -39,7 +39,7 @@ export function weekBalance(store: Store, now = new Date(store.now())) {
     const on = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i), date = localDate(on);
     const a = acts.get(date) ?? none();
     return { day: w.day, date, virtue: w.virtue, shadow: w.shadow, today: i === now.getDay(), ahead: i > now.getDay(),
-             lived: a.goals + a.tended + a.entries + a.dreams > 0, acts: a };
+             lived: a.goals + a.tended + a.entries + a.dreams + a.actions > 0, acts: a };
   });
   const today = days[now.getDay()];
   const key = `virtue:${today.date}`;

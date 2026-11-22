@@ -62,12 +62,13 @@ function tendingSpace(store: Store): string {
         then.state(id, "done", { pay: 1, reason: "tended" });
       }
     });
+    store.life.reclock();                       // the store's clock past what was read in
   }
   ITEMS.set(store, space);
   return space;
 }
 export function tendedOf(store: Store): Tended[] {
-  const px = store.life.px, space = tendingSpace(store);
+  const space = tendingSpace(store), px = store.life.px;
   return px.items(space, { kind: "tended", archived: false })
     .map((it) => ({ date: String(it.fields.date), centre: String(it.fields.centre), by: String(it.fields.by) as Tended["by"],
                     at: hlcIso(px.writes(it.id, "state").find((w) => w.won)?.hlc ?? "") }))
@@ -92,7 +93,7 @@ function tendedOn(store: Store, date: string, centre: string): Pick<Tended, "at"
 export function tend(store: Store, now = new Date()): Tended {
   const date = localDate(now), had = tendedOf(store).find((t) => t.date === date);
   if (had) return had;
-  const px = store.life.px, space = tendingSpace(store), centre = centreOn(now);
+  const space = tendingSpace(store), px = store.life.px, centre = centreOn(now);
   px.transaction(() => {
     const id = px.make(space, "tended", { title: centre, date, centre, by: "you" });
     px.state(id, "done", { pay: 1, reason: "tended" });

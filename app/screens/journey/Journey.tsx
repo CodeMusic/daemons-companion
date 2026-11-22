@@ -6,8 +6,9 @@ import { YStack } from "tamagui";
 import { Segments } from "../../ui/ui";
 import { GoalsScreen } from "./Goals";
 import { JournalSection } from "./Journal";
+import { AreteSection } from "./Arete";   // C-433
 
-const SECTIONS = [["goals", "GOALS"], ["journal", "JOURNAL"]] as const;   // DRAFT
+const SECTIONS = [["goals", "GOALS"], ["journal", "JOURNAL"], ["arete", "ARETE"]] as const;   // DRAFT (C-433: ARETE and THE REWARD SHELF)
 type Section = (typeof SECTIONS)[number][0];
 let kept: Section = "goals";                                             // the section you left, while the app is open
 
@@ -17,7 +18,7 @@ export function JourneyScreen({ reload, ink }: { reload: () => void; ink: string
   return (
     <YStack gap={14}>
       <Segments value={section} onChange={pick} options={SECTIONS.map(([v, l]) => [v, l] as [Section, string])} />
-      {section === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : <JournalSection ink={ink} />}
+      {section === "goals" ? <GoalsScreen reload={reload} ink={ink} /> : section === "journal" ? <JournalSection ink={ink} /> : <AreteSection ink={ink} />}
     </YStack>
   );
 }

@@ -21,7 +21,8 @@ import { readSubtle } from "./save/subtle.js";
 import { howOf, MASK_UNDER, maskOf, readsView, seeRead, takeLean, takeRead } from "./intuition.js";   // C-203; C-357: RECOGNITION, THE MASK
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { tend, tendingView } from "./tending.js";
-import { weekBalance } from "./balance.js";   // C-432   // C-357 (3)
+import { weekBalance } from "./balance.js";   // C-432
+import { editReward, removeReward, shelfView, spend, stock, unspend } from "./rewards.js";   // C-433   // C-357 (3)
 import { weatheringOf } from "./weathering.js";   // C-357 (4)
 import { VESSEL_UNDER, vesselOf } from "./vessel.js";   // C-357 (5)
 import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232; C-357
@@ -65,8 +66,8 @@ import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   /
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
 import { BOOK as MENTIONS_BOOK, markRead, mentionsOf, newestUnread } from "./mentions.js";   // C-455
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/balance", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/household/swap", "/api/play/summoned", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/balance", "/api/rewards", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const POSTS = ["/api/rewards", "/api/rewards/edit", "/api/rewards/remove", "/api/rewards/spend", "/api/rewards/undo", "/api/household/swap", "/api/play/summoned", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -113,6 +114,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/walk") return ok(walk(h, store, now));   // C-48
     if (path === "/api/goal") return ok({ goal: store.currentGoal(), limit: ENTRY_LIMIT });   // C-46: ONE goal
     if (path === "/api/balance") return ok(weekBalance(store, now));   // C-432: THE WEEK'S BALANCE
+    if (path === "/api/rewards") return ok(shelfView(store, now));     // C-433: THE REWARD SHELF
     if (path === "/api/arete") return ok(store.life.arete(now));   // C-430: ARETE held, earned today and this week, and its rules
     if (path === "/api/goal/weathering") {                               // C-357 (4): SLOW WRITES, once the book is held
       const g = store.currentGoal(), s = h.save.read();
@@ -256,6 +258,15 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     }
   }
   if (method === "POST") {
+    // C-433: THE REWARD SHELF -- stocked, changed, taken off, SPENT (the daemon glad with you), taken back the same day
+    if (path.startsWith("/api/rewards")) {
+      const r = path === "/api/rewards" ? stock(store, b, now) : path.endsWith("edit") ? editReward(store, b, now)
+              : path.endsWith("remove") ? removeReward(store, Number(b?.id), now)
+              : path.endsWith("spend") ? spend(store, Number(b?.id), now) : unspend(store, Number(b?.id), String(b?.key ?? ""), now);
+      if (typeof r === "string") return no(400, r);
+      const d = "spent" in r ? carriedDaemon(h, store, deviceId) : null;
+      return ok(d ? { ...r, daemon: { nickname: d.nickname, species: d.species } } : r);
+    }
     // C-327: social within the household -- a swap of what two devices carry, two daemons in one space, and out of it.
     // A device names the other; its own is `a`, or the asker itself (?device=)
     // C-419 (3): a daemon came to its song in PLAY FREELY -- kept, so the INDEX can say its QUOTATION once T-599 has

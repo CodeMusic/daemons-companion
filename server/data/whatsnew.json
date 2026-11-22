@@ -1,9 +1,85 @@
 {
- "latest": 994,
+ "latest": 995,
  "builds": [
   {
+   "build": 995,
+   "commit": "6c096ee6",
+   "date": "2026-11-22",
+   "sections": [
+    {
+     "ticket": "C-470",
+     "title": "Your daemon, not the save's first: a request that names no device",
+     "lines": [
+      "Your daemon, not the save's first — a request that names no device",
+      "Used, not only heard — YOUR daemon follows the device that last asked for something (any POST: a care, a talk, a TRAIN), not the board that polls most"
+     ]
+    },
+    {
+     "ticket": "C-329",
+     "title": "Daemons in dialogue: TWO VOICES and the bicameral conversation, kept and integrated",
+     "lines": [
+      "Heard on the Tiiny, retuned — red reasons plainly (no metaphors, because/so, with an example), blue answers in one image, the asker's first line a plain question; a talk a restart cut short (thinking or being put together) is settled at start and says why",
+      "+ C-469: a daemon in dialogue has in mind what it holds — the persona says it (\"You have in mind just now: ...\"); the card a talk sends across accounts carries the goal's and the day's things, never what its person said in a talk; a household talk carries all of it. Not in personaCard, so the day's persona is not rebuilt at every thought"
+     ],
+     "setup": {
+      "title": "DAEMONS IN DIALOGUE",
+      "where": "YOU › TRADE › OUT TOGETHER, and YOUR HOUSEHOLD",
+      "needs": [
+       "the hub",
+       "THE TIINY, or another mind the hub can ask",
+       "another player on the exchange, or two of the home's devices"
+      ],
+      "steps": [
+       "With another player: join the exchange (YOU › TRADE › JOIN THE EXCHANGE, with a code made in THE ENGINE ROOM › EXCHANGE), send your daemon OUT TOGETHER with theirs, and IN DIALOGUE is under it.",
+       "In your home: put two of the household's devices TOGETHER under YOUR HOUSEHOLD on the same page, and IN DIALOGUE appears there.",
+       "Pick STANDARD or TWO VOICES and how many turns. THE TIINY thinks first (SETTINGS › WHO ANSWERS WHEN YOU TALK); with no mind answering, the talk cannot start."
+      ],
+      "wiki": "Trading",
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-432",
+     "title": "PRAXIS 5: the JOURNAL, the DREAM JOURNAL, TENDING and MEETINGS onto PRAXIS, and THE WEEK'S BALANCE",
+     "lines": [
+      "TENDING on PRAXIS, THE DAY'S VIRTUE and THE WEEK'S BALANCE (DRAFT) — a touch's tending an item in the TENDING space, 1 ARETE, subtle.tended read in once at its own times; the day's first finish (a step, a tending) earns its virtue 2 ARETE more, once a day, given back with the step that earned it; ARETE counted across every space; GET /api/balance and THE WEEK'S BALANCE on TODAY under the day's centre: a virtue lived when something was done on its day, its shadow untended when the day passed with nothing, lit and never scolded (the user, 2026-11-22, by multiple choice)",
+      "MEETINGS, VOICE NOTES and THE SUBTLE QUESTION on PRAXIS (DRAFT) — each meeting an item numbered as its id was, its state its progress, each ACTION ITEM an item under it, ticked done in the app (POST /api/meeting/action: 1 ARETE and the day's virtue, given back when opened again); each voice note and each day's answer an item; what their settings held read in once at its own time, every call in the shape it had; a meeting's action done lights its day in THE WEEK'S BALANCE; the store's clock moved past what an import wrote (Goals.reclock)"
+     ]
+    },
+    {
+     "ticket": "C-473",
+     "title": "Away with the phone linked, the watch asks the hub through the phone (ASK/ANSWER over Bluetooth) instead of the relay",
+     "lines": [
+      "Away with the phone linked, the watch asks the hub through the phone (ASK/ANSWER), not the relay"
+     ]
+    },
+    {
+     "ticket": "C-419",
+     "title": "SONG for CRY in the companion: the INDEX, the daemon's page, freestyle summons",
+     "lines": [
+      "Play a daemon's song and it comes — PLAY FREELY listens for each seen daemon's OPENING on its key's wheel, as the game's T-598 does; it comes, sings its part and goes on its way, kept for the INDEX (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Companion: patches.json for v11.412.7",
+      "Shelf cover: THE PLAYER'S MANUAL reprinted for v11.412.7 (DAEMONS, T-606)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Game export: T-606's SHADOW BOOK and its debug row (THE SPELL LEFT RUNNING, DRAFT)"
+     ]
+    }
+   ]
+  },
+  {
    "build": 994,
-   "commit": "92e66d13",
+   "commit": "4a311b5",
    "date": "2026-11-22",
    "sections": [
     {

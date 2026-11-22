@@ -496,6 +496,16 @@
   },
   {
    "n": 44,
+   "name": "THE SPELL LEFT RUNNING",
+   "section": "GAME EVENTS",
+   "held": {
+    "all_flags": [
+     2656
+    ]
+   }
+  },
+  {
+   "n": 45,
    "name": "EVERY GOTO POINT",
    "section": "GAME EVENTS",
    "held": {
@@ -505,7 +515,7 @@
    }
   },
   {
-   "n": 45,
+   "n": 46,
    "name": "THE GUIDE",
    "section": "GAME EVENTS",
    "held": {
@@ -515,7 +525,7 @@
    }
   },
   {
-   "n": 46,
+   "n": 47,
    "name": "THE SUBTLE LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -525,7 +535,7 @@
    }
   },
   {
-   "n": 47,
+   "n": 48,
    "name": "THE HERMETIC LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -535,7 +545,7 @@
    }
   },
   {
-   "n": 48,
+   "n": 49,
    "name": "THE EUDAIMON LAYER",
    "section": "GAME EVENTS",
    "held": {
@@ -545,7 +555,7 @@
    }
   },
   {
-   "n": 49,
+   "n": 50,
    "name": "EVERY SPELL READ",
    "section": "GAME EVENTS",
    "held": {
@@ -559,7 +569,7 @@
    }
   },
   {
-   "n": 50,
+   "n": 51,
    "name": "MENDED",
    "section": "GAME EVENTS",
    "held": {
@@ -569,7 +579,7 @@
    }
   },
   {
-   "n": 51,
+   "n": 52,
    "name": "EVERY GROVE LIT",
    "section": "GAME EVENTS",
    "held": {
@@ -592,7 +602,7 @@
    }
   },
   {
-   "n": 52,
+   "n": 53,
    "name": "GLOBAL INDEX",
    "section": "GAME EVENTS",
    "held": {
@@ -614,7 +624,7 @@
    "note": "IsNationalPokedexEnabled: also sb2 pokedex.nationalMagic == 0xB9 (sb2_byte)"
   },
   {
-   "n": 53,
+   "n": 54,
    "name": "STILL",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -624,7 +634,7 @@
    }
   },
   {
-   "n": 54,
+   "n": 55,
    "name": "NAMING",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -634,7 +644,7 @@
    }
   },
   {
-   "n": 55,
+   "n": 56,
    "name": "NOTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -644,7 +654,7 @@
    }
   },
   {
-   "n": 56,
+   "n": 57,
    "name": "REFLECT",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -654,7 +664,7 @@
    }
   },
   {
-   "n": 57,
+   "n": 58,
    "name": "STANCE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -664,7 +674,7 @@
    }
   },
   {
-   "n": 58,
+   "n": 59,
    "name": "MEND",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -674,7 +684,7 @@
    }
   },
   {
-   "n": 59,
+   "n": 60,
    "name": "PRACTICE",
    "section": "UNDERSTANDINGS",
    "held": {
@@ -684,7 +694,7 @@
    }
   },
   {
-   "n": 60,
+   "n": 61,
    "name": "ROLLOVER",
    "section": "THE YEAR",
    "held": {
@@ -694,7 +704,7 @@
    }
   },
   {
-   "n": 61,
+   "n": 62,
    "name": "EVEN LIGHT, SPRING",
    "section": "THE YEAR",
    "held": {
@@ -704,7 +714,7 @@
    }
   },
   {
-   "n": 62,
+   "n": 63,
    "name": "EVEN LIGHT, AUTUMN",
    "section": "THE YEAR",
    "held": {
@@ -714,7 +724,7 @@
    }
   },
   {
-   "n": 63,
+   "n": 64,
    "name": "DAWN VIGIL",
    "section": "THE YEAR",
    "held": {
@@ -724,7 +734,7 @@
    }
   },
   {
-   "n": 64,
+   "n": 65,
    "name": "FIRST FROST",
    "section": "THE YEAR",
    "held": {
@@ -734,7 +744,7 @@
    }
   },
   {
-   "n": 65,
+   "n": 66,
    "name": "DEN DAY",
    "section": "THE YEAR",
    "held": {
@@ -744,7 +754,7 @@
    }
   },
   {
-   "n": 66,
+   "n": 67,
    "name": "FLEDGLING DAY",
    "section": "THE YEAR",
    "held": {
@@ -754,7 +764,7 @@
    }
   },
   {
-   "n": 67,
+   "n": 68,
    "name": "LANTERN NIGHTS",
    "section": "THE YEAR",
    "held": {
@@ -764,7 +774,7 @@
    }
   },
   {
-   "n": 68,
+   "n": 69,
    "name": "SCIENCE FAIR",
    "section": "THE YEAR",
    "held": {
@@ -774,7 +784,7 @@
    }
   },
   {
-   "n": 69,
+   "n": 70,
    "name": "TRUCE DAY",
    "section": "THE YEAR",
    "held": {
@@ -784,7 +794,7 @@
    }
   },
   {
-   "n": 70,
+   "n": 71,
    "name": "MARIGOLD DAYS",
    "section": "THE YEAR",
    "held": {
@@ -794,7 +804,7 @@
    }
   },
   {
-   "n": 71,
+   "n": 72,
    "name": "GIVING THANKS",
    "section": "THE YEAR",
    "held": {
@@ -804,7 +814,7 @@
    }
   },
   {
-   "n": 72,
+   "n": 73,
    "name": "STREAM AND HEARSAY",
    "section": "GAME EVENTS",
    "held": null,
@@ -821,7 +831,7 @@
    "note": "the page only gives this row (the STREAM and HEARSAY in the bag, every show told)"
   },
   {
-   "n": 73,
+   "n": 74,
    "name": "COMPANION LINKED",
    "section": "GAME EVENTS",
    "held": {

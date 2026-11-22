@@ -1308,6 +1308,12 @@
   "pocket": "POCKET_KEY_ITEMS",
   "importance": 1
  },
+ "253": {
+  "name": "SHADOW BOOK",
+  "description": "A BOOK OF SHADOWS. On its cover a hat hangs on a peg over seven brooms.",
+  "pocket": "POCKET_KEY_ITEMS",
+  "importance": 1
+ },
  "254": {
   "name": "RED SCARF",
   "description": "A red scarf, handed out on PARADE DAYS. It changes nothing in battle. It is worn for the day.",

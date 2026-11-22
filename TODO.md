@@ -45,6 +45,40 @@ deploy the hub, commit by path, push, close in Redmine.
    journal and GOALS (docs/RESEARCH.md) -- last, once C-432 and C-469 have landed in PRAXIS. ***Not started***: C-432
    was still in progress when this loop reached it.
 
+## Today's goals -- 2026-11-22, C-434 the encrypted cloud replica (a third loop)
+
+*The user, 2026-11-22: "Plan C-434's loop", and by multiple choice: the both-ways Redmine bridge dropped (E-9 to E-11
+leave Redmine instead); the relay on roverbyteseer for now, though the tailnet is soon to give way to something easier
+for new players and stay only as a fallback; a recovery code, shown once.* Planned by the session that built C-430.
+Beside the two loops above, never on their ground: C-432 and C-433 are in progress in other sessions and may change
+daemons-praxis, so the engine's part is a file of its own on a branch, tagged only after a word with them.
+C-434 was also the last item of another session's app loop; it is claimed here when this loop starts. Worked top down:
+build, test, deploy the hub, commit by path, push, close in Redmine.
+
+1. **What stays, written down** -- C-434 is the encrypted cloud replica alone (its note in Redmine says why).
+   PROJECTS.md section 5 says what the relay sees (which space, which replica, when, how big) and never sees (every
+   title, field, value and blob). **Done when** both say so.
+2. **Sealed spaces in daemons-praxis** -- a key per space. An event's content is sealed with XChaCha20-Poly1305
+   (`@noble/ciphers`, pure JS, the same on Hermes and Node); its space, replica and clock stay open, so an exchange can
+   still say what it has seen. A blob is sealed and named by the hash of what is stored, so two copies of one photo
+   cannot be matched. **Done when** a keyless replica keeps, orders and passes on what a keyed one then folds byte for
+   byte, the keyless one's database holds no title, and both pins move to the tag in one commit.
+3. **The relay** -- keeps sealed events and blobs per space and answers the exchange, holding no key. It takes any URL:
+   roverbyteseer under a login agent for now, then behind C-278's public address with the tailnet as a fallback, with
+   no change of code. Each replica signs in with its own token. **Done when** `/relay/status` answers on roverbyteseer.
+4. **Keys and the recovery code** -- a space's key is made with the space; the phone keeps it in its keychain, the hub
+   in its data folder (mode 600), and the hub hands the phone HOME's keys when it pairs. One recovery code (at least 128
+   bits, behind a slow key derivation), shown once, wraps every key the household holds, and the wrapped keys go to the
+   relay too, so the code alone restores. THIS PHONE spaces never reach the relay, as their reach says; PUBLIC ones are
+   not sealed. **Done when** tested, and a scratch phone paired to a scratch hub holds the keys.
+5. **Back up and restore, proved** -- the hub sends its HOME and SHARED spaces to the relay a minute after each change.
+   A fresh scratch hub given only the recovery code restores GOALS and ARETE field for field; one without it gets
+   nothing it can read. Scratch companions only. **Done when** the check passes, the hub is deployed with the backup
+   off, and C-434 is closed with its commits.
+
+Needs the user: turning the backup on for their own hub once 5 passes, and writing the recovery code down when it is
+shown.
+
 ## Today's goals -- 2026-11-18, THE ENGINE ROOM
 
 *The user, 2026-11-18: "run your goal loop".* The Engine Room lane's sweep first: THE HANDS answering (last seen within

@@ -124,7 +124,7 @@ describe("each MUSAI in today's season (C-310)", () => {
   });
   it("has a picture for every seasonal form", () => {
     const forms = Object.values(SPECIES).flatMap((r: any) => Object.values(r?.seasons ?? {})) as { art: string }[];
-    expect(forms.length).toBe(24);
+    expect(forms.length).toBe(32);                      // T-607: SONGMUSAI and LANGMUSAI joined the six
     for (const f of forms) expect(existsSync(new URL(`../data/art/${f.art}`, import.meta.url))).toBe(true);
   });
 });

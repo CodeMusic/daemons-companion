@@ -313,8 +313,24 @@ THE MIND's routing, in `machine/` (C-387 holds).
 | **RECIPES** | Recipe, Cooked | cards, the log | a meal cooked -- *it would eat, if you are eating* |
 | **MEETINGS** | Meeting, Action (an item, no longer a string) | the feed | actions done |
 | **WORK** | Job, Bug | a board, a list | its story points |
+| **WORKING MEMORY** | Held | NOW | nothing: a mind is not paid for holding |
 
 **The daemon keeps spaces of its own**: its dreams are its own dream journal, written by it as the actor.
+
+**WORKING MEMORY** (*the user, 2026-11-22: "there should be a project which represents the working memory of daemon";
+by multiple choice, every daemon, one form*; C-469, E-12). Every daemon account keeps one space of what it has in mind
+**now**. Long-term memory is already made at night (`memory.ts`: YESTERDAY, THE MONTH, KEPT); this is the part before
+it, which is small and does not last.
+- **About seven items at most**, as working memory is. A new one displaces the item held longest without being
+  touched again; touching an item (rehearsing it) keeps it.
+- **Rewritten, never appended.** An item's text is one field, set again as it changes. The event log still keeps every
+  version, so nothing is lost to the record, only to the daemon's attention.
+- **Your daemon's own** (C-469) is written from the day: a talk's open thread ("you said you would call"), the goal's
+  step, what it noticed. The night folds it into YESTERDAY and KEPT and clears it. The mind portal's NOW shows it.
+- **Each lane's AI agent keeps one too** (E-12): what a session's handoff holds now (in flight, waiting on the user,
+  next), on its daemon's page. A handoff carries private material, so this space is never public.
+
+The form lives in daemons-praxis, beside the engine, so the companion and EUDAIMONIA read it the same way.
 
 ## 9. Today's features, moved onto it
 
@@ -337,9 +353,16 @@ THE MIND's routing, in `machine/` (C-387 holds).
 ## 10. Redmine, and the site
 
 **A bridge, both ways**: project to SPACE, tracker to KIND, status to STATE, custom field to FIELD, journal to EVENT,
-relation to LINK, attachment to BLOB. **Off Redmine in three steps, each the user's call**: (1) the `daemons` and
-`companion` projects mirrored in, read-only, to use the views on real work; (2) both ways; (3) the engine becomes the
-source, `tools/tickets.py` talks to it, the TODO files' nightly mirror is unchanged, and Redmine retires.
+relation to LINK, attachment to BLOB. **Off Redmine by a mirror and one cut-over, with no two-way bridge** (*the user,
+2026-11-22, by multiple choice*; the bridge both ways was the hardest part to get right and the part thrown away after):
+1. **The mirror** (E-9): the `daemons`, `companion` and `eudaimonia` projects copied into PRAXIS, read-only, every
+   ticket keeping its id, refreshed every few minutes. The dashboard draws from it.
+2. **Tickets in EUDAIMONIA** (E-10): the list, the board, the roadmap, a ticket's page, and editing, used on real work.
+3. **The cut-over, the user's call** (E-11): `tools/tickets.py` talks to PRAXIS, the TODO files' nightly mirror is
+   written from it unchanged, and Redmine stays as a read-only archive.
+
+**PRAXIS's always-on replica runs on roverbyteseer** (*the user, 2026-11-22*), beside Redmine and on the tailnet. The
+laptop sleeps and travels; EUDAIMONIA on it, and the hub, sync with roverbyteseer.
 
 **The site is EUDAIMONIA** (*the user, 2026-11-20, by multiple choice*), in **daemons-playground renamed
 daemons-eudaimonia** (C-438): the playground is no longer where the game is played (the companion app is), so it becomes
@@ -435,7 +458,9 @@ meetings with it, which is the editions' own pair, CONTENT and CONTEXT.
 7. **The site, EUDAIMONIA** (section 10): the rename **C-438**, the front door **C-439**, accounts **C-436**, THE
    EASTER EGG **C-437**, the dashboard **C-411**; the engine's own repository **C-435**, *done 2026-11-20 (daemons-praxis v0.1.0)*; the Redmine
    bridge and a cloud replica, encrypted **C-434**. *The rename, the dashboard's frame, sign-in and the easter egg need
-   no engine, so they can run beside phases 3 to 6.*
+   no engine, so they can run beside phases 3 to 6.* **Off Redmine** (2026-11-22, the priority): the mirror **E-9**,
+   tickets in EUDAIMONIA **E-10**, the cut-over **E-11** (the user's call).
+8. **WORKING MEMORY** (section 8): the form and your daemon's own **C-469**; the agents' **E-12**, after E-9.
 
 ## 13. Decided, and OPEN
 
@@ -450,6 +475,11 @@ here, **`packages/praxis`**, its own repository before long (it is: C-435); **ou
   password and a backup agreement ticked, straight from the release.
 - **Goals finished before the move keep the ARETE they were paid** (C-430): every old finish is paid by its rule,
   under that day's cap, as it is read in -- no one starts at 0.
+
+**Decided by the user, 2026-11-22, by multiple choice:**
+- **Off Redmine by a mirror, then one cut-over**, with no two-way bridge (section 10). It is the priority.
+- **PRAXIS's always-on replica runs on roverbyteseer.**
+- **WORKING MEMORY is one form every daemon keeps**: your daemon's and each lane's agent's (section 8).
 
 **OPEN:**
 

@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
-import { assign, carriedFor, carryView } from "../src/carry.js";
+import { assign, carriedFor, carryView, carrying, setYours, yoursOf } from "../src/carry.js";
 import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
 import { buildSave } from "./build_save.js";
@@ -86,6 +86,78 @@ describe("a daemon in each device, through the API (C-80)", () => {
     expect((await post({ id: CC, personality: HOME.personality })).status).toBe(400);
     expect((await post({ id: "../x", personality: PIP.personality })).status).toBe(400);
     expect((await post({ id: CC, personality: null })).status).toBe(200);
+  });
+});
+
+// C-470 (the user, 2026-11-11: "overloaded at times then flipping back to the correct daemon"): a request that names no
+// device -- the site in a browser, MENTIONS, a walk -- is answered by YOUR daemon, not simply the save's first away
+describe("your daemon, when no device is named (C-470)", () => {
+  const away = [{ personality: 1 }, { personality: 2 }, { personality: 3 }];
+  const seen = (store: Store, rows: Record<string, string>) =>
+    store.setSetting("devices", JSON.stringify(Object.fromEntries(Object.entries(rows).map(([id, at]) => [id, { id, lastSeen: at }]))));
+
+  it("answers with the daemon in the device used most recently, not the first away", () => {
+    const store = new Store(":memory:");
+    assign(store, CC, 1); assign(store, WATCH, 2);
+    seen(store, { [CC]: "2026-11-01T09:00:00Z", [WATCH]: "2026-11-21T20:00:00Z" });   // the CC1101 idle three weeks
+    expect(carriedFor(store, away, "")?.personality).toBe(2);
+    expect(yoursOf(store, away)).toEqual({ daemon: { personality: 2 }, by: "recent" });
+    seen(store, { [CC]: "2026-11-22T08:00:00Z", [WATCH]: "2026-11-21T20:00:00Z" });
+    expect(carriedFor(store, away, "")?.personality).toBe(1);               // and follows the one picked up since
+  });
+
+  it("answers with the one named, while it is away, over any device", () => {
+    const store = new Store(":memory:");
+    assign(store, WATCH, 2);
+    seen(store, { [WATCH]: "2026-11-21T20:00:00Z" });
+    setYours(store, 3);
+    expect(yoursOf(store, away)).toEqual({ daemon: { personality: 3 }, by: "named" });
+    expect(yoursOf(store, [{ personality: 1 }, { personality: 2 }])?.by).toBe("recent");   // 3 came home: the device's
+    setYours(store, null);
+    expect(yoursOf(store, away)?.by).toBe("recent");
+  });
+
+  it("passes over a device that hosts none, or one whose daemon came home, and asks nothing to be assigned", () => {
+    const store = new Store(":memory:");
+    assign(store, CC, 9); assign(store, WATCH, -1);                         // 9 is home; the watch hosts none (C-124)
+    seen(store, { [CC]: "2026-11-22T08:00:00Z", [WATCH]: "2026-11-22T09:00:00Z" });
+    const before = JSON.stringify(carrying(store));
+    expect(yoursOf(store, away)).toEqual({ daemon: { personality: 1 }, by: "first" });
+    expect(JSON.stringify(carrying(store))).toBe(before);
+    store.setSetting("devices", "not json");
+    expect(carriedFor(store, away, "")?.personality).toBe(1);
+    expect(yoursOf(store, [])).toBeNull();
+  });
+
+  it("through the API: the devices view says who answers and why, and the DEVICES card names one", async () => {
+    const save = buildSave({ player: "ROVER", trainerId: 0x00ab1234,
+      slots: [{ counter: 1, party: [PIP, LABEL, HOME] }, { counter: 2, party: [PIP, LABEL, HOME] }] });
+    const path = join(mkdtempSync(join(tmpdir(), "yours-")), "copy.sav");
+    writeFileSync(path, save);
+    const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: path });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    try {
+      const nobody = () => fetch(base + "/api/device/state").then((r) => r.json());   // no device named: the site's way
+      const ask = (id: string, via: string) => fetch(`${base}/api/device/state?via=${via}`, { headers: { "x-device": id } }).then((r) => r.json());
+      expect((await nobody()).daemon.nickname).toBe("PIP");                 // nothing heard yet: the first away
+      expect((await ask(CC, "wifi")).daemon.nickname).toBe("PIP");
+      expect((await ask(WATCH, "wifi")).daemon.nickname).toBe("LABEL");
+      expect((await nobody()).daemon.nickname).toBe("LABEL");               // the watch was used last
+      expect((await ask(CC, "usb")).daemon.nickname).toBe("PIP");            // the CC1101 on its cable, now
+      expect((await nobody()).daemon.nickname).toBe("PIP");
+      let v = await fetch(base + "/api/devices").then((r) => r.json());
+      expect(v.yours).toMatchObject({ nickname: "PIP", by: "recent" });
+      const name = (personality: unknown) => fetch(base + "/api/devices/yours", { method: "POST",
+        headers: { "content-type": "application/json" }, body: JSON.stringify({ personality }) });
+      v = await name(LABEL.personality).then((r) => r.json());
+      expect(v.yours).toMatchObject({ nickname: "LABEL", by: "named" });
+      expect((await nobody()).daemon.nickname).toBe("LABEL");
+      expect((await ask(CC, "wifi")).daemon.nickname).toBe("PIP");          // a device named still has its own
+      expect((await name(HOME.personality)).status).toBe(400);              // STAY is home, not away
+      v = await name(null).then((r) => r.json());
+      expect(v.yours.by).toBe("recent");
+    } finally { server.close(); }
   });
 });
 

@@ -8,7 +8,7 @@ import { DeviceSprite, lookFor, makerOf, MAKERS } from "../../art/deviceSprites"
 import { setPalette } from "../../state/look";
 import * as SecureStore from "expo-secure-store";
 import { ALONE, api, HANDHELD, HandheldNow, isAway, KEEP, OFFLINE, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
-import { Brand, Carried, DeviceRow, DeviceSettings, Link } from "../../state/types";
+import { Brand, Carried, DeviceRow, DeviceSettings, Link, type Yours } from "../../state/types";
 import { Action, Art, Card, Choice, Eyebrow, Pending, Result, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { HubCard, TalkFirstRow } from "./Hub";   // C-190; C-211
@@ -510,8 +510,8 @@ export function DeviceScreen({ ink }: { ink: string }) {
                 <Choice<number | null> value={d.daemon?.personality ?? null}
                   options={[...(link.away ?? []).map((a): [number | null, string] => [a.personality, a.nickname || a.name]), [null, "None"]]}
                   onPick={async (personality) => {
-                    const v = await api<{ devices: DeviceRow[]; away: Carried[] }>("/api/devices/carry", { id: d.id, personality });
-                    setLink((l) => l && { ...l, devices: v.devices, away: v.away });
+                    const v = await api<{ devices: DeviceRow[]; away: Carried[]; yours?: Yours | null }>("/api/devices/carry", { id: d.id, personality });
+                    setLink((l) => l && { ...l, devices: v.devices, away: v.away, yours: v.yours });
                     redrawWidgetNow();                                               // C-100
                   }} ink={ink} />
               ) : null}
@@ -521,6 +521,21 @@ export function DeviceScreen({ ink }: { ink: string }) {
           ))}
           </YStack>
           ))}
+          {/* C-470: who answers when nothing names a device -- the site in a browser, MENTIONS, a walk (DRAFT) */}
+          {(link.away ?? []).length > 1 ? (
+            <YStack gap={4} marginTop={14} borderTopWidth={1} borderColor="$color6" paddingTop={10}>
+              <Eyebrow>YOUR DAEMON</Eyebrow>
+              <Small>{`When nothing names a device -- this site in a browser, MENTIONS FROM YOUR DAEMON, a walk -- ${
+                link.yours ? `${link.yours.nickname || link.yours.name} answers` : "your daemon answers"}${
+                link.yours?.by === "recent" ? ", the one in the device you used last" : link.yours?.by === "first" ? ", the first one away" : ""}. DRAFT`}</Small>
+              <Choice<number | null> value={link.yours?.by === "named" ? link.yours.personality : null}
+                options={[[null, "The device used last"], ...(link.away ?? []).map((a): [number | null, string] => [a.personality, a.nickname || a.name])]}
+                onPick={async (personality) => {
+                  const v = await api<{ devices: DeviceRow[]; away: Carried[]; yours?: Yours | null }>("/api/devices/yours", { personality });
+                  setLink((l) => l && { ...l, devices: v.devices, away: v.away, yours: v.yours });
+                }} ink={ink} />
+            </YStack>
+          ) : null}
         </Card>
       ) : null}
 

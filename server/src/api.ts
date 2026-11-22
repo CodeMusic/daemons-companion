@@ -54,7 +54,7 @@ import { prunable } from "./backups.js";
 import { createConnection } from "node:net";
 import { DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
-import { assign, carryView } from "./carry.js";
+import { assign, carryView, setYours, yoursOf } from "./carry.js";
 import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
@@ -1588,9 +1588,10 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const widget = (r: ReturnType<typeof devices.list>[number]) => r.kind === "iphone-widget"
           ? { firmware: null, battery: null, owner: store.getSetting(`widget.owner.${r.id}`), mine: r.id === deviceId } : {};
         // C-405: and its name as the app says it, for THE ENGINE ROOM
+        const y = yoursOf(store, away);      // C-470: the daemon that answers when no device is named, and why
         return { devices: devices.list().map((r) => ({ ...r, ...widget(r), name: deviceName({ id: r.id, kind: r.kind, owner: store.getSetting(`widget.owner.${r.id}`) }),
                                                        daemon: byDevice[r.id] ? brief(byDevice[r.id]) : null })),
-                 away: away.map(brief), unplaced: unplaced.map(brief) };
+                 away: away.map(brief), unplaced: unplaced.map(brief), yours: y ? { ...brief(y.daemon), by: y.by } : null };
       };
       // ---- C-142: Home Assistant's way in, by the key in its address (never through the relay) ----
       const ol = path.match(/^\/ollama\/([A-Za-z0-9_-]{16,64})(\/.*)?$/);
@@ -1981,6 +1982,14 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (!validDeviceId(b.id) || (p !== null && !awayNow(ecfg).some((d) => d.personality === p)))
           return send(res, 400, { error: "carry {id, personality}: a device to host it, and a daemon that is away (SEND it in the game, then SYNC)" });
         assign(store, b.id, p);
+        return send(res, 200, devicesView());
+      }
+      if (req.method === "POST" && path === "/api/devices/yours") {     // C-470: your daemon, when no device is named
+        const b = await body(req);
+        const p = b.personality === null || b.personality === undefined ? null : Number(b.personality);
+        if (p !== null && !awayNow(ecfg).some((d) => d.personality === p))
+          return send(res, 400, { error: "yours {personality}: a daemon that is away, or null for the one in the device used last" });   // DRAFT
+        setYours(store, p);
         return send(res, 200, devicesView());
       }
       if (req.method === "POST" && path === "/api/devices/forget") {

@@ -17,15 +17,15 @@ export function carrying(store: Store): Record<string, number> {
 }
 function keep(store: Store, map: Record<string, number>) { store.setSetting(KEY, JSON.stringify(map)); }
 
-// The daemon this device carries, out of those away. With no device named (the site, an older board), the first away,
-// as it always was.
+// The daemon this device carries, out of those away. With no device named (the site, an older board, a plan run in the
+// night), YOUR daemon (C-470, below).
 // C-124: a device that gave its daemon to a card hosts none, by choice, until it takes one back -- never refilled
 export const NONE = -1;
 export function hostNone(store: Store, deviceId: string) { const map = carrying(store); map[deviceId] = NONE; keep(store, map); }
 
 export function carriedFor<T extends Away>(store: Store, away: T[], deviceId: string): T | null {
   if (!away.length) return null;
-  if (!validDeviceId(deviceId)) return away[0];
+  if (!validDeviceId(deviceId)) return yoursOf(store, away)?.daemon ?? null;
   const map = carrying(store);
   if (map[deviceId] === NONE) return null;
   const mine = away.find((d) => d.personality === map[deviceId]);
@@ -36,6 +36,31 @@ export function carriedFor<T extends Away>(store: Store, away: T[], deviceId: st
   keep(store, { ...map, [deviceId]: free.personality });
   return free;
 }
+
+// C-470 (the user, 2026-11-11: "overloaded at times then flipping back to the correct daemon"): with no device named --
+// the site in a browser, MENTIONS FROM YOUR DAEMON, a walk, the persona of the day -- YOUR daemon, not simply the save's
+// first away (which was OVERLOADED, in a board idle for three weeks): the one you name on the DEVICES card (YOURS), or
+// else the one in the device used most recently, or else the first away, as it always was. Asking assigns nothing.
+export const YOURS = "carry.yours";
+const DEVICES = "devices";      // devices.ts's own record of every device heard -- read here for when each was last seen
+export type Yours<T> = { daemon: T; by: "named" | "recent" | "first" };
+export function yoursOf<T extends Away>(store: Store, away: T[]): Yours<T> | null {
+  if (!away.length) return null;
+  const named = store.getSetting(YOURS);
+  const chosen = named !== null ? away.find((d) => d.personality === Number(named)) : undefined;
+  if (chosen) return { daemon: chosen, by: "named" };
+  let rows: Record<string, { lastSeen?: unknown }> = {};
+  try { const v = JSON.parse(store.getSetting(DEVICES) ?? "{}"); if (v && typeof v === "object") rows = v; } catch { /* none heard */ }
+  const at = (id: string) => { const t = Date.parse(String(rows[id]?.lastSeen ?? "")); return Number.isFinite(t) ? t : null; };
+  let recent: { t: number; d: T } | null = null;
+  for (const [id, p] of Object.entries(carrying(store))) {
+    const t = at(id), d = away.find((a) => a.personality === p);
+    if (t !== null && d && (!recent || t > recent.t)) recent = { t, d };
+  }
+  return recent ? { daemon: recent.d, by: "recent" } : { daemon: away[0], by: "first" };
+}
+/** C-470: name your daemon (a personality away), or null for the one in the device used most recently */
+export function setYours(store: Store, personality: number | null) { store.setSetting(YOURS, personality === null ? null : String(personality)); }
 
 // Put this daemon in this device (null: nothing in it). It leaves whichever device had it.
 export function assign(store: Store, deviceId: string, personality: number | null) {

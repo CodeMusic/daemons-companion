@@ -15,7 +15,7 @@ import { Store, type Db } from "../../server/src/store";
 import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "../../server/src/routes";
 import { show as glassShow } from "../../server/src/glass";   // C-262
 import { awayNow, deviceSettings, deviceState, type Edition, type Host, type SaveFile } from "../../server/src/core";
-import { assign, carryView } from "../../server/src/carry";
+import { assign, carryView, setYours, yoursOf } from "../../server/src/carry";
 import { kindOf, validDeviceId } from "../../server/src/deviceid";
 import { repaint, streakColours } from "../../server/src/paint";
 import { EXPRESSIONS, SHADED, shadePalette, type Expression } from "../../server/src/expressions";
@@ -136,7 +136,8 @@ function devicesView() {
   const now = new Date().toISOString();
   return { devices: DEVICES.map((d) => ({ id: d.id, kind: kindOf(d.id), via: "phone" as const, firstSeen: d.since, lastSeen: now,
                                           here: true, firmware: null, battery: null, daemon: byDevice[d.id] ? brief(byDevice[d.id]) : null })),
-           away: away.map(brief), unplaced: unplaced.map(brief) };
+           away: away.map(brief), unplaced: unplaced.map(brief),
+           yours: (() => { const y = yoursOf(store(), away); return y ? { ...brief(y.daemon), by: y.by } : null; })() };   // C-470
 }
 // The DEVICE tab's link, when there is no handheld to link: nothing linked, and the devices there are
 const NO_LINK = { linked: false, via: null, lastSeen: null, firmware: "", routines: [], pending: [], results: [],
@@ -240,6 +241,13 @@ export async function localApi(pathAndQuery: string, body?: any): Promise<Reply>
     const r = takeNight(h, s, detail, deviceId);
     if (typeof r === "string") return no(400, r);
     return ok({ dream: { id: r.dream.id, text: r.dream.text, by: r.dream.by, quality: r.dream.quality } });
+  }
+  if (method === "POST" && path === "/api/devices/yours") {             // C-470: your daemon, when no device is named
+    const p = body?.personality === null || body?.personality === undefined ? null : Number(body.personality);
+    if (p !== null && !awayNow(h).some((d) => d.personality === p))
+      return no(400, "yours {personality}: a daemon that is away, or null for the one in the device used last");   // DRAFT
+    setYours(s, p);
+    return ok(devicesView());
   }
   if (method === "POST" && path === "/api/devices/carry") {
     const p = body?.personality === null ? null : Number(body?.personality);

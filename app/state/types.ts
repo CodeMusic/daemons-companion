@@ -166,10 +166,13 @@ export type Link = { linked: boolean; via: "usb" | "wifi" | "phone" | null; last
               remotes: { active: number; remotes: { name: string; buttons: boolean[] }[] }; networks: string[]; currentNetwork: string; shared?: string[];
               battery?: { percent: number; charging: boolean; full: boolean; usb: boolean; at: string } | null;   // C-63
               lan: { address: string | null; port: number; open: boolean };
-              devices?: DeviceRow[]; away?: Carried[] };
+              devices?: DeviceRow[]; away?: Carried[];
+              yours?: Yours | null };   // C-470: the daemon that answers when no device is named, and why
                                               // C-80
 // C-80: a daemon in each device -- what each carries, and every daemon away (SENT in the game) to choose from
 export type Carried = { personality: number; slot: number; species: number; nickname: string; name: string; level: number };
+// C-470: YOUR daemon -- the one named on the DEVICES card, or the one in the device used last, or the save's first away
+export type Yours = Carried & { by: "named" | "recent" | "first" };
 
 export type DeviceRow = { id: string; kind: string; via: "usb" | "wifi" | "phone" | "relay" | null; firstSeen?: string; lastSeen: string; here: boolean;
                    firmware: string | null; battery: { percent: number; charging: boolean; usb: boolean } | null;

@@ -1,7 +1,7 @@
 // C-212 (the user, 2026-10-28: "hit a button during meetings so it records them ... meeting summary notes -- viewable on
 // the watch (with option to read the summary part outloud)"): RECORD A MEETING and LAST MEETING, in HOURS. The microphone
 // is read by a task of its own into half-minute parts (two buffers, so one fills while the other is sent), each sent to
-// the companion as it is finished (server/src/meetings.ts hears it there) and kept on the SD card first where there is
+// the companion as it is finished (server/src/lifemanagement/meetings.ts hears it there) and kept on the SD card first where there is
 // one (C-199), so a part the network missed is sent later -- SEND KEPT goes through what is left. While it
 // records the glass says so, in red, the whole time: the people in the room can see it. At the end the companion writes
 // it up; the watch waits for it and shows the SUMMARY (LISTEN reads it), the ACTION ITEMS, and the daemon's DAY-DREAM.

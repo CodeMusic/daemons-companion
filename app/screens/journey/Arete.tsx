@@ -1,6 +1,6 @@
 // C-433 (PRAXIS 6; the user, 2026-11-22, by multiple choice): ARETE on JOURNEY -- what is held, earned today and this
 // week, and THE REWARD SHELF the person stocks themselves: each reward its price, once or any number of times; SPEND
-// takes it at once and the daemon is glad with you; a spend can be taken back on its own day (server/src/rewards.ts).
+// takes it at once and the daemon is glad with you; a spend can be taken back on its own day (server/src/lifemanagement/rewards.ts).
 // Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";

@@ -4,7 +4,7 @@
 // earns 2 ARETE more, once a day (the user, 2026-11-22, by multiple choice). Each weekday has its virtue over its shadow
 // (data/week.json; T-418: "over", never "cures"); finishing anything on its day is living it.
 import { Praxis, type Form } from "@daemons/praxis";
-import weekJson from "../data/week.json" with { type: "json" };
+import weekJson from "../../data/week.json" with { type: "json" };
 
 export const DAY_VIRTUE = 2;
 export const WEEK = weekJson.days as { day: string; virtue: string; shadow: string; chakra: string; colour: string }[];

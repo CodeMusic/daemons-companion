@@ -13,7 +13,7 @@
 import type { Subtle } from "./save/subtle.js";
 import type { Store } from "./store.js";
 import { Praxis, type Form, type Item } from "@daemons/praxis";
-import { ensureSpace } from "./practice.js";
+import { ensureSpace } from "./lifemanagement/practice.js";
 import { guidePages } from "./guideask.js";
 
 export type Day = { day: string; chakra: string; note: string; theme: string };

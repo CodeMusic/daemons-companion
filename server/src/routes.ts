@@ -20,12 +20,12 @@ import { readPlay } from "./save/play.js";
 import { readSubtle } from "./save/subtle.js";
 import { howOf, MASK_UNDER, maskOf, readsView, seeRead, takeLean, takeRead } from "./intuition.js";   // C-203; C-357: RECOGNITION, THE MASK
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
-import { tend, tendingView } from "./tending.js";
-import { weekBalance } from "./balance.js";   // C-432
-import { editReward, removeReward, shelfView, spend, stock, unspend } from "./rewards.js";   // C-433
-import { cooked, keepRecipe, recipesView, removeRecipe, uncooked } from "./recipes.js";   // C-433
-import { itemDone, keepItem, makeSpace, mineView, removeForm, removeItem, saveForm, spaceView } from "./myforms.js";   // C-433
-import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, markQuiz, quizOf, quizView, removeFrom, rename, review } from "./learning.js";   // C-433   // C-357 (3)
+import { tend, tendingView } from "./lifemanagement/tending.js";
+import { weekBalance } from "./lifemanagement/balance.js";   // C-432
+import { editReward, removeReward, shelfView, spend, stock, unspend } from "./lifemanagement/rewards.js";   // C-433
+import { cooked, keepRecipe, recipesView, removeRecipe, uncooked } from "./lifemanagement/recipes.js";   // C-433
+import { itemDone, keepItem, makeSpace, mineView, removeForm, removeItem, saveForm, spaceView } from "./lifemanagement/myforms.js";   // C-433
+import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, markQuiz, quizOf, quizView, removeFrom, rename, review } from "./lifemanagement/learning.js";   // C-433   // C-357 (3)
 import { weatheringOf } from "./weathering.js";   // C-357 (4)
 import { VESSEL_UNDER, vesselOf } from "./vessel.js";   // C-357 (5)
 import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232; C-357
@@ -53,7 +53,7 @@ import { songOf, SONGS, summonsFor } from "./ownsong.js";   // C-418; C-419 (3):
 import { WAKES, wakesBy } from "./life.js";   // C-293: the cares that wake it, one list
 import { faceOf, openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches; C-357: its eyes, for THE MASK
 import { thriveOf } from "./thrive.js";   // C-207
-import { again, askSigns, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./journal.js";   // C-298
+import { again, askSigns, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./lifemanagement/journal.js";   // C-298
 import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
 import { carryView } from "./carry.js";

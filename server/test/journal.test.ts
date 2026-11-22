@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
-import { chapterWords, journalOf, plainPage, readPage, writeChapter, writePage, STALE_MIN } from "../src/journal.js";
+import { chapterWords, journalOf, plainPage, readPage, writeChapter, writePage, STALE_MIN } from "../src/lifemanagement/journal.js";
 
 const h: Host = { edition: "CONTENT", save: { read: () => null, write: () => null } };
 const post = (store: Store, path: string, body: object, now = new Date("2026-11-05T12:00:00Z")) =>

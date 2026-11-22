@@ -485,7 +485,7 @@ meetings with it, which is the editions' own pair, CONTENT and CONTEXT.
    tested on Node and on the phone's engine. No sync yet. **C-429**, *done 2026-11-20 (companion 9c1949f7)*.
 3. **GOALS onto it**, behind the same routes; the ARETE ledger and the rules with today's numbers; THRIVE from the
    ledger. *Phases 2 and 3 are the slice: one form, the same behaviour, new rails.* **C-430**, *done 2026-11-20*: the
-   LIFE form and its rules are `server/src/goals.ts` (below).
+   LIFE form and its rules are `server/src/lifemanagement/goals.ts` (below).
 4. **Sync**: phone and hub by version vectors; a phone that hosted alone joins a hub; blobs by hash. **C-431**, *done
    2026-11-20 (daemons-praxis v0.2.0)*: section 5's "Built".
 5. **The JOURNAL, the DREAM JOURNAL, TENDING and MEETINGS** onto it; THE WEEK'S BALANCE. **C-432**
@@ -524,7 +524,7 @@ here, **`packages/praxis`**, its own repository before long (it is: C-435); **ou
 - **What the game will take for ARETE** at SYNC, and how much a day (the game lane).
 - **The default ARETE per kind** and the virtue bonus (the numbers in section 6 are placeholders). C-430 built GOALS with
   them -- a step 1, a milestone 5, a goal 20 -- and **daily caps** of 20, 15 and 60 ARETE: guesses, in `RULES`
-  (`server/src/goals.ts`), to be chosen.
+  (`server/src/lifemanagement/goals.ts`), to be chosen.
 - **The site's subdomain**: C-411 has dashboard.daemons.codemusic.ca; eudaimonia.daemons.codemusic.ca is the other
   choice.
 - **THE UNITY BOOK's lens on the site** (an idea): an item read for its cost (the effort, the night reading), for its

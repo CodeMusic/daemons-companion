@@ -143,12 +143,12 @@ import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtle
 import { ackSpellcraft, readHermetic } from "./hermetic.js";   // C-238
 import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
-import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
-import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
-import { readRecipePage } from "./recipes.js";   // C-433
-import { formToShare, mineView, takeForm } from "./myforms.js";   // C-433
-import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, MARK_ASK, markAsk, markQuiz, newCourse, proposeSyllabus, quizQuestions, readMarks, readSyllabus, SYLLABUS_ASK, tutorState, type Mark } from "./learning.js";   // C-433
-import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
+import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./lifemanagement/voicenotes.js";   // C-199 (5)
+import { journalOf, writeChapter, writeSigns } from "./lifemanagement/journal.js";   // C-298; C-356 the signs
+import { readRecipePage } from "./lifemanagement/recipes.js";   // C-433
+import { formToShare, mineView, takeForm } from "./lifemanagement/myforms.js";   // C-433
+import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, MARK_ASK, markAsk, markQuiz, newCourse, proposeSyllabus, quizQuestions, readMarks, readSyllabus, SYLLABUS_ASK, tutorState, type Mark } from "./lifemanagement/learning.js";   // C-433
+import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./lifemanagement/meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
 import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later; C-455: cadence

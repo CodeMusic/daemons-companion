@@ -1,5 +1,5 @@
 // C-357 (3), THE BODY's centres (the user's pick, 2026-11-12): once the save holds THE SUBTLE LAYER, TODAY offers the day's
-// centre's tending in the book's own words, and the week's climb, root to crown (server/src/tending.ts). In the book's one
+// centre's tending in the book's own words, and the week's climb, root to crown (server/src/lifemanagement/tending.ts). In the book's one
 // purple -- never a colour for a centre (the book's rule 3). Every word DRAFT.
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";

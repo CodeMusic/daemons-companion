@@ -14,7 +14,7 @@
 //
 // Every word here is DRAFT, words to a model, never shown.
 import type { Store } from "../store.js";
-import { journalOf, journalsOf } from "../journal.js";
+import { journalOf, journalsOf } from "../lifemanagement/journal.js";
 import { monthOf, type Hemisphere } from "../months.js";
 import { Synesthesia } from "../synesthesia.js";
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, lastDue, nextDue, PLANS, plans, type Plan } from "../src/ai/schedule.js";
 import { lastOf, markRead, mentionsAsk, mentionsOf, newestUnread, plainLetter, spanSaid, statLines, statsOf, windowOf, writeMention } from "../src/mentions.js";
-import { keepEntry, newJournal } from "../src/journal.js";
+import { keepEntry, newJournal } from "../src/lifemanagement/journal.js";
 import { keepNight } from "../src/dreams.js";
 import { route } from "../src/routes.js";
 

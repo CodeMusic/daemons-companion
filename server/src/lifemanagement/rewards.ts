@@ -4,7 +4,7 @@
 // number of times. SPEND takes the price at once and the daemon is glad with you; it can be taken back the same day.
 // A reward is an item in the REWARD SHELF space; a spend is ARETE's own `spend` event, named for its reward, so the
 // ledger says what each ARETE went on. Every word the app shows is DRAFT.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import type { Form, Item } from "@daemons/praxis";
 import { ensureSpace, midnight } from "./practice.js";
 

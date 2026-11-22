@@ -5,12 +5,12 @@
 // wash"), a dream kept on the third eye's (Friday: "watch your dreams"). Kept, a line a day, and drawn as the week's climb,
 // root to crown (CENTRES: "So they climb."; THE WEEK: "The Week Is a Climb"). Never a colour for a centre (the book's
 // rule 3): the climb is drawn in the book's one purple. Every word DRAFT. No node: imports.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import { hlcIso, Praxis, type Form } from "@daemons/praxis";
 import { dayVirtue, ensureSpace, localDate } from "./practice.js";
-import { dreamsOf } from "./dreams.js";
-import subtleJson from "../data/subtle.json" with { type: "json" };
-import weekJson from "../data/week.json" with { type: "json" };
+import { dreamsOf } from "../dreams.js";
+import subtleJson from "../../data/subtle.json" with { type: "json" };
+import weekJson from "../../data/week.json" with { type: "json" };
 
 type Para = { text: string };
 type Entry = { short: string; paragraphs: Para[] };

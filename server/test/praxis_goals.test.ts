@@ -1,10 +1,10 @@
 // C-430: GOALS on PRAXIS -- the old tables read in once, at their own times, losing nothing; the same shapes from the
 // Store; ARETE paid once per finish under a daily cap; THRIVE's week the same across the move.
 import { DatabaseSync } from "node:sqlite";
-import { DAY_VIRTUE } from "../src/practice.js";   // C-432
+import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";   // C-432
 import { describe, expect, it } from "vitest";
 import { Store, type Db } from "../src/store.js";
-import { LIFE, RULES } from "../src/goals.js";
+import { LIFE, RULES } from "../src/lifemanagement/goals.js";
 import { thriveOf } from "../src/thrive.js";
 import { dayMaterial } from "../src/memory.js";
 

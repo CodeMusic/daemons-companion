@@ -1,7 +1,7 @@
 // C-433 (PRAXIS 6; the user, 2026-11-22, by multiple choice: kinds, fields and ARETE first -- "ask me again after
 // testing"): MINE on JOURNEY -- forms you make yourself. A form is its kinds, each with the fields you pick and what
 // finishing one pays in ARETE (under a daily cap); a SPACE is made from a form and keeps its items; a form is SHARED to
-// THE COMMONS as its shape alone, and a friend's TAKEN as your own (server/src/myforms.ts). Every word DRAFT.
+// THE COMMONS as its shape alone, and a friend's TAKEN as your own (server/src/lifemanagement/myforms.ts). Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";

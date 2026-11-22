@@ -12,10 +12,10 @@
 // tried again. Every word the companion says here is DRAFT.
 // C-356: a journal has a KIND -- STANDARD, or DREAM, whose chapters are the dreams told; and any entry or chapter can READ
 // THE SIGNS (signs.ts): the symbols in it read through the four books, by the house's quick thinker, or from the lexicon.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import { Praxis, type Form, type Item } from "@daemons/praxis";
-import { plainSigns, readSigns, returningSigns, signsAsk, SIGNS_ASK, symbolsIn, type Kind, type Reading, type Returning, type Source } from "./signs.js";
-import { cleanFeeling, feltOf } from "./processes.js";   // C-357, PROCESSES
+import { plainSigns, readSigns, returningSigns, signsAsk, SIGNS_ASK, symbolsIn, type Kind, type Reading, type Returning, type Source } from "../signs.js";
+import { cleanFeeling, feltOf } from "../processes.js";   // C-357, PROCESSES
 import { dayVirtue, ensureSpace, midnight } from "./practice.js";
 
 export const LIMITS = { journal: 40, title: 60, body: 8000 };

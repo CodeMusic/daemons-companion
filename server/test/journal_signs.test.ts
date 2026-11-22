@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
-import { chapterWords, DREAM_PAGE_ASK, PAGE_ASK, journalOf, signsWords, writeChapter, writeSigns } from "../src/journal.js";
+import { chapterWords, DREAM_PAGE_ASK, PAGE_ASK, journalOf, signsWords, writeChapter, writeSigns } from "../src/lifemanagement/journal.js";
 import { LEXICON, lensesOf, plainSigns, readSigns, returningSigns, signName, signsAsk, SIGNS_ASK, symbolsIn, type Lexicon } from "../src/signs.js";
 
 const h: Host = { edition: "CONTENT", save: { read: () => null, write: () => null } };

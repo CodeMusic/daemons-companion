@@ -3,7 +3,7 @@
 // (server/src/core.ts and routes.ts -- the same code the server runs) over the phone's own SQLite, and a COPY of the
 // save Delta shared through Files, kept in the app's documents. SYNC writes that copy (the one before it kept beside
 // it), and the phone hands it back to Delta through the share sheet. Delta's own save is never touched.
-import { journalOf, writeChapter, writeSigns } from "../../server/src/journal";   // C-298; C-356
+import { journalOf, writeChapter, writeSigns } from "../../server/src/lifemanagement/journal";   // C-298; C-356
 import { GATE } from "../game/gate";
 import * as SQLite from "expo-sqlite";
 import * as DocumentPicker from "expo-document-picker";

@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Backup, backupFile, restore } from "../src/backup.js";
 import { blobsBeside } from "../src/blobstore.js";
 import { Store } from "../src/db.js";
-import { LIFE } from "../src/goals.js";
+import { LIFE } from "../src/lifemanagement/goals.js";
 import { hubPeer } from "../src/praxissync.js";
 import { readCode, recoveryCode, wrappingKey } from "../src/sealing.js";
 import { makeVault, tokenFor } from "../src/vault.js";

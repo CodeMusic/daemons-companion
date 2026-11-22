@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allHeard, endMeeting, meetingOf, partHeard, readWriteUp, startMeeting, stretches, transcriptOf, writeUp } from "../src/meetings.js";
+import { allHeard, endMeeting, meetingOf, partHeard, readWriteUp, startMeeting, stretches, transcriptOf, writeUp } from "../src/lifemanagement/meetings.js";
 import { Store } from "../src/db.js";
 
 describe("C-212: a meeting, recorded and written up", () => {

@@ -2,10 +2,10 @@
 // BALANCE (a virtue lived when something was done on its own day; its shadow untended when the day passed with nothing).
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
-import { tend, tendedOf, TENDING } from "../src/tending.js";
-import { weekBalance } from "../src/balance.js";
-import { DAY_VIRTUE, spaceOf } from "../src/practice.js";
-import { keepEntry, newJournal } from "../src/journal.js";
+import { tend, tendedOf, TENDING } from "../src/lifemanagement/tending.js";
+import { weekBalance } from "../src/lifemanagement/balance.js";
+import { DAY_VIRTUE, spaceOf } from "../src/lifemanagement/practice.js";
+import { keepEntry, newJournal } from "../src/lifemanagement/journal.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);      // November 2026: the 15th a Sunday
 const at = (d: number, h = 12) => day(d, h).getTime();

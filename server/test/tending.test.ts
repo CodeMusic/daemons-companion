@@ -2,7 +2,7 @@
 // companion sees (a walk on the root's day, a dream kept on the third eye's), and the week's climb, root to crown.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
-import { CENTRES, tend, tendedOf, tendingOf, tendingView } from "../src/tending.js";
+import { CENTRES, tend, tendedOf, tendingOf, tendingView } from "../src/lifemanagement/tending.js";
 import { checkNight, keepNight } from "../src/dreams.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);      // November 2026: the 8th a Sunday, the 12th a Thursday

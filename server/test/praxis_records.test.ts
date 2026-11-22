@@ -2,11 +2,11 @@
 // settings held read in once, keeping each one's number, and every call answering in the shape it always had.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
-import { actionDone, meetingOf, meetingsOf, startMeeting, MEETINGS } from "../src/meetings.js";
-import { newVoiceNote, noteHeard, voiceNotesOf, forgetVoiceNote } from "../src/voicenotes.js";
+import { actionDone, meetingOf, meetingsOf, startMeeting, MEETINGS } from "../src/lifemanagement/meetings.js";
+import { newVoiceNote, noteHeard, voiceNotesOf, forgetVoiceNote } from "../src/lifemanagement/voicenotes.js";
 import { journalOf as answersOf, keepAnswer } from "../src/subtleask.js";
-import { DAY_VIRTUE, spaceOf } from "../src/practice.js";
-import { journalOf, journalsOf, keepEntry, newJournal, removeEntry, summarize, JOURNAL } from "../src/journal.js";
+import { DAY_VIRTUE, spaceOf } from "../src/lifemanagement/practice.js";
+import { journalOf, journalsOf, keepEntry, newJournal, removeEntry, summarize, JOURNAL } from "../src/lifemanagement/journal.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);
 const fresh = (t = day(18).getTime()) => new Store(":memory:", { now: () => t });

@@ -9,7 +9,7 @@
 // in two steps (each stretch to notes, the notes to the write-up), so a model with a short window manages them. The
 // words to the models are the companion's own, never shown; what comes back is the user's. No node: imports (the
 // audio itself is kept on disk by api.ts, never here). Every word shown is DRAFT.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import { Praxis, type Form, type Item } from "@daemons/praxis";
 import { ensureSpace, dayVirtue } from "./practice.js";
 

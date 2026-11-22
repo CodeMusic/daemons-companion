@@ -2,8 +2,8 @@
 // whole or one at a time (a card taking its lesson and module with it), declined; lessons finished; cards reviewed.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
-import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, newCourse, proposeSyllabus, readSyllabus, review } from "../src/learning.js";
-import { DAY_VIRTUE } from "../src/practice.js";
+import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, newCourse, proposeSyllabus, readSyllabus, review } from "../src/lifemanagement/learning.js";
+import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);
 function fresh(at = day(18).getTime()) {
@@ -81,7 +81,7 @@ describe("C-433: LEARNING", () => {
   });
 });
 
-import { markQuiz, plainMark, quizOf, readMarks } from "../src/learning.js";
+import { markQuiz, plainMark, quizOf, readMarks } from "../src/lifemanagement/learning.js";
 
 describe("C-433: QUIZZES", () => {
   it("marks plainly by the answer's own words, and reads the TUTOR's marks leniently", () => {

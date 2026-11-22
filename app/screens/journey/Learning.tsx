@@ -1,7 +1,7 @@
 // C-433 (PRAXIS 6; the user, 2026-11-22, by multiple choice): LEARNING on JOURNEY -- name what you would like to learn and
 // THE TUTOR (the household's mind) proposes a syllabus: modules, lessons and review cards, each TAKEN (edited as it is
 // taken) or NOT. A lesson is written by the TUTOR when it is first opened; DONE pays 3 ARETE. REVIEW brings back the cards
-// due, on a spaced schedule, 1 ARETE each. Without a mind, a course is built by hand (server/src/learning.ts). Every word DRAFT.
+// due, on a spaced schedule, 1 ARETE each. Without a mind, a course is built by hand (server/src/lifemanagement/learning.ts). Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";

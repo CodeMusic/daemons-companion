@@ -1,7 +1,7 @@
 // C-433 (PRAXIS 6; the user, 2026-11-22, by multiple choice): RECIPES on JOURNEY -- typed in, or read from a recipe page's
 // link (the hub reads its published ingredients and steps; checked here before it is kept). COOKED logs a meal: 3 ARETE,
 // and the daemon eats with you (the same FEED as anywhere). A meal logged by mistake can be taken back that day
-// (server/src/recipes.ts). Every word DRAFT.
+// (server/src/lifemanagement/recipes.ts). Every word DRAFT.
 import { useState } from "react";
 import { TextInput } from "react-native";
 import { Text, XStack, YStack } from "tamagui";

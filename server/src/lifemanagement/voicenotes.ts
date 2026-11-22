@@ -3,7 +3,7 @@
 // comes whole (a minute at most) when the watch is home -- straight away, or later from its card -- and is heard on the
 // hub's module; the words are the note. The app lists them, newest first; one can become a goal. No node: imports (the
 // recording itself is kept on disk by api.ts while it is wanted). Every word shown is DRAFT.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import { Praxis, type Form, type Item } from "@daemons/praxis";
 import { ensureSpace } from "./practice.js";
 

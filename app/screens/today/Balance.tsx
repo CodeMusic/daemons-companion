@@ -2,7 +2,7 @@
 // Sunday to Saturday, each day's virtue lit when something was done on its day (a step, the centre tended, an entry, a
 // dream written), the days passed with nothing dim and their shadow named, never red and never scolded (T-418: a virtue
 // is said OVER its shadow, never as its cure), the days ahead faint. A tap opens the week: what lived each day. The day's
-// first finish earns its virtue 2 ARETE more (server/src/balance.ts, practice.ts). Every word DRAFT.
+// first finish earns its virtue 2 ARETE more (server/src/lifemanagement/balance.ts, practice.ts). Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { useApi } from "../../platform/useApi";

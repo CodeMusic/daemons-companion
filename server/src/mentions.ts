@@ -10,7 +10,7 @@
 import type { Store } from "./store.js";
 import { DAY_WORDS } from "./memory.js";
 import { dreamsOf } from "./dreams.js";
-import { entriesBetween, type Writer } from "./journal.js";
+import { entriesBetween, type Writer } from "./lifemanagement/journal.js";
 
 export type Span = "day" | "month" | "season" | "year";
 export const SPANS: Span[] = ["day", "month", "season", "year"];

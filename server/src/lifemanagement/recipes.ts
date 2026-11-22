@@ -4,7 +4,7 @@
 // schema.org Recipe in JSON-LD, which readRecipePage reads). COOKED logs a meal: 3 ARETE (at most three meals a day pay),
 // the day's virtue if it is the day's first finish, and the daemon eats with you ("it would eat, if you are eating").
 // A recipe is an item in the RECIPES space; each time it was cooked an item under it. Every word the app shows is DRAFT.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import type { Form, Item } from "@daemons/praxis";
 import { dayVirtue, ensureSpace, midnight } from "./practice.js";
 

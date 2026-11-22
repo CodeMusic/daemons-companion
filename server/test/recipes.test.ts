@@ -2,8 +2,8 @@
 // and the day's virtue, a meal taken back on its own day.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
-import { cooked, keepRecipe, readRecipePage, recipesView, removeRecipe, uncooked, type Recipe } from "../src/recipes.js";
-import { DAY_VIRTUE } from "../src/practice.js";
+import { cooked, keepRecipe, readRecipePage, recipesView, removeRecipe, uncooked, type Recipe } from "../src/lifemanagement/recipes.js";
+import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);
 function fresh(at = day(18).getTime()) {

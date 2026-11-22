@@ -6,7 +6,7 @@
 // writes a lesson's words when the lesson is first opened. With no mind (a phone alone), everything is added by hand.
 // ARETE: a lesson finished 3 (nine a day pay), a card reviewed 1 (twenty a day), and the day's virtue on the day's first
 // finish. Cards come back on a simple spaced schedule. Quizzes are a later slice. Every word the app shows is DRAFT.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import type { Form, Item, Proposal } from "@daemons/praxis";
 import { dayVirtue, ensureSpace, localDate, midnight } from "./practice.js";
 

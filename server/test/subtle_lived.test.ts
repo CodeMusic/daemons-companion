@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { howOf, maskOf, MASK, readsView, seeRead, takeLean, takeRead } from "../src/intuition.js";
 import { feltOf, processOf, whenSaid } from "../src/processes.js";
-import { journalOf, keepEntry, newJournal } from "../src/journal.js";
+import { journalOf, keepEntry, newJournal } from "../src/lifemanagement/journal.js";
 
 const calm = { glad: 0, mad: 0, sad: 0, calm: 0, restless: 0, strongest: null };
 const afraid = { ...calm, calm: -60 };

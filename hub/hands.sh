@@ -47,6 +47,9 @@ case "${1:-}" in
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>ThrottleInterval</key><integer>30</integer>
+  <!-- C-406 (2026-11-22): its five-second ask stalled for minutes with no one at the screen -- macOS throttles a background
+       agent's timers (App Nap); Interactive keeps them on time, so a job asked for is taken within seconds -->
+  <key>ProcessType</key><string>Interactive</string>
   <key>StandardOutPath</key><string>$LOG</string>
   <key>StandardErrorPath</key><string>$LOG</string>
 </dict></plist>

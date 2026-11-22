@@ -344,19 +344,63 @@ static void runDeferred() {
 }
 
 // One request to the server over Wi-Fi -- home, or away through the relay (C-82); the answer's body, or "" with *ok false.
+// C-473 (the user, 2026-11-22, by multiple choice: "via the phone"): away, every request through the relay took 3-9 s
+// (TLS to n8n, then home and back), while the linked phone reaches home on the tailnet at once. So away, with the phone
+// linked and the cable out, the outbox's task asks the phone -- ASK n METHOD path [body], answered ANSWER n code [body]
+// (app/platform/handheld.ts) -- and the loop takes the answer when it asks again, as it does the relay's. Home is
+// still asked first once a minute, so coming home is noticed; a phone that never answers an ASK (an app from before)
+// is not asked again for ten minutes, and the relay is used as before.
+bool phoneLive();
+struct PhoneAsk { uint32_t n; volatile uint8_t stage; int code; String out; };   // 0 free, 1 asked, 2 answered
+static PhoneAsk phoneAsk = { 0, 0, -1, "" };
+static uint32_t phoneAskN = 0, phoneDeafUntil = 0;
+static const uint32_t PHONE_ASK_MS = 8000;
+static bool phoneWay() { return outboxTask && phoneLive() && !usbLive() && (int32_t)(millis() - phoneDeafUntil) >= 0; }
+static String phoneHttp(const char *method, const String &path, const String &body, int *code) {
+  *code = -1;
+  uint32_t n = ++phoneAskN;
+  phoneAsk.out = ""; phoneAsk.code = -1; phoneAsk.n = n; __sync_synchronize(); phoneAsk.stage = 1;
+  String line = "ASK " + String(n) + " " + method + " " + path;
+  if (!strcmp(method, "POST")) line += " " + (body.length() ? body : String("{}"));
+  linkSend(line);
+  uint32_t t0 = millis();
+  while (phoneAsk.stage == 1 && millis() - t0 < PHONE_ASK_MS && phoneLive()) vTaskDelay(pdMS_TO_TICKS(20));
+  if (phoneAsk.stage != 2) {
+    phoneAsk.stage = 0;
+    if (millis() - t0 >= PHONE_ASK_MS) { phoneDeafUntil = millis() + 600000; Serial.println("net: the phone did not answer an ASK; the relay for ten minutes"); }
+    return "";
+  }
+  *code = phoneAsk.code;
+  String out = phoneAsk.out;
+  phoneAsk.out = ""; __sync_synchronize(); phoneAsk.stage = 0;
+  return out;
+}
+// the loop, from the phone: "ANSWER n code [body]" -- taken only for the ASK still waiting
+void phoneAnswered(const String &rest) {
+  int a = rest.indexOf(' ');
+  if (a <= 0 || phoneAsk.stage != 1 || (uint32_t)rest.substring(0, a).toInt() != phoneAsk.n) return;
+  int b = rest.indexOf(' ', a + 1);
+  phoneAsk.code = (b < 0 ? rest.substring(a + 1) : rest.substring(a + 1, b)).toInt();
+  phoneAsk.out = b < 0 ? "" : rest.substring(b + 1);
+  __sync_synchronize(); phoneAsk.stage = 2;
+}
+
 String http(const char *method, const String &path, const String &body, bool *ok) {
   if (ok) *ok = false;
-  if (!online()) return "";
-  if (awayNow && outboxTask && loopTask && xTaskGetCurrentTaskHandle() == loopTask && relaySet() && !usbLive())
+  bool byPhone = phoneWay();
+  if (!online() && !byPhone) return "";
+  bool onLoop = loopTask && xTaskGetCurrentTaskHandle() == loopTask;
+  if (outboxTask && onLoop && !usbLive() && ((awayNow && (relaySet() || byPhone)) || (!online() && byPhone)))
     return deferredHttp(method, path, body, ok);
   uint32_t asked = millis();                           // C-443: a press that waits on this is a watch that seems frozen
   NetHeld held;
   uint32_t heldAt = millis();
   int code = -1;
   String out;
-  if (serverUrl.length() && !viaRelay()) {
+  const char *way = "home";
+  if (online() && serverUrl.length() && !viaRelay()) {
     HTTPClient h;
-    h.setConnectTimeout(relaySet() ? 1500 : 4000);     // away, home's address answers nothing: give up on it quickly
+    h.setConnectTimeout(relaySet() || byPhone ? 1500 : 4000);   // away, home's address answers nothing: give up on it quickly
     h.setTimeout(4000);
     h.begin(serverUrl + path);
     h.addHeader("x-device", deviceId());               // C-80: which device is asking
@@ -365,17 +409,23 @@ String http(const char *method, const String &path, const String &body, bool *ok
     else code = h.GET();
     out = code == 200 ? h.getString() : "";
     h.end();
+    if (code > 0) { awayAt = 0; awayNow = false; }
   }
-  if (code < 0 && relaySet() && !usbLive()) {         // home did not answer at all (a refusal is an answer): the relay -- never with the cable here (C-179)
+  if (code < 0 && byPhone && !onLoop) {               // C-473: home did not answer -- the phone, on the tailnet
+    int c; String o = phoneHttp(method, path, body, &c);
+    if (c > 0) { code = c; out = o; way = "phone"; awayAt = millis(); awayNow = true; }
+  }
+  if (code < 0 && online() && relaySet() && !usbLive()) {   // home did not answer at all (a refusal is an answer): the relay -- never with the cable here (C-179)
     out = relayHttp(method, path, body, &code);
+    way = "relay";
     awayAt = code > 0 ? millis() : 0;                  // the relay answered (even "home is asleep"): away, for a while
     if (code > 0) awayNow = true;
-  } else if (code > 0) { awayAt = 0; awayNow = false; }
+  }
   lastCode = code;
   if (ok) *ok = code == 200;
   if (millis() - asked > 1500)
-    Serial.printf("net: slow %s %s %lu ms (%lu waiting its turn) code %d %s\n", method, path.c_str(), (unsigned long)(millis() - asked),
-                  (unsigned long)(heldAt - asked), code, awayNow ? "away" : "home");
+    Serial.printf("net: slow %s %s %lu ms (%lu waiting its turn) code %d by %s\n", method, path.c_str(), (unsigned long)(millis() - asked),
+                  (unsigned long)(heldAt - asked), code, way);
   return out;
 }
 
@@ -571,6 +621,7 @@ void handleLine(String line, bool fromPhone) {
     if (!usbLive() && knownCount == 0) netsDue = true;
     usbSeen = millis();
   }
+  if (fromPhone && line.startsWith("ANSWER ")) { phoneAnswered(line.substring(7)); return; }   // C-473
   if (line.startsWith("STATE ")) {
     if (takeState(line.c_str() + 6)) seen = millis();       // C-121: the line's own buffer, no copy
     else reply("UNREAD " + String(line.length()) + " STATE " + stateError);   // C-179: and why (lost bytes, or memory)   // the bridge says so, rather than the corner silently not changing

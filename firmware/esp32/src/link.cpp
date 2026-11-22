@@ -20,7 +20,7 @@ static const char *UART_SERVICE = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";   // W
 static const char *UART_RX      = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
 static const char *UART_TX      = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
 static const uint32_t STRANGER_MS = 30000;
-static const size_t MAX_LINE = 6000;                 // as readUsb's: an ART line is ~3 KB
+static const size_t MAX_LINE = 12000;                // as readUsb's: an ART line is ~3 KB; C-473: an ANSWER may carry the whole state
 
 static NimBLEServer *server = nullptr;
 static NimBLECharacteristic *tx = nullptr, *uartTx = nullptr;
@@ -134,6 +134,9 @@ bool linkPhoneHere() { return phone >= 0 && listening; }
 
 void linkSend(const String &line) {
   if (!linkPhoneHere()) return;
+  // C-473: the outbox's task asks the phone while the loop talks to it -- one line at a time, never two interleaved
+  static SemaphoreHandle_t sending = xSemaphoreCreateMutex();
+  struct Held { SemaphoreHandle_t m; Held(SemaphoreHandle_t m) : m(m) { xSemaphoreTake(m, portMAX_DELAY); } ~Held() { xSemaphoreGive(m); } } held(sending);
   String all = line + "\n";
   size_t piece = mtu > 3 ? mtu - 3 : 20;
   for (size_t at = 0; at < all.length() && linkPhoneHere(); at += piece) {

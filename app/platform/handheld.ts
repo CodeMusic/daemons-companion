@@ -290,6 +290,21 @@ class Link {
       if (r.audioBase64) await sayOnPhone(r.audioBase64).catch(() => {});
       return;
     }
+    if (word === "ASK") {
+      // C-473 (the user, 2026-11-22: "via the phone"): away, the board's own requests went through the relay, 3-9 s each,
+      // and it froze on them; the phone reaches home on the tailnet at once, so it carries them. ANSWER n code [body]:
+      // 0 is "not reached" (the board tries the relay), any other refusal 500, as the board needs only ok or not.
+      const m = /^(\d+) (GET|POST) (\/api\/\S+)(?: (.*))?$/.exec(rest);
+      if (!m) return;
+      const [, n, method, path, raw] = m;
+      try {
+        const body = method === "POST" ? JSON.parse(raw || "{}") : undefined;
+        this.say(`ANSWER ${n} 200 ${JSON.stringify((await this.ask<unknown>(path, body)) ?? {})}`);
+      } catch (e) {
+        this.say(`ANSWER ${n} ${(e as Error)?.name === "Unreachable" ? 0 : 500}`);
+      }
+      return;
+    }
     if (word === "HELLO") {
       const id = rest.split(" ")[3];
       if (id && /^[a-z0-9][a-z0-9-]{2,47}$/.test(id) && id !== this.deviceId) {

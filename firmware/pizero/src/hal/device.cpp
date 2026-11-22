@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -31,6 +32,7 @@ static fb_var_screeninfo vinfo;
 static fb_fix_screeninfo finfo;
 static int rotate;              // quarter turns clockwise from our canvas to the framebuffer
 static int offX, offY;          // C-457: where the canvas sits on a bigger screen (in the middle)
+static int zoom = 1;            // C-468: each canvas pixel this many wide and high -- the most whole steps that fit
 static bool shiftHeld;
 
 static bool testBit(const unsigned long *bits, int n) { return (bits[n / (8 * sizeof(long))] >> (n % (8 * sizeof(long)))) & 1; }
@@ -81,13 +83,15 @@ bool begin(int, bool headless) {
   if (fbMem == MAP_FAILED) { fbMem = nullptr; perror("mmap"); return false; }
   if (const char *r = getenv("ZERO_ROTATE")) rotate = atoi(r) & 3;
   else rotate = (vinfo.xres >= (unsigned)W && vinfo.yres >= (unsigned)H) ? 0 : (vinfo.yres >= (unsigned)W && vinfo.xres >= (unsigned)H) ? 1 : 0;
-  // C-457: on a bigger screen (the GamePi20's 320x240) the canvas in the middle, the rest dark
+  // C-457: on a bigger screen (the GamePi20's 320x240) the canvas in the middle, the rest dark; C-468: as many whole
+  // times its size as fit (the Game HAT's 640x480 takes it twice over), so its pixels stay square and sharp
   const int fw = (rotate & 1) ? (int)vinfo.yres : (int)vinfo.xres, fh = (rotate & 1) ? (int)vinfo.xres : (int)vinfo.yres;
-  offX = fw > W ? (fw - W) / 2 : 0;
-  offY = fh > H ? (fh - H) / 2 : 0;
+  zoom = std::max(1, std::min(fw / W, fh / H));
+  offX = fw > W * zoom ? (fw - W * zoom) / 2 : 0;
+  offY = fh > H * zoom ? (fh - H * zoom) / 2 : 0;
   memset(fbMem, 0, fbLen);
-  fprintf(stderr, "screen: %s %ux%u, %u bits, line %u bytes, turned %d\n", path, vinfo.xres, vinfo.yres,
-          vinfo.bits_per_pixel, finfo.line_length, rotate);
+  fprintf(stderr, "screen: %s %ux%u, %u bits, line %u bytes, turned %d, x%d\n", path, vinfo.xres, vinfo.yres,
+          vinfo.bits_per_pixel, finfo.line_length, rotate, zoom);
   keyFd = openKeyboard();
   if (keyFd < 0) fprintf(stderr, "keys: no keyboard found (set ZERO_KEYS)\n");
   else if (getenv("ZERO_GRAB")) ioctl(keyFd, EVIOCGRAB, 1);
@@ -101,22 +105,27 @@ void present(const uint16_t *px) {
     for (int x = 0; x < W; x++) {
       uint16_t s = px[y * W + x];
       uint16_t c = (uint16_t)(s << 8 | s >> 8);   // LovyanGFX keeps it high byte first
-      // the point on the screen as held, then turned onto the framebuffer
-      const int sx = x + offX, sy = y + offY, sw = W + 2 * offX, sh = H + 2 * offY;
-      int fx = sx, fy = sy;
-      switch (rotate) {
-        case 1: fx = sh - 1 - sy; fy = sx; break;
-        case 2: fx = sw - 1 - sx; fy = sh - 1 - sy; break;
-        case 3: fx = sy; fy = sw - 1 - sx; break;
-      }
-      if ((unsigned)fx >= vinfo.xres || (unsigned)fy >= vinfo.yres) continue;
-      uint8_t *at = fbMem + (size_t)(fy + vinfo.yoffset) * finfo.line_length + (size_t)(fx + vinfo.xoffset) * (bpp / 8);
-      if (bpp == 16) *(uint16_t *)at = c;
-      else if (bpp == 32) {
+      uint32_t wide = 0;
+      if (bpp == 32) {
         uint32_t r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
         r = r << 3 | r >> 2; g = g << 2 | g >> 4; b = b << 3 | b >> 2;
-        *(uint32_t *)at = 0xFF000000u | r << vinfo.red.offset | g << vinfo.green.offset | b << vinfo.blue.offset;
+        wide = 0xFF000000u | r << vinfo.red.offset | g << vinfo.green.offset | b << vinfo.blue.offset;
       }
+      for (int dy = 0; dy < zoom; dy++)
+        for (int dx = 0; dx < zoom; dx++) {
+          // the point on the screen as held, then turned onto the framebuffer
+          const int sx = x * zoom + dx + offX, sy = y * zoom + dy + offY, sw = W * zoom + 2 * offX, sh = H * zoom + 2 * offY;
+          int fx = sx, fy = sy;
+          switch (rotate) {
+            case 1: fx = sh - 1 - sy; fy = sx; break;
+            case 2: fx = sw - 1 - sx; fy = sh - 1 - sy; break;
+            case 3: fx = sy; fy = sw - 1 - sx; break;
+          }
+          if ((unsigned)fx >= vinfo.xres || (unsigned)fy >= vinfo.yres) continue;
+          uint8_t *at = fbMem + (size_t)(fy + vinfo.yoffset) * finfo.line_length + (size_t)(fx + vinfo.xoffset) * (bpp / 8);
+          if (bpp == 16) *(uint16_t *)at = c;
+          else if (bpp == 32) *(uint32_t *)at = wide;
+        }
     }
   }
 }

@@ -18,11 +18,11 @@ CMake's `ZERO_BOARD` picks the board file (`BOARD=gamepi20 ./build.sh`); on a de
 Everything above them -- the game on mGBA's core, the one save kept in step with the hub (C-380, C-397), the GAMES page
 (C-395), every page, LINK, the caps (C-444) -- is the same program on every board.
 
-**The canvas.** The pages draw 320x170, the Cardputer Zero's screen. A bigger screen shows it in the middle, the rest
-dark (the GamePi20's 320x240 has 35 rows above and below). A page laid out for the bigger screen is later work, and the
-game's 240x160 already fits either.
+**The canvas.** The pages draw 320x170, the Cardputer Zero's screen. A bigger screen shows it as many whole times its
+size as fit (C-468), in the middle, the rest dark: the GamePi20's 320x240 once, with 35 rows above and below; the Game
+HAT's 640x480 twice, so its pixels stay square. A page laid out for the bigger screen is later work.
 
-**A pad.** A board with no keyboard reads its buttons as the keys the pages listen for (`board::forPage`): A is ENTER, B
+**A pad.** A board with no keyboard (its behaviour is `src/boards/pad.cpp`, shared by every pad board) reads its buttons as the keys the pages listen for (`board::forPage`): A is ENTER, B
 is ESC, SELECT is TAB, START is ENTER, Y is BACKSPACE, X is SPACE, L and R move along a row. In the game every button is
 the game's, and **SELECT and START held together** go back to HOME. A page's hint is printed through `hint()`, so
 "ENTER: DONE    ESC: BACK" reads "A: DONE    B: BACK" on a pad. LINK needs the hub's code typed: on a pad it is
@@ -33,6 +33,7 @@ the game's, and **SELECT and START held together** go back to HOME. A page's hin
 | Board | `ZERO_BOARD` | Pi | Screen | Keys | Sound | Started by |
 |---|---|---|---|---|---|---|
 | **Cardputer Zero** (C-377) | `cardputer-zero` | CM0 (a Zero 2 W's chip) | 320x170 ST7789, `panel-mipi-dbi` | the TCA8418's 56 keys | ES8389, PipeWire | M5Stack's APPLaunch (`packaging/daemons.desktop`) |
+| **Game HAT** (Waveshare; C-468) | `gamehat` | a full Pi: 3B, 3B+ or 4 | 3.5-inch 480x320 IPS on the HDMI (sent 640x480) | d-pad, A B X Y, START, SELECT, L, R on GPIO | the HDMI's sound, to its speaker | `daemons@<user>.service` at boot |
 | **GamePi20** (Waveshare) | `gamepi20` | Zero 2 W (a first Zero or Zero W runs the companion; the game at full speed is unlikely) | 2-inch 320x240 ST7789VW on SPI0 | d-pad, A B X Y, START, SELECT, L, R on GPIO | a speaker on PWM (GPIO 18) | `daemons@<user>.service` at boot |
 
 ### The GamePi20
@@ -58,15 +59,37 @@ storage of its own: without a card it does nothing, and the screen stays dark. T
 `BOARD=gamepi20 tools/install.sh codemusic@daemons-gamepi`, which builds on the device and prints the two lines to run
 there with sudo (the setup and the package), and a reboot.
 
+### The Game HAT
+
+A HAT for a full-size Pi (3B, 3B+, 4B), from Waveshare's wiki (Game_HAT); `tools/boards/gamehat.sh` makes it ready:
+
+- **The screen** is on the Pi's **HDMI**, not SPI: a short HDMI bridge from the Pi to the HAT. Waveshare sends it
+  640x480 (`hdmi_cvt=640 480 60 1 0 0 0`), which the HAT fits to its 480x320 panel; the kernel's driver ignores
+  `hdmi_cvt`, so the script also puts `video=HDMI-A-1:640x480@60D` in `cmdline.txt`. The program draws on that HDMI's
+  framebuffer, the canvas twice its size. A Pi 4 has a second HDMI, free for a TV (THE DESK, C-449); a Pi 3 has one.
+- **The buttons**: UP 5, DOWN 6, LEFT 13, RIGHT 19, A 26, B 12, X 16, Y 20, START 21, SELECT 4, L 18, R 23 (BCM). Waveshare
+  read them with `mk_arcade_joystick_rpi`; we make the same one gpio-keys device as the GamePi20's.
+- **The sound** comes down the HDMI to its speaker and earphone jack: nothing to turn on.
+- **The cell**: an 18650, not included; 1 to 2 hours of play by Waveshare's count. Its switch is OFF before the cell goes
+  in, and nothing over 7 V may reach its charger.
+- **Seen on the device: not yet** (DRAFT).
+
+**Setting one up**: Raspberry Pi OS Lite (64-bit) on a microSD with Raspberry Pi Imager (hostname, user, Wi-Fi, SSH),
+then `BOARD=gamehat tools/install.sh codemusic@<its name>`, the two lines it prints, and a reboot.
+
+**What the two handhelds' setups share** is `tools/boards/common.sh`: the buttons as one gpio-keys device from twelve pins
+(`pad_buttons`), our lines in config.txt between two marks (`config_lines`), and DAEMONS at boot (`start_at_boot`). A
+board's own script is then only its pins and its screen.
+
 ## Adding a board
 
-1. `src/boards/<id>.cpp`, from the nearer of the two: its `ID` (the start of the name it gives the hub), `NAME`, screen,
+1. `src/boards/<id>.cpp`, from the nearest of the three (a pad board calls `boards/pad.cpp`): its `ID` (the start of the name it gives the hub), `NAME`, screen,
    `KEYBOARD`, `INPUTS`, the game's keys, `forPage` and `word`.
-2. If it has no launcher: `tools/boards/<id>.sh`, which turns on its screen, keys and sound and enables `daemons@.service`.
+2. If it has no launcher: `tools/boards/<id>.sh`, its pins and screen, using `common.sh` for the rest.
 3. A row in the table above, and in `LAYOUT.md` if a folder moved.
 
-Next in line: a 3.5-inch 480x320 SPI screen on a Zero 2 W (the user, 2026-11-21) -- a board file and a canvas for a
-screen that size.
+Next in line: a 3.5-inch 480x320 SPI screen on a Zero 2 W (the user, 2026-11-21) -- a board file, and the canvas once
+its size (480 is not two times 320).
 
 ## Mind and machine
 

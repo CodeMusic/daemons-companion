@@ -79,7 +79,7 @@ else()
 endif()
 
 # C-457: the board this is built for -- src/boards/<ZERO_BOARD>.cpp, its screen, keys and name (docs/PIBOARDS.md)
-set(ZERO_BOARD cardputer-zero CACHE STRING "the Linux board: cardputer-zero, gamepi20")
+set(ZERO_BOARD cardputer-zero CACHE STRING "the Linux board: cardputer-zero, gamepi20, gamehat")
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/boards/${ZERO_BOARD}.cpp)
   message(FATAL_ERROR "no board called ${ZERO_BOARD}: src/boards/ has the ones there are")
 endif()
@@ -119,6 +119,7 @@ set(SRC
   src/caps/bus.cpp
   src/caps/cc1101.cpp
   src/caps/cap.cpp
+  src/boards/pad.cpp
   src/boards/${ZERO_BOARD}.cpp)
 
 if(ZERO_DEVICE)

@@ -1,9 +1,93 @@
 {
- "latest": 993,
+ "latest": 994,
  "builds": [
   {
+   "build": 994,
+   "commit": "92e66d13",
+   "date": "2026-11-22",
+   "sections": [
+    {
+     "ticket": "C-430",
+     "title": "PRAXIS 3: GOALS onto PRAXIS, earning ARETE",
+     "lines": [
+      "GOALS onto PRAXIS, earning ARETE",
+      "Old finishes keep the ARETE they were paid (the user's decision)"
+     ]
+    },
+    {
+     "ticket": "C-435",
+     "title": "PRAXIS's engine moves to its own repository, daemons-praxis, once C-430 is done",
+     "lines": [
+      "PRAXIS's engine leaves for its own repository, daemons-praxis, pinned by tag"
+     ]
+    },
+    {
+     "ticket": "C-431",
+     "title": "PRAXIS 4: sync between replicas, and blobs by hash",
+     "lines": [
+      "PRAXIS syncs — a phone that hosted alone joins its hub and loses nothing; blobs by hash"
+     ]
+    },
+    {
+     "ticket": "C-442",
+     "title": "THE KODE DOT, a manual for the Dot, and its recording",
+     "lines": [
+      "THE KODE DOT on the LIBRARY's MANUALS shelf — DAEMONS' twelfth printed book (docs/DAEMONS-kodedot-manual.pdf, 16 pages, DAEMONS bc3579e0), kept and fetched as THE CARDPUTERS is; its cover (graphite cloth); a HOW TO PLAY book for WHAT'S NEW's SET UP; LISTEN in its own voice, lodestone (the user's pick, A of three samples), its recording following. The wiki's shelf lists and Boards name it; firmware/kodedot/README.md and docs/KODEDOT.md point at it, and the README gives the companion's address through kcli's cmd as well (not yet tried on the device) (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-456",
+     "title": "DREAM-BOOKS in the library",
+     "lines": [
+      "DREAM-BOOKS in the library (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-455",
+     "title": "The daemons' reviews, and how often each scheduled thing happens",
+     "lines": [
+      "MENTIONS FROM YOUR DAEMON, and a cadence on every plan (DRAFT); C-454 RESEARCH designed"
+     ]
+    },
+    {
+     "ticket": "C-406",
+     "title": "Flash and link a board from THE ENGINE ROOM",
+     "lines": [
+      "DRAFT: boards on the computer's cable from THE ENGINE ROOM — hub/boards.py (look, flash, link) finds a board by its USB serial (an ESP32-S3's MAC) and never by its port; it refuses NEVER_FLASH (.hub, never committed), a build that is not the board's own HELLO, and a silent board with no build named (or other than the one this computer last flashed it as, kept in boards.json); JOBS boards-look, board-flash, board-link for THE HANDS; DEVICES' ON THE CABLE card: LOOK, each board with FLASH (confirmed, a build asked only of a silent one) and LINK for three minutes; selftest run by the server's tests"
+     ]
+    },
+    {
+     "ticket": "C-469",
+     "title": "WORKING MEMORY: a form every daemon keeps, and your daemon's own",
+     "lines": [
+      "WORKING MEMORY — what the daemon has in mind now, held through the day and let go at night"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Companion: patches.json for v11.412.6",
+      "and 6 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "Art: LODESTAR, REFLECTION, BASTET, CANOPY back to their old fronts; species.json's NEXUS three without streaks (DAEMONS T-452's arm-C verdict)",
+      "T-605 (draft): SONGMUSAI and LANGMUSAI in the companion's data (DAEMONS tools/companion_export.py —write)",
+      "T-607 (draft): SONGMUSAI's and LANGMUSAI's seasonal forms and spoken lines in species.json and art (DAEMONS companion_export.py)",
+      "T-607 (draft): the eight seasonal pictures of SONGMUSAI and LANGMUSAI (left out of c2d419a1)",
+      "T-607: MUSAI's winter entry, all seven of its futures, in species.json (DAEMONS companion_export.py)",
+      "Companion: T-445 SCORN SOLUTIONS and ERRATA are places of their own (engine c8a337567) — maps, notebook, profile_layout, planner, index_cards"
+     ]
+    }
+   ]
+  },
+  {
    "build": 993,
-   "commit": "d5296390",
+   "commit": "d337e5b",
    "date": "2026-11-20",
    "sections": [
     {

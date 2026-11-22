@@ -110,7 +110,7 @@ is added here in the same commit; when one file starts to hold both, split it (t
 | Folder | What it is |
 |---|---|
 | `seer/` | the local cloud: the always-on machine beside the hub (LiteLLM, n8n and its workflows, the Tiiny's voice, sleep sounds, ACE-Step, local models, ComfyUI, the link cable's two games in `seer/linkhost/`, C-221), set up by `seer/bindSeer.sh` from one settings file (`seer/README.md`); a folder for each part |
-| `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), its name (`rename.sh`), THE COMMONS (`commons.sh`), THE HANDS on the computer (`hands.sh`, C-342), a node of THE MESH on a Mac (`mesh.sh`, C-360), backups |
+| `hub/` | setting up and deploying the hub (`deploy.sh`, the phases, `systemd/`), its name (`rename.sh`), THE COMMONS (`commons.sh`), THE HANDS on the computer (`hands.sh`, C-342) and the boards on its cable (`boards.py`, C-406), a node of THE MESH on a Mac (`mesh.sh`, C-360), backups |
 | `n8n/` | the n8n relay workflow (C-56) a phone away from home reaches the companion through |
 | `docs/` | the design: `PLAN.md`, `vision.md`, one file per subject (devices, hardware, the hub, trading, the Cardputer Zero, ...) |
 | `wiki/` | the public wiki, published by `wiki/publish.sh` |

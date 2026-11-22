@@ -55,7 +55,7 @@ const PAGES = [
   { id: "mind", glyph: "◎", label: "THE MIND", short: "MIND", draw: drawMind, every: 3000 },
   { id: "house", glyph: "♣", label: "THE HOUSE", short: "HOUSE", draw: drawHouse, every: 15000 },
   { id: "voices", glyph: "♪", label: "VOICES", short: "VOICES", draw: drawVoices },
-  { id: "devices", glyph: "▣", label: "DEVICES", short: "DEVICES", draw: drawDevices, every: 20000 },
+  { id: "devices", glyph: "▣", label: "DEVICES", short: "DEVICES", draw: drawDevices, every: 5000 },   // C-406: 5 s, for LOOK
   { id: "exchange", glyph: "⇄", label: "EXCHANGE", short: "EXCHANGE", draw: drawExchange },
   { id: "commons", glyph: "◇", label: "THE COMMONS", short: "COMMONS", draw: drawCommons },
   { id: "keys", glyph: "◈", label: "KEYS", short: "KEYS", draw: drawKeys },                    // C-342
@@ -96,7 +96,7 @@ async function show(again = false) {
   drawing = p;
   if (!again) { ui = {}; drawNav(); $page.innerHTML = `<p class="small">Asking the hub…</p>`; }
   // a redraw waits while something is being typed into the page (a home's id, an address)
-  const typing = again && document.activeElement?.matches?.("input") && $page.contains(document.activeElement);
+  const typing = again && document.activeElement?.matches?.("input, select") && $page.contains(document.activeElement);
   try { if (!typing) { await learnNames(); await p.draw(again && !ui.waiting); markAway(false); } }
   catch (e) {
     if (e instanceof Refused) { markAway(false); return drawPair(e.message); }
@@ -531,12 +531,49 @@ ACTS.cforget = async () => {
 };
 
 // ---- DEVICES (C-80) ----
+// C-406: ON THE CABLE -- the boards on the computer THE HANDS run on, from the newest boards-look job: each by its serial,
+// what this computer last flashed it as, FLASH (the build asked only of one that says nothing) and LINK. hub/boards.py
+// checks again on the computer: NEVER_FLASH, and the board's own HELLO against the build named here. Every word DRAFT.
+const BUILDS = [["t-embed", "T-Embed (any)"], ["t-watch-s3", "T-Watch S3"], ["t-watch-ultra", "T-Watch Ultra"], ["t-glass", "T-Glass"],
+  ["t-deck", "T-Deck"], ["t-display-pro", "T-Display-S3 Pro"], ["t-display-amoled", "T-Display-S3 AMOLED"], ["m5-sticks3", "StickS3"],
+  ["m5-stickc-plus", "StickC-Plus"], ["m5-cardputer", "Cardputer"], ["m5-cores3", "CoreS3"], ["m5-core", "M5GO or Fire"],
+  ["m5-dial", "Dial"], ["m5-tab5", "Tab5"]];
+async function cableCard() {
+  const v = await api("/api/engine/jobs").catch(() => null);
+  if (!v) return "";
+  const looks = v.jobs.filter((j) => j.name === "boards-look"), last = looks[0];
+  const line = last?.state === "done" ? last.output.split("\n").find((l) => l.startsWith("BOARDS ")) : null;
+  let boards = null; try { boards = line ? JSON.parse(line.slice(7)) : null; } catch { boards = null; }
+  const waiting = last && (last.state === "waiting" || last.state === "running");
+  const awake = v.hands && Date.now() - Date.parse(v.hands.seen) < 30000;
+  return `<div class="card"><p class="eyebrow">ON THE CABLE</p>
+    <p class="small">The boards plugged into the computer THE HANDS run on${awake ? "" : ` <span class="warm">(THE HANDS are away: a job waits until they wake)</span>`}.
+      ${last ? `Looked ${esc(ago(last.ended ?? last.asked))}.` : ""}</p>
+    ${boards ? (boards.length ? boards.map((b) => `<div class="row" style="padding:6px 0;border-top:1px solid var(--line)">
+        <div class="grow"><b>${esc(b.known?.id ? dn(b.known.id) : "a board")}</b>${b.never ? ` <span class="bad">NEVER FLASHED</span>` : ""}
+          <div class="small faint mono">${esc(b.serial)} · ${esc(b.port)}${b.known ? ` · last flashed here as ${esc(b.known.env)}` : ""}</div></div>
+        ${b.never ? "" : `<select class="text" id="build-${esc(b.serial)}" aria-label="which board it is" style="max-width:170px;flex:none">
+            <option value="">${b.known ? "its own build" : "it says which"}</option>${BUILDS.map(([e, n]) => `<option value="${e}">${esc(n)}</option>`).join("")}</select>
+          ${ui.sure === `flash:${b.serial}` ? `<button class="btn danger" data-act="boardflash" data-serial="${esc(b.serial)}">YES, FLASH</button><button class="btn quiet" data-act="sure" data-name="">NO</button>`
+            : `<button class="btn danger" data-act="sure" data-name="flash:${esc(b.serial)}">FLASH</button>`}
+          <button class="btn quiet" data-act="boardlink" data-serial="${esc(b.serial)}">LINK</button>`}</div>`).join("")
+      : `<p class="small">No board on the cable.</p>`) : ""}
+    <div class="row" style="margin-top:8px"><button class="btn" data-act="boardslook" ${waiting ? "disabled" : ""}>${waiting ? "LOOKING…" : "LOOK"}</button></div></div>`;
+}
+ACTS.boardslook = async () => { await api("/api/engine/jobs", { name: "boards-look" }); said("Looking -- the list comes in a few seconds."); };
+ACTS.boardflash = async (d) => {
+  const build = document.getElementById(`build-${d.serial}`)?.value ?? "";
+  const j = await api("/api/engine/jobs", { name: "board-flash", arg: build ? `${d.serial}@${build}` : d.serial });
+  ui.sure = null; void j; location.hash = "jobs";   // JOBS opens the running job by itself
+};
+ACTS.boardlink = async (d) => { await api("/api/engine/jobs", { name: "board-link", arg: d.serial }); location.hash = "jobs"; };
 async function drawDevices() {
   const v = await api("/api/devices"), now = Date.now();
   if (stale()) return;
   $page.innerHTML = `<h1>DEVICES</h1>
     <p class="lede">Every device that has said hello to this hub, and the daemon each carries. A forgotten one leaves the list
       (its daemon back to none) until it next says hello.</p>
+    ${await cableCard()}
     ${v.devices.length ? "" : `<p class="small">No device has said hello yet.</p>`}
     ${v.devices.map((d) => `<div class="card"><div class="row">
         ${d.daemon ? `<img class="art" alt="" src="${esc(d.daemon.art)}">` : ""}

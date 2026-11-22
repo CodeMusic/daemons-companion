@@ -27,6 +27,16 @@ export const JOBS: Record<string, JobKind> = {
   "commons-refuse":  { group: "THE COMMONS", said: "Let a home out", arg: { pattern: "^[A-Za-z0-9_-]{1,40}$", said: "the home's id" }, danger: true,
                        run: SH(`ssh "$COMMONS" "cd ~/Projects/daemons-companion && zsh hub/commons.sh refuse $ARG"`) },
   "commons-update":  { group: "THE COMMONS", said: "Bring THE COMMONS up to date with main, and restart it", run: SH(`ssh "$COMMONS" 'cd ~/Projects/daemons-companion && zsh hub/commons.sh update'`) },
+  // C-406 (the user, 2026-11-22: "sure, start it"): the boards on the computer's cable, each found by its USB serial (an
+  // ESP32-S3's MAC), never by its port; hub/boards.py refuses NEVER_FLASH (.hub) and a build that is not the board's own.
+  // DEVICES' ON THE CABLE card drives them; THE HANDS run them with PlatformIO's own Python (it has pyserial).
+  "boards-look":  { group: "BOARDS ON THE CABLE", said: "Every board on the computer's USB, by its serial -- no port opened", run: SH(`"$HOME/.platformio/penv/bin/python" hub/boards.py look`) },
+  "board-flash":  { group: "BOARDS ON THE CABLE", said: "The newest firmware onto one board", danger: true,
+                    arg: { pattern: "^[0-9A-Za-z:_-]{4,40}(@[a-z0-9-]{3,20})?$", said: "its serial (and @its build, if it says nothing)" },
+                    run: SH(`"$HOME/.platformio/penv/bin/python" hub/boards.py flash "$ARG"`) },
+  "board-link":   { group: "BOARDS ON THE CABLE", said: "Link one board to the server over its cable for three minutes",
+                    arg: { pattern: "^[0-9A-Za-z:_-]{4,40}$", said: "its serial" },
+                    run: SH(`"$HOME/.platformio/penv/bin/python" hub/boards.py link "$ARG" 3`) },
 };
 // the argv a job runs, its argument put in place (already checked against its pattern)
 export const argvOf = (k: JobKind, arg: string | null) => k.run.map((a) => a.replace(/\$ARG/g, arg ?? ""));

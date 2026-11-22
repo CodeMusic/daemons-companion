@@ -36,6 +36,16 @@ describe("JOBS (C-342)", () => {
     expect(JOBS.callOff(s, b.id)).toBe(true);
     expect(JOBS.next(s, "THE HANDS (test)")).toBeNull();
   });
+  it("C-406: a board is named by its serial alone, and hub/boards.py decides every case it must refuse", () => {
+    const s = store();
+    for (const bad of ["68:9D; rm -rf ~", "$(reboot)", "../x", "68:9D:D2:F3:51:D4@t-embed; ls", "a b"])
+      expect(JOBS.ask(s, "board-flash", bad, "p")).toMatchObject({ error: expect.any(String) });
+    expect((JOBS.ask(s, "board-flash", "68:9D:D2:F3:51:D4@t-watch-ultra", "p") as JOBS.Job).arg).toBe("68:9D:D2:F3:51:D4@t-watch-ultra");
+    expect(JOBS.argvOf(JOBS.JOBS["board-flash"], "68:9D:D2:F3:51:D4").join(" ")).toContain('boards.py flash "68:9D:D2:F3:51:D4"');
+    expect(JOBS.ask(s, "board-link", "68:9D:D2:F3:51:D4@t-embed", "p")).toMatchObject({ error: expect.any(String) });
+    // NEVER_FLASH, a build that is not the board's own, a silent board with no build named: the computer's own check
+    expect(() => execFileSync("python3", [new URL("../../hub/boards.py", import.meta.url).pathname, "selftest"], { stdio: "pipe" })).not.toThrow();
+  });
   it("says a job failed when its hands went quiet for an hour", () => {
     const s = store();
     const j = JOBS.ask(s, "backups", null, "p") as JOBS.Job;

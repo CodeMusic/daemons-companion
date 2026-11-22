@@ -12,6 +12,7 @@ import { useWitching } from "../shared/Witching";   // C-237
 import { EMERALD, hourLine } from "../../../server/src/witching";
 import { useFresh } from "../../platform/useApi";   // C-344
 import { TendingCard } from "./Tending";   // C-357 (3)
+import { WeekBalanceCard } from "./Balance";   // C-432
 import { useDay } from "../../ui/ui";
 import { ForkKey, SingingBowl, type BowlOf } from "../../ui/bowl";   // C-351
 import { CalendarSprite } from "../../ui/calendarSprite";   // C-353
@@ -61,6 +62,7 @@ export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload
       {day.theme ? <Theme reset><Theme name={day.theme as any}>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></Theme></Theme>
         : <>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></>}
       <TendingCard />
+      <WeekBalanceCard />{/* C-432: THE WEEK'S BALANCE, under the day's centre */}
       <MentionsCard />{/* C-455: the newest letter from your daemon, until it is read */}
       <Card borderLeftWidth={6} borderLeftColor="$color9" paddingVertical={20}>
         <Eyebrow>THE ONE THING</Eyebrow>

@@ -1,6 +1,7 @@
 // C-430: GOALS on PRAXIS -- the old tables read in once, at their own times, losing nothing; the same shapes from the
 // Store; ARETE paid once per finish under a daily cap; THRIVE's week the same across the move.
 import { DatabaseSync } from "node:sqlite";
+import { DAY_VIRTUE } from "../src/practice.js";   // C-432
 import { describe, expect, it } from "vitest";
 import { Store, type Db } from "../src/store.js";
 import { LIFE, RULES } from "../src/goals.js";
@@ -82,7 +83,7 @@ describe("C-430: the old tables, read in once", () => {
     expect(store.life.arete().held).toBe(1);                       // the step's and the milestone's taken back
     const r = store.completeStep(11);
     expect(r).toEqual({ ok: true, fresh: true, milestone: "BATHROOM", goal: null });
-    expect(store.life.arete().held).toBe(7);
+    expect(store.life.arete().held).toBe(7 + DAY_VIRTUE);          // C-432: the day's first finish lives its virtue
   });
 
   it("an empty companion makes its LIFE space, and the memory reads what the old tables held", () => {
@@ -105,10 +106,10 @@ describe("C-430: ARETE for finishing", () => {
     const { store } = fresh();
     const g = store.addGoal("Tidy", { subitems: [{ title: "DESK", steps: ["Clear it"] }, { title: "", steps: ["Bin the boxes"] }] });
     store.completeStep(g.subitems[0].steps[0].id);
-    expect(store.life.arete().held).toBe(rule("step").arete + rule("milestone").arete);
+    expect(store.life.arete().held).toBe(rule("step").arete + rule("milestone").arete + DAY_VIRTUE);   // C-432: once a day
     expect(store.completeStep(g.subitems[0].steps[0].id)).toMatchObject({ fresh: false });   // done again: nothing more
     expect(store.completeStep(g.subitems[1].steps[0].id)).toMatchObject({ fresh: true, goal: "Tidy" });
-    expect(store.life.arete().held).toBe(2 * rule("step").arete + rule("milestone").arete + rule("goal").arete);
+    expect(store.life.arete().held).toBe(2 * rule("step").arete + rule("milestone").arete + rule("goal").arete + DAY_VIRTUE);
     expect(store.goal(g.id)!.done).toBe(true);
   });
 
@@ -117,13 +118,13 @@ describe("C-430: ARETE for finishing", () => {
     const steps = Array.from({ length: rule("step").cap + 3 }, (_, i) => `step ${i}`);
     const g = store.addGoal("Many", { subitems: [{ title: "", steps }, { title: "", steps: ["tomorrow"] }] });
     for (const s of g.subitems[0].steps) store.completeStep(s.id);
-    const today = store.life.px.ledger(store.life.life).filter((e) => e.kind === "step");
+    const today = store.life.px.ledger(store.life.life).filter((e) => e.kind === "step" && e.key.startsWith("finish:"));
     expect(today).toHaveLength(steps.length);                      // every finish kept
     expect(today.reduce((n, e) => n + e.points, 0)).toBe(rule("step").cap);
-    expect(store.life.arete(new Date(at(10, 23))).today).toBe(rule("step").cap);
+    expect(store.life.arete(new Date(at(10, 23))).today).toBe(rule("step").cap + DAY_VIRTUE);
     set(at(11));
     store.completeStep(g.subitems[1].steps[0].id);
-    expect(store.life.arete(new Date(at(11, 12))).today).toBe(rule("step").arete + rule("goal").arete);
+    expect(store.life.arete(new Date(at(11, 12))).today).toBe(rule("step").arete + rule("goal").arete + DAY_VIRTUE);
   });
 
   it("is never taken for a day missed", () => {

@@ -18,6 +18,7 @@
 //                   (joinOthers), so there is one LIFE again -- the phone's goals numbered here, their ARETE counted here
 import { hlcIso, parseHlc, Praxis, type Form, type Item, type StateDef } from "@daemons/praxis";
 import type { Goal, Plan, Step, Store, SubItem } from "./store.js";
+import { dayVirtue } from "./practice.js";
 
 /** what a finish gives the daemon (core.ts gives it): its time together (the log's "step": a meal, training, its mood),
  *  experience, the week's goals (C-207), the bond, the gift */
@@ -258,13 +259,15 @@ export class Goals {
   /** C-455: the ARETE earned in a span (MENTIONS' numbers) -- awards not taken back, by when they were given */
   earnedBetween(from: Date, to: Date): number {
     const until = String(Math.max(0, Math.floor(to.getTime()))).padStart(18, "0");
-    return this.px.ledger(this.life, { since: from.getTime() }).filter((e) => e.op === "award" && !e.back && e.hlc < until)
+    // C-432: every space's ARETE, LIFE's and the others'
+    return this.px.ledger(undefined, { since: from.getTime() }).filter((e) => e.op === "award" && !e.back && e.hlc < until)
       .reduce((n, e) => n + e.points, 0);
   }
   /** ARETE: held now, earned today and this week, and the rules it is earned by */
   arete(now = new Date(this.store.now())) {
-    const earned = (since: number) => this.px.ledger(this.life, { since }).filter((e) => e.op === "award" && !e.back).reduce((n, e) => n + e.points, 0);
-    return { held: this.px.arete(this.life), today: earned(midnight(now.getTime())), week: earned(now.getTime() - 7 * 86400000), rules: RULES };
+    // C-432: ARETE is the person's, earned in every space (LIFE, TENDING, the journals), so it is counted across them
+    const earned = (since: number) => this.px.ledger(undefined, { since }).filter((e) => e.op === "award" && !e.back).reduce((n, e) => n + e.points, 0);
+    return { held: this.px.arete(), today: earned(midnight(now.getTime())), week: earned(now.getTime() - 7 * 86400000), rules: RULES };
   }
 
   // ---- changing -----------------------------------------------------------------------------------------------------
@@ -305,6 +308,7 @@ export class Goals {
       if (t.phase === "done") return { ok: true, fresh: false, milestone: null, goal: null };   // nothing new to celebrate
       const at = this.store.now();
       finish(this.px, this.life, t, at);
+      dayVirtue(this.px, t.id, new Date(at));            // C-432: the day's first finish lives the day's virtue
       let milestone: string | null = null, goal: string | null = null;
       const s = t.parent ? this.px.item(t.parent) : null;
       if (s && isSub(s) && !this.kids(s.id).some((x) => x.kind === "step" && x.phase !== "done")) {
@@ -327,6 +331,9 @@ export class Goals {
       if (!t) return false;
       const s = t.parent ? this.px.item(t.parent) : null, g = s?.parent ? this.px.item(s.parent) : null;
       for (const it of [t, s, g]) if (it && it.phase !== "open") this.px.state(it.id, "open");
+      // C-432: and the day's virtue, if this step was what lived it
+      for (const e of this.px.ledger(undefined).filter((x) => x.item === t.id && x.op === "award" && !x.back && x.key.startsWith("virtue:")))
+        this.px.takeBack(t.id, "award", e.key);
       return true;
     });
   }

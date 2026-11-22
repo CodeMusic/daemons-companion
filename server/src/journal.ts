@@ -5,7 +5,7 @@
 // several journals, each titled; a summary covers the entries since the last one -- a CHAPTER; written by the talk AI,
 // the Tiiny preferred, on its thinking path, with a note to check back later).
 //
-// The journals, their entries and their chapters live in the companion's own database, never the save. SUMMARIZE closes a
+// The journals, their entries and their chapters live in the companion's own database (since C-432, as PRAXIS spaces), never the save. SUMMARIZE closes a
 // chapter at once (state "writing") and the page is written after, by whoever writes: the hub hands it to the
 // background thinker (api.ts, house.write); a phone hosting alone, or a hub with no thinker, lays the entries out plainly
 // (plainPage), so the button always ends in a page. A "writing" chapter older than STALE_MIN is shown as failed, to be
@@ -13,8 +13,10 @@
 // C-356: a journal has a KIND -- STANDARD, or DREAM, whose chapters are the dreams told; and any entry or chapter can READ
 // THE SIGNS (signs.ts): the symbols in it read through the four books, by the house's quick thinker, or from the lexicon.
 import type { Store } from "./store.js";
+import { Praxis, type Form, type Item } from "@daemons/praxis";
 import { plainSigns, readSigns, returningSigns, signsAsk, SIGNS_ASK, symbolsIn, type Kind, type Reading, type Returning, type Source } from "./signs.js";
 import { cleanFeeling, feltOf } from "./processes.js";   // C-357, PROCESSES
+import { dayVirtue, ensureSpace, midnight } from "./practice.js";
 
 export const LIMITS = { journal: 40, title: 60, body: 8000 };
 export const STALE_MIN = 30;
@@ -35,85 +37,201 @@ const kindOf = (k: unknown): Kind => (k === "dream" ? "dream" : "standard");
 // What writes a page: a system prompt and the words, and at most so many tokens -- null if nobody can (api.ts' house.write)
 export type Writer = (system: string, user: string, maxTokens: number) => Promise<string | null>;
 
-const ready = new WeakSet<Store>();
-function tables(store: Store) {
-  if (ready.has(store)) return;
-  store.db.exec(`
-    CREATE TABLE IF NOT EXISTS journals (id INTEGER PRIMARY KEY, title TEXT NOT NULL, created TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS journal_entries (id INTEGER PRIMARY KEY, journal INTEGER NOT NULL REFERENCES journals(id),
-      title TEXT NOT NULL, body TEXT NOT NULL, at TEXT NOT NULL, edited TEXT);
-    CREATE TABLE IF NOT EXISTS journal_chapters (id INTEGER PRIMARY KEY, journal INTEGER NOT NULL REFERENCES journals(id),
-      from_entry INTEGER NOT NULL, to_entry INTEGER NOT NULL, at TEXT NOT NULL, state TEXT NOT NULL,
-      title TEXT NOT NULL DEFAULT '', body TEXT NOT NULL DEFAULT '', by TEXT NOT NULL DEFAULT '', error TEXT);
-    CREATE TABLE IF NOT EXISTS journal_signs (id INTEGER PRIMARY KEY, journal INTEGER NOT NULL REFERENCES journals(id),
-      entry INTEGER, chapter INTEGER, at TEXT NOT NULL, state TEXT NOT NULL, reading TEXT, by TEXT NOT NULL DEFAULT '', error TEXT);`);
-  const cols = (store.db.prepare("PRAGMA table_info(journals)").all() as { name: string }[]).map((c) => c.name);   // C-356
-  if (!cols.includes("kind")) store.db.exec("ALTER TABLE journals ADD COLUMN kind TEXT NOT NULL DEFAULT 'standard'");
-  const ecols = (store.db.prepare("PRAGMA table_info(journal_entries)").all() as { name: string }[]).map((c) => c.name);   // C-357
-  if (!ecols.includes("feeling")) store.db.exec("ALTER TABLE journal_entries ADD COLUMN feeling TEXT");
-  ready.add(store);
+// ---- C-432 (PRAXIS 5): the journals on PRAXIS --------------------------------------------------------------------------
+// Each journal is a SPACE of the JOURNAL form, or of the DREAM JOURNAL form for a dream journal; its entries (an ENTRY, or
+// a DREAM), its chapters and its readings of the signs are ITEMS there, each chapter and reading linked MADE FROM what it
+// covers. A space of JOURNALS holds one item per journal, numbered as the journal always was (JOURNAL-3), naming its
+// space -- so a journal, an entry, a chapter and a reading keep the numbers every route and every board knew them by,
+// unique across journals; a new one takes the next. ARETE (PROJECTS.md 6): an entry 2 and a dream written 2, each once a
+// day, and the day's virtue if it is the day's first finish. The four tables are read in once, each row at its own time,
+// and left as they were.
+const TEXT = { type: "text" as const }, LONG = { type: "long" as const }, NUM = { type: "number" as const };
+const OPEN = { name: "open", phase: "open" as const }, WRITTEN = { name: "written", phase: "done" as const };
+const WORK = [{ name: "writing", phase: "doing" as const }, { name: "done", phase: "done" as const }, { name: "failed", phase: "aside" as const }];
+const entryFields = { body: LONG, at: TEXT, edited: TEXT, feeling: TEXT };
+const chapterKind = { title: "Chapter", prefix: "CHAPTER", states: WORK, fields: { from: NUM, to: NUM, at: TEXT, body: LONG, by: TEXT, error: TEXT, written: TEXT } };
+const readingKind = { title: "Reading", prefix: "READING", states: WORK, fields: { entry: NUM, chapter: NUM, at: TEXT, reading: LONG, by: TEXT, error: TEXT } };
+export const JOURNAL: Form = { name: "journal", version: 1,
+  kinds: { entry: { title: "Entry", prefix: "ENTRY", states: [OPEN, WRITTEN], fields: entryFields }, chapter: chapterKind, reading: readingKind },
+  views: [{ name: "feed" }, { name: "calendar" }], rules: [{ kind: "entry", arete: 2, cap: 2, daemon: [] }] };
+export const DREAM_JOURNAL: Form = { name: "dream-journal", version: 1,
+  kinds: { dream: { title: "Dream", prefix: "ENTRY", states: [OPEN, WRITTEN], fields: entryFields }, chapter: chapterKind, reading: readingKind },
+  views: [{ name: "feed" }], rules: [{ kind: "dream", arete: 2, cap: 2, daemon: [] }] };
+export const JOURNALS: Form = { name: "journals", version: 1,
+  kinds: { journal: { title: "Journal", prefix: "JOURNAL", states: [OPEN, { name: "gone", phase: "aside" }],
+                      fields: { space: TEXT, sort: TEXT, created: TEXT } } } };   // sort: standard or dream ("kind" is the engine's)
+const entryKind = (k: Kind) => (k === "dream" ? "dream" : "entry");
+const formOf = (k: Kind) => (k === "dream" ? DREAM_JOURNAL : JOURNAL);
+
+type J = { id: number; item: Item; space: string; kind: Kind; title: string; created: string };
+const INDEX = new WeakMap<Store, string>();
+const pxOf = (store: Store) => { indexOf(store); return store.life.px; };   // the index (and the read-in) first, then the clock
+function indexOf(store: Store): string {
+  const had = INDEX.get(store);
+  if (had) return had;
+  const px = store.life.px, index = ensureSpace(px, JOURNALS, { title: "Journals", prefix: "JOURNALS" });
+  INDEX.set(store, index);
+  bringIn(store, index);
+  return index;
+}
+function journals(store: Store): J[] {
+  const index = indexOf(store), px = store.life.px;
+  return px.items(index, { kind: "journal", phase: "open", archived: false }).map((it) => ({ id: it.number as number, item: it,
+    space: String(it.fields.space), kind: kindOf(it.fields.sort), title: it.title, created: String(it.fields.created ?? "") }));
+}
+const journalNo = (store: Store, id: number) => journals(store).find((j) => j.id === id) ?? null;
+const entriesOf = (px: Praxis, j: J) => px.items(j.space, { kind: entryKind(j.kind), archived: false }).sort((a, b) => (a.number as number) - (b.number as number));
+const kidsOf = (px: Praxis, j: J, kind: "chapter" | "reading") => px.items(j.space, { kind, archived: false }).sort((a, b) => (a.number as number) - (b.number as number));
+// one of a kind by its number, in whichever journal it is
+function findNo(store: Store, kind: "entry" | "chapter" | "reading", n: number): { j: J; it: Item } | null {
+  const px = pxOf(store);
+  for (const j of journals(store)) {
+    const it = px.numbered(j.space, n, kind === "entry" ? entryKind(j.kind) : kind);
+    if (it && !it.archived) return { j, it };
+  }
+  return null;
+}
+// the next number of a kind, across every journal (they are unique across them, as the tables' ids were)
+function nextNo(store: Store, kind: "journal" | "entry" | "chapter" | "reading"): number {
+  const px = store.life.px;
+  if (kind === "journal") return 1 + Math.max(0, ...px.items(indexOf(store), { kind: "journal" }).map((it) => it.number as number));
+  let most = 0;
+  for (const it of px.items(indexOf(store), { kind: "journal" })) {
+    const space = String(it.fields.space), k = kind === "entry" ? entryKind(kindOf(it.fields.sort)) : kind;
+    if (px.space(space)) for (const x of px.items(space, { kind: k })) most = Math.max(most, x.number as number);
+  }
+  return most + 1;
+}
+const str = (v: unknown) => (v == null ? "" : String(v));
+const num = (v: unknown) => (typeof v === "number" ? v : Number(v ?? 0));
+
+// an entry made written, paid its rule under the day's cap (the day `at` falls in), and the day's virtue (live entries only)
+function payEntry(px: Praxis, j: J, id: string, at: number, live: boolean) {
+  const kind = entryKind(j.kind);
+  const paid = px.ledger(undefined, { since: midnight(at) }).filter((e) => e.op === "award" && !e.back && e.kind === kind && e.key.startsWith("finish:")).reduce((n, e) => n + e.points, 0);
+  px.state(id, "written", { pay: Math.max(0, Math.min(2, 2 - paid)), reason: "finish" });
+  if (live) dayVirtue(px, id, new Date(at));
+}
+
+// the four old tables, read in once: each journal, entry, chapter and reading at its own time, keeping its number
+function bringIn(store: Store, index: string) {
+  const db = store.db;
+  const has = (t: string) => !!db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(t);
+  if (!has("journals")) return;
+  const rows = (sql: string) => db.prepare(sql).all() as Record<string, any>[];
+  const cols = (t: string) => (db.prepare(`PRAGMA table_info(${t})`).all() as { name: string }[]).map((c) => c.name);
+  const px0 = store.life.px;
+  const held = new Set(px0.items(index, { kind: "journal" }).map((it) => it.number));
+  const js = rows(`SELECT * FROM journals ORDER BY id`).filter((r) => !held.has(r.id));
+  if (!js.length) return;
+  const es = has("journal_entries") ? rows("SELECT * FROM journal_entries ORDER BY id") : [];
+  const cs = has("journal_chapters") ? rows("SELECT * FROM journal_chapters ORDER BY id") : [];
+  const ss = has("journal_signs") ? rows("SELECT * FROM journal_signs ORDER BY id") : [];
+  const kindCol = cols("journals").includes("kind");
+  let at = store.now();
+  const px = new Praxis(db, { now: () => at });
+  const when = (iso: unknown) => Math.min(store.now(), Date.parse(String(iso ?? "")) || store.now());
+  px.transaction(() => {
+    for (const r of js) {
+      const kind = kindOf(kindCol ? r.kind : "standard");
+      at = when(r.created);
+      const space = px.makeSpace({ title: String(r.title || "Journal"), prefix: kind === "dream" ? "DREAMS" : "JOURNAL", form: formOf(kind), reach: "home", parent: index });
+      px.make(index, "journal", { title: String(r.title || "Journal"), space, sort: kind, created: String(r.created) }, { number: r.id });
+      const j: J = { id: r.id, item: null as unknown as Item, space, kind, title: r.title, created: r.created };
+      const byNo = new Map<number, string>(), chNo = new Map<number, string>();
+      for (const e of es.filter((x) => x.journal === r.id)) {
+        at = when(e.at);
+        const id = px.make(space, entryKind(kind), { title: String(e.title || "-").slice(0, 400), body: str(e.body), at: str(e.at), edited: str(e.edited), feeling: str(e.feeling) }, { number: e.id });
+        payEntry(px, j, id, at, false);
+        byNo.set(e.id, id);
+      }
+      for (const c of cs.filter((x) => x.journal === r.id)) {
+        at = when(c.at);
+        const id = px.make(space, "chapter", { title: String(c.title || "-").slice(0, 400), from: num(c.from_entry), to: num(c.to_entry), at: str(c.at),
+                                               body: str(c.body), by: str(c.by), error: str(c.error), written: c.title ? "1" : "" }, { number: c.id });
+        if (c.state !== "writing") px.state(id, c.state === "done" ? "done" : "failed");
+        for (const [n, e] of byNo) if (n >= c.from_entry && n <= c.to_entry) px.link(id, "made-from", e);
+        chNo.set(c.id, id);
+      }
+      for (const s of ss.filter((x) => x.journal === r.id)) {
+        at = when(s.at);
+        const id = px.make(space, "reading", { title: "signs", entry: s.entry ?? 0, chapter: s.chapter ?? 0, at: str(s.at), reading: str(s.reading), by: str(s.by), error: str(s.error) }, { number: s.id });
+        if (s.state !== "writing") px.state(id, s.state === "done" ? "done" : "failed");
+        const from = s.entry != null ? byNo.get(s.entry) : chNo.get(s.chapter);
+        if (from) px.link(id, "made-from", from);
+      }
+    }
+  });
+  store.life.reclock();                       // the store's clock past what was read in
 }
 
 const clean = (s: unknown, most: number) => String(s ?? "").replace(/\r\n/g, "\n").trim().slice(0, most);
 
 // C-455: the entries the player wrote in a span, in their own journals and their dream journals (MENTIONS' numbers)
 export function entriesBetween(store: Store, from: Date, to: Date): { standard: number; dream: number } {
-  tables(store);
-  const rows = store.db.prepare("SELECT j.kind AS kind, COUNT(*) AS n FROM journal_entries e JOIN journals j ON j.id = e.journal " +
-    "WHERE e.at >= ? AND e.at < ? GROUP BY j.kind").all(from.toISOString(), to.toISOString()) as { kind: string; n: number }[];
-  return { standard: Number(rows.find((r) => r.kind !== "dream")?.n ?? 0), dream: Number(rows.find((r) => r.kind === "dream")?.n ?? 0) };
+  const px = pxOf(store), out = { standard: 0, dream: 0 };
+  for (const j of journals(store)) for (const e of entriesOf(px, j)) {
+    const t = Date.parse(str(e.fields.at));
+    if (t >= from.getTime() && t < to.getTime()) out[j.kind]++;
+  }
+  return out;
 }
 
 // ---- the journals ---------------------------------------------------------------------------------------------------
 export function journalsOf(store: Store): JournalRow[] {
-  tables(store);
-  return (store.db.prepare(`SELECT j.id, j.title, j.kind, j.created, COUNT(e.id) AS entries, MAX(e.at) AS last FROM journals j
-                            LEFT JOIN journal_entries e ON e.journal = j.id GROUP BY j.id ORDER BY COALESCE(MAX(e.at), j.created) DESC`).all() as any[])
-    .map((r) => ({ id: r.id, title: r.title, kind: kindOf(r.kind), created: r.created, entries: Number(r.entries), last: r.last ?? null, waiting: waitingOf(store, r.id) }));
+  const px = pxOf(store);
+  return journals(store).map((j) => {
+    const es = entriesOf(px, j), last = es.reduce<string | null>((m, e) => (!m || str(e.fields.at) > m ? str(e.fields.at) : m), null);
+    return { id: j.id, title: j.title, kind: j.kind, created: j.created, entries: es.length, last, waiting: waitingOf(store, j) };
+  }).sort((a, b) => (b.last ?? b.created).localeCompare(a.last ?? a.created));
 }
 
 export function newJournal(store: Store, title: unknown, now = new Date(), kind?: unknown): JournalView | string {
-  tables(store);
   const t = clean(title, LIMITS.journal);
   if (!t) return `a journal needs a title, at most ${LIMITS.journal} letters`;
-  const id = Number(store.db.prepare("INSERT INTO journals (title, kind, created) VALUES (?, ?, ?)").run(t, kindOf(kind), now.toISOString()).lastInsertRowid);
-  return journalOf(store, id, now)!;
+  const index = indexOf(store), px = store.life.px, k = kindOf(kind), n = nextNo(store, "journal");
+  px.transaction(() => {
+    const space = px.makeSpace({ title: t, prefix: k === "dream" ? "DREAMS" : "JOURNAL", form: formOf(k), reach: "home", parent: index });
+    px.make(index, "journal", { title: t, space, sort: k, created: now.toISOString() }, { number: n });
+  });
+  return journalOf(store, n, now)!;
 }
 
 export function renameJournal(store: Store, id: number, title: unknown, now = new Date()): JournalView | string {
-  tables(store);
   const t = clean(title, LIMITS.journal);
   if (!t) return `a journal needs a title, at most ${LIMITS.journal} letters`;
-  if (!Number(store.db.prepare("UPDATE journals SET title = ? WHERE id = ?").run(t, id).changes)) return "no such journal";
+  const j = journalNo(store, id);
+  if (!j) return "no such journal";
+  const px = store.life.px;
+  px.transaction(() => { px.set(j.item.id, "title", t); px.setSpace(j.space, "title", t); });
   return journalOf(store, id, now)!;
 }
 
+// a journal let go: its space archived and its place in JOURNALS set aside -- the log keeps every word
 export function removeJournal(store: Store, id: number) {
-  tables(store);
-  store.db.prepare("DELETE FROM journal_signs WHERE journal = ?").run(id);
-  store.db.prepare("DELETE FROM journal_chapters WHERE journal = ?").run(id);
-  store.db.prepare("DELETE FROM journal_entries WHERE journal = ?").run(id);
-  return Number(store.db.prepare("DELETE FROM journals WHERE id = ?").run(id).changes) > 0;
+  const j = journalNo(store, id);
+  if (!j) return false;
+  const px = store.life.px;
+  px.transaction(() => { px.state(j.item.id, "gone"); px.archive(j.space); });
+  return true;
 }
 
 // the entries after the last chapter closed -- what SUMMARIZE would take
-function waitingOf(store: Store, journal: number) {
-  const after = lastTo(store, journal);
-  return Number((store.db.prepare("SELECT COUNT(*) AS n FROM journal_entries WHERE journal = ? AND id > ?").get(journal, after) as any).n);
-}
-const lastTo = (store: Store, journal: number) =>
-  Number((store.db.prepare("SELECT MAX(to_entry) AS t FROM journal_chapters WHERE journal = ?").get(journal) as any)?.t ?? 0);
+function lastTo(px: Praxis, j: J) { return Math.max(0, ...kidsOf(px, j, "chapter").map((c) => num(c.fields.to))); }
+function waitingOf(store: Store, j: J) { const px = store.life.px, after = lastTo(px, j); return entriesOf(px, j).filter((e) => (e.number as number) > after).length; }
 
 export function journalOf(store: Store, id: number, now = new Date()): JournalView | null {
-  tables(store);
-  const j = store.db.prepare("SELECT id, title, kind, created FROM journals WHERE id = ?").get(id) as any;
+  const j = journalNo(store, id);
   if (!j) return null;
-  const entries = (store.db.prepare("SELECT id, title, body, at, edited, feeling FROM journal_entries WHERE journal = ? ORDER BY id DESC").all(id) as any[])
-    .map((e) => ({ id: e.id, title: e.title, body: e.body, at: e.at, edited: e.edited ?? null,
-                   feeling: e.feeling ?? null, felt: feltOf(e.feeling, e.at, now) }));   // C-357, PROCESSES
-  const rows = store.db.prepare("SELECT * FROM journal_chapters WHERE journal = ? ORDER BY id").all(id) as any[];
-  const chapters = rows.map((c, i) => chapterView(store, c, i + 1, now)).reverse();
-  const signs = (store.db.prepare("SELECT * FROM journal_signs WHERE journal = ? ORDER BY id DESC").all(id) as any[]).map((s) => signsView(s, now));
+  const px = store.life.px;
+  const all = entriesOf(px, j);
+  const entries = all.slice().reverse().map((e) => {
+    const at = str(e.fields.at), feeling = str(e.fields.feeling) || null;
+    return { id: e.number as number, title: e.title === "-" ? "" : e.title, body: str(e.fields.body), at, edited: str(e.fields.edited) || null,
+             feeling, felt: feltOf(feeling, at, now) };   // C-357, PROCESSES
+  });
+  const chapters = kidsOf(px, j, "chapter").map((c, i) => chapterView(all, c, i + 1, now)).reverse();
+  const signs = kidsOf(px, j, "reading").reverse().map((s) => signsView(s, now));
   const day = (at: string) => at.slice(0, 10);
   const sourceOf = (v: SignsView): Source | null => {     // the entries each reading covered
     if (v.entry != null) { const e = entries.find((x) => x.id === v.entry); return e ? { from: e.id, to: e.id, when: day(e.at) } : null; }
@@ -121,40 +239,58 @@ export function journalOf(store: Store, id: number, now = new Date()): JournalVi
     return c ? { from: c.from, to: c.to, when: day(c.last) } : null;
   };
   const returning = returningSigns(signs.filter((v) => v.state === "done").map((v) => ({ reading: v.reading, source: sourceOf(v) })));
-  return { id: j.id, title: j.title, kind: kindOf(j.kind), created: j.created, entries, chapters, signs, returning, waiting: waitingOf(store, id), limits: LIMITS };
+  return { id: j.id, title: j.title, kind: j.kind, created: j.created, entries, chapters, signs, returning, waiting: waitingOf(store, j), limits: LIMITS };
 }
 
-function chapterView(store: Store, c: any, n: number, now: Date): Chapter {
-  const span = store.db.prepare("SELECT COUNT(*) AS count, MIN(at) AS first, MAX(at) AS last FROM journal_entries WHERE journal = ? AND id >= ? AND id <= ?")
-    .get(c.journal, c.from_entry, c.to_entry) as any;
-  const stale = c.state === "writing" && now.getTime() - new Date(c.at).getTime() > STALE_MIN * 60_000;
-  return { id: c.id, n, from: c.from_entry, to: c.to_entry, count: Number(span?.count ?? 0), at: c.at, first: span?.first ?? c.at, last: span?.last ?? c.at,
-           state: stale ? "failed" : c.state, title: c.title, body: c.body, by: c.by,
-           error: stale ? "It took too long. Try again." : c.error ?? null };   // DRAFT
+function chapterView(entries: Item[], c: Item, n: number, now: Date): Chapter {
+  const from = num(c.fields.from), to = num(c.fields.to), at = str(c.fields.at);
+  const span = entries.filter((e) => (e.number as number) >= from && (e.number as number) <= to).map((e) => str(e.fields.at)).sort();
+  const state = (c.state ?? "writing") as Chapter["state"];
+  const stale = state === "writing" && now.getTime() - new Date(at).getTime() > STALE_MIN * 60_000;
+  return { id: c.number as number, n, from, to, count: span.length, at, first: span[0] ?? at, last: span.at(-1) ?? at,
+           state: stale ? "failed" : state, title: c.fields.written ? c.title : "", body: str(c.fields.body), by: str(c.fields.by),
+           error: stale ? "It took too long. Try again." : str(c.fields.error) || null };   // DRAFT
 }
 
 // ---- entries --------------------------------------------------------------------------------------------------------
 // a new entry, or (with id) one rewritten; an entry already summarized can still be mended -- its chapter keeps its page
 export function keepEntry(store: Store, b: any, now = new Date()): JournalView | string {
-  tables(store);
-  const journal = Number(b?.journal);
-  if (!store.db.prepare("SELECT id FROM journals WHERE id = ?").get(journal)) return "no such journal";
+  const journal = Number(b?.journal), j = journalNo(store, journal);
+  if (!j) return "no such journal";
   const title = clean(b?.title, LIMITS.title), body = clean(b?.body, LIMITS.body);
   const feeling = cleanFeeling(b?.feeling);                   // C-357, PROCESSES: one word, or none (the app offers it with the book held)
   if (!body && !title) return "an entry needs some words";
+  const px = store.life.px;
   if (b?.id != null) {
+    const it = px.numbered(j.space, Number(b.id), entryKind(j.kind));
+    if (!it || it.archived) return "no such entry";
     const keepsFeeling = !(b && typeof b === "object" && "feeling" in b);   // an edit that did not offer it leaves it as it was
-    const ch = store.db.prepare("UPDATE journal_entries SET title = ?, body = ?, edited = ?, feeling = CASE WHEN ? THEN feeling ELSE ? END WHERE id = ? AND journal = ?")
-      .run(title, body, now.toISOString(), keepsFeeling ? 1 : 0, feeling, Number(b.id), journal).changes;
-    if (!Number(ch)) return "no such entry";
-  } else store.db.prepare("INSERT INTO journal_entries (journal, title, body, at, feeling) VALUES (?, ?, ?, ?, ?)").run(journal, title, body, now.toISOString(), feeling);
+    px.transaction(() => {
+      px.set(it.id, "title", title || "-"); px.set(it.id, "body", body); px.set(it.id, "edited", now.toISOString());
+      if (!keepsFeeling) px.set(it.id, "feeling", feeling ?? "");
+    });
+  } else {
+    const n = nextNo(store, "entry");
+    px.transaction(() => {
+      const id = px.make(j.space, entryKind(j.kind), { title: title || "-", body, at: now.toISOString(), edited: "", feeling: feeling ?? "" }, { number: n });
+      payEntry(px, j, id, now.getTime(), true);
+    });
+  }
   return journalOf(store, journal, now)!;
 }
 
+// an entry taken out: archived (the log keeps it), its own reading with it, its ARETE given back
 export function removeEntry(store: Store, journal: number, id: number, now = new Date()): JournalView | string {
-  tables(store);
-  if (!Number(store.db.prepare("DELETE FROM journal_entries WHERE id = ? AND journal = ?").run(id, journal).changes)) return "no such entry";
-  store.db.prepare("DELETE FROM journal_signs WHERE entry = ? AND journal = ?").run(id, journal);
+  const j = journalNo(store, journal);
+  if (!j) return "no such entry";
+  const px = store.life.px, it = px.numbered(j.space, id, entryKind(j.kind));
+  if (!it || it.archived) return "no such entry";
+  px.transaction(() => {
+    if (it.phase === "done") px.state(it.id, "open");
+    for (const e of px.ledger(j.space).filter((x) => x.item === it.id && !x.back && x.key.startsWith("virtue:"))) px.takeBack(it.id, "award", e.key);
+    px.archive(it.id);
+    for (const s of kidsOf(px, j, "reading")) if (num(s.fields.entry) === id) px.archive(s.id);
+  });
   return journalOf(store, journal, now)!;
 }
 
@@ -162,38 +298,40 @@ export function removeEntry(store: Store, journal: number, id: number, now = new
 // Closes a chapter of the entries since the last one, "writing"; null with nothing new. Its page is written after
 // (writeChapter); a chapter that failed is begun again by again().
 export function summarize(store: Store, journal: number, now = new Date()): { journal: JournalView; chapter: number; signing?: number } | string {
-  tables(store);
-  const jr = store.db.prepare("SELECT id, kind FROM journals WHERE id = ?").get(journal) as any;
-  if (!jr) return "no such journal";
-  const after = lastTo(store, journal);
-  const span = store.db.prepare("SELECT MIN(id) AS a, MAX(id) AS z FROM journal_entries WHERE journal = ? AND id > ?").get(journal, after) as any;
-  if (span?.a == null) return "nothing new since the last summary";   // DRAFT
-  const id = Number(store.db.prepare("INSERT INTO journal_chapters (journal, from_entry, to_entry, at, state) VALUES (?, ?, ?, ?, 'writing')")
-    .run(journal, span.a, span.z, now.toISOString()).lastInsertRowid);
-  if (kindOf(jr.kind) === "dream") {                                    // C-356: a dream chapter has its signs read too, after its page
-    const signing = openSigns(store, journal, null, id, now);
-    return { journal: journalOf(store, journal, now)!, chapter: id, signing };
+  const j = journalNo(store, journal);
+  if (!j) return "no such journal";
+  const px = store.life.px, after = lastTo(px, j), fresh = entriesOf(px, j).filter((e) => (e.number as number) > after);
+  if (!fresh.length) return "nothing new since the last summary";   // DRAFT
+  const n = nextNo(store, "chapter");
+  px.transaction(() => {
+    const id = px.make(j.space, "chapter", { title: "-", from: fresh[0].number as number, to: fresh.at(-1)!.number as number, at: now.toISOString(),
+                                             body: "", by: "", error: "", written: "" }, { number: n });
+    for (const e of fresh) px.link(id, "made-from", e.id);
+  });
+  if (j.kind === "dream") {                                              // C-356: a dream chapter has its signs read too, after its page
+    const signing = openSigns(store, j, null, n, now);
+    return { journal: journalOf(store, journal, now)!, chapter: n, signing };
   }
-  return { journal: journalOf(store, journal, now)!, chapter: id };
+  return { journal: journalOf(store, journal, now)!, chapter: n };
 }
 
 export function again(store: Store, chapter: number, now = new Date()): { journal: JournalView; chapter: number } | string {
-  tables(store);
-  const c = store.db.prepare("SELECT journal FROM journal_chapters WHERE id = ?").get(chapter) as any;
+  const c = findNo(store, "chapter", chapter);
   if (!c) return "no such summary";
-  store.db.prepare("UPDATE journal_chapters SET state = 'writing', at = ?, error = NULL WHERE id = ?").run(now.toISOString(), chapter);
-  return { journal: journalOf(store, c.journal, now)!, chapter };
+  const px = store.life.px;
+  px.transaction(() => { px.state(c.it.id, "writing"); px.set(c.it.id, "at", now.toISOString()); px.set(c.it.id, "error", ""); });
+  return { journal: journalOf(store, c.j.id, now)!, chapter };
 }
 
 // the entries a chapter covers, oldest first, and its journal's title
 export function chapterWords(store: Store, chapter: number) {
-  tables(store);
-  const c = store.db.prepare("SELECT c.*, j.title AS jtitle, j.kind AS jkind FROM journal_chapters c JOIN journals j ON j.id = c.journal WHERE c.id = ?").get(chapter) as any;
+  const c = findNo(store, "chapter", chapter);
   if (!c) return null;
-  const n = Number((store.db.prepare("SELECT COUNT(*) AS n FROM journal_chapters WHERE journal = ? AND id <= ?").get(c.journal, chapter) as any).n);
-  const entries = (store.db.prepare("SELECT title, body, at FROM journal_entries WHERE journal = ? AND id >= ? AND id <= ? ORDER BY id")
-    .all(c.journal, c.from_entry, c.to_entry) as any[]) as { title: string; body: string; at: string }[];
-  return { journal: c.jtitle as string, kind: kindOf(c.jkind), n, entries };
+  const px = store.life.px, from = num(c.it.fields.from), to = num(c.it.fields.to);
+  const n = kidsOf(px, c.j, "chapter").filter((x) => (x.number as number) <= chapter).length;
+  const entries = entriesOf(px, c.j).filter((e) => (e.number as number) >= from && (e.number as number) <= to)
+    .map((e) => ({ title: e.title === "-" ? "" : e.title, body: str(e.fields.body), at: str(e.fields.at) }));
+  return { journal: c.j.title, kind: c.j.kind, n, entries };
 }
 
 const dayOf = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
@@ -251,12 +389,19 @@ export function plainPage(words: { journal: string; n: number; entries: { title:
 }
 
 export function finishChapter(store: Store, chapter: number, page: { title: string; body: string }, by: string) {
-  tables(store);
-  store.db.prepare("UPDATE journal_chapters SET state = 'done', title = ?, body = ?, by = ?, error = NULL WHERE id = ?").run(page.title, page.body, by, chapter);
+  const c = findNo(store, "chapter", chapter);
+  if (!c) return;
+  const px = store.life.px;
+  px.transaction(() => {
+    px.set(c.it.id, "title", page.title.slice(0, 400) || "-"); px.set(c.it.id, "written", "1"); px.set(c.it.id, "body", page.body);
+    px.set(c.it.id, "by", by); px.set(c.it.id, "error", ""); px.state(c.it.id, "done");
+  });
 }
 export function failChapter(store: Store, chapter: number, error: string) {
-  tables(store);
-  store.db.prepare("UPDATE journal_chapters SET state = 'failed', error = ? WHERE id = ?").run(error, chapter);
+  const c = findNo(store, "chapter", chapter);
+  if (!c) return;
+  const px = store.life.px;
+  px.transaction(() => { px.set(c.it.id, "error", error); px.state(c.it.id, "failed"); });
 }
 
 // A chapter written: by the writer if there is one, else plainly. Never throws; the chapter ends done or failed.
@@ -269,69 +414,85 @@ export async function writeChapter(store: Store, chapter: number, write: Writer 
 }
 
 // ---- C-356: READ THE SIGNS ------------------------------------------------------------------------------------------
-function signsView(s: any, now: Date): SignsView {
-  const stale = s.state === "writing" && now.getTime() - new Date(s.at).getTime() > STALE_MIN * 60_000;
+function signsView(s: Item, now: Date): SignsView {
+  const at = str(s.fields.at), state = (s.state ?? "writing") as SignsView["state"];
+  const stale = state === "writing" && now.getTime() - new Date(at).getTime() > STALE_MIN * 60_000;
   let reading: Reading | null = null;
-  try { reading = s.reading ? JSON.parse(s.reading) : null; } catch { /* none */ }
-  return { id: s.id, entry: s.entry ?? null, chapter: s.chapter ?? null, at: s.at, state: stale ? "failed" : s.state, reading, by: s.by,
-           error: stale ? "It took too long. Try again." : s.error ?? null };   // DRAFT
+  try { reading = s.fields.reading ? JSON.parse(str(s.fields.reading)) : null; } catch { /* none */ }
+  return { id: s.number as number, entry: num(s.fields.entry) || null, chapter: num(s.fields.chapter) || null, at, state: stale ? "failed" : state,
+           reading, by: str(s.fields.by), error: stale ? "It took too long. Try again." : str(s.fields.error) || null };   // DRAFT
 }
 
 // One reading per entry or chapter: asked again, the old one is begun again
-function openSigns(store: Store, journal: number, entry: number | null, chapter: number | null, now: Date) {
-  const had = store.db.prepare(`SELECT id FROM journal_signs WHERE journal = ? AND ${entry != null ? "entry = ?" : "chapter = ?"}`)
-    .get(journal, entry ?? chapter) as any;
+function openSigns(store: Store, j: J, entry: number | null, chapter: number | null, now: Date) {
+  const px = store.life.px;
+  const had = kidsOf(px, j, "reading").find((s) => (entry != null ? num(s.fields.entry) === entry : num(s.fields.chapter) === chapter));
   if (had) {
-    store.db.prepare("UPDATE journal_signs SET state = 'writing', at = ?, error = NULL WHERE id = ?").run(now.toISOString(), had.id);
-    return Number(had.id);
+    px.transaction(() => { px.state(had.id, "writing"); px.set(had.id, "at", now.toISOString()); px.set(had.id, "error", ""); });
+    return had.number as number;
   }
-  return Number(store.db.prepare("INSERT INTO journal_signs (journal, entry, chapter, at, state) VALUES (?, ?, ?, ?, 'writing')")
-    .run(journal, entry, chapter, now.toISOString()).lastInsertRowid);
+  const n = nextNo(store, "reading");
+  px.transaction(() => {
+    const id = px.make(j.space, "reading", { title: "signs", entry: entry ?? 0, chapter: chapter ?? 0, at: now.toISOString(), reading: "", by: "", error: "" }, { number: n });
+    const from = entry != null ? px.numbered(j.space, entry, entryKind(j.kind)) : px.numbered(j.space, chapter!, "chapter");
+    if (from) px.link(id, "made-from", from.id);
+  });
+  return n;
 }
 
 // READ THE SIGNS on one entry ({entry}) or a chapter ({chapter}); the reading is written after (writeSigns)
 export function askSigns(store: Store, b: any, now = new Date()): { journal: JournalView; signing: number } | string {
-  tables(store);
-  const journal = Number(b?.journal);
-  if (!store.db.prepare("SELECT id FROM journals WHERE id = ?").get(journal)) return "no such journal";
+  const journal = Number(b?.journal), j = journalNo(store, journal);
+  if (!j) return "no such journal";
+  const px = store.life.px;
   if (b?.entry != null) {
-    if (!store.db.prepare("SELECT id FROM journal_entries WHERE id = ? AND journal = ?").get(Number(b.entry), journal)) return "no such entry";
-    return { signing: openSigns(store, journal, Number(b.entry), null, now), journal: journalOf(store, journal, now)! };
+    const e = px.numbered(j.space, Number(b.entry), entryKind(j.kind));
+    if (!e || e.archived) return "no such entry";
+    return { signing: openSigns(store, j, Number(b.entry), null, now), journal: journalOf(store, journal, now)! };
   }
   if (b?.chapter != null) {
-    if (!store.db.prepare("SELECT id FROM journal_chapters WHERE id = ? AND journal = ?").get(Number(b.chapter), journal)) return "no such summary";
-    return { signing: openSigns(store, journal, null, Number(b.chapter), now), journal: journalOf(store, journal, now)! };
+    const c = px.numbered(j.space, Number(b.chapter), "chapter");
+    if (!c || c.archived) return "no such summary";
+    return { signing: openSigns(store, j, null, Number(b.chapter), now), journal: journalOf(store, journal, now)! };
   }
   return "read the signs of an {entry} or a {chapter}";
 }
 
 // The words a reading covers, and the journal's kind
 export function signsWords(store: Store, id: number): { kind: Kind; text: string } | null {
-  tables(store);
-  const s = store.db.prepare("SELECT s.*, j.kind AS jkind FROM journal_signs s JOIN journals j ON j.id = s.journal WHERE s.id = ?").get(id) as any;
+  const s = findNo(store, "reading", id);
   if (!s) return null;
-  const es = (s.entry != null
-    ? store.db.prepare("SELECT title, body, at FROM journal_entries WHERE id = ?").all(s.entry)
-    : (() => { const c = store.db.prepare("SELECT * FROM journal_chapters WHERE id = ?").get(s.chapter) as any;
-               return c ? store.db.prepare("SELECT title, body, at FROM journal_entries WHERE journal = ? AND id >= ? AND id <= ? ORDER BY id")
-                            .all(c.journal, c.from_entry, c.to_entry) : []; })()) as { title: string; body: string; at: string }[];
+  const px = store.life.px, all = entriesOf(px, s.j), e = num(s.it.fields.entry), c = num(s.it.fields.chapter);
+  const ch = c ? px.numbered(s.j.space, c, "chapter") : null;
+  const es = (e ? all.filter((x) => x.number === e)
+                : ch ? all.filter((x) => (x.number as number) >= num(ch.fields.from) && (x.number as number) <= num(ch.fields.to)) : [])
+    .map((x) => ({ title: x.title === "-" ? "" : x.title, body: str(x.fields.body), at: str(x.fields.at) }));
   if (!es.length) return null;
-  return { kind: kindOf(s.jkind), text: asWords(es) };
+  return { kind: s.j.kind, text: asWords(es) };
 }
 
-const finishSigns = (store: Store, id: number, reading: Reading, by: string) =>
-  store.db.prepare("UPDATE journal_signs SET state = 'done', reading = ?, by = ?, error = NULL WHERE id = ?").run(JSON.stringify(reading), by, id);
+function finishSigns(store: Store, id: number, reading: Reading, by: string) {
+  const s = findNo(store, "reading", id);
+  if (!s) return;
+  const px = store.life.px;
+  px.transaction(() => { px.set(s.it.id, "reading", JSON.stringify(reading)); px.set(s.it.id, "by", by); px.set(s.it.id, "error", ""); px.state(s.it.id, "done"); });
+}
+function failSigns(store: Store, id: number, error: string) {
+  const s = findNo(store, "reading", id);
+  if (!s) return;
+  const px = store.life.px;
+  px.transaction(() => { px.set(s.it.id, "error", error); px.state(s.it.id, "failed"); });
+}
 
 // A reading written: by the writer if there is one, else from the lexicon. Never throws; it ends done or failed.
 // A mind that answers but gives nothing usable falls to the lexicon too, so a reading always ends in something.
 export async function writeSigns(store: Store, id: number, write: Writer | null) {
   const w = signsWords(store, id);
-  if (!w) { store.db.prepare("UPDATE journal_signs SET state = 'failed', error = ? WHERE id = ?").run("Its words are gone.", id); return; }   // DRAFT
+  if (!w) { failSigns(store, id, "Its words are gone."); return; }   // DRAFT
   const found = symbolsIn(w.text), plain = plainSigns(found);
   if (!write) {
     if (plain.signs.length) return void finishSigns(store, id, plain, "lexicon");
-    store.db.prepare("UPDATE journal_signs SET state = 'failed', error = ? WHERE id = ?")
-      .run("No sign the books know is in these words, and no mind is here to look deeper.", id);   // DRAFT
+    failSigns(store, id, "No sign the books know is in these words, and no mind is here to look deeper.");   // DRAFT
     return;
   }
   try {
@@ -341,6 +502,6 @@ export async function writeSigns(store: Store, id: number, write: Writer | null)
     throw new Error("No mind could read them this time.");   // DRAFT
   } catch (e) {
     if (plain.signs.length) return void finishSigns(store, id, plain, "lexicon");
-    store.db.prepare("UPDATE journal_signs SET state = 'failed', error = ? WHERE id = ?").run((e as Error).message || "It could not be read.", id);   // DRAFT
+    failSigns(store, id, (e as Error).message || "It could not be read.");   // DRAFT
   }
 }

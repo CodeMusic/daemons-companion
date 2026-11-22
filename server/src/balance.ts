@@ -5,8 +5,8 @@
 // UNTENDED when its day passed with nothing. Lit, never scolded (T-418): nothing is taken for a day missed, and the words
 // never say a virtue cures its shadow. Shown on TODAY under the day's centre, Sunday first, as the week's climb is.
 //
-// What counts is read from ARETE's ledger (every space: LIFE, TENDING, and the journals once they are on PRAXIS) and,
-// until the JOURNAL moves (C-432's later slice), from its table. Every word the app shows is DRAFT.
+// What counts is read from ARETE's ledger, in every space: LIFE, TENDING, MEETINGS, the journals and the dream journals
+// (a finish past its day's cap is still there, at nothing). Every word the app shows is DRAFT.
 import { parseHlc } from "@daemons/praxis";
 import type { Store } from "./store.js";
 import { localDate, WEEK } from "./practice.js";
@@ -29,12 +29,6 @@ export function weekBalance(store: Store, now = new Date(store.now())) {
     const ms = parseHlc(e.hlc)?.ms;
     if (ms !== undefined) add(ms, k);
   }
-  // the journals' entries, from their table until they are on PRAXIS
-  try {
-    const rows = store.db.prepare("SELECT e.at AS at, j.kind AS kind FROM journal_entries e JOIN journals j ON j.id = e.journal WHERE e.at >= ?")
-      .all(start.toISOString()) as { at: string; kind: string }[];
-    for (const r of rows) { const ms = Date.parse(r.at); if (Number.isFinite(ms)) add(ms, r.kind === "dream" ? "dreams" : "entries"); }
-  } catch { /* no journal yet */ }
   const days: BalanceDay[] = WEEK.map((w, i) => {
     const on = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i), date = localDate(on);
     const a = acts.get(date) ?? none();

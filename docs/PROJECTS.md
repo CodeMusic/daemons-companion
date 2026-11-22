@@ -348,6 +348,17 @@ The form lives in daemons-praxis, beside the engine, so the companion and EUDAIM
 - **The JOURNAL** becomes spaces of the JOURNAL and DREAM JOURNAL forms; entries, chapters and signs become items
   linked *made from*.
 - **TENDING, the subtle question, MEETINGS and VOICE NOTES** move out of their `settings` blobs into items.
+  *Built (C-432, 2026-11-22), and what it settled:* each journal is a space of its form under a JOURNALS space whose
+  items name them, numbered as they were (JOURNAL-3), and every entry (a DREAM in a dream journal), chapter and reading
+  keeps its number, unique across journals as the tables' ids were, so every route reads as before; chapters and readings
+  are linked MADE FROM what they cover; an entry or a dream pays 2 once a day. TENDING is a space with a TENDED item a
+  day (1 ARETE); MEETINGS a space whose meetings' states are their progress and whose ACTION ITEMS are items, ticked done
+  in the app (1 ARETE); VOICE NOTES and THE SUBTLE QUESTION's answers are spaces of their own. Every old table and setting
+  is read in once, each row at its own time, and left as it was; a removed entry, meeting or note is archived, never
+  deleted. **THE DAY'S VIRTUE**: the day's first finish, in any space, pays 2 more, once a day (taken back with it).
+  **THE WEEK'S BALANCE** (`GET /api/balance`, on TODAY under the day's centre) reads the week's finishes from the ledger:
+  a virtue lived when something was finished on its day (the user, 2026-11-22, by multiple choice). ARETE is counted
+  across every space.
 - **The interactions log stays the daemon's**; an award writes to it what the daemon needs.
 
 ## 10. Redmine, and the site

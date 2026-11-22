@@ -5,9 +5,12 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #include "game/bps.h"
 #include "game/hash.h"
+#include "kit/policy.h"
+#include "kit/stackflow.h"
 
 // patch: 576 bytes; target sha1 571603f8103cd9791fc11f5957a81c1d6944eaac, size 8692
 static const uint8_t PATCH[] = {
@@ -88,6 +91,31 @@ int main() {
   CHECK("bps refuses what is not a patch", refuses([&] { applyBps(source, Bytes(20, 0)); }));
   Bytes shortSource(source.begin(), source.end() - 1);
   CHECK("bps refuses a ROM of the wrong size", refuses([&] { applyBps(shortSource, patch); }));
+
+  // C-461: StackFlow's objects found by their braces -- split across reads, a brace inside a string, a boot line between
+  {
+    stackflow::Reader r;
+    std::vector<std::string> got;
+    const std::string a = "boot text {\"a\":\"x}{\\\"\",\"b\":{\"c\":1}}\n{\"d\"";
+    const std::string b = ":2}junk{\"e\":\"}\"}";
+    r.feed(a.data(), a.size(), got);
+    CHECK("stackflow: an object whole, a brace in a string not counted", got.size() == 1 && got[0] == "{\"a\":\"x}{\\\"\",\"b\":{\"c\":1}}");
+    r.feed(b.data(), b.size(), got);
+    CHECK("stackflow: an object split across reads, junk between dropped", got.size() == 3 && got[1] == "{\"d\":2}" && got[2] == "{\"e\":\"}\"}");
+    CHECK("stackflow: escaped as JSON", stackflow::escape("say \"hi\"\n") == "say \\\"hi\\\"\\n");
+  }
+  // C-459: the charge rule -- a charger lifts it; the lower charge rules; above 40 asked, 10..40 override, below 10 refused
+  {
+    kit::Limits l;
+    CHECK("kit: charging goes", kit::mayWake(5, true, 3, false, l) == kit::Wake::Go);
+    CHECK("kit: plenty asks", kit::mayWake(80, false, -1, false, l) == kit::Wake::Ask);
+    CHECK("kit: the lower charge rules", kit::mayWake(80, false, 30, false, l) == kit::Wake::Override);
+    CHECK("kit: near empty refuses", kit::mayWake(9, false, 90, false, l) == kit::Wake::Refuse);
+    CHECK("kit: at the line is override", kit::mayWake(40, false, -1, false, l) == kit::Wake::Override);
+    l.alwaysAsk = false;
+    CHECK("kit: always yes goes", kit::mayWake(70, false, -1, false, l) == kit::Wake::Go);
+    CHECK("kit: always yes still refuses near empty", kit::mayWake(8, false, -1, false, l) == kit::Wake::Refuse);
+  }
 
   printf(failed ? "%d FAILED\n" : "all passed\n", failed);
   return failed ? 1 : 0;

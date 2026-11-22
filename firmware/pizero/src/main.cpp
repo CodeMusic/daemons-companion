@@ -25,6 +25,10 @@
 //   daemons-zero --cap cc1101|lora|none  a pretend cap on the header (a computer, or checks): no chip is asked (C-444)
 //   daemons-zero --caps                say which cap is fitted and what it offers, and stop (C-444, docs/CAPS.md)
 //   daemons-zero --band 315|433|915    set the CC1101's band, read the switch back, listen two seconds, and stop
+//   daemons-zero --kit                 the LLM630 Kit on the back: its link, agent, units and models; and stop (C-453)
+//   daemons-zero --kit-at HOST:PORT    the Kit to ask (else ~/.config/daemons/kit, else 10.77.0.2:10001; "off")
+//   daemons-zero --kit-say "WORDS"     one turn on the Kit by typed words, timed, its voice played; and stop
+//   daemons-zero --kit-hear FILE.wav   one turn on the Kit from a 16 kHz mono recording; and stop
 //   daemons-zero --keep-there          C-215's yes: this other game kept on the hub as a save of its own; and stop
 #include <algorithm>
 #include <chrono>
@@ -45,6 +49,7 @@
 #include "hal/hal.h"
 #include "hub/hub.h"
 #include "hub/mirror.h"
+#include "kit/kit.h"
 #include "paths.h"
 #include "sound.h"
 
@@ -57,6 +62,8 @@ Page *stepPage();
 Page *partyPage();
 Page *sayPage();
 Page *capsPage();
+Page *talkPage();
+Page *kitPage();
 
 Emu emu;
 bool held[(size_t)Key::Count];
@@ -76,6 +83,8 @@ Page *pageFor(PageId id) {
     case PageId::Party: return partyPage();
     case PageId::Say: return sayPage();
     case PageId::Caps: return capsPage();
+    case PageId::Talk: return talkPage();
+    case PageId::Kit: return kitPage();
     default: return homePage();
   }
 }
@@ -150,7 +159,8 @@ static int bench(int frames) {
 int main(int argc, char **argv) {
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
   std::string start = "home", shot, makeFrom, makeTestingOf, gameKey, romFrom, hubArg, pairCode;
-  bool listGames = false, listCaps = false;
+  bool listGames = false, listCaps = false, kitStatus = false;
+  std::string kitSay, kitHear;
   std::string bandArg;
   bool mirrorIn = false, sendSave = false, syncOnce = false, keepThere = false;
   std::map<uint64_t, std::vector<Key>> presses;
@@ -185,6 +195,10 @@ int main(int argc, char **argv) {
     else if (a == "--cap") caps::pretend(val());
     else if (a == "--caps") listCaps = true;
     else if (a == "--band") bandArg = val();
+    else if (a == "--kit") kitStatus = true;
+    else if (a == "--kit-at") setenv("DAEMONS_KIT", val().c_str(), 1);
+    else if (a == "--kit-say") kitSay = val();
+    else if (a == "--kit-hear") kitHear = val();
     else if (a == "--press") {
       std::string list = val();
       size_t at = 0;
@@ -233,6 +247,13 @@ int main(int argc, char **argv) {
       if (!ok) return 1;
     }
     return 0;
+  }
+  if (kitStatus) return kit::cliStatus();   // C-453: over SSH, for checks
+  if (!kitSay.empty() || !kitHear.empty()) {
+    bool speak = sound::begin();
+    int rc = kitSay.empty() ? kit::cliHear(kitHear, speak) : kit::cliSay(kitSay, speak);
+    sound::end();
+    return rc;
   }
   if (listGames) {
     Game now;
@@ -321,10 +342,11 @@ int main(int argc, char **argv) {
   if (!hal::begin(scale, headless)) { fprintf(stderr, "no screen\n"); return 1; }
   if (!headless && !sound::begin()) fprintf(stderr, "sound: none found; the game plays silent\n");
   hub::begin(hal::deviceId());
+  kit::begin();   // C-453: the Kit on the back, asked on a thread of its own
   caps::find();   // C-444: once at start; a cap is never fitted while the Zero is on
   const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "games", PageId::Make }, { "link", PageId::Pair },
                                            { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say },
-                                           { "caps", PageId::Caps } };
+                                           { "caps", PageId::Caps }, { "talk", PageId::Talk }, { "kit", PageId::Kit } };
   go(pages.count(start) ? pages.at(start) : PageId::Home);
 
   auto lastDraw = std::chrono::steady_clock::now();
@@ -375,6 +397,7 @@ int main(int argc, char **argv) {
   if (!shot.empty()) { pageFor(now)->draw(); if (canvasShot(shot)) printf("picture: %s\n", shot.c_str()); }
   keepSave();   // a save the game had not finished settling is kept as it stands
   mirror::finish(2000);   // the save on its way to the hub gets two seconds (APPLaunch kills three after SIGINT)
+  kit::end();
   sound::end();
   hub::end();
   hal::end();

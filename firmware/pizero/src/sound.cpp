@@ -10,6 +10,11 @@
 
 #include "sound.h"
 
+#include <chrono>
+#include <mutex>
+#include <thread>
+#include <vector>
+
 namespace sound {
 static ma_device device;
 static ma_pcm_rb ring;
@@ -59,6 +64,53 @@ void push(const int16_t *stereo, size_t frames) {
 
 size_t queued() { return running ? ma_pcm_rb_available_read(&ring) : 0; }
 bool on() { return running; }
+
+// C-461: the Kit's voice; a ring-full voice waits for the speaker rather than being dropped (it is not the game's frame)
+void pushMono16k(const int16_t *mono, size_t samples) {
+  if (!running) return;
+  std::vector<int16_t> st;
+  st.reserve(samples * 6);
+  for (size_t i = 0; i < samples; i++) for (int k = 0; k < 6; k++) st.push_back(mono[i]);
+  size_t frames = st.size() / 2, at = 0;
+  for (int tries = 0; at < frames && tries < 4000; tries++) {
+    ma_uint32 n = (ma_uint32)(frames - at);
+    void *dst;
+    if (ma_pcm_rb_acquire_write(&ring, &n, &dst) != MA_SUCCESS || n == 0) { std::this_thread::sleep_for(std::chrono::milliseconds(5)); continue; }
+    memcpy(dst, st.data() + at * 2, n * 4);
+    ma_pcm_rb_commit_write(&ring, n);
+    at += n;
+  }
+}
+
+static ma_device mic;
+static bool micOn;
+static std::mutex micLock;
+static std::vector<int16_t> heard;
+static void take(ma_device *, void *, const void *in, ma_uint32 frames) {
+  std::lock_guard<std::mutex> g(micLock);
+  const int16_t *s = (const int16_t *)in;
+  if (heard.size() + frames > 16000 * 15) frames = (ma_uint32)(heard.size() < 16000 * 15 ? 16000 * 15 - heard.size() : 0);
+  heard.insert(heard.end(), s, s + frames);
+}
+bool recordStart() {
+  if (micOn) return true;
+  { std::lock_guard<std::mutex> g(micLock); heard.clear(); }
+  ma_device_config cfg = ma_device_config_init(ma_device_type_capture);
+  cfg.capture.format = ma_format_s16;
+  cfg.capture.channels = 1;
+  cfg.sampleRate = 16000;   // miniaudio converts from whatever the microphone gives
+  cfg.dataCallback = take;
+  if (ma_device_init(nullptr, &cfg, &mic) != MA_SUCCESS) return false;
+  if (ma_device_start(&mic) != MA_SUCCESS) { ma_device_uninit(&mic); return false; }
+  micOn = true;
+  return true;
+}
+std::vector<int16_t> recordStop() {
+  if (micOn) { ma_device_uninit(&mic); micOn = false; }
+  std::lock_guard<std::mutex> g(micLock);
+  return std::move(heard);
+}
+bool recording() { return micOn; }
 
 void end() {
   if (!running) return;

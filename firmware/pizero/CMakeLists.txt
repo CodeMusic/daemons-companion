@@ -111,6 +111,11 @@ set(SRC
   src/pages/party.cpp
   src/pages/say.cpp
   src/pages/caps.cpp
+  src/pages/talk.cpp
+  src/pages/kit.cpp
+  src/kit/stackflow.cpp
+  src/kit/kit.cpp
+  src/kit/policy.cpp
   src/caps/bus.cpp
   src/caps/cc1101.cpp
   src/caps/cap.cpp
@@ -157,6 +162,7 @@ endif()
 
 # The checks that need no device: BPS against vectors written by DAEMONS' own encoder, and the hashes
 enable_testing()
-add_executable(zero-tests test/tests.cpp src/game/hash.cpp src/game/bps.cpp)
-target_include_directories(zero-tests PRIVATE src)
+add_executable(zero-tests test/tests.cpp src/game/hash.cpp src/game/bps.cpp src/kit/stackflow.cpp src/kit/policy.cpp)
+target_include_directories(zero-tests PRIVATE src ${CMAKE_BINARY_DIR}/_deps/arduinojson)
+target_compile_definitions(zero-tests PRIVATE ARDUINOJSON_STRING_LENGTH_SIZE=4)
 add_test(NAME bps COMMAND zero-tests ${CMAKE_CURRENT_SOURCE_DIR}/test)

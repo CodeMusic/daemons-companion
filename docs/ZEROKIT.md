@@ -59,6 +59,20 @@ The user has no cell for the Kit yet, so **every arrangement works**, and one se
 - **Powered over the cable**: no cell; the Zero's USB-A feeds the Kit 5 V. Both run from the Zero's cell.
 - **On a charger**: either board on USB power, the other fed from it.
 
+**Today, before a cell (the user, 2026-11-21: "can I use USB-C to USB-C to connect them and power?").** The Kit
+comes with **no battery**: a 2-pin 1.25 mm socket for a 3.7 V LiPo, with its own charger and gauge (check the socket's
+polarity against the board before plugging a cell in -- these connectors are not wired alike). Until one is fitted:
+
+- **One cable, the Zero's USB-A to the Kit's OTG port (J4)**, USB-A to USB-C: the Zero gives 5 V and the cable carries
+  the network. USB-A always gives power; *whether J4 powers the Kit as a USB device is the first bench check* (C-458).
+- **Not the Zero's right USB-C, for now.** It is the Zero's own charging port: as a host (its switch) it may or may not
+  give power, and a C-to-C cable between two boards that can each be either end may decide the wrong way round.
+- **If J4 does not power it**: a small power bank into the Kit's power port (J5) and the data cable from the Zero to J4.
+
+**Out and about, the best is the Kit's own cell**: a flat 3.7 V LiPo of 1000-2000 mAh in the housing, so the Kit never
+eats the Zero's 1750 mAh (6.5 Wh, about 2.5 hours alone). Until then the Kit rests (its units unloaded) and is woken only
+when a talk needs it, by the rule below; at home either board on a charger lifts every limit.
+
 **The Kit is off or in standby by default, and started on demand.** Standby means StackFlow's units have exited and
 their models are unloaded. Off means no VBUS from the Zero, or the Kit's own power held off; *whether the Zero can
 switch the USB-A's VBUS, or wake a Kit on its own cell, is a bench question.* When something needs the Kit (TALK, an
@@ -152,6 +166,24 @@ bought). **The published 90.3 mm is longer than the Zero's 84 mm back**, so the 
 shell and measured first (length, width, the tallest part, the ports, the CSI connector and the camera's ribbon),
 then the housing is drawn to fit. It needs vents over the AX630C, which runs warm under load, and must not cover the
 Zero's own camera, its ports, the cap header or the slide switch.
+
+## Built (2026-11-21), not yet run on the Kit
+
+- **The Zero** (`firmware/pizero/src/kit/`): StackFlow over TCP by plain sockets (`stackflow.cpp`: objects found by
+  their braces, as M5Stack's own code does), the Kit's brain on a thread of its own (`kit.cpp`: wake the three units,
+  rest them, a turn by typed words or a recording, the voice played at 16 kHz), the charge rule (`policy.cpp`), and two
+  pages: **TALK** (typed, or hold TAB to speak; BEST asks the hub's mind when the hub answers and the Kit when it does
+  not) and **KIT** (its state, its cell and heat, its hotspot and the key to tell a guest, the models it holds, the way
+  TALK goes). From the command line, over SSH: `daemons-zero --kit`, `--kit-say "WORDS"`, `--kit-hear FILE.wav`,
+  `--kit-at HOST:PORT`. Its checks: the braces reader and the charge rule (`test/tests.cpp`). **Run end to end on the Mac
+  against `tools/fakekit.py`**, a stand-in that speaks StackFlow (status, a typed turn, a recording heard), and drawn.
+- **The Kit** (`firmware/llm630/`): `setup.sh` (StackFlow brought up to date, the talk set's models, the nightly restart,
+  the gadget and kitd as services), `gadget.sh` (the OTG port as a network beside ADB), `kitd.py` (its cell, heat and
+  hotspot, the hotspot's charge rule), `install.sh` from a computer over ADB or SSH.
+- **The Zero's end of the cable** (`firmware/pizero/tools/kitlink.sh`): 10.77.0.1, the Kit's internet through the Zero,
+  and the Kit's OpenAI front door on the Zero's tailnet address (port 4810), for the hub's house to add as a module
+  (`ai.moduleAddresses`) -- so the Kit is one more mind in THE MIND when the pair is reachable, and the pair's own when
+  it is not.
 
 ## On the bench, in order
 

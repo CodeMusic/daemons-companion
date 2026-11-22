@@ -10,6 +10,7 @@
 #include "hal/hal.h"
 #include "hub/hub.h"
 #include "hub/mirror.h"
+#include "kit/kit.h"
 #include "pages/parts.h"
 #include "paths.h"
 
@@ -43,12 +44,14 @@ struct Home : Page {
     items.push_back({ "CARE", PageId::Care });
     items.push_back({ "STEP", PageId::Step });
     items.push_back({ "PARTY", PageId::Party });
+    items.push_back({ "TALK", PageId::Talk });   // C-461   // DRAFT
     items.push_back({ "SAY", PageId::Say });
     items.push_back({ hasGame ? "GAMES" : "MAKE THE GAME", PageId::Make });   // C-395
     // C-380: a SYNC (C-397: of the one save, whichever game is played)
     if (hub::paired() && mirror::mode() == mirror::Mode::Send && hasGame) items.push_back({ "SYNC", PageId::Home });
     if (!hub::paired()) items.push_back({ "LINK", PageId::Pair });   // C-380
     if (ZERO_DEVICE || caps::found().kind != caps::Kind::None) items.push_back({ "CAPS", PageId::Caps });   // C-444   // DRAFT
+    if (kit::configured()) items.push_back({ "KIT", PageId::Kit });   // C-453   // DRAFT
     items.push_back({ "LEAVE", PageId::Home });
     choices.items.clear();
     for (auto &i : items) choices.items.push_back(i.word);

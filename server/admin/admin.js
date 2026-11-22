@@ -384,7 +384,7 @@ async function drawMind() {
     <div class="card"><p class="eyebrow">LATER -- THE HUB'S PLANS</p><div class="list">${(v.plans ?? []).map((p) => `<div style="padding:8px 0">
       <div class="row"><span class="dot" style="border:1.5px dashed ${kindOf(p.kind)[0]}"></span><span class="grow ${p.on ? "" : "faint"}">${esc(p.title)}</span>
         <button class="pill ${p.on ? "on" : ""}" data-act="plan" data-plan="${esc(p.id)}" data-on="${p.on ? "" : "1"}">${p.on ? "ON" : "OFF"}</button>
-        <button class="pill" data-act="plan" data-plan="${esc(p.id)}" data-now="1">NOW</button></div>
+        ${p.gate ? "" : `<button class="pill" data-act="plan" data-plan="${esc(p.id)}" data-now="1">NOW</button>`}</div>
       <div class="small">${esc(p.said)} ${p.on ? `${p.gate ? "Next day" : "Next"}: ${esc(new Date(p.next).toLocaleString([], p.gate ? { weekday: "long", month: "short", day: "numeric" } : { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}.` : "Off."}${p.last && !p.gate ? ` Last: ${ago(p.last, now)}.` : ""}</div>
       ${p.every ? `<div class="row" style="margin-top:6px;flex-wrap:wrap;gap:4px"><span class="small grow">${esc((p.cadence ?? "").toUpperCase())}</span>
         ${CADENCES.map(([e, said]) => `<button class="pill ${p.every === e ? "on" : ""}" data-act="cadence" data-plan="${esc(p.id)}" data-every="${e}" data-times="1">${said}</button>`).join("")}

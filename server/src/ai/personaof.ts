@@ -36,6 +36,8 @@ export type PersonaFacts = {
   dream?: string;             // last night's
   day?: DayFacts | null;      // the Xenith day: the virtue over its shadow, the chakra (C-73)
   voice?: string;             // the recipe it speaks in, made by its own companion (a trainer's own kept there)
+  inMind?: { words: string; from: string | null }[];   // C-469's WORKING MEMORY, the most lately rehearsed first -- "talk" from
+                                                       // what its person said, "goal", "day" (what it noticed)
 };
 
 const clip = (s: unknown, most: number) => (typeof s === "string" ? s.replace(/\s+/g, " ").trim().slice(0, most) : "");
@@ -56,9 +58,15 @@ export function speciesFacts(species: number, nickname: string, edition = "CONTE
 }
 
 // A card for another player's hub: the facts, with the goals cut to their titles and next steps (the user's choice)
+// -- and what it has in mind without anything its person said in a talk (their words never leave the home)
 export function cardOf(f: PersonaFacts): PersonaFacts {
-  return { ...f, goals: (f.goals ?? []).slice(0, 4).map((g) => ({ goal: clip(g.goal, 60), ...(g.step ? { step: clip(g.step, 80) } : {}) })) };
+  return { ...f, goals: (f.goals ?? []).slice(0, 4).map((g) => ({ goal: clip(g.goal, 60), ...(g.step ? { step: clip(g.step, 80) } : {}) })),
+           ...(f.inMind ? { inMind: mindOf(f.inMind).filter((m) => m.from !== "talk") } : {}) };
 }
+// what it has in mind, checked and cut to size: about seven things (C-469)
+const mindOf = (l: unknown): { words: string; from: string | null }[] =>
+  (Array.isArray(l) ? l : []).slice(0, 7).map((m: any) => ({ words: clip(m?.words, 120), from: typeof m?.from === "string" ? clip(m.from, 12) : null }))
+    .filter((m) => m.words);
 
 // A card from the wire: every field checked, cut to size; the species' own facts under it (so a card cannot rename a
 // species or put words in its telling). null: no such species.
@@ -77,7 +85,7 @@ export function factsFrom(raw: unknown, edition = "CONTENT"): PersonaFacts | nul
   const gender = c.gender === "male" || c.gender === "female" || c.gender === "none" ? c.gender as Gender : base.gender;   // C-359: its own companion knows
   return { ...base, gender, level: Number.isFinite(level) ? Math.max(1, Math.min(100, Math.round(level))) : null,
            mood: clip(c.mood, 30) || undefined, care, goals, dream: clip(c.dream, 240) || undefined, day,
-           voice: clip(c.voice, 600) || undefined };
+           voice: clip(c.voice, 600) || undefined, ...(Array.isArray(c.inMind) ? { inMind: mindOf(c.inMind) } : {}) };
 }
 
 // How it is cared for, in words -- only what stands out
@@ -109,6 +117,7 @@ export function personaOf(f: PersonaFacts, o: { roomy?: boolean; person?: string
     f.mood || care ? `Today you feel ${[f.mood, care].filter(Boolean).join("; ")}.` : "",
     f.dream ? `Last night you dreamt: ${f.dream}` : "",
     f.day ? `Today is ${f.day.day}${f.day.theme ? `, a day of ${f.day.theme}` : ""}: its virtue is ${f.day.virtue}, held over its shadow, ${f.day.shadow}; its centre is the ${f.day.chakra}.` : "",
+    f.inMind?.length ? `You have in mind just now: ${f.inMind.map((m) => m.words).join("; ")}.` : "",
     goals.length ? `Your person is working on: ${goals.map((g) => g.step ? `${g.goal} (next: ${g.step})` : g.goal).join("; ")}.` : "",
   ].filter(Boolean).join(" ");
 }

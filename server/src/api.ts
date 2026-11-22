@@ -405,6 +405,15 @@ function personaCard(ecfg: Config, store: Store, personality: number, now = new 
                   ...(life ? { mood: life.word, care: life.care, dream: (w.daemon as { dream?: string }).dream } : {}),
                   voice: voiceRecipe({ types: f.types, category: f.category, species: d.species }, null, store.getSetting(`voice.recipe.${d.species}`) ?? "") });
 }
+// C-329 + C-469: the card a talk sends -- personaCard and what the daemon has in mind now (cardOf keeps anything its
+// person said at home). Not in personaCard itself: the day's persona is rebuilt when its facts move, not at every thought
+function talkCard(ecfg: Config, store: Store, personality: number): PersonaFacts | null {
+  const card = personaCard(ecfg, store, personality);
+  if (!card) return null;
+  let held: { words: string; from: string | null }[] = [];
+  try { held = store.workingMemory(personality).held().map((h) => ({ words: h.words, from: h.from })); } catch { /* none held */ }
+  return held.length ? cardOf({ ...card, inMind: held }) : card;
+}
 // C-303 (DAEMONS T-522): what a daemon says of itself (species.json `said`), and the voice it says it in -- its own
 // (C-251), never the INDEX's. null when {own: true} was not asked, or it has no telling yet: its entry is read as before
 function ownTelling(ecfg: Config, store: Store, deviceId: string, b: Record<string, any>): { text: string; recipe: string } | null {
@@ -1870,7 +1879,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (TRADE_PATHS.includes(path)) {
         const h = hostOf(ecfg);
         return reply(res, await tradeRoute(tradeLink(store), store, h.save.read(), h.edition, req.method ?? "", path, req.method === "POST" ? await body(req) : {},
-                                           (p) => personaCard(ecfg, store, p)));   // C-329
+                                           (p) => talkCard(ecfg, store, p)));   // C-329
       }
       if (req.method === "POST" && path === "/api/sync")             // C-219: what the exchange sent, fetched first; told after
         return reply(res, await runSync(ecfg, store, { deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) }));

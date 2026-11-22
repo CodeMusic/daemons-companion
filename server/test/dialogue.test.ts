@@ -188,3 +188,33 @@ describe("after a restart (C-329, 2026-11-22: a deploy mid-INTEGRATE left a talk
     expect(D.recover(hub)).toBe(0);
   });
 });
+
+describe("what it has in mind (C-329 + C-469 WORKING MEMORY)", () => {
+  it("is in the persona, and a card for another hub never carries what its person said in a talk", () => {
+    const held = [{ words: "Finish the shed: buy screws", from: "goal" }, { words: "I'll call my sister tonight", from: "talk" },
+                  { words: "the rain at noon, and it liked it", from: "day" }];
+    const card = cardOf({ ...speciesFacts(4, "SPARKY"), inMind: held });
+    expect(card.inMind!.map((m) => m.from)).toEqual(["goal", "day"]);
+    expect(personaOf(card)).toContain("You have in mind just now: Finish the shed: buy screws; the rain at noon, and it liked it.");
+    expect(personaOf(card)).not.toContain("sister");
+    const wire = factsFrom({ species: 4, nickname: "SPARKY", inMind: [...Array(12)].map((_, i) => ({ words: `thing ${i}`, from: "day" })) })!;
+    expect(wire.inMind).toHaveLength(7);
+  });
+  it("is in a household talk's persona, all of it (within the home)", async () => {
+    const PIP = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12, away: true };
+    const LABEL = { personality: 0x0000002f, otId: 0x00ab1234, species: 4, nickname: "LABEL", level: 9, away: true };
+    const WATCH = "t-watch-ultra-a1b2c3", PHONE = "iphone-widget-0a0b0c";
+    const save = buildSave({ player: "ASH", trainerId: 0x00ab1234, slots: [{ counter: 3, party: [PIP, LABEL] }] });
+    const h: core.Host = { edition: "CONTENT", save: { read: () => save, write: () => null } };
+    const store = new Store(":memory:"), away = core.awayNow(h);
+    carriedFor(store, away, WATCH); carriedFor(store, away, PHONE);
+    store.workingMemory(PIP.personality).fromTalk("I'll water the plants tomorrow");
+    const post = (path: string, body: object, deviceId = "") => route(h, store, { method: "POST", path, body, deviceId }, new Date());
+    post("/api/household/together", { b: PHONE }, WATCH);
+    const systems: string[] = [];
+    D.setDialogueThinker(async (system) => { systems.push(system); return { text: "Plants first.", by: "t" }; });
+    const t = post("/api/household/converse", { prompt: "What now?", turns: 1 }, WATCH).body as any;
+    await settle(store, "home", t.id);
+    expect(systems[0]).toMatch(/You have in mind just now: .*water the plants/i);
+  });
+});

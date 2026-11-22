@@ -57,7 +57,8 @@ export function gameDay(was: GameNow | null, now: GameNow | null): string {
   return `In the game together: ${bits.join("; ")}.`;
 }
 
-export type Extra = { nickname?: string; feelings?: string | null; dream?: string | null; paintings?: string[]; dayName?: string | null; game?: string };
+export type Extra = { nickname?: string; feelings?: string | null; dream?: string | null; paintings?: string[]; dayName?: string | null; game?: string;
+  held?: string[] };   // C-469: what it had in mind (WORKING MEMORY), folded in tonight and then let go
 
 // What the day left behind, in words (the mind's material; never shown)
 export function dayMaterial(store: Store, from: Date, to: Date, extra: Extra = {}): string {
@@ -73,6 +74,7 @@ export function dayMaterial(store: Store, from: Date, to: Date, extra: Extra = {
     goals.length ? `Goals finished: ${goals.map((g) => `"${g.title}"`).join(", ")}.` : "",
     extra.paintings?.length ? `You painted: ${extra.paintings.map((p) => `"${p}"`).join(", ")}.` : "",
     extra.feelings ? `By the end of it you felt ${extra.feelings}.` : "",
+    extra.held?.length ? `What you had in mind: ${extra.held.map((h) => h.replace(/\s+/g, " ").slice(0, 200)).join("; ")}.` : "",   // C-469
     extra.dream ? `That night you dreamt: ${extra.dream.replace(/\s+/g, " ").slice(0, 500)}` : "",
   ];
   return lines.filter(Boolean).join("\n");

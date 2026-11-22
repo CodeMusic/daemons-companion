@@ -21,6 +21,6 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "@daemons/praxis": "github:CodeMusic/daemons-praxis#v0.2.0"
+    "@daemons/praxis": "github:CodeMusic/daemons-praxis#v0.4.0"
   }
 }

@@ -430,6 +430,15 @@ export const doStep = (cfg: Config, store: Store, id: number, from: "site" | "de
   core.doStep(hostOf(cfg), store, id, from, deviceId);
 const awayNow = (cfg: Config) => core.awayNow(hostOf(cfg));
 const carriedDaemon = (cfg: Config, store: Store, deviceId = "") => core.carriedDaemon(hostOf(cfg), store, deviceId);
+// C-469: the carried daemon's WORKING MEMORY (workingmemory.ts), its day's own things read again (the goal's next step, what
+// moved it most) -- or null with no daemon carried
+function workingMind(cfg: Config, store: Store, deviceId = "", now = new Date()) {
+  const d = carriedDaemon(cfg, store, deviceId);
+  if (!d) return null;
+  const mind = store.workingMemory(d.personality);
+  try { mind.fromDay({ goal: store.currentGoal(), cause: mindNow(core.daemonFeelings(store, now)).cause }); } catch { /* held as it was */ }
+  return mind;
+}
 export const growFromStep = (cfg: Config, store: Store, stepId: number, deviceId = "") =>
   core.growFromStep(hostOf(cfg), store, stepId, deviceId);
 // C-211 (the user, 2026-10-28: "configure the primary source (module or n8n ... green/red health indicator dots"): who
@@ -1122,9 +1131,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const painted = paintings().filter((p) => p.state === "done" && Date.parse(p.at) >= due.from.getTime() && Date.parse(p.at) < due.to.getTime()).map((p) => p.title);
       let game: GameNow | null = null;                         // the save now, beside the last memory's (memory.game)
       try { const bytes = hostOf(ecfg).save.read(); game = bytes ? gameNow(readProfile(bytes)) : null; } catch { /* no save */ }
+      // C-469: what the daemon has in mind (WORKING MEMORY), read again from the day, given to the night, then let go
+      const mind = workingMind(ecfg, store, ""), held = mind?.held() ?? [];
       const material = dayMaterial(store, due.from, due.to, { nickname: f.nickname, feelings: f.feelings ? feelingsSaid(f.feelings) : null,
         dream: dream?.text ?? null, paintings: painted, dayName: due.from.toLocaleDateString("en-CA", { weekday: "long" }),
-        game: gameDay(readGame(store.getSetting("memory.game")), game) });
+        game: gameDay(readGame(store.getSetting("memory.game")), game), held: held.map((h) => h.words) });
       remembering = true;
       // the quick thinker: two short summaries need no long reasoning, and a long write is what a restart kills (the first,
       // thinking on, wrote 4468 tokens before the hub was deployed under it)
@@ -1135,6 +1146,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           store.setSetting("self.yesterday", m.yesterday); store.setSetting("self.month", m.month);
           store.setSetting("self.kept", JSON.stringify(m.kept)); store.setSetting("self.memoryFor", due.day);
           if (game) store.setSetting("memory.game", JSON.stringify(game));
+          try { mind?.clear(held.map((h) => h.id)); } catch { /* kept until the next night */ }   // C-469
           w.end("done");
         }, (e) => { memoryFailedAt = Date.now(); w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); })
         .finally(() => { remembering = false; });
@@ -2099,6 +2111,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return send(res, 200, {
           daemon: { nickname: d.nickname, slot: d.slot, species: d.species, expression: core.daemonExpression(store, now, undefined, d.species)?.name ?? null },
           now: mindNow(core.daemonFeelings(store, now)),
+          held: workingMind(ecfg, store, deviceId, now)?.held() ?? [],                                            // C-469: what it has in mind
           dream: last ? { title: titleOf(last), text: last.text, at: last.to, quality: last.quality } : null, game,
           remembered: { yesterday: store.getSetting("self.yesterday"), month: store.getSetting("self.month"),
                         kept: readKept(store.getSetting("self.kept")), day: store.getSetting("self.memoryFor") },   // C-253, C-254 KEPT
@@ -2775,6 +2788,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const remember = (b: Record<string, any>, r: Record<string, unknown>) => {
         const said = typeof r.heard === "string" && r.heard ? r.heard : typeof b.text === "string" ? b.text : "";
         if (typeof r.answer === "string") talks.add(who, said, r.answer);
+        if (typeof r.answer === "string" && said) try { workingMind(ecfg, store, deviceId)?.fromTalk(said); } catch { /* not held */ }   // C-469
         return r;
       };
       // A handheld's answer: the words, and its voice as a link to 16 kHz PCM it streams into its speaker (ai/voice.ts).

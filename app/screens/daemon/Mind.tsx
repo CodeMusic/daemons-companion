@@ -3,7 +3,8 @@
 // what it feels and the weather in its room; a tap on a feeling shows the words a model is given ("very GLAD") and the
 // event behind the strongest. DREAMS sets the companion's last dream beside the one the save carries home (T-462).
 // VOICE is the recipe it speaks in, with a line to hear; SELF the sentences a model reads, exactly. REMEMBERED waits on
-// the night's memory (C-253). GET /api/mind/portal (server/src/mind.ts). Every word DRAFT.
+// the night's memory (C-253). C-469: NOW also lists what it has IN MIND, its WORKING MEMORY (server/src/workingmemory.ts),
+// let go each night once the memory is made. GET /api/mind/portal (server/src/mind.ts). Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
@@ -18,6 +19,7 @@ type Felt = { name: FeltName; value: number; said: string; colour: string };
 type Mind = {
   daemon: { nickname: string; slot: number; species: number; expression: string | null } | null;
   now?: { felt: Felt[]; weather: string; colour: string | null; cause: { said: string; at: string; name: FeltName } | null };
+  held?: { id: string; words: string; about: string; from: string | null; at: string }[];   // C-469: WORKING MEMORY
   dream?: { title: string; text: string; at: string; quality: string } | null;
   game?: { title: string; quality: string; tucked: boolean; hours: number; nights: number; rested: number } | null;
   remembered?: { yesterday: string | null; month: string | null; kept?: string[]; day?: string | null };
@@ -42,6 +44,7 @@ export function MindScreen() {
       <Small>{`A look around ${m.daemon.nickname}'s mind.  DRAFT`}</Small>
       <Segments value={part} onChange={setPart} options={[["now", "NOW"], ["dreams", "BOTH DREAMS"], ["voice", "VOICE"], ["self", "SELF"], ["remembered", "REMEMBERED"]]} />
       {part === "now" && m.now ? <Now m={m} /> : null}
+      {part === "now" && m.held ? <InMind held={m.held} name={m.daemon.nickname} /> : null}
       {part === "now" && m.spirits ? <SpiritsCard s={m.spirits} /> : null}
       {part === "dreams" ? <Dreams m={m} /> : null}
       {part === "voice" && m.voice ? <Voice v={m.voice} /> : null}
@@ -51,6 +54,22 @@ export function MindScreen() {
       {part === "remembered" ? <Remembered r={m.remembered} onForget={(b) => api<NonNullable<Mind["remembered"]>>("/api/mind/forget", b)
         .then((r) => setM((x) => (x ? { ...x, remembered: { ...x.remembered, ...r } } : x))).catch(() => {})} /> : null}
     </YStack>
+  );
+}
+
+// C-469: IN MIND -- what it holds now, about seven at most, the most lately thought of first; the night lets it go
+const FROM: Record<string, string> = { talk: "FROM A TALK", goal: "THE GOAL", day: "THE DAY" };
+function InMind({ held, name }: { held: NonNullable<Mind["held"]>; name: string }) {
+  return (
+    <Card>
+      <Eyebrow>{"IN MIND"}</Eyebrow>
+      {held.length ? held.map((h) => (
+        <YStack key={h.id} gap={2}>
+          <Small color="$color12">{h.words}</Small>
+          <Text fontFamily="$mono" fontSize={10} letterSpacing={1} color="$color9">{`${FROM[h.from ?? ""] ?? "HELD"} · ${whenSaid(h.at).toUpperCase()}`}</Text>
+        </YStack>
+      )) : <Small color="$color10">{`Nothing held just now. What ${name} has in mind gathers through the day and is let go each night.  DRAFT`}</Small>}
+    </Card>
   );
 }
 

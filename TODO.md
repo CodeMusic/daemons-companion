@@ -4,6 +4,19 @@ Work that has been **decided and not done**, kept the way DAEMONS keeps its own 
 permanent, a closed ticket is struck through with its commit, never deleted. Questions live in `docs/PLAN.md` as
 **OPEN** until the user answers them; a ticket waits on one by naming it.
 
+## Today's goals -- 2026-11-22, WORKING MEMORY
+
+*The user, 2026-11-22: "Run the goal loop".* The app lane's newest Ready ticket, filed this morning: C-469, the daemon's
+working memory (docs/PROJECTS.md 8). C-406 still waits on the user's word. Worked top down: build, test, deploy the hub,
+commit by path, push, close it in Redmine.
+
+1. **C-469 the form** -- WORKING MEMORY in daemons-praxis, beside the engine: one kind, HELD; about seven at most, each
+   rewritten rather than appended, the least rehearsed let go when a new one comes; a tag the companion pins.
+2. **C-469 your daemon's own** -- the companion's daemon holds the goal's step, what it noticed and a talk's open thread;
+   the night folds what it holds into YESTERDAY and KEPT, then clears it.
+3. **C-469 NOW shows it** -- the mind portal's NOW lists what the daemon has in mind.
+4. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-11: "not yet").
+
 ## Today's goals -- 2026-11-18, THE ENGINE ROOM
 
 *The user, 2026-11-18: "run your goal loop".* The Engine Room lane's sweep first: THE HANDS answering (last seen within

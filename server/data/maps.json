@@ -1150,11 +1150,11 @@
  },
  "6.0": {
   "map": "PewterCity_Museum_1F",
-  "place": "SLATE CITY"
+  "place": "ERRATA"
  },
  "6.1": {
   "map": "PewterCity_Museum_2F",
-  "place": "SLATE CITY"
+  "place": "ERRATA"
  },
  "6.2": {
   "map": "PewterCity_Gym",
@@ -1402,19 +1402,19 @@
  },
  "12.1": {
   "map": "CinnabarIsland_PokemonLab_Entrance",
-  "place": "QUICKSILVER IS."
+  "place": "SCORN SOLUTIONS"
  },
  "12.2": {
   "map": "CinnabarIsland_PokemonLab_Lounge",
-  "place": "QUICKSILVER IS."
+  "place": "SCORN SOLUTIONS"
  },
  "12.3": {
   "map": "CinnabarIsland_PokemonLab_ResearchRoom",
-  "place": "QUICKSILVER IS."
+  "place": "SCORN SOLUTIONS"
  },
  "12.4": {
   "map": "CinnabarIsland_PokemonLab_ExperimentRoom",
-  "place": "QUICKSILVER IS."
+  "place": "SCORN SOLUTIONS"
  },
  "12.5": {
   "map": "CinnabarIsland_PokemonCenter_1F",

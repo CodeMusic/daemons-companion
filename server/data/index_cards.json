@@ -6,7 +6,7 @@
   "bound": "the WORKINGS' first line, from the first held daemon of the species (the party in order, then the boxes in order, eggs skipped): BY TRADE if met_location is in_game_trade or its OT is not the player; FROM AN EGG if met level is 0 or met_location is special_egg; A GIFT if substruct 0's u16 at byte 10 has bit 0 set (gift_bit) or met_location is fateful_encounter; else the place named by met_location when kanto_mapsec_start <= it < mapsec_none. None held: no line.",
   "met_locations": {
    "kanto_mapsec_start": 88,
-   "mapsec_none": 198,
+   "mapsec_none": 200,
    "special_egg": 253,
    "in_game_trade": 254,
    "fateful_encounter": 255

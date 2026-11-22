@@ -143,6 +143,7 @@ import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
+import { readRecipePage } from "./recipes.js";   // C-433
 import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
@@ -3137,6 +3138,24 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (existsSync(noteWav(id))) unlinkSync(noteWav(id));
         forgetVoiceNote(store, id);
         return send(res, 200, { ok: true });
+      }
+      // C-433: a recipe page's link read -- fetched here (a phone alone cannot), its schema.org Recipe laid out to be kept.
+      // Only a page on the open web: never this machine, the home network or the tailnet, and at most 3 MB, in 15 s.
+      if (req.method === "POST" && path === "/api/recipes/read") {
+        const raw = String((await body(req)).url ?? "").trim();
+        let u: URL;
+        try { u = new URL(raw); } catch { return send(res, 400, { error: "a recipe page's address, http or https" }); }   // DRAFT
+        const host = u.hostname.toLowerCase();
+        const near = /^(localhost|.*\.local|.*\.ts\.net|.*\.internal)$/.test(host) || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|0\.)/.test(host) || host.includes(":") || !host.includes(".");
+        if (!/^https?:$/.test(u.protocol) || near) return send(res, 400, { error: "only a recipe page on the open web can be read" });   // DRAFT
+        try {
+          const stop = new AbortController(), t = setTimeout(() => stop.abort(), 15000);
+          const r = await fetch(u, { signal: stop.signal, redirect: "follow", headers: { "user-agent": "DAEMONS-companion (recipe reader)", accept: "text/html" } });
+          clearTimeout(t);
+          const text = (await r.text()).slice(0, 3_000_000);
+          const found = readRecipePage(text, u.toString());
+          return found ? send(res, 200, { recipe: found }) : send(res, 422, { error: "no recipe was found on that page -- type it in instead" });   // DRAFT
+        } catch (e) { return send(res, 502, { error: `the page did not answer (${(e as Error).message})` }); }   // DRAFT
       }
       if (req.method === "POST" && path === "/api/meeting/action") {  // C-432: an action item done, or open again -- {meeting, action, done}
         const b = await body(req);

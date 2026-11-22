@@ -12,7 +12,8 @@ import type { Via } from "./device.js";
 export type Battery = { percent: number; mv: number | null; charging: boolean; full: boolean; usb: boolean; at: string };
 export type DeviceRow = { id: string; kind: string; via: Via | null; firstSeen: string; lastSeen: string;
                           firmware: string | null; battery: Battery | null;
-                          lora?: string | null };   // C-175: its LoRa chip and band, "SX1262 868"
+                          lora?: string | null;     // C-175: its LoRa chip and band, "SX1262 868"
+                          lastUsed?: string };      // C-470: when it last asked for something (a POST), not only checked in
 
 const KEY = "devices", KEYS = "device.keys";
 export const FRESH_MS = 60_000;
@@ -35,7 +36,19 @@ export class Devices {
     // written at most every ten seconds a device, so a board polling every second does not rewrite the store each time
     if (row && row.via === via && now.getTime() - Date.parse(row.lastSeen) < 10_000) return;
     rows[id] = { id, kind: kindOf(id), via, firstSeen: row?.firstSeen ?? at, lastSeen: at,
-                 firmware: row?.firmware ?? null, battery: row?.battery ?? null, lora: row?.lora ?? null };
+                 firmware: row?.firmware ?? null, battery: row?.battery ?? null, lora: row?.lora ?? null,
+                 ...(row?.lastUsed ? { lastUsed: row.lastUsed } : {}) };
+    this.save(rows);
+  }
+
+  // C-470: a device USED -- it asked for something (a care, a talk, a step, a TRAIN), where a board polling its state
+  // only checks in -- so YOUR daemon (carry.ts yoursOf) follows the device in your hand, not the one that polls most.
+  // Written at most every ten seconds a device.
+  used(id: string, now = new Date()) {
+    if (!validDeviceId(id)) return;
+    const rows = this.all(), at = now.toISOString(), row = rows[id];
+    if (row?.lastUsed && now.getTime() - Date.parse(row.lastUsed) < 10_000) return;
+    rows[id] = { ...(row ?? { id, kind: kindOf(id), via: null, firstSeen: at, lastSeen: at, firmware: null, battery: null }), lastUsed: at };
     this.save(rows);
   }
 
@@ -44,7 +57,7 @@ export class Devices {
     const rows = this.all(), at = new Date().toISOString(), row = rows[id];
     rows[id] = { id, kind: kindOf(id), via: row?.via ?? null, firstSeen: row?.firstSeen ?? at, lastSeen: row?.lastSeen ?? at,
                  firmware: what.firmware ?? row?.firmware ?? null, battery: what.battery ?? row?.battery ?? null,
-                 lora: what.lora ?? row?.lora ?? null };
+                 lora: what.lora ?? row?.lora ?? null, ...(row?.lastUsed ? { lastUsed: row.lastUsed } : {}) };
     this.save(rows);
   }
 

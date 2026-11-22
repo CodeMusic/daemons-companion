@@ -106,6 +106,42 @@ describe("your daemon, when no device is named (C-470)", () => {
     expect(carriedFor(store, away, "")?.personality).toBe(1);               // and follows the one picked up since
   });
 
+  it("follows the device USED last, not a board that only polls (the watch checks in every few seconds)", () => {
+    const store = new Store(":memory:");
+    const PHONE = "iphone-widget-b9d63e";
+    assign(store, WATCH, 1); assign(store, PHONE, 2);
+    const rows = (used: Record<string, string>) => store.setSetting("devices", JSON.stringify({
+      [WATCH]: { id: WATCH, lastSeen: "2026-11-22T15:11:30Z", ...(used[WATCH] ? { lastUsed: used[WATCH] } : {}) },
+      [PHONE]: { id: PHONE, lastSeen: "2026-11-22T14:59:39Z", ...(used[PHONE] ? { lastUsed: used[PHONE] } : {}) } }));
+    rows({});
+    expect(yoursOf(store, away)?.daemon.personality).toBe(1);               // nothing used yet: the one heard last
+    rows({ [PHONE]: "2026-11-22T14:59:39Z" });
+    expect(yoursOf(store, away)).toEqual({ daemon: { personality: 2 }, by: "recent" });   // the phone, used; the watch only heard
+    rows({ [PHONE]: "2026-11-22T14:59:39Z", [WATCH]: "2026-11-22T15:10:00Z" });
+    expect(carriedFor(store, away, "")?.personality).toBe(1);               // a care on the watch: the watch's now
+  });
+
+  it("through the API, a device's POST marks it used, and a poll does not", async () => {
+    const save = buildSave({ player: "ROVER", trainerId: 0x00ab1234,
+      slots: [{ counter: 1, party: [PIP, LABEL, HOME] }, { counter: 2, party: [PIP, LABEL, HOME] }] });
+    const path = join(mkdtempSync(join(tmpdir(), "used-")), "copy.sav");
+    writeFileSync(path, save);
+    const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: path });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()));
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    try {
+      const nobody = () => fetch(base + "/api/device/state").then((r) => r.json());
+      const poll = (id: string) => fetch(`${base}/api/device/state?via=wifi`, { headers: { "x-device": id } }).then((r) => r.json());
+      expect((await poll(CC)).daemon.nickname).toBe("PIP");
+      expect((await poll(WATCH)).daemon.nickname).toBe("LABEL");
+      await fetch(`${base}/api/devices/yours?via=wifi`, { method: "POST", headers: { "content-type": "application/json", "x-device": CC },
+                                                         body: JSON.stringify({ personality: null }) });   // any POST from the CC1101
+      await new Promise((r) => setTimeout(r, 5));
+      expect((await poll(WATCH)).daemon.nickname).toBe("LABEL");              // the watch polls again, after
+      expect((await nobody()).daemon.nickname).toBe("PIP");                  // and the CC1101, used, still answers
+    } finally { server.close(); }
+  });
+
   it("answers with the one named, while it is away, over any device", () => {
     const store = new Store(":memory:");
     assign(store, WATCH, 2);

@@ -41,6 +41,9 @@ export function carriedFor<T extends Away>(store: Store, away: T[], deviceId: st
 // the site in a browser, MENTIONS FROM YOUR DAEMON, a walk, the persona of the day -- YOUR daemon, not simply the save's
 // first away (which was OVERLOADED, in a board idle for three weeks): the one you name on the DEVICES card (YOURS), or
 // else the one in the device used most recently, or else the first away, as it always was. Asking assigns nothing.
+// USED (devices.ts lastUsed) is a device asking for something -- a care, a talk, a TRAIN -- where a watch polling its
+// state every few seconds only checks in and would always be the newest heard: so lastSeen counts only while no device
+// carrying a daemon has been used (on the hub, 2026-11-22, the T-Watch Ultra was heard after the phone every time).
 export const YOURS = "carry.yours";
 const DEVICES = "devices";      // devices.ts's own record of every device heard -- read here for when each was last seen
 export type Yours<T> = { daemon: T; by: "named" | "recent" | "first" };
@@ -49,14 +52,18 @@ export function yoursOf<T extends Away>(store: Store, away: T[]): Yours<T> | nul
   const named = store.getSetting(YOURS);
   const chosen = named !== null ? away.find((d) => d.personality === Number(named)) : undefined;
   if (chosen) return { daemon: chosen, by: "named" };
-  let rows: Record<string, { lastSeen?: unknown }> = {};
+  let rows: Record<string, { lastSeen?: unknown; lastUsed?: unknown }> = {};
   try { const v = JSON.parse(store.getSetting(DEVICES) ?? "{}"); if (v && typeof v === "object") rows = v; } catch { /* none heard */ }
-  const at = (id: string) => { const t = Date.parse(String(rows[id]?.lastSeen ?? "")); return Number.isFinite(t) ? t : null; };
-  let recent: { t: number; d: T } | null = null;
-  for (const [id, p] of Object.entries(carrying(store))) {
-    const t = at(id), d = away.find((a) => a.personality === p);
-    if (t !== null && d && (!recent || t > recent.t)) recent = { t, d };
-  }
+  const at = (id: string, f: "lastUsed" | "lastSeen") => { const t = Date.parse(String(rows[id]?.[f] ?? "")); return Number.isFinite(t) ? t : null; };
+  const newest = (f: "lastUsed" | "lastSeen") => {
+    let recent: { t: number; d: T } | null = null;
+    for (const [id, p] of Object.entries(carrying(store))) {
+      const t = at(id, f), d = away.find((a) => a.personality === p);
+      if (t !== null && d && (!recent || t > recent.t)) recent = { t, d };
+    }
+    return recent;
+  };
+  const recent = newest("lastUsed") ?? newest("lastSeen");
   return recent ? { daemon: recent.d, by: "recent" } : { daemon: away[0], by: "first" };
 }
 /** C-470: name your daemon (a personality away), or null for the one in the device used most recently */

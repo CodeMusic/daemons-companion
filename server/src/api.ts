@@ -1640,6 +1640,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // the same bridge passing something on, and must not turn a cable into Wi-Fi.
       if (validDeviceId(deviceId) && (path.startsWith("/api/device/") || path.startsWith("/api/ai/")) &&
           (asked || relayed || !isLoopback(req.socket.remoteAddress))) devices.seen(deviceId, via);
+      // C-470: and USED -- it asked for something -- for YOUR daemon (carry.ts yoursOf), the device in your hand first
+      if (req.method === "POST" && validDeviceId(deviceId) && (asked || relayed || phone || !isLoopback(req.socket.remoteAddress)))
+        devices.used(deviceId);
       // the user, 2026-11-16: four rows read "This phone's widget". A widget's id is the paired phone's own (the app adds
       // it to every request it makes for itself, never one it carries for a board): kept beside the phone's name.
       if (phone && asked !== "phone" && validDeviceId(deviceId) && kindOf(deviceId) === "iphone-widget" && widgetOwners.get(deviceId) !== phone.name) {

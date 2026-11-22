@@ -11,7 +11,7 @@ import casinoArt from "../data/casino_art.json" with { type: "json" };
 import type { Store } from "./store.js";
 import type { Edition, Season } from "./seasons.js";
 import type { Holiday } from "./holidays.js";
-import { RETURN_AT } from "./slots.js";
+import { RETURN_AT } from "./game/slots.js";
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; national?: number;
   native?: { seasons?: string[] | null; hours?: string[] | null } | null }>;

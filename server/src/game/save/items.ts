@@ -6,8 +6,8 @@
 // rule). Bag quantities are XOR the low 16 bits of SaveBlock2's encryption key; the PC's are plain (DAEMONS' engine,
 // checked by the narrative lane 2026-10-29). The pockets' offsets come from profile_layout (companion_export); a layout
 // without them gives nothing and takes nothing. No node: imports.
-import profileJson from "../../data/profile_layout.json" with { type: "json" };
-import itemsJson from "../../data/items.json" with { type: "json" };
+import profileJson from "../../../data/profile_layout.json" with { type: "json" };
+import itemsJson from "../../../data/items.json" with { type: "json" };
 import { blocks, LAYOUT, type Layout } from "./reader.js";
 
 export type Pocket = "ITEMS" | "BALLS" | "BERRIES" | "PC";

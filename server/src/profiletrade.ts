@@ -22,7 +22,7 @@ import type { Store } from "./store.js";
 import * as A from "./accounts.js";
 import * as C from "./commons.js";
 import * as X from "./exchange.js";
-import { exchangeRoute } from "./tradelink.js";
+import { exchangeRoute } from "./game/tradelink.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string }>;

@@ -10,8 +10,8 @@
 // last word opens its sealed recording (bookkeys.ts keyOfOrigin; LISTEN, app/screens/library/Origin.tsx). Every word
 // DRAFT. No node: imports.
 import originJson from "../data/origin.json" with { type: "json" };
-import { LAYOUT, type Layout } from "./save/reader.js";
-import { readProfile } from "./save/profile.js";
+import { LAYOUT, type Layout } from "./game/save/reader.js";
+import { readProfile } from "./game/save/profile.js";
 import { savedFlag } from "./eudaimon.js";
 
 type Para = { text: string; voice: "telling" };

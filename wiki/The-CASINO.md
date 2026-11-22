@@ -173,7 +173,7 @@ Down a board's cable, `KEY RIG <0..6>` decides the next pull for a check -- show
 and never paid ([Flashing and linking](Flashing-and-linking#checks-down-the-cable)).
 
 The rules are one copy every player keeps:
-[`server/src/slots.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/slots.ts) for the phone, the
+[`server/src/game/slots.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/game/slots.ts) for the phone, the
 site and the server, and
 [`firmware/common/slots.h`](https://github.com/CodeMusic/daemons-companion/blob/main/firmware/common/slots.h) for every
 board and the Tab5, held to it by a test.

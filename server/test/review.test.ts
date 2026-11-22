@@ -6,7 +6,7 @@ import { networkInterfaces, tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
-import { readSave } from "../src/save/reader.js";
+import { readSave } from "../src/game/save/reader.js";
 import { buildSave } from "./build_save.js";
 
 const dir = mkdtempSync(join(tmpdir(), "review-"));

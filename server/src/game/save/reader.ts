@@ -5,10 +5,10 @@
 // its checksum, a signature, and the save counter). The game writes the two slots in turn, so the newer slot whose
 // every section checks out is the save. Everything about the layout comes from data/save_layout.json, which DAEMONS
 // exports from the built game -- nothing here is guessed.
-import layoutJson from "../../data/save_layout.json" with { type: "json" };
-import speciesJson from "../../data/species.json" with { type: "json" };
-import charmapJson from "../../data/charmap.json" with { type: "json" };
-import itemsJson from "../../data/items.json" with { type: "json" };
+import layoutJson from "../../../data/save_layout.json" with { type: "json" };
+import speciesJson from "../../../data/species.json" with { type: "json" };
+import charmapJson from "../../../data/charmap.json" with { type: "json" };
+import itemsJson from "../../../data/items.json" with { type: "json" };
 import { levelFromExp } from "./growth.js";
 
 export type Layout = typeof layoutJson;

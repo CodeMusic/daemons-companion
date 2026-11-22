@@ -65,7 +65,7 @@ export type Act = { code: string; label: string; seen: string; reply: string };
 
 // C-155 (the user, 2026-10-18: "we should have routines on the phone app too -- including casino"): ROUTINES on the app and
 // the site -- THE CASINO, played as a device of its own (on the phone the widget's, so its JACK is the widget's daemon;
-// the site keeps an id of its own), by server/src/slots.ts, the boards' own table; and the party's game routines.
+// the site keeps an id of its own), by server/src/game/slots.ts, the boards' own table; and the party's game routines.
 // Every word DRAFT.
 // C-158: why the CASINO's odds are what they are -- a part of the day's luck (-1..+1), or the string's (in points of return)
 export type Reason = { source: string; effect: number; why: string };

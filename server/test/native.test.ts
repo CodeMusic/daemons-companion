@@ -1,6 +1,6 @@
 // T-407: the INDEX's NATIVE on the companion says what the game's area page says (pokedex_screen.c DexScreen_PrintNative).
 import { describe, expect, it } from "vitest";
-import { nativeLines } from "../src/save/index.js";
+import { nativeLines } from "../src/game/save/index.js";
 
 describe("NATIVE", () => {
   it("says NOT IN THE WILD for a daemon no wild table holds", () => {

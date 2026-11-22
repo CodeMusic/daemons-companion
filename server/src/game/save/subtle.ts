@@ -4,7 +4,7 @@
 // paragraphs each in its voice -- "telling", or "asking", the faint one) and its pictures (data/art/subtle_<picture>_
 // <frame>.png, one per entry, a few with frames that turn; the cover subtle_cover.png). Before it is found nothing of it
 // is shown. Every word DRAFT.
-import subtleJson from "../../data/subtle.json" with { type: "json" };
+import subtleJson from "../../../data/subtle.json" with { type: "json" };
 import { blocks, LAYOUT, type Layout } from "./reader.js";
 import { flagReader } from "./profile.js";
 

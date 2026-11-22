@@ -110,5 +110,5 @@ function away from home."*
 4. **The relay for boards**: is it all right for a board to talk to the public relay with its own key, or should boards
    away from home always go through the phone?
 
-*Sources: the code (server/src/device.ts, server/src/save/writer.ts, firmware/esp32/src/net.cpp) and the game's party
+*Sources: the code (server/src/device.ts, server/src/game/save/writer.ts, firmware/esp32/src/net.cpp) and the game's party
 menu (T-358).*

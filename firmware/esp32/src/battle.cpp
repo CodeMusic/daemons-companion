@@ -1,7 +1,7 @@
 // C-328, the boards' and watches' half (the user, 2026-11-11: "I could send a battle request to any other device that is
 // active and online, it would show the request on the other device and if u accept it, it would simulate what u see in
 // game, where u take turns selecting moves and dealing damage -- where finally one of them is announced the winner (and
-// exp is awarded for this too)"). The hub fights it (server/src/battle.ts, battles.ts, battleroute.ts); this file is
+// exp is awarded for this too)"). The hub fights it (server/src/game/battle.ts, battles.ts, battleroute.ts); this file is
 // what a board shows of it:
 //
 // - A REQUEST over any screen: the device state names one waiting for this device (`battle`), and while awake the board

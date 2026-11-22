@@ -94,8 +94,8 @@ of at most 4 MB: a bigger one is refused with 413, and one that is not JSON with
 ## THE CASINO
 
 [The CASINO](The-CASINO) has how it plays. Its rules are
-[`server/src/slots.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/slots.ts); its coins, seats
-and admin page [`server/src/casino.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/casino.ts);
+[`server/src/game/slots.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/game/slots.ts); its coins, seats
+and admin page [`server/src/game/casino.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/game/casino.ts);
 the day's luck and dress
 [`server/src/context.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/context.ts).
 

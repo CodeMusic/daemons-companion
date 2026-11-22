@@ -7,8 +7,8 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import type { Config } from "./config.js";
-import type { Store } from "./store.js";
+import type { Config } from "../config.js";
+import type { Store } from "../store.js";
 import { readSave } from "./save/reader.js";
 import { readProfile } from "./save/profile.js";
 

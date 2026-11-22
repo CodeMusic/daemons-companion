@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { expFor } from "../src/save/growth.js";
+import { expFor } from "../src/game/save/growth.js";
 import { heardAt, learnedOf, lesson, noteColours, shareOf, songOf, SONGS, trainGain, TRAINS_A_DAY, TRAIN_DAYS } from "../src/ownsong.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;

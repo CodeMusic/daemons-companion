@@ -2,12 +2,12 @@
 // (over the network, here a fetch that answers as api.ts does), each SYNC writing its own save. Synthetic saves only.
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { expFor } from "../src/save/growth.js";
-import { blocks, LAYOUT, readAway, readBoxes, readSave, ORDERS, sectionSize, tradeBits } from "../src/save/reader.js";
-import { syncSave } from "../src/save/writer.js";
-import { arriving, describe as describeRecord, fromB64, toB64, tradeRecord } from "../src/save/trade.js";
+import { expFor } from "../src/game/save/growth.js";
+import { blocks, LAYOUT, readAway, readBoxes, readSave, ORDERS, sectionSize, tradeBits } from "../src/game/save/reader.js";
+import { syncSave } from "../src/game/save/writer.js";
+import { arriving, describe as describeRecord, fromB64, toB64, tradeRecord } from "../src/game/save/trade.js";
 import * as X from "../src/exchange.js";
-import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, tradeRoute, type Link } from "../src/tradelink.js";
+import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, tradeRoute, type Link } from "../src/game/tradelink.js";
 import * as core from "../src/core.js";
 import { Store } from "../src/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";

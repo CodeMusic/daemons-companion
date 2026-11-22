@@ -3,8 +3,8 @@
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { daemonFeelings, daemonLife, indexOf } from "../src/core.js";
-import { readIndex } from "../src/save/index.js";
-import { casinoPending, casinoResults } from "../src/casino.js";
+import { readIndex } from "../src/game/save/index.js";
+import { casinoPending, casinoResults } from "../src/game/casino.js";
 import { bondOf, bondSeen } from "../src/evolve.js";
 import { buildSave } from "./build_save.js";
 

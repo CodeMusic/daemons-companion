@@ -3,7 +3,7 @@
 // base, IV and EV; the other five the same with +5, then its nature's +10% or -10% (in the game's u16 arithmetic).
 // IVs are packed in the misc substructure's second word (5 bits each: HP, Attack, Defense, Speed, Sp.Atk, Sp.Def);
 // EVs are the EV substructure's first six bytes in the same order. The nature is the personality mod 25.
-import layoutJson from "../../data/save_layout.json" with { type: "json" };
+import layoutJson from "../../../data/save_layout.json" with { type: "json" };
 
 const NATURES = (layoutJson as any).natures as number[][];   // by nature: Attack, Defense, Speed, Sp.Atk, Sp.Def
 

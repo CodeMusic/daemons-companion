@@ -4,10 +4,10 @@
 // from src/notebook.c and the headers it includes; a page is held by notebook.c's own rule (flag, and flag2 if any).
 // The names in a page are the save's. A page the game writes from the save when it is opened has no words here --
 // but THE LOG (C-203, DAEMONS T-459 B and C), which is written here as the game writes it, from the save's vars.
-import notebookJson from "../../data/notebook.json" with { type: "json" };
+import notebookJson from "../../../data/notebook.json" with { type: "json" };
 import { blocks, decodeText, LAYOUT, type Layout } from "./reader.js";
 import { flagReader } from "./profile.js";
-import profileJson from "../../data/profile_layout.json" with { type: "json" };
+import profileJson from "../../../data/profile_layout.json" with { type: "json" };
 
 interface Page { section: number; title: string; kind: string; flag: number; flag2: number; about: string | null; text: string | null;
                  seen?: number | null; place?: string | null;   // T-403: its SEEN flag, and where it was found

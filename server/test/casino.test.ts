@@ -8,9 +8,9 @@ import P from "../data/profile_layout.json" with { type: "json" };
 import { deviceState, makeServer, sync } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
-import { blocks } from "../src/save/reader.js";
-import { readProfile } from "../src/save/profile.js";
-import { casinoForCable, casinoPending, casinoSeen, houseTake, parseResult } from "../src/casino.js";
+import { blocks } from "../src/game/save/reader.js";
+import { readProfile } from "../src/game/save/profile.js";
+import { casinoForCable, casinoPending, casinoSeen, houseTake, parseResult } from "../src/game/casino.js";
 import { buildSave } from "./build_save.js";
 
 const KEY = 0x5a3c96e1;   // the save's encryption key: the money is kept XOR it, as the game keeps it

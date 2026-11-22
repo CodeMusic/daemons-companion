@@ -111,7 +111,7 @@ export function IndexScreen({ ink }: { ink: string }) {
         {ix.opus ? <Small>OPUS is in your bag: where it has written beside an entry, it is shown.</Small> : null}
       </Card>
       {ix.entries.map((e) => (
-        // C-186: the card in its colour once gleaned (the user's rule: type match, server/src/save/index.ts), grey till then
+        // C-186: the card in its colour once gleaned (the user's rule: type match, server/src/game/save/index.ts), grey till then
         <Card key={e.national} padding={12} cursor={e.bound && !busy ? "pointer" : "default"}
               position="relative" overflow="hidden"   // C-303: the daemon's overlay is laid over this card, and no further
               borderLeftWidth={6} borderLeftColor={e.colour?.hex ?? "$color6"}

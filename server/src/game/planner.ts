@@ -5,11 +5,11 @@
 // user's choice: up to the player's next step, nothing past it. What is next, where it is, the places open now, the
 // levels there, the fights still ahead, and the wild daemons of one map at a time (asked for, never all at once). Words
 // the data marks draft keep `draft`; the screen marks them DRAFT. No node: imports (it runs on the phone).
-import storyJson from "../data/planner_story.json" with { type: "json" };
-import mapsJson from "../data/planner_maps.json" with { type: "json" };
-import trainersJson from "../data/planner_trainers.json" with { type: "json" };
-import curveJson from "../data/planner_curve.json" with { type: "json" };
-import wildJson from "../data/planner_wild.json" with { type: "json" };
+import storyJson from "../../data/planner_story.json" with { type: "json" };
+import mapsJson from "../../data/planner_maps.json" with { type: "json" };
+import trainersJson from "../../data/planner_trainers.json" with { type: "json" };
+import curveJson from "../../data/planner_curve.json" with { type: "json" };
+import wildJson from "../../data/planner_wild.json" with { type: "json" };
 import { blocks, LAYOUT, type Layout } from "./save/reader.js";
 import { flagReader, readProfile } from "./save/profile.js";
 

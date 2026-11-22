@@ -20,7 +20,7 @@
 //
 // No node: imports: the keys (tokens, password hashes) are the caller's to make.
 import type { Store } from "./store.js";
-import { blankNames, describe, fromB64, gameId, ownNames, toB64, type GameKey } from "./save/trade.js";
+import { blankNames, describe, fromB64, gameId, ownNames, toB64, type GameKey } from "./game/save/trade.js";
 
 export interface Keys { token(): string; hash(token: string): string; password(pw: string): string; check(pw: string, kept: string): boolean; code(): string }
 export interface Player { id: string; name: string; at: string; tokens: string[]; password: string | null;

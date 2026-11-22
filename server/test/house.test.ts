@@ -10,8 +10,8 @@ const AT = P.sb2.house_take;
 const { sync } = await import("../src/api.js");
 const { DEFAULTS } = await import("../src/config.js");
 const { Store } = await import("../src/db.js");
-const { blocks, readSlot } = await import("../src/save/reader.js");
-const { HOUSE_AT, syncSave } = await import("../src/save/writer.js");
+const { blocks, readSlot } = await import("../src/game/save/reader.js");
+const { HOUSE_AT, syncSave } = await import("../src/game/save/writer.js");
 const { buildSave } = await import("./build_save.js");
 
 const KEY = 0x5a3c96e1;

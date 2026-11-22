@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { casinoContext, casinoDress, reelSpecies, skyOf, watchOf, weatherNow } from "../src/context.js";
 import { setWeatherCity } from "../src/weather.js";
-import { casinoAdmin } from "../src/casino.js";
+import { casinoAdmin } from "../src/game/casino.js";
 import { holiday } from "../src/holidays.js";
 
 const at = (m: number, d: number, h = 12) => new Date(2026, m - 1, d, h);

@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import * as X from "../src/exchange.js";
 import * as M from "../src/together.js";
-import { exchangeRoute } from "../src/tradelink.js";
+import { exchangeRoute } from "../src/game/tradelink.js";
 import { Store } from "../src/db.js";
 
 let n = 0;

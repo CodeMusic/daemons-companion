@@ -8,7 +8,7 @@
 // sectors say which bytes changed, and the game's memory is searched for them. Only when every stretch is found, in no
 // more places than a save is kept, is anything written; otherwise the app starts the game again from the save, as before.
 // No node: imports (it runs on the phone).
-import { LAYOUT, newer, readSlot, sectionSize, type Layout } from "../save/reader.js";
+import { LAYOUT, newer, readSlot, sectionSize, type Layout } from "./save/reader.js";
 
 // One stretch SYNC changed: windows of the save as it was to find it by (smallest first) and where the stretch sits from
 // each -- around it, or for a stretch among empty bytes, elsewhere in its section -- the bytes it held, and the new ones.

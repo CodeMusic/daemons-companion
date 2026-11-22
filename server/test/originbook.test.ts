@@ -11,7 +11,7 @@ import { join } from "node:path";
 import origin from "../data/origin.json" with { type: "json" };
 import P from "../data/profile_layout.json" with { type: "json" };
 import { ORIGIN_FLAG, readOrigin, savedOrigin, type Origin } from "../src/originbook.js";
-import { readProfile } from "../src/save/profile.js";
+import { readProfile } from "../src/game/save/profile.js";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { buildSave } from "./build_save.js";

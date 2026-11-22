@@ -2,9 +2,9 @@
 // Scratch saves only; the pockets are passed in (global.h's offsets) until profile_layout carries them.
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { expFor } from "../src/save/growth.js";
-import { syncSave } from "../src/save/writer.js";
-import { giftableItems, putItem, takeItem, PC_MAX, type Pockets, type Words } from "../src/save/items.js";
+import { expFor } from "../src/game/save/growth.js";
+import { syncSave } from "../src/game/save/writer.js";
+import { giftableItems, putItem, takeItem, PC_MAX, type Pockets, type Words } from "../src/game/save/items.js";
 import * as X from "../src/exchange.js";
 import { Store } from "../src/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";

@@ -7,7 +7,7 @@
 import { blocks, encodeText, LAYOUT, type Layout, ORDERS, readDaemon, sectionSize, soundingShift, tradeBits } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
-import speciesJson from "../../data/species.json" with { type: "json" };
+import speciesJson from "../../../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; growth?: number }>;
 

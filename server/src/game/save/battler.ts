@@ -3,12 +3,12 @@
 // types, its level (what the save holds, or higher with the experience grown on the companion), its six stats exactly as
 // the game's CalculateMonStats gives them from its IVs, EVs and nature (save/stats.ts), and its four routines with their
 // MP (the routine's base MP and the PP Ups the record holds). Only a daemon AWAY fights: one at home is in the game.
-import speciesJson from "../../data/species.json" with { type: "json" };
+import speciesJson from "../../../data/species.json" with { type: "json" };
 import { LAYOUT, ORDERS, type Layout, readDaemon } from "./reader.js";
 import { describe, tradeRecord } from "./trade.js";
 import { calcStats, unpackIVs } from "./stats.js";
 import { moveRow, type Card } from "../battle.js";
-import routinesJson from "../../data/routines.json" with { type: "json" };
+import routinesJson from "../../../data/routines.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; types: string[]; base?: number[]; art?: { front?: string } }>;
 const TYPE_NAMES = (routinesJson as { types: string[] }).types;

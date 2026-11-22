@@ -47,7 +47,7 @@ import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toD
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
 import type { Config } from "./config.js";
 import { Store } from "./db.js";
-import { readAway, readSave } from "./save/reader.js";
+import { readAway, readSave } from "./game/save/reader.js";
 import { sha1 } from "./game/hash.js";
 import { deviceArt, headOf, repaint, streakColours } from "./art.js";
 import { prunable } from "./backups.js";
@@ -59,14 +59,14 @@ import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
-import { LINK_PAGE, linkHost, linkRoute, seatOk, seatSave, takeSave } from "./linkcable.js";   // C-221: THE LINK CABLE
+import { LINK_PAGE, linkHost, linkRoute, seatOk, seatSave, takeSave } from "./game/linkcable.js";   // C-221: THE LINK CABLE
 import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
 import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
 import { siteNow, siteUpdate, siteView } from "./sitefetch.js";
 import { deviceName } from "./devicenames.js";                           // C-405: a device by its name           // C-342: the site, built on every push
 import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
-import { keepSave, listSaves } from "./saves.js";   // C-215
-import { recordSave, savedBytes, trail } from "./savehistory.js";   // C-364
+import { keepSave, listSaves } from "./game/saves.js";   // C-215
+import { recordSave, savedBytes, trail } from "./game/savehistory.js";   // C-364
 import { StackFlow } from "./ai/stackflow.js";
 import { keepLoaded, keepOf } from "./ai/tiinykeep.js";   // C-375
 import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
@@ -78,7 +78,7 @@ import { playerContextOf } from "./playervoice.js";        // C-323: the player'
 import { preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
-import { readProfile } from "./save/profile.js";
+import { readProfile } from "./game/save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
 import { journalThreads, museKey, museOf, paintPalette } from "./ai/muse.js";   // C-386
 import { hemisphereOf } from "./months.js";   // C-386
@@ -87,7 +87,7 @@ import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, 
 import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
 import { dropSmall, smallCover } from "./thumbs.js";   // C-413: a cover's small copy
 import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
-import { readIndex } from "./save/index.js";
+import { readIndex } from "./game/save/index.js";
 import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
 import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./sing.js";   // C-387: its words
 import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type Creation } from "./creations.js";   // C-358; C-362
@@ -110,9 +110,9 @@ import { Backup, backupFile, setVault, vaultOf } from "./backup.js";            
 import { KEYS } from "./keys.js";
 import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./manual.js";   // C-233 on the devices
-import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./tradelink.js";
+import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./game/tradelink.js";
 import { accountsRelay } from "./accountslink.js";   // C-226
-import { BATTLE_PATHS, battleRoute } from "./battleroute.js";   // C-328
+import { BATTLE_PATHS, battleRoute } from "./game/battleroute.js";   // C-328
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
 import { boardSong } from "./ownsong.js";   // C-479: a board's TRAIN, sung on the board
@@ -131,7 +131,7 @@ import { Tvs, lanHost, tvsForDevice } from "./tv.js";
 import { createSocket } from "node:dgram";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
 import { kindOf } from "./deviceid.js";
-import { casinoAdmin, casinoForCable, houseTake } from "./casino.js";          // C-158, C-167
+import { casinoAdmin, casinoForCable, houseTake } from "./game/casino.js";          // C-158, C-167
 import { weatherNow, weatherToday } from "./context.js";
 import { consolidate, dayMaterial, gameDay, gameNow, memoryDue, readGame, readKept, RETRY_MIN, type GameNow } from "./memory.js";   // C-253
 import { buildPersona, personaFresh, readPersona, signatureOf, skyLine, todayOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
@@ -149,12 +149,12 @@ import { readRecipePage } from "./lifemanagement/recipes.js";   // C-433
 import { formToShare, mineView, takeForm } from "./lifemanagement/myforms.js";   // C-433
 import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, MARK_ASK, markAsk, markQuiz, newCourse, proposeSyllabus, quizQuestions, readMarks, readSyllabus, SYLLABUS_ASK, tutorState, type Mark } from "./lifemanagement/learning.js";   // C-433
 import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./lifemanagement/meetings.js";   // C-212
-import { readGuide } from "./save/guide.js";
+import { readGuide } from "./game/save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
 import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later; C-455: cadence
 import { SPAN, SPANS, writeMention, type Span } from "./mentions.js";   // C-455: MENTIONS FROM YOUR DAEMON
 import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
-import { readSubtle } from "./save/subtle.js";   // C-204
+import { readSubtle } from "./game/save/subtle.js";   // C-204
 import { sayable } from "./ai/say.js";   // C-270
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import P from "../data/profile_layout.json" with { type: "json" };
-import { readPlan, readWild } from "../src/planner.js";
+import { readPlan, readWild } from "../src/game/planner.js";
 import { buildSave, encodeText } from "./build_save.js";
 
 // C-191: the planner shows what the save has reached -- up to the next step, nothing past it

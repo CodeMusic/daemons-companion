@@ -16,9 +16,9 @@
 // fights live; the daemon that left it fights by itself (`auto`: the hub picks its routine each turn, as it does for a
 // missed turn, so the battle goes at the taker's pace), and its player watches the replay at their next look (`watched`).
 // A waiting challenge, or a battle one's daemon is fighting by itself, keeps no seat from battling live meanwhile.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import { expFor } from "./save/growth.js";
-import speciesJson from "../data/species.json" with { type: "json" };
+import speciesJson from "../../data/species.json" with { type: "json" };
 import { autoPick, battleExp, moveName, moveRow, resolve, say, start, TYPE_NAMES, type BattleState, type Card, type Choice } from "./battle.js";
 
 export const ASK_MS = 60_000, TURN_MS = 30_000, READ_MS = 6_000, MISSES = 3, KEEP_MS = 15 * 60_000;

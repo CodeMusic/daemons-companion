@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readSave, readSlot } from "../src/save/reader.js";
-import { answerRequests } from "../src/save/writer.js";
+import { readSave, readSlot } from "../src/game/save/reader.js";
+import { answerRequests } from "../src/game/save/writer.js";
 import { buildSave } from "./build_save.js";
 
 const SENDING = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12, asked: true };

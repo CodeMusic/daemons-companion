@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { observedSections, readEudaimon } from "../src/eudaimon.js";
 import eudaimon from "../data/eudaimon.json" with { type: "json" };
 import { EUDAIMON_FLAG, savedEudaimon } from "../src/eudaimon.js";
-import { syncSave } from "../src/save/writer.js";
+import { syncSave } from "../src/game/save/writer.js";
 import { buildSave } from "./build_save.js";
 
 const observer = (lead?: "good" | "as it is" | "low") =>

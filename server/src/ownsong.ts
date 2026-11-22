@@ -16,7 +16,7 @@
 //   is AT HOME here too, evolve.ts).
 // Every word DRAFT.
 import songsJson from "../data/songs.json" with { type: "json" };
-import { expFor } from "./save/growth.js";
+import { expFor } from "./game/save/growth.js";
 
 export type SongNote = [number, number, number];          // MIDI note, beats, the share of its part it is learned at
 export interface SongPart {

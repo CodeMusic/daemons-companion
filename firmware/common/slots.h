@@ -1,5 +1,5 @@
 #pragma once
-// C-155: THE CASINO's table in C++ -- server/src/slots.ts's, one copy for every board: the handhelds
+// C-155: THE CASINO's table in C++ -- server/src/game/slots.ts's, one copy for every board: the handhelds
 // (firmware/esp32/src/casino.cpp) and the Tab5 (firmware/tab5/src/ui.cpp) both play by it (C-157: it was two copies), and
 // server/test/slots_tab5.test.ts holds the numbers here to slots.ts, so every player's odds are the same.
 // The result is decided at the pull, from WEIGHTS (in a thousand); each reel then slips on to its piece.
@@ -45,7 +45,7 @@ inline void piecesFor(int o, uint8_t out[3]) {
 // C-151: a win this big is called to the table, as the broadcast act of this code
 inline const char *tableAct(int o) { return o == 6 ? "JACKPOT" : PAYS[o] >= 12 ? "BIGWIN" : nullptr; }
 
-// ---- C-158 (the user, 2026-10-18): THE CASINO in context, and the cat and the string -- server/src/slots.ts's engine,
+// ---- C-158 (the user, 2026-10-18): THE CASINO in context, and the cat and the string -- server/src/game/slots.ts's engine,
 // the numbers held together by server/test/slots.test.ts. LUCK (the day's, from the companion: casino.context.luck)
 // sets the return, 90 at -1 to 100 at +1; REACH, the player's own, learns each pull as a model's weight does -- a step
 // against its error (a real win, 2x and up, against how often one should come), with a little noise -- and moves a

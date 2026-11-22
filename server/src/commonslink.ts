@@ -11,7 +11,7 @@
 import type { Store } from "./store.js";
 import * as X from "./exchange.js";
 import type { HomeView } from "./commons.js";
-import { exchangeRoute } from "./tradelink.js";
+import { exchangeRoute } from "./game/tradelink.js";
 import { kindOf } from "./profiletrade.js";   // C-226 piece 4
 
 const C = "c:";

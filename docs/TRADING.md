@@ -31,10 +31,10 @@ which relates to the profile feature". Decided the same day by multiple choice; 
   names with device tokens (only each token's hash is kept) and an optional password (scrypt, never the password
   itself). A new player's device joins with an **invite code** made on the hub's site or on a paired phone: eight
   letters, used once, valid for fifteen minutes. Being on the tailnet is not enough to join.
-- **A companion's link** (`server/src/tradelink.ts`) reaches the exchange **in the same process** when this companion
+- **A companion's link** (`server/src/game/tradelink.ts`) reaches the exchange **in the same process** when this companion
   is the hub, or **over the network** at the address set in TRADE's THE HUB (`trade.hub`). The app and the site only
   ever talk to their own companion.
-- **The save's half** (`server/src/save/trade.ts`) reads an AWAY daemon's whole 80-byte record. The exchange gets the
+- **The save's half** (`server/src/game/save/trade.ts`) reads an AWAY daemon's whole 80-byte record. The exchange gets the
   record and nothing else from the save. The writer (`syncSave`'s `trade` option) puts the arriving record into the slot
   the departing daemon left. The arriving daemon is set AWAY, marked for the game to finish on load (unusedRibbons
   bit 2, as C-184), and, in the party, given its level and stats.

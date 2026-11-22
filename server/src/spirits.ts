@@ -12,7 +12,7 @@
 import { clockDerived, wokenOf } from "./feelings.js";
 import type { Interaction } from "./life.js";
 import type { Shade } from "./expressions.js";
-import type { Spirits, SpiritsClass } from "./save/reader.js";
+import type { Spirits, SpiritsClass } from "./game/save/reader.js";
 
 export type SpiritAxis = "kept" | "bond" | "work" | "portion";
 export type SpiritTotals = Record<SpiritAxis, number>;

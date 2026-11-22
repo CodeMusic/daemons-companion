@@ -3,7 +3,7 @@
 // docs/guide.md, exported as data/guide.json in the game's order: sections, then entries, then paragraphs) and its 8-bit
 // cover (data/art/guide_cover.png). Before the GUIDE is found nothing of it is shown: a find stays findable blind (T-297).
 // Every word is DRAFT in the game until the user approves it, and the book says so.
-import guideJson from "../../data/guide.json" with { type: "json" };
+import guideJson from "../../../data/guide.json" with { type: "json" };
 import { blocks, LAYOUT, type Layout } from "./reader.js";
 import { flagReader } from "./profile.js";
 

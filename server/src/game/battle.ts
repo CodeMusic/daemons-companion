@@ -14,8 +14,8 @@
 // Pure: a battle is a value, a turn is `resolve(state, choices)`, and the dice are the state's own (a seeded generator),
 // so a battle replays the same from the same seed. Nobody's health is kept: the battle is fought on a copy of each
 // daemon's card, so every daemon returns as it went (the user: "after the battle all daemons are still in full health").
-import battleJson from "../data/battle.json" with { type: "json" };
-import routinesJson from "../data/routines.json" with { type: "json" };
+import battleJson from "../../data/battle.json" with { type: "json" };
+import routinesJson from "../../data/routines.json" with { type: "json" };
 
 type MoveRow = { power: number; type: number; split: number; accuracy: number; pp: number; priority: number; effect: string; chance: number };
 const B = battleJson as unknown as { chart: [number, number, number][]; foresight: number | null; moves: Record<string, MoveRow>;

@@ -13,8 +13,8 @@
 // C-421: /api/battle/challenge leaves a CHALLENGE that waits a day (battles.ts) -- for one seat that need not be online
 // (`to`: a device or app of this home, or "player:<id>"), or open to anyone at home or on the exchange (`where`) -- and
 // /api/battle/seen marks a battle watched, so a challenge's replay is shown once, at its player's next look.
-import type { Store } from "./store.js";
-import type { Reply } from "./routes.js";
+import type { Store } from "../store.js";
+import type { Reply } from "../routes.js";
 import type { Link } from "./tradelink.js";
 import * as A from "./battles.js";
 import type { Card } from "./battle.js";
@@ -22,10 +22,10 @@ import { battleCard, cardOfRecord } from "./save/battler.js";
 import { tradeRecord, toB64, fromB64 } from "./save/trade.js";
 import { readAway } from "./save/reader.js";
 import { levelFromExp } from "./save/growth.js";
-import { carrying } from "./carry.js";
-import { pendingExp } from "./core.js";
-import { validDeviceId } from "./deviceid.js";
-import speciesJson from "../data/species.json" with { type: "json" };
+import { carrying } from "../carry.js";
+import { pendingExp } from "../core.js";
+import { validDeviceId } from "../deviceid.js";
+import speciesJson from "../../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { growth?: number }>;
 const HOME = "battles", SEATS = "battle.seats", REMOTE = "battle.remote", FRESH = 60_000;

@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
-import { setHub, tradeRoute } from "../src/tradelink.js";
+import { setHub, tradeRoute } from "../src/game/tradelink.js";
 import { buildSave } from "./build_save.js";
 
 const dir = mkdtempSync(join(tmpdir(), "companion-exchange-"));

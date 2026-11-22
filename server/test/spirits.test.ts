@@ -2,7 +2,7 @@
 // and the tone a daemon's pictures take from the class the save holds -- lighter in good spirits, darker in low, the hue kept.
 import { describe, expect, it } from "vitest";
 import { shade } from "../src/expressions.js";
-import type { Spirits } from "../src/save/reader.js";
+import type { Spirits } from "../src/game/save/reader.js";
 import { selfOf } from "../src/self.js";
 import { spiritsPortal, spiritsSaid, spiritTotals, toneOf, toneShade } from "../src/spirits.js";
 

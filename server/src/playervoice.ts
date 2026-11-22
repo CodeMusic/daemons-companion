@@ -3,9 +3,9 @@
 // their save, for ai/voiceof.ts's playerVoice. Pure reading -- no node: imports (the save readers run on the phone too).
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { PlayerContext } from "./ai/voiceof.js";
-import { readPlay } from "./save/play.js";
-import { readProfile } from "./save/profile.js";
-import { readSave } from "./save/reader.js";
+import { readPlay } from "./game/save/play.js";
+import { readProfile } from "./game/save/profile.js";
+import { readSave } from "./game/save/reader.js";
 
 const SPECIES = speciesJson as unknown as Record<string, { types?: string[] }>;
 

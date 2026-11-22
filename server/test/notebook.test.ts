@@ -1,6 +1,6 @@
 // C-125: the NOTEBOOK on the phone holds exactly the pages the save's flags hold, by notebook.c's own rule.
 import { describe, expect, it } from "vitest";
-import { notebookOf } from "../src/save/notebook.js";
+import { notebookOf } from "../src/game/save/notebook.js";
 import nb from "../data/notebook.json" with { type: "json" };
 import layout from "../data/profile_layout.json" with { type: "json" };
 

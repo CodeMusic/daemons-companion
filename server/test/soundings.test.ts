@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readBoxes, readSave, readSlot } from "../src/save/reader.js";
-import { syncSave } from "../src/save/writer.js";
+import { readBoxes, readSave, readSlot } from "../src/game/save/reader.js";
+import { syncSave } from "../src/game/save/writer.js";
 import { soundingOf } from "../src/core.js";
 import { life } from "../src/life.js";
 import { buildSave } from "./build_save.js";

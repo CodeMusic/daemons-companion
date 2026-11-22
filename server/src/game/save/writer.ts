@@ -20,15 +20,15 @@
 // C-167: and what the house kept (`house`, a change) into the save's own count of it (DAEMONS T-427, P.sb2.house_take,
 // SaveBlock2.houseTake): a plain little-endian int32 in SaveBlock2, which the game's GAME CORNER adds to as well -- only
 // ever added to, never overwritten. Without the layout's entry, nothing is written.
-import P from "../../data/profile_layout.json" with { type: "json" };
-import speciesJson from "../../data/species.json" with { type: "json" };
+import P from "../../../data/profile_layout.json" with { type: "json" };
+import speciesJson from "../../../data/species.json" with { type: "json" };
 import { expFor, levelFromExp } from "./growth.js";
 import { calcStats, unpackIVs } from "./stats.js";
 import { arriving } from "./trade.js";
 import { itemName, pocketsOf, putItem, takeItem, type Pockets, type Words } from "./items.js";   // C-223
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
-import eventsJson from "../../data/events.json" with { type: "json" };
+import eventsJson from "../../../data/events.json" with { type: "json" };
 import { LAYOUT, type Layout, soundingShift, tradeBits, type Sounding, ORDERS, readSlot, newer, readDaemon, sectionChecksum, sectionSize, encodeText } from "./reader.js";
 
 export interface Answer { slot: number; nickname: string; name: string; now: "away" | "home" }

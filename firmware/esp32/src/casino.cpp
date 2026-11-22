@@ -9,7 +9,7 @@
 // a leaf -- or on a holiday the holiday's (a pumpkin, a present, a heart ...). The season falls across the reels, and on
 // a holiday the daemons dress for it (server/data/holidays.json); a QUIET day is left as it is.
 //
-// The coins are the save's money (server/src/casino.ts): the balance is the state's, plus this board's results the
+// The coins are the save's money (server/src/game/casino.ts): the balance is the state's, plus this board's results the
 // server has not counted yet. Each result goes as INTERACT casino "<delta> <boot>.<seq> <device> <spins>" -- every ten
 // spins, and once more on leaving -- and waits on the server until SYNC writes it into the game.
 //
@@ -44,7 +44,7 @@ static int topRow[4], midCol[4];                // where each picture's head is,
 static int friendSlot[3] = { -1, -1, -1 };
 static int friendSpecies[3] = { -1, -1, -1 };   // C-158: or by species -- daemons seen in the game, chosen by the companion
 
-// the result, decided at the pull from the table every player keeps (firmware/common/slots.h, server/src/slots.ts): its
+// the result, decided at the pull from the table every player keeps (firmware/common/slots.h, server/src/game/slots.ts): its
 // chance in a thousand, and what it pays for each coin bet (the bet included) -- 94.4 back of every 100
 enum { O_LOSE, O_SEASON1, O_JACK2, O_SEASON3, O_COIN3, O_FRIEND3, O_JACK3, O_N };
 using slots::PAYS; using slots::BETS;

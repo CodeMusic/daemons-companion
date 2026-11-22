@@ -19,9 +19,9 @@ import { assign, carryView, setYours, yoursOf } from "../../server/src/carry";
 import { kindOf, validDeviceId } from "../../server/src/deviceid";
 import { repaint, streakColours } from "../../server/src/paint";
 import { EXPRESSIONS, SHADED, shadePalette, type Expression } from "../../server/src/expressions";
-import { readSave } from "../../server/src/save/reader";
-import { afterSync, beforeSync, remoteLink, setHub, TRADE_PATHS, tradeRoute } from "../../server/src/tradelink";   // C-219
-import { BATTLE_PATHS, battleRoute } from "../../server/src/battleroute";   // C-328
+import { readSave } from "../../server/src/game/save/reader";
+import { afterSync, beforeSync, remoteLink, setHub, TRADE_PATHS, tradeRoute } from "../../server/src/game/tradelink";   // C-219
+import { BATTLE_PATHS, battleRoute } from "../../server/src/game/battleroute";   // C-328
 import { SPECIES_ART } from "../art/speciesArt";
 import { handOver as handOverTo, hubPeer, type HandedOver } from "../../server/src/praxissync";   // C-431
 import type { BlobStore } from "@daemons/praxis";

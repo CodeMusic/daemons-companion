@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import profileJson from "../data/profile_layout.json" with { type: "json" };
 import marginsJson from "../data/margins.json" with { type: "json" };
-import { readIndex } from "../src/save/index.js";
-import { expFor, levelFromExp } from "../src/save/growth.js";
+import { readIndex } from "../src/game/save/index.js";
+import { expFor, levelFromExp } from "../src/game/save/growth.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 import facesJson from "../data/faces.json" with { type: "json" };
 import foundJson from "../data/mouths.found.json" with { type: "json" };

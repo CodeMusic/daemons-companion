@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 const { Store } = await import("../src/db.js");
 const { ackSpellcraft, firstSight, HERMETIC_FLAG, readHermetic, savedHermetic, spellcraftOf, spellcraftToWrite } = await import("../src/hermetic.js");
-const { syncSave } = await import("../src/save/writer.js");
+const { syncSave } = await import("../src/game/save/writer.js");
 const { buildSave } = await import("./build_save.js");
 
 const at = (h: number, m = 0) => new Date(2026, 9, 30, h, m);

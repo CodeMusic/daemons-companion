@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { expFor } from "../src/save/growth.js";
-import { syncSave } from "../src/save/writer.js";
-import { readSave, readBoxes, readAway, blocks, ORDERS } from "../src/save/reader.js";
+import { expFor } from "../src/game/save/growth.js";
+import { syncSave } from "../src/game/save/writer.js";
+import { readSave, readBoxes, readAway, blocks, ORDERS } from "../src/game/save/reader.js";
 import { evolveTarget, judgeEvolution, evolvedOf, bondAdd, bondOf, bondScore, bondSeen, AT_HOME } from "../src/evolve.js";
 import { Store } from "../src/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";

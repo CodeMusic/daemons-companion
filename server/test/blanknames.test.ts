@@ -5,12 +5,12 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import { Store } from "../src/db.js";
 import * as X from "../src/exchange.js";
 import { KEYS } from "../src/keys.js";
-import { describe, fromB64, toB64 } from "../src/save/trade.js";
-import { decodeText, LAYOUT } from "../src/save/reader.js";
+import { describe, fromB64, toB64 } from "../src/game/save/trade.js";
+import { decodeText, LAYOUT } from "../src/game/save/reader.js";
 import { buildDaemon, buildSave } from "./build_save.js";
-import { syncSave } from "../src/save/writer.js";
-import { readAway, readSave } from "../src/save/reader.js";
-import { expFor } from "../src/save/growth.js";
+import { syncSave } from "../src/game/save/writer.js";
+import { readAway, readSave } from "../src/game/save/reader.js";
+import { expFor } from "../src/game/save/growth.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 const record = (personality: number, otId: number, species: number, nickname: string) =>

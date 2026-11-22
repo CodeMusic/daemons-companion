@@ -1,7 +1,7 @@
 // C-479: a lesson as a board sings it -- each note as sung, whether right, its pitch's colour; and the groups carried back.
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { expFor } from "../src/save/growth.js";
+import { expFor } from "../src/game/save/growth.js";
 import { boardSong, lesson, noteColours, songOf } from "../src/ownsong.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;

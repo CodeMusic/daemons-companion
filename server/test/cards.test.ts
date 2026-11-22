@@ -1,6 +1,6 @@
 // C-186: an INDEX card's colour -- the user's rule, type match.
 import { describe, expect, it } from "vitest";
-import { cardColour } from "../src/save/index.js";
+import { cardColour } from "../src/game/save/index.js";
 import cards from "../data/index_cards.json" with { type: "json" };
 
 const none = [false, false, false, false, false, false, false];

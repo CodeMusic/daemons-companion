@@ -1,7 +1,7 @@
 // C-23: the PROFILE, read from a synthetic save that sets every fact it shows, at the offsets the game exports.
 import { describe, expect, it } from "vitest";
 import P from "../data/profile_layout.json" with { type: "json" };
-import { readProfile } from "../src/save/profile.js";
+import { readProfile } from "../src/game/save/profile.js";
 import { buildSave } from "./build_save.js";
 
 function setFlag(sb2: Uint8Array, sb1: Uint8Array, f: number) {

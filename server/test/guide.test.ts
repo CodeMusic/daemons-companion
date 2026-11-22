@@ -1,7 +1,7 @@
 // C-145: the GUIDE is readable on the companion once the save holds it, and nothing of it before (a find stays blind).
 import { describe, expect, it } from "vitest";
 import { buildSave } from "./build_save.js";
-import { readGuide } from "../src/save/guide.js";
+import { readGuide } from "../src/game/save/guide.js";
 import P from "../data/profile_layout.json" with { type: "json" };
 import G from "../data/guide.json" with { type: "json" };
 

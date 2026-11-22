@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { heldKeys, newlyFound } from "../src/save/found.js";
+import { heldKeys, newlyFound } from "../src/game/save/found.js";
 
 const nb = (...pages: [string, string][]) => ({ sections: [...new Set(pages.map(([s]) => s))].map((name) => ({ name, pages: pages.filter(([s]) => s === name).map(([, title]) => ({ title })) })) });
 const ix = (...e: [number, boolean][]) => ({ entries: e.map(([national, bound]) => ({ national, bound })) });

@@ -6,18 +6,18 @@
 import speciesJson from "../data/species.json" with { type: "json" };
 import weekJson from "../data/week.json" with { type: "json" };   // C-412: a dream's day colour
 import type { Store } from "./store.js";
-import { readAway, readSave } from "./save/reader.js";
-import { readProfile } from "./save/profile.js";
+import { readAway, readSave } from "./game/save/reader.js";
+import { readProfile } from "./game/save/profile.js";
 import { accentsOf } from "./accents.js";   // C-349
-import { readPlan, readWild } from "./planner.js";   // C-191
-import { casinoPending, clampMoney, tableFor } from "./casino.js";
+import { readPlan, readWild } from "./game/planner.js";   // C-191
+import { casinoPending, clampMoney, tableFor } from "./game/casino.js";
 import actsJson from "../data/acts.json" with { type: "json" };
-import { readGuide } from "./save/guide.js";
+import { readGuide } from "./game/save/guide.js";
 import { bookList, booksOf, chapterOf } from "./books.js";   // C-208: the books held, as a board reads them
-import { readNotebook } from "./save/notebook.js";
-import { readProgress } from "./save/progress.js";
-import { readPlay } from "./save/play.js";
-import { readSubtle } from "./save/subtle.js";
+import { readNotebook } from "./game/save/notebook.js";
+import { readProgress } from "./game/save/progress.js";
+import { readPlay } from "./game/save/play.js";
+import { readSubtle } from "./game/save/subtle.js";
 import { howOf, MASK_UNDER, maskOf, readsView, seeRead, takeLean, takeRead } from "./intuition.js";   // C-203; C-357: RECOGNITION, THE MASK
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
 import { tend, tendingView } from "./lifemanagement/tending.js";
@@ -36,7 +36,7 @@ const REGIONS = regionsJson;
 import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
-import { readIndex } from "./save/index.js";
+import { readIndex } from "./game/save/index.js";
 import { indexOf, artName, awayNow, careGiven, indexSongs, songNow, trainSong, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;

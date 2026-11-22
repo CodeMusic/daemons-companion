@@ -1,11 +1,11 @@
-// ROUTINES -- THE CASINO (by server/src/slots.ts, the boards' table) and the party's game routines (C-155). (C-157: out of App.tsx.)
+// ROUTINES -- THE CASINO (by server/src/game/slots.ts, the boards' table) and the party's game routines (C-155). (C-157: out of App.tsx.)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { casinoDress, Hatted, pieceArt, SeasonFalling } from "../../art/casinoDress";
 import { dayRoot, hearSettings, soundLevel, tuneSound } from "../../sound/tuneSound";
 import { Text, XStack, YStack } from "tamagui";
 import { almostThird, BETS, CAT, drawFrom, JACK, learn, nearChance, nearPieces, OUTCOMES, PAYS, piecesFor, pullReturn, resultDetail, STRIP, stopAt,
-         stopNear, strip, tableAct, weightsFor, type Cat, type Piece } from "../../../server/src/slots";
+         stopNear, strip, tableAct, weightsFor, type Cat, type Piece } from "../../../server/src/game/slots";
 import { playerId } from "../../state/data";
 import { api } from "../../platform/net";
 import { Cast, PlayerState } from "../../state/types";

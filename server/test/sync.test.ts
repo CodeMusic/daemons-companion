@@ -7,7 +7,7 @@ import P from "../data/profile_layout.json" with { type: "json" };
 import { sync } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
-import { readSave, readSlot } from "../src/save/reader.js";
+import { readSave, readSlot } from "../src/game/save/reader.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
 const flagAt = (f: number) => ({ byte: P.sb2.daemons_flags + ((f - P.flags.daemons_flags_start) >> 3),

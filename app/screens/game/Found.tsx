@@ -10,7 +10,7 @@ import { api } from "../../platform/net";
 import { Index, IndexEntry, Notebook } from "../../state/types";
 import { Art, Card, Eyebrow, Small } from "../../ui/ui";
 import { NotebookPage } from "../library/Library";
-import { heldKeys, newlyFound, type Found as FoundT } from "../../../server/src/save/found";
+import { heldKeys, newlyFound, type Found as FoundT } from "../../../server/src/game/save/found";
 
 type Page = Notebook["sections"][number]["pages"][number];
 export type Found = FoundT<Page, IndexEntry>;

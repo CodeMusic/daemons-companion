@@ -7,18 +7,18 @@
 // fetched into the store (`trade.inbox`), and any borrowed daemon a loan asks back is handed back as it is now; SYNC
 // writes the inbox (writer.ts `trade`) and keeps what it wrote (`trade.outbox`); AFTER, the exchange is told.
 // No node: imports -- fetch is the platform's, and the keys are made by whoever made the link (api.ts).
-import type { Store } from "./store.js";
-import type { Reply } from "./routes.js";
+import type { Store } from "../store.js";
+import type { Reply } from "../routes.js";
 import type { TradeIn } from "./save/writer.js";
 import { readAway } from "./save/reader.js";
 import { giftableItems, pocketsOf } from "./save/items.js";   // C-223: an item given
 import { fromB64, gameId, gameOf, toB64, tradeRecord, type GameKey } from "./save/trade.js";
-import * as X from "./exchange.js";
-import { homeRoute } from "./commonslink.js";
-import * as M from "./together.js";   // C-220: OUT TOGETHER
-import { dreamsOf } from "./dreams.js";   // C-223
-import * as D from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
-import type { PersonaFacts } from "./ai/personaof.js";
+import * as X from "../exchange.js";
+import { homeRoute } from "../commonslink.js";
+import * as M from "../together.js";   // C-220: OUT TOGETHER
+import { dreamsOf } from "../dreams.js";   // C-223
+import * as D from "../dialogue.js";   // C-329: DAEMONS IN DIALOGUE
+import type { PersonaFacts } from "../ai/personaof.js";
 import { exchangeBattle } from "./battleroute.js";   // C-328
 
 export interface Link {

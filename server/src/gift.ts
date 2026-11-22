@@ -5,7 +5,7 @@
 // and written by the next SYNC into the PC's first empty box slot, already AWAY -- so it is carried from the moment it
 // arrives, and the game finishes it on load (the C-184 marker: its moves, its ability, the INDEX).
 import type { Store } from "./store.js";
-import type { Gift } from "./save/writer.js";
+import type { Gift } from "./game/save/writer.js";
 
 // No node:crypto here: core.ts brings this file onto the phone hosting alone (app/platform/local.ts), where there is none, and a
 // daemon's personality and IVs need no secret randomness.

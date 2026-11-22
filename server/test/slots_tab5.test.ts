@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { BETS, OUTCOMES, PAYS, WEIGHTS } from "../src/slots.js";
+import { BETS, OUTCOMES, PAYS, WEIGHTS } from "../src/game/slots.js";
 
 const H = readFileSync(join(__dirname, "..", "..", "firmware", "common", "slots.h"), "utf8");   // C-157: the boards' one copy
 const list = (name: string) => (H.match(new RegExp(`${name}\\[\\]\\s*=\\s*\\{([^}]*)\\}`))?.[1] ?? "").split(",").map((s) => s.trim()).filter(Boolean);

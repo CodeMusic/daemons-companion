@@ -1,7 +1,7 @@
 // Builds synthetic DAEMONS saves for the tests -- the repository holds no real save, and development never touches
 // the user's own. The builder writes exactly what the reader expects, as the game does: encrypted records with their
 // checksums, and two slots of checksummed sectors.
-import { LAYOUT as l, sectionSize, sectionChecksum } from "../src/save/reader.js";
+import { LAYOUT as l, sectionSize, sectionChecksum } from "../src/game/save/reader.js";
 import charmapJson from "../data/charmap.json" with { type: "json" };
 
 const ORDERS = ["GAEM", "GAME", "GEAM", "GEMA", "GMAE", "GMEA", "AGEM", "AGME", "AEGM", "AEMG", "AMGE", "AMEG",

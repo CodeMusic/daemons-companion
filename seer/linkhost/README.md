@@ -34,7 +34,7 @@ that keeps only errors -- left as it is, it writes megabytes a second. Saves are
 them, and flushed when it is stopped (SIGINT or SIGTERM).
 
 **In the app (2026-11-12)**: the hub passes a player's screen, buttons and the cable's state on at `/api/link/`
-(`server/src/linkcable.ts`; never `/p/`, never through the relay) and serves a phone-sized page with touch buttons at
+(`server/src/game/linkcable.ts`; never `/p/`, never through the relay) and serves a phone-sized page with touch buttons at
 `/link/`; the GAME tab's title has **LINK CABLE** for a paired phone, a seat for each player. The hub finds linkhost by
 the setting `link.host` or `DAEMONS_LINKHOST` (e.g. `http://roverbyteseer:4795`, linkhost started with that address).
 

@@ -5,8 +5,8 @@
 // or the item in the bag -- older saves), and each song: learned (its flag; O CHRISTMAS TREE always, once the instrument is
 // held), or only heard. The songs, keys and colours are data/play.json, exported by DAEMONS. Read only. (The instruments are
 // key items, which the game's PC never takes, so the flag and the key-items pocket are the whole rule.)
-import playJson from "../../data/play.json" with { type: "json" };
-import profileJson from "../../data/profile_layout.json" with { type: "json" };
+import playJson from "../../../data/play.json" with { type: "json" };
+import profileJson from "../../../data/profile_layout.json" with { type: "json" };
 import { blocks, LAYOUT, type Layout } from "./reader.js";
 import { flagReader } from "./profile.js";
 

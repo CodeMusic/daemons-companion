@@ -12,7 +12,7 @@ import { makeServer } from "../src/api.js";
 import { makeCommons } from "../src/commons_api.js";
 import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
-import { expFor } from "../src/save/growth.js";
+import { expFor } from "../src/game/save/growth.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;

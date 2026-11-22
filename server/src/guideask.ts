@@ -3,7 +3,7 @@
 // -- by voice on the watch, or in the app -- is answered by the GUIDE itself, from its own pages. The pages nearest the
 // question (by the words they share with it, the common ones left out) go to the model with the question, and the model
 // answers as the book: only from them, briefly, in its own plain voice. No node: imports.
-import type { Guide } from "./save/guide.js";
+import type { Guide } from "./game/save/guide.js";
 
 const COMMON = new Set(("the a an and or but of to in on at for with is are was were be been it its this that these those i you your " +
   "my me we our they them he she his her what why how when where who which do does did can could would should will " +

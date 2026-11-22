@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
-import { readSave, readDaemon, sectionChecksum } from "../src/save/reader.js";
+import { readSave, readDaemon, sectionChecksum } from "../src/game/save/reader.js";
 import { buildDaemon, buildSave } from "./build_save.js";
 
 const ROVERCUB = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12, friendship: 140 };
@@ -73,7 +73,7 @@ describe.skipIf(!scratch || !existsSync(scratch))("a real scratch save", () => {
 
 // DAEMONS T-519: SPIRITS, read from bits 12-15 of the u16 at 0x1E -- the class and its lean, one ladder of twelve rungs
 describe("T-519: SPIRITS", async () => {
-  const { spiritsOf } = await import("../src/save/reader.js");
+  const { spiritsOf } = await import("../src/game/save/reader.js");
   const word = (c: number, lean: number) => (c << 12) | (lean << 14) | 0x0123;      // the trade's bits below are left alone
   it("reads the class and its lean as the game keeps them, with the game's words for the two ends only", () => {
     expect(spiritsOf(word(0, 0))).toEqual({ class: "as it is", lean: 0, rung: 6, words: null });

@@ -1,6 +1,6 @@
 // C-128, C-129: the save's progress -- the paper's letter is the game's GradeLetter, by school.json's grades.
 import { describe, expect, it } from "vitest";
-import { gradeOf } from "../src/save/progress.js";
+import { gradeOf } from "../src/game/save/progress.js";
 import school from "../data/school.json" with { type: "json" };
 
 describe("CALLOW SCHOOL's marks", () => {

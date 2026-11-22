@@ -2,10 +2,10 @@
 // game keeps them, and nothing written when the game has moved on since its save.
 import { describe, expect, it } from "vitest";
 import { buildSave } from "./build_save.js";
-import { LAYOUT as l, readSlot, sectionSize } from "../src/save/reader.js";
-import { syncSave } from "../src/save/writer.js";
+import { LAYOUT as l, readSlot, sectionSize } from "../src/game/save/reader.js";
+import { syncSave } from "../src/game/save/writer.js";
 import { applyPlan, livePlan, WRAM_AT, WRAM_SIZE } from "../src/game/live.js";
-import { tradeRecord } from "../src/save/trade.js";
+import { tradeRecord } from "../src/game/save/trade.js";
 import P from "../data/profile_layout.json" with { type: "json" };
 
 // a game's SaveBlock2 is not empty, as the builder's is: its INDEX, options and records, here as noise

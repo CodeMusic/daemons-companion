@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
-import { LINK_PAGE, linkHost, linkTarget } from "../src/linkcable.js";
+import { LINK_PAGE, linkHost, linkTarget } from "../src/game/linkcable.js";
 import { buildSave } from "./build_save.js";
 
 const asked: string[] = [];

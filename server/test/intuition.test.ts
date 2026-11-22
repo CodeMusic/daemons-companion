@@ -12,7 +12,7 @@ import { Store } from "../src/db.js";
 import { checkNight, keepNight } from "../src/dreams.js";
 import { keepFix } from "../src/where.js";
 import { howOf, landReads, leanRight, lineOf, noteClose, noteSky, readsView, senseFor, takeLean, takeRead, threeOf, virtueHeldToday, wayOf } from "../src/intuition.js";
-import { readsLog } from "../src/save/notebook.js";
+import { readsLog } from "../src/game/save/notebook.js";
 import layout from "../data/profile_layout.json" with { type: "json" };
 import subtle from "../data/subtle.json" with { type: "json" };
 

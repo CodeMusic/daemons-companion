@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import eventsJson from "../data/events.json" with { type: "json" };
 import { sync, type Host } from "../src/core.js";
 import { Store } from "../src/db.js";
-import { blocks } from "../src/save/reader.js";
+import { blocks } from "../src/game/save/reader.js";
 import { checkNight, DREAM_VARS, dreamDay, dreamImage, keepNight, type Night } from "../src/dreams.js";
 import P from "../data/profile_layout.json" with { type: "json" };
 import { buildSave } from "./build_save.js";

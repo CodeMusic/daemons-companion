@@ -8,7 +8,7 @@
 import eventsJson from "../data/events.json" with { type: "json" };
 import { DREAM_TITLES, DREAM_VARS, type Quality } from "./dreams.js";
 import type { Feelings } from "./feelings.js";
-import { blocks, LAYOUT, type Layout } from "./save/reader.js";
+import { blocks, LAYOUT, type Layout } from "./game/save/reader.js";
 import { feelingWord } from "./self.js";
 
 // each feeling as the room shows it: its colour, and the weather it makes in the den when it is the strongest

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bookList, booksOf, chapterOf, readable, READ_MAX } from "../src/books.js";
-import { guideOf } from "../src/save/guide.js";
+import { guideOf } from "../src/game/save/guide.js";
 
 const subtle = { held: true, title: "THE SUBTLE LAYER", sections: [{ label: "I", heading: "I", entries: [
   { short: "P", title: "A Word First", picture: "", caption: "", paragraphs: [{ text: "One.", voice: "telling" as const }, { text: "Two?", voice: "asking" as const }] }] }] };

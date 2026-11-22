@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import profileJson from "../data/profile_layout.json" with { type: "json" };
-import { syncSave } from "../src/save/writer.js";
-import { readSave, blocks } from "../src/save/reader.js";
-import { readIndex } from "../src/save/index.js";
+import { syncSave } from "../src/game/save/writer.js";
+import { readSave, blocks } from "../src/game/save/reader.js";
+import { readIndex } from "../src/game/save/index.js";
 import { buildSave } from "./build_save.js";
 
 const P = profileJson;

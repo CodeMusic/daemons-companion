@@ -1,5 +1,5 @@
 // C-191 (C-186 step 6): THE ROAD AHEAD -- the planner, read from the save and the game lane's T-453 data
-// (server/src/planner.ts): the next step and where it is, the fights and trainers still ahead, the levels so far, the
+// (server/src/game/planner.ts): the next step and where it is, the fights and trainers still ahead, the levels so far, the
 // places open now, and a place's wild daemons when it is tapped. Nothing past the next step is ever shown. Words DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";

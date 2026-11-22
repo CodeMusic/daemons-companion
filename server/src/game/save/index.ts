@@ -6,15 +6,15 @@
 //   neglected -- otherwise, if any is in a box (put away, never grown);
 //   none      -- not yet: met, but nothing to say.
 // INSTINCT's voice, where OPUS had a second thought, for a player who chose it (the save keeps it as playerGender 1).
-import profileJson from "../../data/profile_layout.json" with { type: "json" };
-import speciesJson from "../../data/species.json" with { type: "json" };
-import marginsJson from "../../data/margins.json" with { type: "json" };
-import cardsJson from "../../data/index_cards.json" with { type: "json" };
+import profileJson from "../../../data/profile_layout.json" with { type: "json" };
+import speciesJson from "../../../data/species.json" with { type: "json" };
+import marginsJson from "../../../data/margins.json" with { type: "json" };
+import cardsJson from "../../../data/index_cards.json" with { type: "json" };
 import { blocks, readBoxes, readSave, LAYOUT, type Layout } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
-import { openMouthOf, type Patch } from "../expressions.js";   // C-303
-import { season as seasonOf, type Season } from "../seasons.js";   // C-310
+import { openMouthOf, type Patch } from "../../expressions.js";   // C-303
+import { season as seasonOf, type Season } from "../../seasons.js";   // C-310
 
 const P = profileJson;
 const SPECIES = speciesJson as unknown as Record<string, any>;

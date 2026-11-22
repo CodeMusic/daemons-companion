@@ -1,8 +1,8 @@
 // C-155: THE CASINO's rules, kept once for every player -- and held to the handhelds' own copy in C++.
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
-import { BETS, PAYS, RETURN, STRIP, WEIGHTS, draw, outcomeOf, piecesFor, resultDetail, stopAt, strip, tableAct } from "../src/slots.js";
-import { parseResult } from "../src/casino.js";
+import { BETS, PAYS, RETURN, STRIP, WEIGHTS, draw, outcomeOf, piecesFor, resultDetail, stopAt, strip, tableAct } from "../src/game/slots.js";
+import { parseResult } from "../src/game/casino.js";
 
 // a repeatable dice, so a failure can be run again
 function dice(seed: number) {                                // mulberry32: small, and even enough for a tally
@@ -69,7 +69,7 @@ describe("SLOTS (C-155)", () => {
 
 describe("THE CASINO in context: luck and the cat and the string (C-158)", () => {
   it("returns 90 to 100 back as the luck goes from -1 to +1, scaling the wins alike", async () => {
-    const { RETURN_AT, weightsFor } = await import("../src/slots.js");
+    const { RETURN_AT, weightsFor } = await import("../src/game/slots.js");
     expect([RETURN_AT(-5), RETURN_AT(-1), RETURN_AT(0), RETURN_AT(1), RETURN_AT(9)]).toEqual([0.9, 0.9, 0.95, 1, 1]);
     for (const r of [0.86, 0.9, 0.95, 1, 1.04]) {
       const w = weightsFor(r);
@@ -79,7 +79,7 @@ describe("THE CASINO in context: luck and the cat and the string (C-158)", () =>
   });
 
   it("brings the string nearer through a dry spell and away after a win, and keeps the day's return over many pulls", async () => {
-    const { CAT, learn, pullReturn, weightsFor, drawFrom, RETURN_AT } = await import("../src/slots.js");
+    const { CAT, learn, pullReturn, weightsFor, drawFrom, RETURN_AT } = await import("../src/game/slots.js");
     let cat = { ...CAT };
     for (let i = 0; i < 10; i++) cat = learn(cat, 0, () => 0.5);   // no noise
     expect(cat.reach).toBeGreaterThan(0.3); expect(cat.dry).toBe(10);
@@ -95,7 +95,7 @@ describe("THE CASINO in context: luck and the cat and the string (C-158)", () =>
   });
 
   it("plays the same engine on the boards (firmware/common/slots.h)", async () => {
-    const S = await import("../src/slots.js");
+    const S = await import("../src/game/slots.js");
     const h = readFileSync(new URL("../../firmware/common/slots.h", import.meta.url), "utf8");
     const num = (name: string) => Number((new RegExp(`\\b${name}\\s*=\\s*([0-9.]+)f?`).exec(h) ?? [])[1]);
     expect(num("REACH_SPAN")).toBe(S.REACH_SPAN); expect(num("LEARN")).toBe(S.LEARN); expect(num("NOISE")).toBe(S.NOISE);
@@ -105,7 +105,7 @@ describe("THE CASINO in context: luck and the cat and the string (C-158)", () =>
   });
 
   it("makes a near miss that does not pay, and stops the third reel with the wanted piece beside the line", async () => {
-    const { nearPieces, almostThird, stopNear, strip, STRIP: N } = await import("../src/slots.js");
+    const { nearPieces, almostThird, stopNear, strip, STRIP: N } = await import("../src/game/slots.js");
     const r = dice(5);
     let made = 0;
     for (let i = 0; i < 300; i++) {

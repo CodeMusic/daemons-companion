@@ -33,7 +33,7 @@ struct Daemon { String name, nickname, holding, category, entry, types, artKey; 
                 String margin; };                                                 // C-149: OPUS's margin, if the save holds OPUS
 // C-68: a party daemon, and its routines as the game names them, each with the colour its streak takes on this body
 struct Member { String name, types, artKey; int level = 0, n = 0, slot = -1; String routine[4], type[4]; uint32_t colour[4] = {}; };
-// C-149: THE CASINO's coins -- the save's money and what waits for SYNC (server/src/casino.ts), `seen` the newest of this
+// C-149: THE CASINO's coins -- the save's money and what waits for SYNC (server/src/game/casino.ts), `seen` the newest of this
 // board's reports counted in it ("<boot>.<seq>"), and the party's other daemons by slot, the reels' pictures -- and how
 // the board dresses today: the holiday (server/data/holidays.json), its look, two colours and a hat; a QUIET day plain
 struct Casino { bool have = false, known = false;   // known: the companion sends `casino` at all (null: no save read)

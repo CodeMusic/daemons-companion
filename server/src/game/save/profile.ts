@@ -2,11 +2,11 @@
 // C-23: the PROFILE -- who this save belongs to and how far it has gone, as the trainer card and the INDEX would say.
 // Read only. Every offset comes from data/profile_layout.json, which DAEMONS exports from the built game's own headers
 // (global.h's struct comments, flags.h through the preprocessor); the place names from data/maps.json.
-import profileJson from "../../data/profile_layout.json" with { type: "json" };
-import mapsJson from "../../data/maps.json" with { type: "json" };
-import regionsJson from "../../data/regions.json" with { type: "json" };
-import grovesJson from "../../data/groves.json" with { type: "json" };
-import marksJson from "../../data/marks.json" with { type: "json" };
+import profileJson from "../../../data/profile_layout.json" with { type: "json" };
+import mapsJson from "../../../data/maps.json" with { type: "json" };
+import regionsJson from "../../../data/regions.json" with { type: "json" };
+import grovesJson from "../../../data/groves.json" with { type: "json" };
+import marksJson from "../../../data/marks.json" with { type: "json" };
 import { blocks, decodeText, LAYOUT, type Layout } from "./reader.js";
 
 const P = profileJson;

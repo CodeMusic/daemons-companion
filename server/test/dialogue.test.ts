@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import * as X from "../src/exchange.js";
 import * as D from "../src/dialogue.js";
 import { cardOf, dayFacts, factsFrom, personaOf, speciesFacts } from "../src/ai/personaof.js";
-import { exchangeRoute } from "../src/tradelink.js";
+import { exchangeRoute } from "../src/game/tradelink.js";
 import { Store } from "../src/db.js";
 import * as core from "../src/core.js";
 import { carriedFor } from "../src/carry.js";

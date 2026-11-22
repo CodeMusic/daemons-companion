@@ -2,9 +2,9 @@
 // and items through the test builder, never a real save.
 import { describe, expect, it } from "vitest";
 import { buildSave, encodeText } from "./build_save.js";
-import { readProfile } from "../src/save/profile.js";
-import { readProgress } from "../src/save/progress.js";
-import { readNotebook } from "../src/save/notebook.js";
+import { readProfile } from "../src/game/save/profile.js";
+import { readProgress } from "../src/game/save/progress.js";
+import { readNotebook } from "../src/game/save/notebook.js";
 import P from "../data/profile_layout.json" with { type: "json" };
 import EV from "../data/events.json" with { type: "json" };
 import SC from "../data/school.json" with { type: "json" };

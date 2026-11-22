@@ -9,8 +9,8 @@
 // (FLAG_GOT_HERMETIC_LAYER, DAEMONS T-483). A preview, as the other two have. Every word DRAFT. No node: imports.
 import hermeticJson from "../data/hermetic.json" with { type: "json" };
 import layoutJson from "../data/profile_layout.json" with { type: "json" };
-import { blocks, LAYOUT, type Layout } from "./save/reader.js";
-import { flagReader } from "./save/profile.js";
+import { blocks, LAYOUT, type Layout } from "./game/save/reader.js";
+import { flagReader } from "./game/save/profile.js";
 import type { Store } from "./store.js";
 import { witchingNow } from "./witching.js";
 

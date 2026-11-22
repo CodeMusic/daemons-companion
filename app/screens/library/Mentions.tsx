@@ -17,12 +17,13 @@ const lines = (m: Mention): string[] => {
   const s = m.stats as { together?: { said: string; n: number }[]; steps?: number; goals?: string[]; arete?: number;
                          entries?: number; dreamsWritten?: number; nights?: number; vivid?: number; broken?: number } | null;
   if (!s) return [];
+  const n = (k: number, one: string, many = `${one}S`) => `${k} ${k === 1 ? one : many}`;   // "1 STEP", "2 STEPS"
   return [
-    s.steps || s.goals?.length ? `${s.steps ?? 0} STEPS${s.goals?.length ? ` · ${s.goals.length} GOAL${s.goals.length === 1 ? "" : "S"}` : ""}` : "",
+    s.steps || s.goals?.length ? `${n(s.steps ?? 0, "STEP")}${s.goals?.length ? ` · ${n(s.goals.length, "GOAL")}` : ""}` : "",
     s.arete ? `${s.arete} ARETE` : "",
     ...(s.together ?? []).slice(0, 4).map((c) => (c.n === 1 ? c.said : `${c.n} ${c.said}`).toUpperCase()),
-    s.entries ? `${s.entries} JOURNAL` : "", s.dreamsWritten ? `${s.dreamsWritten} DREAMS WRITTEN` : "",
-    s.nights ? `${s.nights} NIGHTS${s.vivid ? ` · ${s.vivid} VIVID` : ""}` : "",
+    s.entries ? `${s.entries} JOURNAL` : "", s.dreamsWritten ? `${n(s.dreamsWritten, "DREAM")} WRITTEN` : "",
+    s.nights ? `${n(s.nights, "NIGHT")}${s.vivid ? ` · ${s.vivid} VIVID` : ""}` : "",
   ].filter(Boolean);
 };
 

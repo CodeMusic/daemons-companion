@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { useApi } from "../../platform/useApi";
-import { Card, Eyebrow, Pending, Small, useInk } from "../../ui/ui";
+import { Card, Eyebrow, Pending, Small } from "../../ui/ui";
 
 type Acts = { goals: number; tended: number; entries: number; dreams: number; actions?: number; learning?: number; cooked?: number };
 type Day = { day: string; date: string; virtue: string; shadow: string; today: boolean; ahead: boolean; lived: boolean; acts: Acts };
@@ -23,7 +23,9 @@ function what(a: Acts): string {                                                
 export function WeekBalanceCard() {
   const [b] = useApi<Balance>("/api/balance");
   const [open, setOpen] = useState(false);
-  const ink = useInk();
+  // lit in the theme's accent, the shade the day's keys are filled with -- not useInk(), which is the colour of the
+  // words ON a key (paper on a dark day), and so all but vanished on the card (DAEMONS C-321's pictures, a Sunday)
+  const ink = "$color9";
   if (!b) return <Pending title="THE WEEK'S BALANCE" height={[128, 112]} />;
   return (
     <Card onPress={() => setOpen((o) => !o)} cursor="pointer" role="button" aria-expanded={open}

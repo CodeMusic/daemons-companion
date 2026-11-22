@@ -90,7 +90,7 @@ import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines
 import { readIndex } from "./save/index.js";
 import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
 import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./sing.js";   // C-387: its words
-import { beatsSaid, paintingCreation, sleepCreation, songCreation, type Creation } from "./creations.js";   // C-358; C-362
+import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type Creation } from "./creations.js";   // C-358; C-362
 import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
 import { GameMusic } from "./gamemusic.js";   // C-332
 import { FirmwareImages } from "./firmwareimages.js";   // C-335
@@ -145,6 +145,7 @@ import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond'
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter, writeSigns } from "./journal.js";   // C-298; C-356 the signs
 import { readRecipePage } from "./recipes.js";   // C-433
+import { formToShare, mineView, takeForm } from "./myforms.js";   // C-433
 import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, MARK_ASK, markAsk, markQuiz, newCourse, proposeSyllabus, quizQuestions, readMarks, readSyllabus, SYLLABUS_ASK, tutorState, type Mark } from "./learning.js";   // C-433
 import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./meetings.js";   // C-212
 import { readGuide } from "./save/guide.js";
@@ -2397,6 +2398,32 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         }
         return send(res, 404, { error: "not found" });
       }
+      // C-433: a form you made, shared to THE COMMONS (its shape alone, as a COMMUNITY creation of kind form), and a
+      // friend's taken in as your own. What the commons shares lists at /api/community?kind=form.
+      if (req.method === "POST" && (path === "/api/mine/share" || path === "/api/mine/take")) {
+        const link = commonsOf(store);
+        if (!link) return send(res, 409, { error: "Link this home to THE COMMONS first (SETTINGS)." });   // DRAFT
+        const h = { "x-daemons-home": link.key }, b = await body(req);
+        try {
+          if (path.endsWith("share")) {
+            const f = formToShare(store, b.id);
+            if (!f) return send(res, 404, { error: "no such form" });                            // DRAFT
+            const c: Creation = { uid: uidOf("form", f.id, homeName()), kind: "form", id: f.id, home: homeName(), title: f.title,
+              about: f.about || f.form.kinds.map((k) => k.title).join(", "), made: new Date().toISOString(), state: "ready",
+              daemon: { nickname: "", species: 0 }, by: null, cover: null, files: {}, meta: { kinds: f.form.kinds.length } };
+            const files = { "form.json": Buffer.from(JSON.stringify(f.form)).toString("base64") };
+            const r = await fetch(`${link.url}/commons/creations/share`, { method: "POST", headers: { ...h, "content-type": "application/json" },
+              body: JSON.stringify({ creation: c, files }), signal: AbortSignal.timeout(20000) });
+            return send(res, r.status, await r.json());
+          }
+          const n = String(b.n ?? "");
+          if (!/^\d{1,6}$/.test(n)) return send(res, 400, { error: "which form?" });              // DRAFT
+          const r = await fetch(`${link.url}/commons/creations/${n}/form.json`, { headers: h, signal: AbortSignal.timeout(20000) });
+          if (!r.ok) return send(res, 404, { error: "that form is not shared any more" });         // DRAFT
+          const t = takeForm(store, await r.json(), String(b.from ?? "THE COMMONS").slice(0, 120));
+          return typeof t === "string" ? send(res, 400, { error: t }) : send(res, 200, { form: t, ...mineView(store) });
+        } catch (e) { return send(res, 502, { error: `THE COMMONS did not answer: ${(e as Error).message.slice(0, 80)}` }); }   // DRAFT
+      }
       if (path === "/api/community" || path.startsWith("/api/community/")) {
         const link = commonsOf(store);
         if (!link) return req.method === "GET" && path === "/api/community"
@@ -2410,7 +2437,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
             const j = await r.json() as { creations?: (Creation & Record<string, unknown>)[]; error?: string };
             if (!r.ok) return send(res, 502, { error: j.error ?? `THE COMMONS answered ${r.status}` });   // DRAFT
             const via = (u: string | null) => u ? u.replace(/^\/commons\/creations\//, "/api/community/file/") : null;
-            return send(res, 200, { linked: true, home: homeName(), creations: (j.creations ?? []).map((c) => ({ ...c, cover: via(c.cover),
+            return send(res, 200, { linked: true, home: homeName(), creations: (j.creations ?? []).filter((c) => kind === "form" || c.kind !== "form")   // C-433: forms only when asked for
+              .map((c) => ({ ...c, cover: via(c.cover),
               files: Object.fromEntries(Object.entries(c.files).map(([k, v]) => [k, via(v)])) })) });
           }
           if (req.method === "POST" && path === "/api/community/share") {

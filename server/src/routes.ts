@@ -24,6 +24,7 @@ import { tend, tendingView } from "./tending.js";
 import { weekBalance } from "./balance.js";   // C-432
 import { editReward, removeReward, shelfView, spend, stock, unspend } from "./rewards.js";   // C-433
 import { cooked, keepRecipe, recipesView, removeRecipe, uncooked } from "./recipes.js";   // C-433
+import { itemDone, keepItem, makeSpace, mineView, removeForm, removeItem, saveForm, spaceView } from "./myforms.js";   // C-433
 import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, markQuiz, quizOf, quizView, removeFrom, rename, review } from "./learning.js";   // C-433   // C-357 (3)
 import { weatheringOf } from "./weathering.js";   // C-357 (4)
 import { VESSEL_UNDER, vesselOf } from "./vessel.js";   // C-357 (5)
@@ -68,8 +69,8 @@ import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   /
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
 import { BOOK as MENTIONS_BOOK, markRead, mentionsOf, newestUnread } from "./mentions.js";   // C-455
-const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/balance", "/api/rewards", "/api/recipes", "/api/learning", "/api/learning/lesson", "/api/learning/review", "/api/learning/quiz", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/learning/quiz", "/api/learning/quiz/answer", "/api/learning/add", "/api/learning/rename", "/api/learning/remove", "/api/learning/decide", "/api/learning/lesson/done", "/api/learning/review", "/api/recipes", "/api/recipes/remove", "/api/recipes/cooked", "/api/recipes/uncooked", "/api/rewards", "/api/rewards/edit", "/api/rewards/remove", "/api/rewards/spend", "/api/rewards/undo", "/api/household/swap", "/api/play/summoned", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
+const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/balance", "/api/rewards", "/api/recipes", "/api/mine", "/api/mine/space", "/api/learning", "/api/learning/lesson", "/api/learning/review", "/api/learning/quiz", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
+const POSTS = ["/api/mine/form", "/api/mine/form/remove", "/api/mine/space", "/api/mine/item", "/api/mine/item/done", "/api/mine/item/remove", "/api/learning/quiz", "/api/learning/quiz/answer", "/api/learning/add", "/api/learning/rename", "/api/learning/remove", "/api/learning/decide", "/api/learning/lesson/done", "/api/learning/review", "/api/recipes", "/api/recipes/remove", "/api/recipes/cooked", "/api/recipes/uncooked", "/api/rewards", "/api/rewards/edit", "/api/rewards/remove", "/api/rewards/spend", "/api/rewards/undo", "/api/household/swap", "/api/play/summoned", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -118,6 +119,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/balance") return ok(weekBalance(store, now));   // C-432: THE WEEK'S BALANCE
     if (path === "/api/rewards") return ok(shelfView(store, now));     // C-433: THE REWARD SHELF
     if (path === "/api/recipes") return ok(recipesView(store));         // C-433: RECIPES
+    // C-433: MINE -- the forms you made, the spaces made from them, one space and its items
+    if (path === "/api/mine") return ok(mineView(store));
+    if (path === "/api/mine/space") { const v = spaceView(store, a.query?.id); return v ? ok(v) : no(404, "no such space"); }
     // C-433: LEARNING -- the courses, a lesson, the cards due
     if (path === "/api/learning") return ok(learningView(store));
     if (path === "/api/learning/lesson") { const l = lessonOf(store, a.query?.id); return l ? ok(l) : no(404, "no such lesson"); }
@@ -267,6 +271,13 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
   }
   if (method === "POST") {
     // C-433: LEARNING -- added by hand, renamed, taken off, the TUTOR's proposals decided, a lesson finished, a card reviewed
+    // C-433: MINE -- a form kept or changed, taken off; a space made from one; an item kept, done (paid), taken off
+    if (path.startsWith("/api/mine/")) {
+      const r = path === "/api/mine/form" ? saveForm(store, b) : path === "/api/mine/form/remove" ? removeForm(store, b?.id)
+              : path === "/api/mine/space" ? makeSpace(store, b) : path === "/api/mine/item" ? keepItem(store, b)
+              : path === "/api/mine/item/done" ? itemDone(store, b?.id, b?.done !== false, now) : removeItem(store, b?.id);
+      return typeof r === "string" ? no(400, r) : r ? ok(path === "/api/mine/form" ? { form: r, ...mineView(store) } : r) : no(404, "not found");
+    }
     // C-433: a lesson's quiz -- made from its cards; answered and marked plainly (api.ts marks by THE TUTOR where a mind is)
     if (path === "/api/learning/quiz") { const r = quizOf(store, b?.lesson); return typeof r === "string" ? no(400, r) : ok({ quiz: r }); }
     if (path === "/api/learning/quiz/answer") { const r = markQuiz(store, b?.quiz, b?.answers, null, "plain", now); return typeof r === "string" ? no(400, r) : ok({ quiz: r }); }

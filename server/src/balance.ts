@@ -11,11 +11,11 @@ import { parseHlc } from "@daemons/praxis";
 import type { Store } from "./store.js";
 import { localDate, WEEK } from "./practice.js";
 
-export type Acts = { goals: number; tended: number; entries: number; dreams: number; actions: number; learning: number; cooked: number };
+export type Acts = { goals: number; tended: number; entries: number; dreams: number; actions: number; learning: number; cooked: number; mine: number };
 export type BalanceDay = { day: string; date: string; virtue: string; shadow: string; today: boolean; ahead: boolean;
                            lived: boolean; acts: Acts };
 
-const none = (): Acts => ({ goals: 0, tended: 0, entries: 0, dreams: 0, actions: 0, learning: 0, cooked: 0 });
+const none = (): Acts => ({ goals: 0, tended: 0, entries: 0, dreams: 0, actions: 0, learning: 0, cooked: 0, mine: 0 });
 const KIND_ACT: Record<string, keyof Acts> = { step: "goals", milestone: "goals", goal: "goals", tended: "tended", entry: "entries", dream: "dreams", action: "actions",
                                             lesson: "learning", card: "learning", quiz: "learning", cooked: "cooked" };   // C-433
 
@@ -24,8 +24,10 @@ export function weekBalance(store: Store, now = new Date(store.now())) {
   const acts = new Map<string, Acts>();
   const add = (ms: number, k: keyof Acts) => { const d = localDate(new Date(ms)); const a = acts.get(d) ?? none(); a[k]++; acts.set(d, a); };
   // every finish since Sunday, in every space (a finish past its day's cap is still in the ledger, at nothing)
-  for (const e of store.life.px.ledger(undefined, { since: start.getTime() })) {
-    const k = e.kind ? KIND_ACT[e.kind] : undefined;
+  const px = store.life.px, mineSpace = new Map<string, boolean>();
+  const isMine = (space: string) => { if (!mineSpace.has(space)) mineSpace.set(space, !!px.space(space)?.form?.name.startsWith("mine-")); return mineSpace.get(space)!; };
+  for (const e of px.ledger(undefined, { since: start.getTime() })) {
+    const k: keyof Acts | undefined = isMine(e.space) ? "mine" : e.kind ? KIND_ACT[e.kind] : undefined;   // C-433: a form of your own
     if (e.op !== "award" || e.back || !k || !(e.key.startsWith("finish:") || e.key.startsWith("review:"))) continue;   // a card reviewed (C-433)
     const ms = parseHlc(e.hlc)?.ms;
     if (ms !== undefined) add(ms, k);

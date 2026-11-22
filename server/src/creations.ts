@@ -11,7 +11,7 @@
 // phone, the hub, the commons or inside an exported file (PulseEntrain's generation.daemons) is known as one.
 // Every word DRAFT.
 
-export type CreationKind = "sleep" | "painting" | "song";
+export type CreationKind = "sleep" | "painting" | "song" | "form";   // C-433: a form you made (its shape alone, form.json)
 export type Creation = {
   uid: string; kind: CreationKind; id: string; home: string;
   title: string; about: string;
@@ -27,7 +27,7 @@ export type Creation = {
 };
 
 export const uidOf = (kind: CreationKind, id: string, home: string) => `${kind}:${id}@${home}`;
-export const KIND_SAID: Record<CreationKind, string> = { sleep: "SLEEP SOUNDS", painting: "PAINTINGS", song: "SONGS" };   // DRAFT
+export const KIND_SAID: Record<CreationKind, string> = { sleep: "SLEEP SOUNDS", painting: "PAINTINGS", song: "SONGS", form: "FORMS" };   // DRAFT
 
 // a sleep piece (sleeptracks.ts SleepTrack) as a creation
 export type SleepRow = {

@@ -8,7 +8,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { useApi } from "../../platform/useApi";
 import { Card, Eyebrow, Pending, Small } from "../../ui/ui";
 
-type Acts = { goals: number; tended: number; entries: number; dreams: number; actions?: number; learning?: number; cooked?: number };
+type Acts = { goals: number; tended: number; entries: number; dreams: number; actions?: number; learning?: number; cooked?: number; mine?: number };
 type Day = { day: string; date: string; virtue: string; shadow: string; today: boolean; ahead: boolean; lived: boolean; acts: Acts };
 type Balance = { days: Day[]; lived: number; today: { virtue: string; shadow: string; paid: boolean } };
 
@@ -16,7 +16,8 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 function what(a: Acts): string {                                                     // DRAFT
   const parts = [a.goals && plural(a.goals, "step"), a.tended && "the centre tended", a.entries && plural(a.entries, "entry", "entries"),
                  a.dreams && plural(a.dreams, "dream"), a.actions && plural(a.actions, "action item"),
-                 a.learning && plural(a.learning, "lesson or card", "lessons and cards"), a.cooked && plural(a.cooked, "meal cooked", "meals cooked")].filter(Boolean);
+                 a.learning && plural(a.learning, "lesson or card", "lessons and cards"), a.cooked && plural(a.cooked, "meal cooked", "meals cooked"),
+                 a.mine && `${a.mine} of your own`].filter(Boolean);
   return parts.join(", ");
 }
 

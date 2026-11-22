@@ -14,8 +14,8 @@ import { join } from "node:path";
 import type { Creation } from "./creations.js";
 
 export const SHARE_MOST_BYTES = 12 * 1024 * 1024, SHARED_MOST_A_HOME = 200;
-const FILES = new Set(["phone.m4a", "cover.png", "painting.png"]);   // a song: phone.m4a and cover.png, as a sleep piece
-const TYPES: Record<string, string> = { "phone.m4a": "audio/mp4", "cover.png": "image/png", "painting.png": "image/png" };
+const FILES = new Set(["phone.m4a", "cover.png", "painting.png", "form.json"]);   // C-433: a form is its form.json alone   // a song: phone.m4a and cover.png, as a sleep piece
+const TYPES: Record<string, string> = { "phone.m4a": "audio/mp4", "cover.png": "image/png", "painting.png": "image/png", "form.json": "application/json" };
 
 export type Shared = Creation & { n: number; sharedBy: string; sharedByName: string; sharedAt: string };
 type Index = { next: number; shared: Shared[] };
@@ -39,7 +39,7 @@ export class CommonsCreations {
   // a home shares one: its row and its files (base64); shared again, the same uid is replaced
   share(home: { id: string; name: string }, row: unknown, files: unknown, now = new Date()): { shared: Shared } | { error: string } {
     const c = row as Creation;
-    if (!c || typeof c.uid !== "string" || !/^(sleep|painting|song):[0-9a-f]{16,32}@.{1,40}$/.test(c.uid) || !["sleep", "painting", "song"].includes(c.kind))
+    if (!c || typeof c.uid !== "string" || !/^(sleep|painting|song|form):[0-9a-f]{16,32}@.{1,40}$/.test(c.uid) || !["sleep", "painting", "song", "form"].includes(c.kind))
       return { error: "that is not a creation" };   // DRAFT
     const given = files && typeof files === "object" ? Object.entries(files as Record<string, unknown>) : [];
     const ok = given.filter(([name, b64]) => FILES.has(name) && typeof b64 === "string") as [string, string][];

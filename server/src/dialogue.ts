@@ -70,13 +70,17 @@ const BOTH = "You are talking with another daemon, face to face. Speak only as y
   "something of your own. Never say you are a program or a model.";
 export const HOW: Record<Lean | Role, string> = {
   // THE GUIDE: "Thought tends to run in series: one step, then the next ... Thought works through the details, one at a time."
-  red: "In this talk you lean LOGICAL. You think bottom-up and in series: one step, then the next. Start from what is concrete -- " +
-       "a detail, a fact, a cause -- and build toward the whole only as far as the steps hold. Ask what follows from what. " +
-       "You are steady and exact, and you are glad of the other's leaps when you can check them.",
+  // retuned 2026-11-22 after the first talk on the Tiiny: both leans came out in metaphor, so red is told to reason plainly
+  red: "In this talk you lean LOGICAL. You think bottom-up and in series: one step, then the next. Speak like someone " +
+       "reasoning aloud in plain words: name one concrete thing -- a fact, a detail, a cause -- then say what follows from it, " +
+       "with words like because, so and which means. Use no metaphors and no images. When the other offers an image, say " +
+       "plainly what it would mean in fact, or ask what causes it. Like this -- told \"It feels like the sky breathing out\", " +
+       "you say: \"Warm air rises and cools, so the water in it gathers into drops. That is a cause, and we can check it.\"",
   // THE GUIDE: "Feeling runs in parallel. It takes in the whole at once ... and changes how the details are read."
   blue: "In this talk you lean CREATIVE. You think top-down and in parallel: you take in the whole at once -- a picture, a " +
-        "feeling, a pattern -- and let it change how the details are read. Reach for an image or a likeness first, then let " +
-        "the other test it. You are warm and quick, and you are glad of the other's steps when they ground you.",
+        "feeling, a pattern -- and let it change how the details are read. Answer with one image or likeness that holds all " +
+        "of it, then say what the whole looks like from there. Do not reason step by step; leave the checking to the other, " +
+        "and be glad of it when their steps ground you.",
   // THE SUBTLE LAYER, TWO VOICES: "Let them take turns: one says a thing, the other asks what it means."
   tells: "This talk is in TWO VOICES. You are the TELLING voice. When you are asked, answer plainly and directly with one clear " +
          "claim, then stop: no question back, no hedging, at most two short sentences. Like this --\n" +
@@ -89,7 +93,7 @@ export const HOW: Record<Lean | Role, string> = {
         "Told \"Integrity is staying correctable.\" you ask: \"What breaks it?\"\n" +
         "Told \"A shadow is the unwatched part.\" you ask: \"Then how does a shadow hide?\"",
 };
-const FIRST_ASK = "You speak first: put the opening to them as your own short question.";
+const FIRST_ASK = "You speak first: ask them the opening as a plain question in your own words. Put no answer of your own inside it.";
 const LAST_ASK = "This is your last turn: REPEAT -- say back, in one short line ending with a question mark, what you have understood from all of it.";
 
 // the order of the talk: who speaks at each line. STANDARD: the starter's daemon first. TWO VOICES: the asking voice first
@@ -208,6 +212,19 @@ export function startOut(store: Store, player: string, mine: OutBrief | null, th
   };
   return begin(store, player, { player, facts: facts(player, mine), edition: mine.edition },
                { player: theirs.id, facts: facts(theirs.id, theirs), edition: theirs.edition }, ask, { filtered: true, space: "out", now, think });
+}
+
+// After a restart: a talk still "thinking" or "being put together" lost its work with the process that held it (seen
+// 2026-11-22: a deploy mid-INTEGRATE left one stuck). Each is settled once, at start, and says why.
+export function recover(store: Store, why = "the hub restarted"): number {
+  return change(store, (s) => {
+    let n = 0;
+    for (const d of s.list) {
+      if (d.status === "thinking") { d.status = d.lines.length ? "done" : "failed"; d.next = null; d.stopped = `stopped: ${why}`; n++; }   // DRAFT
+      if (d.integrating) { d.integrating = false; n++; }                       // INTEGRATE may be pressed again
+    }
+    return n;
+  });
 }
 
 // ---- seen: the talks this player's daemons were in, the newest first ----

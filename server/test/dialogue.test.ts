@@ -172,3 +172,19 @@ describe("in dialogue within the household (C-329 on C-327's spaces)", () => {
     expect((post("/api/household/talks", {}).body as any).dialogues[0].id).toBe(t.id);
   });
 });
+
+describe("after a restart (C-329, 2026-11-22: a deploy mid-INTEGRATE left a talk stuck)", () => {
+  it("settles a talk left thinking or being put together, and says why", () => {
+    const hub = new Store(":memory:");
+    hub.setSetting("dialogue", JSON.stringify({ next: 3, cards: {}, list: [
+      { id: "t1", at: "2026-11-22T14:00:00Z", mode: "standard", turns: 1, prompt: "x", starter: "p1", space: "out", a: {}, b: {},
+        lines: [{ who: "a", said: "Hi.", at: "", by: "t" }], status: "thinking", next: "b" },
+      { id: "t2", at: "2026-11-22T14:01:00Z", mode: "standard", turns: 1, prompt: "x", starter: "p1", space: "out", a: {}, b: {},
+        lines: [{ who: "a", said: "Hi.", at: "", by: "t" }], status: "done", integrating: true }] }));
+    expect(D.recover(hub)).toBe(2);
+    const list = JSON.parse(hub.getSetting("dialogue")!).list;
+    expect(list[0]).toMatchObject({ status: "done", next: null, stopped: "stopped: the hub restarted" });
+    expect(list[1].integrating).toBe(false);
+    expect(D.recover(hub)).toBe(0);
+  });
+});

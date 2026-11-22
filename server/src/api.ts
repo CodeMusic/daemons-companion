@@ -73,7 +73,7 @@ import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tii
 import { ENTRY_VOICE, INDEX_VOICE, voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation; C-387: the INDEX's and the entry's too
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
-import { setDialogueThinker } from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
+import { recover as recoverDialogues, setDialogueThinker } from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
 import { playerContextOf } from "./playervoice.js";        // C-323: the player's, from their save
 import { preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
@@ -1019,6 +1019,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-329: DAEMONS IN DIALOGUE -- each line thought by the Tiiny's quick thinker first (someone is watching the dots), then
   // the player's endpoints, then the house's write-up path; INTEGRATE is a write-up (the Tiiny's big thinker first), a
   // task in THE MIND's ledger
+  recoverDialogues(store);                                   // C-329: talks a restart cut short, settled
   setDialogueThinker(async (system, user, most) => {
     const t = tiinyNow();
     if (t) try { return { text: await tiinyChat(t.at, t.quick || t.model, system, [], user, fetch, 60_000, most), by: `tiiny:${t.quick || t.model}` }; } catch { /* the next mind */ }

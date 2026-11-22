@@ -17,6 +17,25 @@ commit by path, push, close it in Redmine.
 3. **C-469 NOW shows it** -- the mind portal's NOW lists what the daemon has in mind.
 4. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-11: "not yet").
 
+## Today's goals -- 2026-11-22, the app (a second loop)
+
+*The user, 2026-11-22: "plan a goal loop for today, app focused".* Beside the WORKING MEMORY loop above, never on its
+ground: C-469 and C-432 are that session's, and so is daemons-praxis while it changes. Worked top down: build, test,
+deploy the hub, commit by path, push, close in Redmine.
+
+1. **C-470 your daemon, not the save's first** -- a request that names no device is answered with the daemon of the
+   device used most recently (or one named in SETTINGS), not the save's first away: the site in a browser stops
+   flipping to OVERLOADED, and MENTIONS are written by your daemon (the first DAILY MENTIONS, 2026-11-22, was
+   OVERLOADED's).
+2. **C-455 the reviews, closed** -- the first DAILY MENTIONS was written on the hub at 02:00 (the Tiiny, in the
+   daemon's voice), which is what it waited on; once C-470 has it written by the right daemon, closed.
+3. **C-419 (3) PLAY summons** -- the instrument's freestyle recognises a daemon's song in its key and the daemon comes
+   (the game's T-598 is closed); its QUOTATION is said once T-599 has written them, kept in the INDEX.
+4. **Yours to check, then closed** -- C-456 DREAM-BOOKS (a look in the LIBRARY), C-423 (a battle's end sings what each
+   song learned: hear it once), C-364 and C-365 (the phone test, guided).
+5. **C-454 RESEARCH, first slice** -- a study with its hypothesis, expert, sources, talk and findings, drawing on the
+   journal and GOALS (docs/RESEARCH.md) -- last, once C-432 and C-469 have landed in PRAXIS.
+
 ## Today's goals -- 2026-11-18, THE ENGINE ROOM
 
 *The user, 2026-11-18: "run your goal loop".* The Engine Room lane's sweep first: THE HANDS answering (last seen within

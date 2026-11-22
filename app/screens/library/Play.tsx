@@ -9,6 +9,9 @@
 // sprites, art/play_notes.png); the last sixteen notes are listened to -- a learned song's notes in its key and order
 // (octave and tempo do not count) join and it echoes; the right shape in another key is ALMOST. A heard song can be
 // practised here; only the game learns it. Every word DRAFT.
+// C-419 (3), DAEMONS T-598: PLAY FREELY also listens for a daemon's OPENING on its key's wheel -- one the INDEX has seen
+// comes, sings its part, and goes on its way: never caught, never a battle; kept (POST /api/play/summoned) so the INDEX
+// can say its QUOTATION once T-599 has written them.
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Image, PanResponder, Platform, View } from "react-native";
 import { createAudioPlayer, RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder,
@@ -17,11 +20,15 @@ import { Text, XStack, YStack } from "tamagui";
 import { previewQuery } from "../../state/preview";
 import { soundOf } from "../../sound/tuneSound";
 import { noteVoices, type NoteVoices } from "../../sound/noteVoices";
-import { Action, Card, Eyebrow, PIXELATED, Small } from "../../ui/ui";
+import { Action, Art, Card, Eyebrow, PIXELATED, Small } from "../../ui/ui";
+import { SONGS, summonHeard, summonsFor, type Summon } from "../../../server/src/ownsong";
+import { ownSongUri, partMs } from "../../sound/ownSong";
+import { api } from "../../platform/net";
 import { useApi } from "../../platform/useApi";
 
 type Song = { id: string; title: string; key: string; notes: string[]; frames: number[]; learned: boolean; heard: boolean };
-type PlayData = { instrument: "harp" | "flute"; unlocked: boolean; keys: string[]; keyColours: string[]; outline: string; songs: Song[] };
+type PlayData = { instrument: "harp" | "flute"; unlocked: boolean; keys: string[]; keyColours: string[]; outline: string; songs: Song[];
+                  summonable?: number[]; summoned?: { species: number; at: string }[] };   // C-419 (3)
 
 const SCALE = [0, 2, 4, 5, 7, 9, 11, 12];             // a major key's eight degrees
 const LETTER: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
@@ -151,6 +158,10 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
   const echo = useRef<AudioPlayer | null>(null);
   const nextId = useRef(0);
   const ms = harp ? HARP_MS : FLUTE_MS;
+  // C-419 (3): the daemons that may come to their song here -- only while playing freely
+  const summons = useMemo(() => (song ? [] : summonsFor(p.summonable ?? [])), [song, p.summonable]);
+  const [came, setCame] = useState<{ species: number; ms: number } | null>(null);
+  const cameRef = useRef(false);
 
   // the notes' sounds, made for this key and octave before they are needed (a tap must not wait for one to be made);
   // C-294: a few players a pitch, each kept waiting at its start, so every note shown is heard (sound/noteVoices.ts)
@@ -178,12 +189,34 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
     heardRef.current = now; setPlayed(now);
     const listen = song ? [song] : p.songs.filter((s) => s.learned);
     const h = hear(now, listen);
-    if (!h) return;
+    if (!h) {
+      const c = cameRef.current ? null : summonHeard(keyAt, now, summons);   // C-419 (3): a daemon's opening, and it comes
+      if (c) summon(c);
+      return;
+    }
     if (h.almost) { setSaid(`ALMOST: that is ${h.song.title}, in another key.`); return; }
     heardRef.current = []; setPlayed([]);
     if (!h.song.learned) { setSaid(`That is ${h.song.title}. Play it back in the game to learn it.`); return; }
     setSaid("");
     joinAndEcho(h.song);
+  };
+  // C-419 (3): it flickers in over the instrument, sings its whole part (its notes rising from it in their colours), and
+  // goes on its way. Its QUOTATION is said here once T-599 has written them; until then, nothing is said for it.
+  const summon = (c: Summon) => {
+    heardRef.current = []; setPlayed([]); cameRef.current = true;
+    const part = SONGS.parts[String(c.species)], sung = part ? partMs(part) : 0, all = 900 + sung + 1600;
+    setCame({ species: c.species, ms: all }); setSaid(`${c.name} came to its song.`);
+    api("/api/play/summoned", { species: c.species }).catch(() => {});
+    setTimeout(() => {
+      const uri = part ? ownSongUri(part, 1) : null;
+      if (uri) { echo.current?.remove(); echo.current = createAudioPlayer({ uri }); echo.current.play(); }
+      let at = 0;
+      for (const [m, beats] of part?.notes ?? []) {
+        setTimeout(() => setFloats((f) => [...f.slice(-12), { id: nextId.current++, pcAt: pc(m), x: w / 2, y: H * 0.34 }]), at);
+        at += (beats * 60000) / part!.bpm;
+      }
+    }, 900);
+    setTimeout(() => { setSaid(`${c.name} went on its way.`); setCame(null); cameRef.current = false; }, all);
   };
   const joinAndEcho = (s: Song) => {
     const tune: [number, number][] = s.notes.map((n, i) => [midiOf(n) ?? 60, Math.round(((s.frames[i] ?? 15) * 1000) / 60)]);
@@ -299,6 +332,7 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
           <Text key={`n${d}`} allowFontScaling={false} pointerEvents="none" position="absolute" fontFamily="$mono" fontSize={11} color="#9aa0aa"
                 left={harp ? ((d + 0.5) * w) / 8 - 4 : ((d % 4) + 0.5) * (w / 4) - 4} top={harp ? H - 14 : (d < 4 ? H * 0.28 : H * 0.72) - 7}>{d + 1}</Text>
         ))}
+        {came ? <Came species={came.species} ms={came.ms} top={H * 0.1} /> : null}
         {floats.map((f) => <Floating key={f.id} pcAt={f.pcAt} x={f.x} y={f.y} onDone={() => setFloats((all) => all.filter((o) => o.id !== f.id))} />)}
       </View>
       {!harp ? (
@@ -322,6 +356,20 @@ function Instrument({ p, song, keyAt, onKey, onSongs }: { p: PlayData; song: Son
         <Action label="‹ SONGS" onPress={onSongs} />
       </XStack>
     </Card>
+  );
+}
+
+// C-419 (3): a daemon come to its song, over the instrument -- it flickers in, stays while it sings, and fades as it goes
+function Came({ species, ms, top }: { species: number; ms: number; top: number }) {
+  const t = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const flick = (to: number, d: number) => Animated.timing(t, { toValue: to, duration: d, useNativeDriver: true });
+    Animated.sequence([flick(0.6, 120), flick(0.1, 120), flick(1, 420), Animated.delay(Math.max(0, ms - 1500)), flick(0, 840)]).start();
+  }, [t, ms]);
+  return (
+    <Animated.View pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top, alignItems: "center", opacity: t }}>
+      <Art path={`/art/species/${species}.png`} size={112} />
+    </Animated.View>
   );
 }
 

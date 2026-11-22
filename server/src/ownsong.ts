@@ -27,10 +27,37 @@ interface Songs {
   window: number; static: { candidates: number[]; floor: number }; colours: Record<string, string[]>; binary: string;
   keys: Record<string, { tonic: number; minor: boolean; name: string; why: string }>;
   parts: Record<string, SongPart>; songs: Record<string, string[]>;
+  summons?: Record<string, [number, (number | null)[]]>;  // C-419 (3): T-598's openings -- [its key wheel, pitch classes]
 }
 export const SONGS = songsJson as unknown as Songs;
 
-export const TRAINS_A_DAY = 3, TRAIN_DAYS = 14;           // the user's pick: about two weeks, three TRAINs a day
+export const TRAINS_A_DAY = 3, TRAIN_DAYS = 14;
+
+// C-419 (3), DAEMONS T-598 (the user, 2026-11-18: "if you select to play your musical instrument in freestyle mode, if u
+// select the right key and play a daemons song it should be recognized, I imagine it would summon that daemon -- but it
+// shouldnt be a way to catch it ... he should read you a special quotation"): PLAY FREELY listens, as the game's PLAY
+// does (src/daemon_song.c DaemonSong_Listen), for what was played to END with a daemon's OPENING -- the first notes of its
+// own part, lengthened where two would be confused (DAEMONS tools/gensongs.py: songs.json's summons) -- octave-blind, on
+// its key's wheel (a minor song on its relative major's). A note the wheel cannot play (null) is any note. Only a daemon
+// the INDEX has seen comes; the openings are unique, so a match on one not yet seen is nothing. DRAFT, every note.
+export type Summon = { species: number; name: string; wheel: number; notes: (number | null)[] };
+export const SUMMON_MAX = 16;                             // the notes PLAY listens back over, as the game's ring
+export function summonsFor(seen: Iterable<number>): Summon[] {
+  const ok = new Set(seen), out: Summon[] = [];
+  for (const [id, [wheel, notes]] of Object.entries(SONGS.summons ?? {}))
+    if (ok.has(Number(id))) out.push({ species: Number(id), name: SONGS.parts[id]?.name ?? "", wheel, notes });
+  return out;
+}
+/** The daemon whose opening ends what was played (MIDI notes, oldest first) on this key wheel (0 C .. 11 B), or null. */
+export function summonHeard(wheel: number, played: number[], from: Summon[]): Summon | null {
+  const ring = played.slice(-SUMMON_MAX).map((m) => ((m % 12) + 12) % 12);
+  for (const s of from) {
+    if (s.wheel !== wheel || s.notes.length > ring.length) continue;
+    const tail = ring.slice(-s.notes.length);
+    if (s.notes.every((n, i) => n === null || n === tail[i])) return s;
+  }
+  return null;
+}           // the user's pick: about two weeks, three TRAINs a day
 
 /** A species' song: its line's parts, oldest first (none for a species with no song). */
 export const songOf = (species: number | string): SongPart[] =>

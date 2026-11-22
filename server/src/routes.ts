@@ -33,7 +33,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./save/index.js";
-import { artName, awayNow, careGiven, indexSongs, songNow, trainSong, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
+import { indexOf, artName, awayNow, careGiven, indexSongs, songNow, trainSong, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -45,7 +45,7 @@ import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";
 import { centreOf, checkNight, dayOfDream, dreamBooks, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf; T-531: dayOfDream; C-412: centreOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd, evolvedOf } from "./evolve.js";
-import { songOf, SONGS } from "./ownsong.js";   // C-418
+import { songOf, SONGS, summonsFor } from "./ownsong.js";   // C-418; C-419 (3): summonsFor
 import { WAKES, wakesBy } from "./life.js";   // C-293: the cares that wake it, one list
 import { faceOf, openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches; C-357: its eyes, for THE MASK
 import { thriveOf } from "./thrive.js";   // C-207
@@ -66,7 +66,7 @@ import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
 import { BOOK as MENTIONS_BOOK, markRead, mentionsOf, newestUnread } from "./mentions.js";   // C-455
 const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/balance", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
-const POSTS = ["/api/household/swap", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
+const POSTS = ["/api/household/swap", "/api/play/summoned", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
 
 // Whether route() answers this request -- asked before the body is read, so a request is never read twice
 export function handles(method: string, path: string): boolean {
@@ -78,6 +78,12 @@ export function handles(method: string, path: string): boolean {
 const ok = (body: unknown, status = 200): Reply => ({ status, body });
 const no = (status: number, error: string, more: object = {}): Reply => ({ status, body: { error, ...more } });
 const NO_SAVE = "no save named -- set it in Settings";
+
+// C-419 (3): the daemons that have come to their song in PLAY FREELY, each the first time
+const SUMMONED = "play.summoned";
+function summonedOf(store: Store): { species: number; at: string }[] {
+  try { const v = JSON.parse(store.getSetting(SUMMONED) ?? "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
+}
 
 // C-327: each device's daemon, by device id, and the household spaces in use
 function householdView(h: Host, store: Store, now: Date) {
@@ -156,8 +162,13 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     if (path === "/api/play") {                                         // T-426: the instrument, held or not, and the songs
       const p = readPlay(save, h.edition);                              // ?preview=1, a bench check: as if held, every song learned
       const pv = a.query?.preview;                                      // (?preview=flute or harp: that instrument)
+      // C-419 (3): the daemons PLAY FREELY can call -- those the INDEX has seen (a preview too: it is the instrument that
+      // is as if held, not the INDEX) -- and those that have come to their song
+      let seen: number[] = [];
+      try { seen = indexOf(save, h.edition, now).entries.map((e) => e.species); } catch { seen = []; }
+      const summons = { summonable: seen, summoned: summonedOf(store) };
       return ok(pv ? { ...p, instrument: pv === "flute" || pv === "harp" ? pv : p.instrument, unlocked: true,
-                       songs: p.songs.map((x) => ({ ...x, learned: true, heard: false })) } : p);
+                       songs: p.songs.map((x) => ({ ...x, learned: true, heard: false })), ...summons } : { ...p, ...summons });
     }
     if (path === "/api/notebook") return ok(readNotebook(save));        // C-125: the pages held, readable here
     if (path === "/api/guide") return ok(readGuide(save, undefined, a.query?.preview === "1"));   // C-145: the GUIDE, once found (C-275: ?preview=1, as if held)
@@ -247,6 +258,18 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
   if (method === "POST") {
     // C-327: social within the household -- a swap of what two devices carry, two daemons in one space, and out of it.
     // A device names the other; its own is `a`, or the asker itself (?device=)
+    // C-419 (3): a daemon came to its song in PLAY FREELY -- kept, so the INDEX can say its QUOTATION once T-599 has
+    // written one. Never caught, never a battle; only one the INDEX has seen.
+    if (path === "/api/play/summoned") {
+      const sp = Number(b?.species), save = h.save.read();
+      if (!save) return no(400, NO_SAVE);
+      let seen = false;
+      try { seen = indexOf(save, h.edition, now).entries.some((e) => e.species === sp); } catch { seen = false; }
+      if (!seen || !summonsFor([sp]).length) return no(400, "summoned {species}: a daemon the INDEX has seen, with a song");   // DRAFT
+      const all = summonedOf(store);
+      if (!all.some((x) => x.species === sp)) store.setSetting(SUMMONED, JSON.stringify([...all, { species: sp, at: now.toISOString() }]));
+      return ok({ species: sp, name: SONGS.parts[String(sp)]?.name ?? "", quotation: null, summoned: summonedOf(store) });   // T-599: no words yet
+    }
     if (path === "/api/household/swap" || path === "/api/household/together") {
       const one = typeof b?.a === "string" ? b.a : deviceId, two = typeof b?.b === "string" ? b.b : "";
       const r = path.endsWith("swap") ? swap(store, awayNow(h), one, two) : together(store, one, two, now);

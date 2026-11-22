@@ -8,6 +8,7 @@ import { api } from "../../platform/net";
 import { useApi } from "../../platform/useApi";
 import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
 import { VoiceButton } from "../../ui/voiceButton";
+import { coverLine } from "./DreamBooks";
 
 export type Mention = { id: number; span: "day" | "month" | "season" | "year"; title: string; from: string; to: string; said: string; at: string;
                         species: number | null; nickname: string; state: "writing" | "done" | "failed"; body: string; by: string;
@@ -72,9 +73,9 @@ export function MentionsCover({ v, w, h }: { v: MentionsT; w: number; h: number 
   return (
     // positioned, so it stands over the shelf's own title (Bookcase's Standing lays that under every cover)
     <YStack position="relative" width={w} height={h} backgroundColor="#3a3420" alignItems="center" justifyContent="space-between" paddingVertical={18 * s} paddingHorizontal={8 * s}>
-      <Text fontFamily="$mono" fontSize={Math.max(8, 14 * s)} fontWeight="800" letterSpacing={1.2} color="#f3e6c4" textAlign="center" numberOfLines={3}>{v.book}</Text>
+      <Text fontFamily="$mono" {...coverLine(14, 8, s)} fontWeight="800" color="#f3e6c4" textAlign="center" numberOfLines={3}>{v.book}</Text>
       {newest?.species ? <Art path={`/art/species/${newest.species}.png`} size={Math.round(110 * s)} /> : <YStack />}
-      <Text fontFamily="$mono" fontSize={Math.max(7, 10 * s)} letterSpacing={1} color="#d9c78f">{`${v.mentions.length} ${v.mentions.length === 1 ? "LETTER" : "LETTERS"}`}</Text>
+      <Text fontFamily="$mono" {...coverLine(10, 7, s)} color="#d9c78f" textAlign="center" numberOfLines={1}>{`${v.mentions.length} ${v.mentions.length === 1 ? "LETTER" : "LETTERS"}`}</Text>
     </YStack>
   );
 }

@@ -53,18 +53,27 @@ export function Wash({ d, w, h, dark, children }: { d: Pick<BookDream, "id" | "d
   );
 }
 
+// A line of a cover drawn here, at `size` on a 320-tall cover, never under `min`: its line height and spacing go with
+// it. The mono face keeps a line about 23 tall whatever its size, and the spacing stayed full size, so on the shelf
+// (a cover about 80 x 112) a title's two lines and a month wrapped in two ran off the cover, the title off its top.
+export const coverLine = (size: number, min: number, s: number) => {
+  const f = Math.max(min, size * s);
+  return { fontSize: f, lineHeight: Math.round(f * 1.2), letterSpacing: Math.max(0.4, f * 0.09) };
+};
+
 // ---- the cover: its daemon over the month's first painting ----
 export function DreamCover({ v, w, h }: { v: DreamVolume; w: number; h: number }) {
   const first = v.dreams[0], colour = first?.dayColour || "#5a4a6a", s = h / 320;
   return (
-    <YStack width={w} height={h} backgroundColor={mix(colour, "#120c18", 0.55)}>
+    // positioned, so it stands over the shelf's own title (Bookcase's Standing lays that under every cover)
+    <YStack position="relative" width={w} height={h} backgroundColor={mix(colour, "#120c18", 0.55)}>
       {first ? <View style={{ position: "absolute", left: 0, top: 0 }}><Wash d={first} w={w} h={h} dark /></View> : null}
       <YStack position="absolute" top={0} left={0} right={0} bottom={0} alignItems="center" justifyContent="space-between" paddingVertical={18 * s} paddingHorizontal={8 * s}>
-        <Text fontFamily="$mono" fontSize={Math.max(9, 17 * s)} fontWeight="800" letterSpacing={1.5} color="#f3e6c4" textAlign="center" numberOfLines={2}>{v.title}</Text>
+        <Text fontFamily="$mono" {...coverLine(17, 9, s)} fontWeight="800" color="#f3e6c4" textAlign="center" numberOfLines={2}>{v.title}</Text>
         <Art path={`/art/species/${v.species}.png`} size={Math.round(120 * s)} />
         <YStack alignItems="center" gap={2 * s}>
-          <Text fontFamily="$mono" fontSize={Math.max(7, 11 * s)} letterSpacing={1.5} color="#e2c27c">{v.month}</Text>
-          <Text fontFamily="$mono" fontSize={Math.max(7, 10 * s)} letterSpacing={1} color="#cbbf9f">{`${v.dreams.length} ${v.dreams.length === 1 ? "DREAM" : "DREAMS"}`}</Text>
+          <Text fontFamily="$mono" {...coverLine(11, 7, s)} color="#e2c27c" textAlign="center" numberOfLines={1}>{v.month}</Text>
+          <Text fontFamily="$mono" {...coverLine(10, 7, s)} color="#cbbf9f" textAlign="center" numberOfLines={1}>{`${v.dreams.length} ${v.dreams.length === 1 ? "DREAM" : "DREAMS"}`}</Text>
         </YStack>
       </YStack>
     </YStack>

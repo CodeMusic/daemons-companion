@@ -1,9 +1,9 @@
 // C-297 (DAEMONS T-519): THE EUDAIMON LAYER, the third book's dawn half -- held only with the game's flag or as a preview,
 // no book or hour required; its observer's line as the lead daemon's SPIRITS would read it.
 import { describe, expect, it } from "vitest";
-import { observedSections, readEudaimon } from "../src/eudaimon.js";
+import { observedSections, readEudaimon } from "../src/library/eudaimon.js";
 import eudaimon from "../data/eudaimon.json" with { type: "json" };
-import { EUDAIMON_FLAG, savedEudaimon } from "../src/eudaimon.js";
+import { EUDAIMON_FLAG, savedEudaimon } from "../src/library/eudaimon.js";
 import { syncSave } from "../src/game/save/writer.js";
 import { buildSave } from "./build_save.js";
 

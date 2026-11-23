@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Store } from "../src/db.js";
-import { answerOf, askingVoice, groundedIn, guideAside, journalOf, keepAnswer, questionBack, subtleLine, subtlePages, todaysQuestion, type Day } from "../src/subtleask.js";
+import { answerOf, askingVoice, groundedIn, guideAside, journalOf, keepAnswer, questionBack, subtleLine, subtlePages, todaysQuestion, type Day } from "../src/library/subtleask.js";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/config.js";
 import { buildSave } from "./build_save.js";

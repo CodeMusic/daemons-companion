@@ -10,7 +10,7 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { FOUND_FFMPEG } from "./ai/voice.js";
+import { FOUND_FFMPEG } from "../ai/voice.js";
 
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
 // a shelf book (books.ts BookId) -> its recording's file (app/ui/bookAudio.tsx BOOKS)

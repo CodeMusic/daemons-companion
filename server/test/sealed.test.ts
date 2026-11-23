@@ -4,7 +4,7 @@
 // DAEMONS T-533: THE ORIGIN OF A DAEMON's whole-book recording opens with the last word of its own last page, as
 // tools/bookpdf.py's vault_key('origin', ...) reads it; its expected key is built here from the book's own text.
 import { describe, expect, it } from "vitest";
-import { keyOfBook, keyOfOrigin, keyOfWarning } from "../src/bookkeys.js";
+import { keyOfBook, keyOfOrigin, keyOfWarning } from "../src/library/bookkeys.js";
 import hermetic from "../data/hermetic.json" with { type: "json" };
 import eudaimon from "../data/eudaimon.json" with { type: "json" };
 import unity from "../data/unity.json" with { type: "json" };

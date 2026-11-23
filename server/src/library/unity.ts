@@ -9,10 +9,10 @@
 // either of their two forms"): the mended book keeps both halves inside it -- each of its sections can be re-read in
 // place as the night half words it (THE HERMETIC LAYER) or the dawn half (THE EUDAIMON LAYER). The lens below pairs
 // them: a section only the whole has (BALANCE, written at the crease) has no other reading; the rest pair in order.
-import unityJson from "../data/unity.json" with { type: "json" };
-import hermeticJson from "../data/hermetic.json" with { type: "json" };
-import eudaimonJson from "../data/eudaimon.json" with { type: "json" };
-import { LAYOUT, type Layout, type SpiritsClass } from "./game/save/reader.js";
+import unityJson from "../../data/unity.json" with { type: "json" };
+import hermeticJson from "../../data/hermetic.json" with { type: "json" };
+import eudaimonJson from "../../data/eudaimon.json" with { type: "json" };
+import { LAYOUT, type Layout, type SpiritsClass } from "../game/save/reader.js";
 import { observe, savedFlag, type Section } from "./eudaimon.js";
 
 const U = unityJson as unknown as { title: string; subtitle: string; draft: boolean; flag: number | null; cover?: string; sections: Section[] };

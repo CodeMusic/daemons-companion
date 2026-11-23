@@ -2,7 +2,7 @@
 // either/any of these books, including notes"): READ ALOUD on a chapter of THE SUBTLE LAYER or the GUIDE, or a NOTEBOOK
 // page -- in the INDEX voice (POST /api/ai/speak), a paragraph at a time, each one asked for as the last ends, so a long
 // chapter starts at once. A paragraph past what the voice takes at once (600) is cut at its sentences, as the watch's
-// are (server/src/books.ts). Tapped again, it stops. Only where the voice is (ON_PHONE, with the companion behind it).
+// are (server/src/library/books.ts). Tapped again, it stops. Only where the voice is (ON_PHONE, with the companion behind it).
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { readingVoice } from "../platform/voiceFile";
 import { useEffect, useRef, useState } from "react";

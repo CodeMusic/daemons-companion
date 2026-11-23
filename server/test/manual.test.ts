@@ -1,7 +1,7 @@
 // C-233 on the devices: THE PLAYER'S MANUAL as chapters of plain words, from DAEMONS' manual.md
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { fetchManualText, manualText } from "../src/manual.js";
+import { fetchManualText, manualText } from "../src/library/manual.js";
 import { Store } from "../src/db.js";
 
 const MD = `# Welcome to DAEMONS {#welcome .t-CONTEXT}

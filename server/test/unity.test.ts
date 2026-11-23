@@ -2,9 +2,9 @@
 // preview; eleven sections, BALANCE at the crease after THE FOLDS; its ATTESTATION's observer's line as the lead reads it.
 import { describe, expect, it } from "vitest";
 import unity from "../data/unity.json" with { type: "json" };
-import { LENS_DAWN, LENS_NIGHT, readUnity, savedUnity, UNITY_FLAG } from "../src/unity.js";
+import { LENS_DAWN, LENS_NIGHT, readUnity, savedUnity, UNITY_FLAG } from "../src/library/unity.js";
 import eudaimon from "../data/eudaimon.json" with { type: "json" };
-import { savedEudaimon } from "../src/eudaimon.js";
+import { savedEudaimon } from "../src/library/eudaimon.js";
 import profile from "../data/profile_layout.json" with { type: "json" };
 import { buildSave } from "./build_save.js";
 

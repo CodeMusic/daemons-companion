@@ -18,8 +18,8 @@ const TABLE = (() => {
 const crc = (c: number, b: number) => (TABLE[(c ^ b) & 0xff] ^ (c >>> 8)) >>> 0;
 
 // the keys: read from each torn book's own first entry, and THE ORIGIN OF A DAEMON's from its last page (T-533)
-// (server/src/bookkeys.ts, where a test can reach them)
-export { keyOfBook, keyOfOrigin, keyOfWarning, type SealedBook, type TornBook } from "../../server/src/bookkeys";
+// (server/src/library/bookkeys.ts, where a test can reach them)
+export { keyOfBook, keyOfOrigin, keyOfWarning, type SealedBook, type TornBook } from "../../server/src/library/bookkeys";
 
 // Every file in the zip, opened with the key: { name: bytes }. Throws "wrong key" before any bytes are kept, or when a
 // file's CRC does not match. `rest` is given the chance to breathe between pieces, so a phone's screen keeps moving.

@@ -5,9 +5,9 @@
 // them -- a list of chapters, then one chapter as plain paragraphs, each short enough to be read aloud in one go (the
 // INDEX voice takes 600 characters at a time). A book not yet found is not listed (a find stays findable blind, T-297);
 // the NOTEBOOK's chapters are its pages that have words. No node: imports (a phone hosting alone serves them too).
-import type { Guide } from "./game/save/guide.js";
-import type { Subtle } from "./game/save/subtle.js";
-import type { Notebook } from "./game/save/notebook.js";
+import type { Guide } from "../game/save/guide.js";
+import type { Subtle } from "../game/save/subtle.js";
+import type { Notebook } from "../game/save/notebook.js";
 import type { Hermetic } from "./hermetic.js";
 
 export type BookId = "subtle" | "guide" | "notebook" | "hermetic";   // C-238: hermetic

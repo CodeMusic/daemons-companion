@@ -4,8 +4,8 @@
 // paragraphs: the formatting taken out, a table read row by row ("you knew: here it is"), and the build's own pieces
 // (screens, the patch list) left out -- they are pictures and tables the PDF prints. Kept by its ETag, so a device asking
 // again costs one HEAD. No node: imports.
-import type { Store } from "./store.js";
-import patchesJson from "../data/patches.json" with { type: "json" };
+import type { Store } from "../store.js";
+import patchesJson from "../../data/patches.json" with { type: "json" };
 
 export const MANUAL_MD = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/manual/manual.md";
 export type ManualSection = { title: string; paragraphs: string[] };

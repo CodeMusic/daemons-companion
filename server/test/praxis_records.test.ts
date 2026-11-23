@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { actionDone, meetingOf, meetingsOf, startMeeting, MEETINGS } from "../src/lifemanagement/meetings.js";
 import { newVoiceNote, noteHeard, voiceNotesOf, forgetVoiceNote } from "../src/lifemanagement/voicenotes.js";
-import { journalOf as answersOf, keepAnswer } from "../src/subtleask.js";
+import { journalOf as answersOf, keepAnswer } from "../src/library/subtleask.js";
 import { DAY_VIRTUE, spaceOf } from "../src/lifemanagement/practice.js";
 import { journalOf, journalsOf, keepEntry, newJournal, removeEntry, summarize, JOURNAL } from "../src/lifemanagement/journal.js";
 

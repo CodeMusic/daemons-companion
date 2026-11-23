@@ -10,10 +10,10 @@
 // The line is the book's own sentence, drawn from the page nearest the question -- no model needed, so it answers on a
 // phone alone and with no hub; where the hub's module is, it may say the line in its own words instead (api.ts). The
 // questions are written. Every word DRAFT. No node: imports (it runs on the phone, hosting alone).
-import type { Subtle } from "./game/save/subtle.js";
-import type { Store } from "./store.js";
+import type { Subtle } from "../game/save/subtle.js";
+import type { Store } from "../store.js";
 import { Praxis, type Form, type Item } from "@daemons/praxis";
-import { ensureSpace } from "./lifemanagement/practice.js";
+import { ensureSpace } from "../lifemanagement/practice.js";
 import { guidePages } from "./guideask.js";
 
 export type Day = { day: string; chakra: string; note: string; theme: string };

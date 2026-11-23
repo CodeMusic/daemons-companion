@@ -7,12 +7,12 @@
 // SUBTLE LAYER both held; and here, with no other book -- the first time the hour is seen in the app or on a device a
 // message says what is happening, and acknowledging it opens the book here and writes the game's flag at the next SYNC
 // (FLAG_GOT_HERMETIC_LAYER, DAEMONS T-483). A preview, as the other two have. Every word DRAFT. No node: imports.
-import hermeticJson from "../data/hermetic.json" with { type: "json" };
-import layoutJson from "../data/profile_layout.json" with { type: "json" };
-import { blocks, LAYOUT, type Layout } from "./game/save/reader.js";
-import { flagReader } from "./game/save/profile.js";
-import type { Store } from "./store.js";
-import { witchingNow } from "./witching.js";
+import hermeticJson from "../../data/hermetic.json" with { type: "json" };
+import layoutJson from "../../data/profile_layout.json" with { type: "json" };
+import { blocks, LAYOUT, type Layout } from "../game/save/reader.js";
+import { flagReader } from "../game/save/profile.js";
+import type { Store } from "../store.js";
+import { witchingNow } from "../witching.js";
 
 type Para = { text: string; voice: "telling" | "asking"; inscription?: boolean };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };

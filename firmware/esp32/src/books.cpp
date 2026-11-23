@@ -1,7 +1,7 @@
 // C-208 (the user, 2026-10-28: "you should be able to read both of these books from the watch ultra also ... hit a
 // button allowing the watch or app to read you the selected chapter aloud"; by multiple choice: THE SUBTLE LAYER, the
 // GUIDE and the NOTEBOOK): BOOKS, on the watches. The books the save holds come from the companion (GET /api/books,
-// server/src/books.ts -- a book not yet found is not there), then a chapter at a time (GET /api/book): its words, a page
+// server/src/library/books.ts -- a book not yet found is not there), then a chapter at a time (GET /api/book): its words, a page
 // a swipe, and LISTEN -- the chapter read aloud in the INDEX voice, a paragraph at a time (talkReadText; a tap or the
 // crown stops it between paragraphs). C-199: on the Ultra each is kept on its SD card as it is read (or all at once,
 // KEEP ON THE CARD), so away from any network BOOKS opens from the card -- only LISTEN needs the companion. Every word DRAFT.

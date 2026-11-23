@@ -1,6 +1,6 @@
 // C-331 (1): a chapter's span in a book's recording, found by its title as the shelf names it
 import { describe, expect, it } from "vitest";
-import { RECORDED, spanOf, titleKey } from "../src/bookrecordings.js";
+import { RECORDED, spanOf, titleKey } from "../src/library/bookrecordings.js";
 
 const marks = { sources: "abc", chapters: [
   { kind: "section", title: "Introduction", start: 10.27, end: 13.03 },

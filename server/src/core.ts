@@ -9,11 +9,11 @@ import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./store.js";
 import { readAway, readBoxes, readSave, type Sounding } from "./game/save/reader.js";
-import { savedUnity } from "./unity.js";            // C-312: the aurora waits on the mending
+import { savedUnity } from "./library/unity.js";            // C-312: the aurora waits on the mending
 import { conjugateLight } from "./aurora.js";       // C-312: and both lines on the other edition's daemon
 import { readProfile } from "./game/save/profile.js";
 import { HOUSE_AT, syncSave } from "./game/save/writer.js";
-import { firstSight, HERMETIC_FLAG, readHermetic, spellcraftToWrite } from "./hermetic.js";   // C-238
+import { firstSight, HERMETIC_FLAG, readHermetic, spellcraftToWrite } from "./library/hermetic.js";   // C-238
 import { halloweenView } from "./halloween.js";   // C-240
 import { season } from "./seasons.js";
 import { gameRoutines } from "./paint.js";

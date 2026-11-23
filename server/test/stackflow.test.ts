@@ -7,7 +7,7 @@ import { House, type TalkAsk } from "../src/ai/house.js";
 import { LATE } from "../src/ai/module.js";
 import { firstSentences, StackFlow } from "../src/ai/stackflow.js";
 import { fakeModule } from "./fake_module.js";
-import { GUIDE_SETUP } from "../src/guideask.js";
+import { GUIDE_SETUP } from "../src/library/guideask.js";
 
 const seen: { action: string; data?: any; work_id?: string }[] = [];
 let n = 1000;

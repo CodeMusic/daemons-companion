@@ -3,7 +3,7 @@
 // book prints it). TWO VOICES, its own entry ("one says a thing, the other asks what it means"), answers only in that
 // asking voice, a turn at a time. Typed, or held and spoken on a phone; what it says is read aloud where the voice is.
 // And TODAY'S QUESTION: one a day, set in the day's centre, word and note, the answer kept in a journal "with the day and
-// the centre" (TRUE OR NOT). Answered by the companion (server/src/subtleask.ts), on a phone alone too. Every word DRAFT.
+// the centre" (TRUE OR NOT). Answered by the companion (server/src/library/subtleask.ts), on a phone alone too. Every word DRAFT.
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder } from "expo-audio";
 import { File } from "expo-file-system";
 import { useEffect, useState } from "react";

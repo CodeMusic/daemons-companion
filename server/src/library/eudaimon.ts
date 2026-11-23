@@ -6,9 +6,9 @@
 // wordings, chosen by the lead daemon's SPIRITS (C-296) -- who looks changes what is read.
 // Held once the save holds it (its flag, null until the game places the half), or as a preview. No book requires
 // another, and no hour is a gate (the user, 2026-11-02). Every word DRAFT. No node: imports.
-import eudaimonJson from "../data/eudaimon.json" with { type: "json" };
-import { blocks, LAYOUT, type Layout, type SpiritsClass } from "./game/save/reader.js";
-import { flagReader } from "./game/save/profile.js";
+import eudaimonJson from "../../data/eudaimon.json" with { type: "json" };
+import { blocks, LAYOUT, type Layout, type SpiritsClass } from "../game/save/reader.js";
+import { flagReader } from "../game/save/profile.js";
 
 type Readings = { good: string; as_is: string; low: string };
 type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer"; readings?: Readings };

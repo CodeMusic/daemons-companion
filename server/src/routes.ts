@@ -13,13 +13,13 @@ import { readPlan, readWild } from "./game/planner.js";   // C-191
 import { casinoPending, clampMoney, tableFor } from "./game/casino.js";
 import actsJson from "../data/acts.json" with { type: "json" };
 import { readGuide } from "./game/save/guide.js";
-import { bookList, booksOf, chapterOf } from "./books.js";   // C-208: the books held, as a board reads them
+import { bookList, booksOf, chapterOf } from "./library/books.js";   // C-208: the books held, as a board reads them
 import { readNotebook } from "./game/save/notebook.js";
 import { readProgress } from "./game/save/progress.js";
 import { readPlay } from "./game/save/play.js";
 import { readSubtle } from "./game/save/subtle.js";
 import { howOf, MASK_UNDER, maskOf, readsView, seeRead, takeLean, takeRead } from "./intuition.js";   // C-203; C-357: RECOGNITION, THE MASK
-import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./subtleask.js";   // C-229, C-230
+import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./library/subtleask.js";   // C-229, C-230
 import { tend, tendingView } from "./lifemanagement/tending.js";
 import { weekBalance } from "./lifemanagement/balance.js";   // C-432
 import { editReward, removeReward, shelfView, spend, stock, unspend } from "./lifemanagement/rewards.js";   // C-433
@@ -61,10 +61,10 @@ import { apart, partnerIn, spaceOf, spaces as householdSpaces, swap, together } 
 import * as Dialogue from "./dialogue.js";   // C-329: two daemons of the household in dialogue
 import { dayFacts, speciesFacts } from "./ai/personaof.js";   // C-329
 import { carriedFor } from "./carry.js";   // C-329
-import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./hermetic.js";   // C-238
-import { readEudaimon } from "./eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
-import { readUnity } from "./unity.js";
-import { readOrigin } from "./originbook.js";   // DAEMONS T-533: THE ORIGIN OF A DAEMON
+import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./library/hermetic.js";   // C-238
+import { readEudaimon } from "./library/eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
+import { readUnity } from "./library/unity.js";
+import { readOrigin } from "./library/originbook.js";   // DAEMONS T-533: THE ORIGIN OF A DAEMON
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass

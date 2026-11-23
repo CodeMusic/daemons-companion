@@ -1,7 +1,7 @@
 // C-238: THE HERMETIC LAYER -- found here at the hour's first sight (acknowledged), or in the game; written to the save at SYNC.
 import { describe, expect, it } from "vitest";
 const { Store } = await import("../src/db.js");
-const { ackSpellcraft, firstSight, HERMETIC_FLAG, readHermetic, savedHermetic, spellcraftOf, spellcraftToWrite } = await import("../src/hermetic.js");
+const { ackSpellcraft, firstSight, HERMETIC_FLAG, readHermetic, savedHermetic, spellcraftOf, spellcraftToWrite } = await import("../src/library/hermetic.js");
 const { syncSave } = await import("../src/game/save/writer.js");
 const { buildSave } = await import("./build_save.js");
 

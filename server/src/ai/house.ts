@@ -9,7 +9,7 @@
 import { chat, hear, LATE, listModels, pickModels, speak, type ModuleModel } from "./module.js";
 import type { StackFlow, Thought } from "./stackflow.js";
 import type { WriteJob } from "./tiiny.js";   // C-319 next
-import { GUIDE_SETUP, guideQuestion } from "../guideask.js";   // C-209
+import { GUIDE_SETUP, guideQuestion } from "../library/guideask.js";   // C-209
 import { shortSelf } from "../self.js";   // C-252: the one short self
 
 export type ModuleAt = { url: string; name: string; found?: string };

@@ -91,7 +91,7 @@ import { readIndex } from "./game/save/index.js";
 import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
 import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./sing.js";   // C-387: its words
 import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type Creation } from "./creations.js";   // C-358; C-362
-import { BookRecordings } from "./bookrecordings.js";   // C-331 (1)
+import { BookRecordings } from "./library/bookrecordings.js";   // C-331 (1)
 import { GameMusic } from "./gamemusic.js";   // C-332
 import { FirmwareImages } from "./firmwareimages.js";   // C-335
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
@@ -109,7 +109,7 @@ import { praxisRoute } from "./praxissync.js";                      // C-431: PR
 import { Backup, backupFile, setVault, vaultOf } from "./backup.js";                    // C-434: the backup to THE VAULT, sealed
 import { KEYS } from "./keys.js";
 import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
-import { fetchManualText } from "./manual.js";   // C-233 on the devices
+import { fetchManualText } from "./library/manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./game/tradelink.js";
 import { accountsRelay } from "./accountslink.js";   // C-226
 import { BATTLE_PATHS, battleRoute } from "./game/battleroute.js";   // C-328
@@ -138,9 +138,9 @@ import { buildPersona, personaFresh, readPersona, signatureOf, skyLine, todayOf,
 import { imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
 import { comfyPaint, EASEL_HOST } from "./ai/comfy.js";   // C-387: the image door the painter is rendered through
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
-import { guidePages, guidePassages, keptToPage } from "./guideask.js";   // C-209
-import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./subtleask.js";   // C-229, C-230
-import { ackSpellcraft, readHermetic } from "./hermetic.js";   // C-238
+import { guidePages, guidePassages, keptToPage } from "./library/guideask.js";   // C-209
+import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./library/subtleask.js";   // C-229, C-230
+import { ackSpellcraft, readHermetic } from "./library/hermetic.js";   // C-238
 import { trickOrTreat } from "./halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./lifemanagement/voicenotes.js";   // C-199 (5)

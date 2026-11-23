@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/db.js";
 import { formToShare, itemDone, keepItem, makeSpace, mineView, saveForm, spaceView, takeForm, type MineForm } from "../src/lifemanagement/myforms.js";
-import { CommonsCreations } from "../src/commonscreations.js";
+import { CommonsCreations } from "../src/commons/commonscreations.js";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);

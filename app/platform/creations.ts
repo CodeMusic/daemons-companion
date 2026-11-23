@@ -1,10 +1,10 @@
 // C-358 (the user, 2026-11-14: "All created sleep sounds should be stored and served from the hub, but also downloaded to
-// your phone"): MINE -- the creations this device keeps (server/src/creations.ts says what a creation is). Each one's files
+// your phone"): MINE -- the creations this device keeps (server/src/commons/creations.ts says what a creation is). Each one's files
 // and its row live in the phone's documents, creations/<kind>/<id>/, so a night needs no network; downloaded from the
 // hub's HOUSEHOLD or through it from the COMMUNITY. On the site there are no files of its own: MINE is the list of what
 // was downloaded (kept in the browser), played from the hub. Every word DRAFT.
 import { Platform } from "react-native";
-import type { Creation } from "../../server/src/creations";
+import type { Creation } from "../../server/src/commons/creations";
 import { ON_PHONE, SERVER, TOKEN } from "./net";
 
 export type { Creation };

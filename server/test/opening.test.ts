@@ -4,12 +4,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { makeCommons, PUBLIC_MOST } from "../src/commons_api.js";
-import { accountsConfigFromEnv, safeOrigin, type AccountsConfig } from "../src/accounts_api.js";
+import { makeCommons, PUBLIC_MOST } from "../src/commons/commons_api.js";
+import { accountsConfigFromEnv, safeOrigin, type AccountsConfig } from "../src/commons/accounts_api.js";
 import { Store } from "../src/db.js";
-import { eraseIdle } from "../src/accounts_api.js";
-import { masked } from "../src/profiletrade.js";
-import * as A from "../src/accounts.js";
+import { eraseIdle } from "../src/commons/accounts_api.js";
+import { masked } from "../src/commons/profiletrade.js";
+import * as A from "../src/commons/accounts.js";
 import { ACCOUNT_KEYS } from "../src/keys.js";
 
 const servers: Server[] = [];

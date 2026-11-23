@@ -12,9 +12,9 @@
 // This is piece 1, the accounts themselves, on roverbyteseer beside the commons (accounts_api.ts); the exchange,
 // friends and THE COMMONS on profiles are piece 4 (profiletrade.ts). Tokens are kept only as hashes. No node: imports -- the keys are
 // the caller's, as exchange.ts's are.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import type { Keys, Result } from "./exchange.js";
-import namesJson from "../data/names.json" with { type: "json" };
+import namesJson from "../../data/names.json" with { type: "json" };
 
 const KEY = "accounts";
 export const SESSION_MS = 30 * 24 * 60 * 60 * 1000, CODE_MS = 15 * 60 * 1000, CHALLENGE_MS = 5 * 60 * 1000;

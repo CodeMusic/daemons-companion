@@ -1,6 +1,6 @@
 // C-226: ACCOUNTS from the app. The guardian's token and a kid's device's profile token are this device's own -- kept
 // in the phone's keychain (the site's storage on the web), never on the hub, which only passes each request to THE
-// COMMONS (server/src/accountslink.ts). Never kept offline either (net.ts NOT_KEPT): a sign-in is not replayed later.
+// COMMONS (server/src/commons/accountslink.ts). Never kept offline either (net.ts NOT_KEPT): a sign-in is not replayed later.
 import * as SecureStore from "expo-secure-store";
 import { requireOptionalNativeModule } from "expo-modules-core";
 import { api, KEEP, ON_PHONE } from "./net";

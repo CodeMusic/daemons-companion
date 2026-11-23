@@ -1,7 +1,7 @@
 // C-220: OUT TOGETHER -- two players' daemons out at once, meeting: the module's turns when it answers, written ones when
 // it does not, the goodbye always written; called back, and out no longer.
 import { describe, expect, it } from "vitest";
-import * as X from "../src/exchange.js";
+import * as X from "../src/commons/exchange.js";
 import * as M from "../src/together.js";
 import { exchangeRoute } from "../src/game/tradelink.js";
 import { Store } from "../src/db.js";

@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { makeServer } from "../src/api.js";
-import { makeCommons } from "../src/commons_api.js";
+import { makeCommons } from "../src/commons/commons_api.js";
 import { DEFAULTS } from "../src/config.js";
 import { Store } from "../src/db.js";
 import { expFor } from "../src/game/save/growth.js";

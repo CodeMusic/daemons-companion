@@ -4,7 +4,7 @@
 // the device's own -- the guardian's (the app keeps it in the phone's keychain or the site's storage) and a kid's
 // device's -- sent in the body as { guardian, profile, get, body }, never kept by the hub, and passed on as the
 // commons' headers. `get: true` asks with GET (the app's api() posts whenever it sends a body). No node: imports.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import { commonsOf } from "./commonslink.js";
 
 export type Relayed = { status: number; body: unknown };

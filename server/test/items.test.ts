@@ -5,7 +5,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/game/save/growth.js";
 import { syncSave } from "../src/game/save/writer.js";
 import { giftableItems, putItem, takeItem, PC_MAX, type Pockets, type Words } from "../src/game/save/items.js";
-import * as X from "../src/exchange.js";
+import * as X from "../src/commons/exchange.js";
 import { Store } from "../src/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 

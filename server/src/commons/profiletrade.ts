@@ -18,12 +18,12 @@
 // is not a friend (in offers, trades, OUT TOGETHER and shared dreams); and a daemon it trades, lends or gives to a
 // player who is not its friend arrives with both names rewritten (C-346, exchange.ts inbox: the species' name, and the
 // profile's first word as its trainer), so "+ HOME" and "+ LOBBY" reach past friends (NAMES_BLANKED). No node: imports.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import * as A from "./accounts.js";
 import * as C from "./commons.js";
 import * as X from "./exchange.js";
-import { exchangeRoute } from "./game/tradelink.js";
-import speciesJson from "../data/species.json" with { type: "json" };
+import { exchangeRoute } from "../game/tradelink.js";
+import speciesJson from "../../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string }>;
 // whether a traded daemon's names are blanked for a player who is not a friend (C-346) -- until they were, trades stayed with friends

@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
-    "commons": "tsx src/commons_main.ts",
+    "commons": "tsx src/commons/commons_main.ts",
     "vault": "tsx src/vault_main.ts"
   },
   "devDependencies": {

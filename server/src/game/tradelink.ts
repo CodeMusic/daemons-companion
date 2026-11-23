@@ -13,8 +13,8 @@ import type { TradeIn } from "./save/writer.js";
 import { readAway } from "./save/reader.js";
 import { giftableItems, pocketsOf } from "./save/items.js";   // C-223: an item given
 import { fromB64, gameId, gameOf, toB64, tradeRecord, type GameKey } from "./save/trade.js";
-import * as X from "../exchange.js";
-import { homeRoute } from "../commonslink.js";
+import * as X from "../commons/exchange.js";
+import { homeRoute } from "../commons/commonslink.js";
 import * as M from "../together.js";   // C-220: OUT TOGETHER
 import { dreamsOf } from "../dreams.js";   // C-223
 import * as D from "../dialogue.js";   // C-329: DAEMONS IN DIALOGUE

@@ -31,7 +31,7 @@
 //
 // Who the app is with each provider, and the passkeys' site, come from the environment (commons_main.ts): unset, sign-in
 // and passkeys say so rather than taking anything.
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import * as A from "./accounts.js";
 import { failed } from "./exchange.js";
 import { jwksFor, kidOf, PROVIDERS, verifyIdToken, type Provider } from "./idtoken.js";

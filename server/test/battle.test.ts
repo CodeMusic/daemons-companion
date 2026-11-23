@@ -9,7 +9,7 @@ import { battleCard } from "../src/game/save/battler.js";
 import { autoPick, battleExp, effectiveness, gameExp, resolve, say, start } from "../src/game/battle.js";
 import * as A from "../src/game/battles.js";
 import { battleRoute, type BoardSeen } from "../src/game/battleroute.js";
-import * as X from "../src/exchange.js";
+import * as X from "../src/commons/exchange.js";
 import { exchangeRoute, localLink, remoteLink, type Link } from "../src/game/tradelink.js";
 import { pendingExp } from "../src/core.js";
 import { learnedOf } from "../src/ownsong.js";

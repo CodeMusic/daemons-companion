@@ -6,7 +6,7 @@ import { expFor } from "../src/game/save/growth.js";
 import { blocks, LAYOUT, readAway, readBoxes, readSave, ORDERS, sectionSize, tradeBits } from "../src/game/save/reader.js";
 import { syncSave } from "../src/game/save/writer.js";
 import { arriving, describe as describeRecord, fromB64, toB64, tradeRecord } from "../src/game/save/trade.js";
-import * as X from "../src/exchange.js";
+import * as X from "../src/commons/exchange.js";
 import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, tradeRoute, type Link } from "../src/game/tradelink.js";
 import * as core from "../src/core.js";
 import { Store } from "../src/db.js";

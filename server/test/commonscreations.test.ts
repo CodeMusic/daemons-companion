@@ -3,8 +3,8 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { CommonsCreations, SHARE_MOST_BYTES } from "../src/commonscreations.js";
-import { sleepCreation } from "../src/creations.js";
+import { CommonsCreations, SHARE_MOST_BYTES } from "../src/commons/commonscreations.js";
+import { sleepCreation } from "../src/commons/creations.js";
 
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });

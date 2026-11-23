@@ -10,7 +10,7 @@
 // Trades themselves are exchange.ts's, on the commons' own store, with a REACH that allows the same home or friends.
 // The later path (docs/TRADING.md): personal accounts on a cloud service, nearby players and invite codes, a lobby.
 // No node: imports -- the keys are the caller's (commons_main.ts).
-import type { Store } from "./store.js";
+import type { Store } from "../store.js";
 import * as X from "./exchange.js";
 
 export interface Home { id: string; name: string; key: string; approved: boolean; code: string; friends: string[]; asks: string[]; at: string }

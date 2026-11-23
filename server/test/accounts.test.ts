@@ -4,10 +4,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { createHash, generateKeyPairSync, sign, type KeyObject } from "node:crypto";
-import { makeCommons } from "../src/commons_api.js";
+import { makeCommons } from "../src/commons/commons_api.js";
 import { Store } from "../src/db.js";
-import { verifyIdToken, type Jwks } from "../src/idtoken.js";
-import type { AccountsConfig } from "../src/accounts_api.js";
+import { verifyIdToken, type Jwks } from "../src/commons/idtoken.js";
+import type { AccountsConfig } from "../src/commons/accounts_api.js";
 
 const AUD = "ca.codemusic.daemons";
 const rsa = generateKeyPairSync("rsa", { modulusLength: 2048 });
@@ -164,7 +164,7 @@ describe("ACCOUNTS on the commons (accounts_api.ts)", () => {
 
 describe("ACCOUNTS through a home's hub (accountslink.ts), and the dev sign-in", () => {
   it("passes the device's tokens to the linked commons as headers, and asks with GET when told", async () => {
-    const { accountsRelay } = await import("../src/accountslink.js");
+    const { accountsRelay } = await import("../src/commons/accountslink.js");
     const store = new Store(":memory:");
     expect((await accountsRelay(store, "/api/accounts/me", {})).status).toBe(503);                 // no commons linked
     store.setSetting("commons.url", "http://commons.test"); store.setSetting("commons.key", "k");
@@ -178,7 +178,7 @@ describe("ACCOUNTS through a home's hub (accountslink.ts), and the dev sign-in",
     expect((await accountsRelay(store, "/api/accounts/../keeper", {}, f)).status).toBe(404);
   });
   it("signs a guardian in by name only where ACCOUNTS_DEV_SIGNIN is set, from the commons' own machine", async () => {
-    const { accountsRoute } = await import("../src/accounts_api.js");
+    const { accountsRoute } = await import("../src/commons/accounts_api.js");
     const { ACCOUNT_KEYS } = await import("../src/keys.js");
     const store = new Store(":memory:"), base = { audiences: { apple: [], google: [] }, rpId: null, origins: [] };
     const dev = { provider: "dev", sub: "scratch" };

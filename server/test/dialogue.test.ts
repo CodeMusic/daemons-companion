@@ -2,7 +2,7 @@
 // asking), 1 to 11 turns each, every line through the thinker with its persona and the form's HOW; filtered across
 // accounts; kept for both; INTEGRATE gives a titled write-up; the history's stamps and weeks.
 import { describe, expect, it } from "vitest";
-import * as X from "../src/exchange.js";
+import * as X from "../src/commons/exchange.js";
 import * as D from "../src/dialogue.js";
 import { cardOf, dayFacts, factsFrom, personaOf, speciesFacts } from "../src/ai/personaof.js";
 import { exchangeRoute } from "../src/game/tradelink.js";

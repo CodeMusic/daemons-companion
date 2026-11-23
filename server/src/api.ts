@@ -90,7 +90,7 @@ import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines
 import { readIndex } from "./game/save/index.js";
 import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
 import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./sing.js";   // C-387: its words
-import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type Creation } from "./creations.js";   // C-358; C-362
+import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type Creation } from "./commons/creations.js";   // C-358; C-362
 import { BookRecordings } from "./library/bookrecordings.js";   // C-331 (1)
 import { GameMusic } from "./gamemusic.js";   // C-332
 import { FirmwareImages } from "./firmwareimages.js";   // C-335
@@ -102,16 +102,16 @@ import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
 import { LATE } from "./ai/module.js";
 import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
-import * as X from "./exchange.js";                               // C-218, C-219: THE EXCHANGE
+import * as X from "./commons/exchange.js";                               // C-218, C-219: THE EXCHANGE
 import { takeBlob } from "@daemons/praxis";
 import { blobsBeside, sha256 as sha256hex } from "./blobstore.js";   // C-431: PRAXIS's blobs, by their SHA-256
 import { praxisRoute } from "./praxissync.js";                      // C-431: PRAXIS's SYNC
 import { Backup, backupFile, setVault, vaultOf } from "./backup.js";                    // C-434: the backup to THE VAULT, sealed
 import { KEYS } from "./keys.js";
-import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commonslink.js";   // C-222: THE COMMONS
+import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commons/commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./library/manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./game/tradelink.js";
-import { accountsRelay } from "./accountslink.js";   // C-226
+import { accountsRelay } from "./commons/accountslink.js";   // C-226
 import { BATTLE_PATHS, battleRoute } from "./game/battleroute.js";   // C-328
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";

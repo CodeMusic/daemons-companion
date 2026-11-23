@@ -2,8 +2,8 @@
 // password as scrypt (salted, never kept itself), and a code to read aloud (no 0/O or 1/I). node:crypto: never imported
 // by core.ts or routes.ts.
 import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
-import type { Keys } from "./exchange.js";
-import type { AccountKeys } from "./accounts.js";
+import type { Keys } from "./commons/exchange.js";
+import type { AccountKeys } from "./commons/accounts.js";
 
 const INVITE_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const KEYS: Keys = {

@@ -6,6 +6,10 @@
 // ITEMS kept there -- finished, paid by their kind's rule, and the day's virtue on the day's first finish. A changed
 // form is a new version, taken by every space made from it. Shared through THE COMMONS (api.ts) as a form alone, never
 // its items, and a friend's taken in as one's own. In MINE on JOURNEY. Every word the app shows is DRAFT.
+// C-476 (the user, 2026-11-22, by multiple choice, after testing: "States of your own"; first case: a BUGS space with its own
+// steps up to done): a kind may name its own STATES -- idea, planted, flowering, gone -- each one of PRAXIS's four phases
+// (open, doing, done, aside; never "failed"). It starts in its first; reaching a done-phase state pays its ARETE once per
+// finish, leaving one takes it back. A kind that names none keeps open, then done.
 import type { Store } from "../shared/store.js";
 import type { FieldDef, Form, Item, KindDef } from "@daemons/praxis";
 import { checkForm } from "@daemons/praxis";
@@ -13,9 +17,14 @@ import { dayVirtue, ensureSpace, midnight } from "./practice.js";
 
 export const FIELD_KINDS = ["text", "long", "number", "date", "rating", "choice"] as const;
 export type MineField = { key: string; title: string; type: (typeof FIELD_KINDS)[number]; choices?: string[] };
-export type MineKind = { key: string; title: string; fields: MineField[]; arete: number; cap: number };
+export const STATE_PHASES = ["open", "doing", "done", "aside"] as const;
+export type MineState = { key: string; title: string; phase: (typeof STATE_PHASES)[number] };
+export type MineKind = { key: string; title: string; fields: MineField[]; arete: number; cap: number; states?: MineState[] };
 export type MineForm = { id: string; title: string; about: string; version: number; kinds: MineKind[]; from: string | null };
-export const MOST = { title: 40, about: 300, kinds: 8, fields: 12, choices: 12, arete: 50, cap: 500, item: 200, value: 2000 };
+export const MOST = { title: 40, about: 300, kinds: 8, fields: 12, choices: 12, arete: 50, cap: 500, item: 200, value: 2000, states: 8 };
+// a kind's states when it names none -- the keys every form had before C-476, so its items keep their place
+export const OPEN_DONE: MineState[] = [{ key: "open", title: "To do", phase: "open" }, { key: "done", title: "Done", phase: "done" }];   // DRAFT
+export const statesOf = (k: { states?: MineState[] }) => (k.states?.length ? k.states : OPEN_DONE);
 
 const FORMS: Form = {
   name: "forms", version: 1,
@@ -48,7 +57,7 @@ export function praxisForm(f: MineForm): Form {
   for (const k of f.kinds) {
     const fields: Record<string, FieldDef> = {};
     for (const x of k.fields) fields[x.key] = { type: x.type, title: x.title, ...(x.type === "choice" ? { choices: x.choices ?? [] } : {}) };
-    kinds[k.key] = { title: k.title, states: [{ name: "open", phase: "open" }, { name: "done", phase: "done" }], fields };
+    kinds[k.key] = { title: k.title, states: statesOf(k).map((x) => ({ name: x.key, phase: x.phase, title: x.title })), fields };
   }
   return { name: formName(f.id), version: f.version, kinds, views: [{ name: "list" }],
            rules: f.kinds.map((k) => ({ kind: k.key, arete: k.arete, cap: k.cap, daemon: [] })) };
@@ -79,8 +88,30 @@ export function checkedKinds(raw: unknown): MineKind[] | string {
     }
     const arete = Math.max(0, Math.min(MOST.arete, Math.round(Number(r?.arete) || 0)));
     const cap = Math.max(arete, Math.min(MOST.cap, Math.round(Number(r?.cap) || arete * 5)));
-    out.push({ key, title, fields, arete, cap });
+    const states = checkedStates(r?.states, title);
+    if (typeof states === "string") return states;
+    out.push({ key, title, fields, arete, cap, ...(states ? { states } : {}) });
   }
+  return out;
+}
+// C-476: a kind's own states, checked -- none (open, then done), or 2 to 8, the first one not done, at least one done
+function checkedStates(raw: unknown, kind: string): MineState[] | null | string {
+  const list = Array.isArray(raw) ? raw.slice(0, MOST.states) : [];
+  if (!list.length) return null;
+  const used = new Set<string>(), out: MineState[] = [];
+  for (const r of list as Record<string, unknown>[]) {
+    const title = clean(r?.title, MOST.title);
+    if (!title) continue;
+    const phase = (STATE_PHASES as readonly string[]).includes(String(r?.phase)) ? (r.phase as MineState["phase"]) : "open";
+    let key = /^(s_[a-z0-9_]{1,40}|open|done)$/.test(String(r?.key ?? "")) ? String(r.key) : `s_${slug(title)}`;
+    while (used.has(key)) key += "_2";
+    used.add(key);
+    out.push({ key, title, phase });
+  }
+  if (!out.length) return null;
+  if (out.length < 2) return `${kind} needs at least two states`;                                   // DRAFT
+  if (out[0].phase === "done") return `${kind} cannot start done -- put a state before it`;          // DRAFT
+  if (!out.some((x) => x.phase === "done")) return `${kind} needs a state that counts as done`;      // DRAFT
   return out;
 }
 export function formsOf(store: Store): MineForm[] {
@@ -110,7 +141,16 @@ export function saveForm(store: Store, b: any): MineForm | string {
     if (had) { px.set(had.id, "title", title); px.set(had.id, "about", about); px.set(had.id, "definition", definition); }
     else id = px.make(formsSpace(store), "form", { title, about, definition, from: clean(b?.from, 120) });
     const f = praxisForm(asForm(px.item(id)!));
-    for (const sp of px.spaces().filter((x) => x.form?.name === f.name && !x.archived)) px.adopt(sp.id, f);
+    for (const sp of px.spaces().filter((x) => x.form?.name === f.name && !x.archived)) {
+      px.adopt(sp.id, f);
+      // C-476: an item whose state the new version took out goes to the first state of the same phase, else the first
+      for (const it of px.items(sp.id, { archived: false })) {
+        const states = f.kinds[it.kind]?.states;
+        if (!states || states.some((x) => x.name === it.state)) continue;
+        const to = states.find((x) => x.phase === it.phase) ?? states[0];
+        px.state(it.id, to.name);
+      }
+    }
   });
   return asForm(px.item(id)!);
 }
@@ -145,10 +185,11 @@ export function spaceView(store: Store, id: unknown) {
   if (!s) return null;
   const px = store.life.px, form = s.form!;
   const items = px.items(s.id, { archived: false }).sort((a, b) => Number(a.phase === "done") - Number(b.phase === "done") || b.made.localeCompare(a.made))
-    .map((i) => ({ id: i.id, kind: i.kind, title: i.title, done: i.phase === "done", fields: i.fields }));
+    .map((i) => ({ id: i.id, kind: i.kind, title: i.title, done: i.phase === "done", state: i.state, phase: i.phase, fields: i.fields }));
   const kinds = Object.entries(form.kinds).map(([key, k]) => ({ key, title: k.title,
     fields: Object.entries(k.fields ?? {}).map(([fk, fd]) => ({ key: fk, title: fd.title ?? fk, type: fd.type, choices: fd.choices })),
-    arete: ((form.rules ?? []) as { kind: string; arete: number }[]).find((r) => r.kind === key)?.arete ?? 0 }));
+    arete: ((form.rules ?? []) as { kind: string; arete: number }[]).find((r) => r.kind === key)?.arete ?? 0,
+    states: k.states.map((x) => ({ key: x.name, title: x.title ?? x.name, phase: x.phase })) }));
   return { id: s.id, title: s.title, kinds, items };
 }
 // an item kept, or (with id) changed: its title and the fields its kind has, each checked as its type is
@@ -190,22 +231,35 @@ export function keepItem(store: Store, b: any) {
   px.make(s.id, kind, { title, ...v });
   return spaceView(store, s.id);
 }
-// done: paid by its kind's rule under the day's cap, and the day's virtue; open again takes them back
-export function itemDone(store: Store, id: unknown, done: boolean, now = new Date(store.now())) {
+// C-476: an item into one of its kind's states. Into a done phase it is paid by its kind's rule under the day's cap, and
+// the day's virtue; out of one, they are taken back
+export function itemState(store: Store, id: unknown, state: unknown, now = new Date(store.now())) {
   const px = store.life.px, it = px.item(String(id ?? "")), s = it ? spaceIn(store, it.space) : null;
   if (!it || it.archived || !s) return "no such item";                                              // DRAFT
+  const to = s.form!.kinds[it.kind]?.states.find((x) => x.name === String(state ?? ""));
+  if (!to) return "that kind has no such state";                                                    // DRAFT
+  if (to.name === it.state) return spaceView(store, s.id);
   const rule = ((s.form!.rules ?? []) as { kind: string; arete: number; cap: number }[]).find((r) => r.kind === it.kind);
   px.transaction(() => {
-    if (done && it.phase !== "done") {
+    if (to.phase === "done" && it.phase !== "done") {
       const paid = px.ledger(s.id, { since: midnight(now.getTime()) }).filter((e) => e.op === "award" && !e.back && e.kind === it.kind && e.key.startsWith("finish:")).reduce((n, e) => n + e.points, 0);
-      px.state(it.id, "done", { pay: Math.max(0, Math.min(rule?.arete ?? 0, (rule?.cap ?? 0) - paid)), reason: "finish" });
+      px.state(it.id, to.name, { pay: Math.max(0, Math.min(rule?.arete ?? 0, (rule?.cap ?? 0) - paid)), reason: "finish" });
       dayVirtue(px, it.id, now);
-    } else if (!done && it.phase === "done") {
-      px.state(it.id, "open");
-      for (const e of px.ledger(s.id).filter((x) => x.item === it.id && !x.back && x.key.startsWith("virtue:"))) px.takeBack(it.id, "award", e.key);
+    } else {
+      px.state(it.id, to.name);
+      if (to.phase !== "done" && it.phase === "done")
+        for (const e of px.ledger(s.id).filter((x) => x.item === it.id && !x.back && x.key.startsWith("virtue:"))) px.takeBack(it.id, "award", e.key);
     }
   });
   return spaceView(store, s.id);
+}
+// done, or open again: the kind's first done-phase state, or its first state
+export function itemDone(store: Store, id: unknown, done: boolean, now = new Date(store.now())) {
+  const px = store.life.px, it = px.item(String(id ?? "")), s = it ? spaceIn(store, it.space) : null;
+  if (!it || it.archived || !s) return "no such item";                                              // DRAFT
+  const states = s.form!.kinds[it.kind]?.states ?? [];
+  const to = done ? states.find((x) => x.phase === "done") : states[0];
+  return to ? itemState(store, id, to.name, now) : "that kind has no such state";                   // DRAFT
 }
 export function removeItem(store: Store, id: unknown) {
   const px = store.life.px, it = px.item(String(id ?? ""));

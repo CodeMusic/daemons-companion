@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
-import { formToShare, itemDone, keepItem, makeSpace, mineView, saveForm, spaceView, takeForm, type MineForm } from "../src/lifemanagement/myforms.js";
+import { formToShare, itemDone, itemState, keepItem, makeSpace, mineView, saveForm, spaceView, takeForm, type MineForm } from "../src/lifemanagement/myforms.js";
 import { CommonsCreations } from "../src/commons/commonscreations.js";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
 
@@ -72,5 +72,54 @@ describe("C-433: FORMS YOU MAKE YOURSELF", () => {
     const t = kept(takeForm(friend, shared.form, "ROVERBYTE HOME"));
     expect(t).toMatchObject({ title: "Garden", version: 1, from: "ROVERBYTE HOME" });
     expect(mineView(friend).spaces).toEqual([]);                                // the form alone: no items, no spaces
+  });
+});
+
+describe("C-476: STATES OF YOUR OWN (the user, 2026-11-22: a BUGS space with its own steps up to done)", () => {
+  const BUGS = { title: "Bugs", kinds: [{ title: "Bug", fields: [], arete: 3, cap: 30,
+    states: [{ title: "Found", phase: "open" }, { title: "Seen again", phase: "open" }, { title: "Fixing", phase: "doing" },
+             { title: "Fixed", phase: "done" }, { title: "Won't fix", phase: "aside" }] }] };
+  it("keeps a kind's own states, and refuses too few, one starting done, or none that counts as done", () => {
+    const store = fresh();
+    expect(saveForm(store, { title: "x", kinds: [{ title: "A", states: [{ title: "Only", phase: "open" }] }] })).toMatch(/at least two/);
+    expect(saveForm(store, { title: "x", kinds: [{ title: "A", states: [{ title: "Done", phase: "done" }, { title: "B", phase: "open" }] }] })).toMatch(/cannot start done/);
+    expect(saveForm(store, { title: "x", kinds: [{ title: "A", states: [{ title: "B", phase: "open" }, { title: "C", phase: "aside" }] }] })).toMatch(/counts as done/);
+    const f = kept(saveForm(store, BUGS));
+    expect(f.kinds[0].states!.map((x) => [x.key, x.phase])).toEqual([["s_found", "open"], ["s_seen_again", "open"], ["s_fixing", "doing"], ["s_fixed", "done"], ["s_won_t_fix", "aside"]]);
+    expect(kept(saveForm(store, GARDEN)).kinds[0].states).toBeUndefined();               // a kind naming none: open, then done
+  });
+  it("an item starts in the first, moves through them, is paid on reaching done once, and taken back on leaving it", () => {
+    const store = fresh();
+    makeSpace(store, { form: kept(saveForm(store, BUGS)).id, title: "Bugs" });
+    const sp = mineView(store).spaces[0];
+    keepItem(store, { space: sp.id, kind: "k_bug", title: "The watch skips a song" });
+    let v = spaceView(store, sp.id)!, it = v.items[0];
+    expect(v.kinds[0].states.map((x) => x.title)).toEqual(["Found", "Seen again", "Fixing", "Fixed", "Won't fix"]);
+    expect([it.state, it.phase, it.done]).toEqual(["s_found", "open", false]);
+    expect(itemState(store, it.id, "s_nope")).toMatch(/no such state/);
+    itemState(store, it.id, "s_fixing");
+    const arete = () => store.life.px.ledger(sp.id).filter((e) => e.op === "award" && !e.back && e.key.startsWith("finish:")).reduce((n, e) => n + e.points, 0);
+    expect(arete()).toBe(0);
+    v = itemState(store, it.id, "s_fixed") as any; it = v.items[0];
+    expect([it.state, it.done]).toEqual(["s_fixed", true]);
+    expect(arete()).toBe(3);
+    itemState(store, it.id, "s_seen_again");
+    expect(arete()).toBe(0);
+    expect(mineView(store).spaces[0]).toMatchObject({ open: 1, done: 0 });
+    itemDone(store, it.id, true);                                                         // the checkbox: the first done state
+    expect(spaceView(store, sp.id)!.items[0].state).toBe("s_fixed");
+  });
+  it("a new version taking out a state moves its items to the first of the same phase, else the first", () => {
+    const store = fresh();
+    const f = kept(saveForm(store, BUGS));
+    makeSpace(store, { form: f.id, title: "Bugs" });
+    const sp = mineView(store).spaces[0];
+    keepItem(store, { space: sp.id, kind: "k_bug", title: "A" }); keepItem(store, { space: sp.id, kind: "k_bug", title: "B" });
+    const [a, b] = spaceView(store, sp.id)!.items.sort((x, y) => x.title.localeCompare(y.title));
+    itemState(store, a.id, "s_seen_again"); itemState(store, b.id, "s_won_t_fix");
+    kept(saveForm(store, { id: f.id, title: "Bugs", kinds: [{ key: "k_bug", title: "Bug", fields: [], arete: 3, cap: 30,
+      states: [{ key: "s_found", title: "Found", phase: "open" }, { key: "s_fixed", title: "Fixed", phase: "done" }] }] }));
+    const after = Object.fromEntries(spaceView(store, sp.id)!.items.map((x) => [x.title, x.state]));
+    expect(after).toEqual({ A: "s_found", B: "s_found" });
   });
 });

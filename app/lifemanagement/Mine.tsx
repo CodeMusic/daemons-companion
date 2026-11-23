@@ -2,6 +2,8 @@
 // testing"): MINE on JOURNEY -- forms you make yourself. A form is its kinds, each with the fields you pick and what
 // finishing one pays in ARETE (under a daily cap); a SPACE is made from a form and keeps its items; a form is SHARED to
 // THE COMMONS as its shape alone, and a friend's TAKEN as your own (server/src/lifemanagement/myforms.ts). Every word DRAFT.
+// C-476 (the user, 2026-11-22, after testing: "States of your own"): a kind may name its own states, each counting as to do,
+// doing, done or set aside; an item shows its state and moves through them. A kind naming none keeps its checkbox.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../platform/net";
@@ -10,12 +12,19 @@ import { Action, Card, Choice, Entry, Eyebrow, Pending, Small } from "../ui/ui";
 
 type FieldType = "text" | "long" | "number" | "date" | "rating" | "choice";
 type MineField = { key?: string; title: string; type: FieldType; choices?: string[] | string };
-type MineKind = { key?: string; title: string; fields: MineField[]; arete: number | string; cap: number | string };
+type Phase = "open" | "doing" | "done" | "aside";
+type MineState = { key?: string; title: string; phase: Phase };
+type MineKind = { key?: string; title: string; fields: MineField[]; arete: number | string; cap: number | string; states?: MineState[] };
+const PHASES: [Phase, string][] = [["open", "TO DO"], ["doing", "DOING"], ["done", "DONE"], ["aside", "SET ASIDE"]];   // DRAFT
+const PHASE_INK: Record<Phase, string> = { open: "$color4", doing: "$color6", done: "$color9", aside: "$color3" };
 type MineForm = { id: string; title: string; about: string; version: number; kinds: MineKind[]; from: string | null };
 type Space = { id: string; title: string; form: string; formTitle: string; open: number; done: number };
 type View = { forms: MineForm[]; spaces: Space[] };
-type SpaceView = { id: string; title: string; kinds: { key: string; title: string; arete: number; fields: { key: string; title: string; type: FieldType; choices?: string[] }[] }[];
-                   items: { id: string; kind: string; title: string; done: boolean; fields: Record<string, unknown> }[] };
+type SpaceView = { id: string; title: string; kinds: { key: string; title: string; arete: number; fields: { key: string; title: string; type: FieldType; choices?: string[] }[];
+                                                    states: { key: string; title: string; phase: Phase }[] }[];
+                   items: { id: string; kind: string; title: string; done: boolean; state: string; phase: Phase; fields: Record<string, unknown> }[] };
+// the two every kind had before C-476: such a kind keeps its checkbox
+const plain = (states: { key: string }[]) => states.length === 2 && states[0].key === "open" && states[1].key === "done";
 type Shared = { n: number; title: string; about: string; sharedByName: string; uid: string };
 const TYPES: [FieldType, string][] = [["text", "WORDS"], ["long", "A PAGE"], ["number", "NUMBER"], ["date", "DATE"], ["rating", "0-5"], ["choice", "CHOICE"]];
 
@@ -51,6 +60,21 @@ function FormEditor({ start, ink, onDone }: { start: MineForm | null; ink: strin
             </YStack>
           ))}
           <Text fontSize={12} color="$color10" cursor="pointer" role="button" onPress={() => setKind(i, { fields: [...k.fields, { title: "", type: "text" }] })}>+ a field</Text>
+          <Small color="$color10">ITS STATES</Small>
+          {(k.states ?? []).length ? (k.states ?? []).map((st, j) => (
+            <YStack key={j} gap={4} marginLeft={10}>
+              <XStack gap={6} alignItems="center">
+                <Text fontFamily="$mono" fontSize={11} color="$color10">{j === 0 ? "STARTS" : `${j + 1}.`}</Text>
+                <YStack flex={1}><Entry value={st.title} onChange={(t) => setKind(i, { states: (k.states ?? []).map((x, y) => (y === j ? { ...x, title: t } : x)) })} onSubmit={() => {}} placeholder="Idea, Planted, Fixing…" limit={40} /></YStack>
+                <Text fontSize={12} color="$color9" cursor="pointer" role="button" aria-label="Take this state out" onPress={() => setKind(i, { states: (k.states ?? []).filter((_, y) => y !== j) })}>×</Text>
+              </XStack>
+              <Choice value={st.phase} options={PHASES} onPick={(ph) => setKind(i, { states: (k.states ?? []).map((x, y) => (y === j ? { ...x, phase: ph } : x)) })} ink={ink} />
+            </YStack>
+          )) : <Small color="$color8">To do, then done. Name your own to give it more steps.</Small>}
+          <Text fontSize={12} color="$color10" cursor="pointer" role="button"
+                onPress={() => setKind(i, { states: (k.states ?? []).length ? [...(k.states ?? []), { title: "", phase: "open" }]
+                                                                        : [{ title: "To do", phase: "open" }, { title: "Done", phase: "done" }] })}>
+            {(k.states ?? []).length ? "+ a state" : "+ states of its own"}</Text>
           <Small color="$color10">Done, it earns</Small>
           <Entry value={String(k.arete)} onChange={(t) => setKind(i, { arete: t.replace(/[^0-9]/g, "") })} onSubmit={() => {}} placeholder="ARETE each" limit={2} />
           <Entry value={String(k.cap)} onChange={(t) => setKind(i, { cap: t.replace(/[^0-9]/g, "") })} onSubmit={() => {}} placeholder="at most a day" limit={3} />
@@ -92,6 +116,28 @@ function ItemAdder({ space, kind, ink, onView }: { space: string; kind: SpaceVie
   );
 }
 
+// C-476: an item's state -- tapped, the next one (round to the first); held open, every state to pick from
+function StateChip({ item, states, ink, onView }: { item: SpaceView["items"][number]; states: SpaceView["kinds"][number]["states"]; ink: string; onView: (v: SpaceView) => void }) {
+  const [open, setOpen] = useState(false);
+  const at = Math.max(0, states.findIndex((x) => x.key === item.state)), now = states[at];
+  const go = async (key: string) => { setOpen(false); onView(await api<SpaceView>("/api/mine/item/state", { id: item.id, state: key })); };
+  return (
+    <YStack gap={4} alignItems="flex-start">
+      <XStack gap={4}>
+        <YStack paddingHorizontal={8} paddingVertical={3} borderRadius={10} backgroundColor={PHASE_INK[now?.phase ?? "open"]} cursor="pointer" role="button"
+                aria-label={`${item.title}: ${now?.title}; move it on`} onPress={() => go(states[(at + 1) % states.length].key)}>
+          <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color={now?.phase === "done" ? ink : "$color12"}>{(now?.title ?? "").toUpperCase()}</Text>
+        </YStack>
+        <Text fontSize={12} color="$color10" cursor="pointer" role="button" aria-label="Choose its state" onPress={() => setOpen((o) => !o)}>{open ? "▴" : "▾"}</Text>
+      </XStack>
+      {open ? states.map((x) => (
+        <Text key={x.key} fontSize={12} color={x.key === item.state ? "$color12" : "$color10"} cursor="pointer" role="button" onPress={() => go(x.key)}>
+          {`${x.key === item.state ? "● " : "○ "}${x.title}`}</Text>
+      )) : null}
+    </YStack>
+  );
+}
+
 function SpacePage({ id, ink, onClose }: { id: string; ink: string; onClose: () => void }) {
   const [v, setV] = useApi<SpaceView>(`/api/mine/space?id=${encodeURIComponent(id)}`);
   if (!v) return <Pending title="A SPACE" height={200} />;
@@ -105,9 +151,11 @@ function SpacePage({ id, ink, onClose }: { id: string; ink: string; onClose: () 
         <XStack gap={8} flexWrap="wrap">{v.kinds.map((k) => <ItemAdder key={k.key} space={v.id} kind={k} ink={ink} onView={setV} />)}</XStack>
         {v.items.length ? v.items.map((it) => (
           <XStack key={it.id} gap={10} alignItems="flex-start" paddingVertical={6} borderBottomWidth={1} borderColor="$color4">
-            <YStack width={20} height={20} marginTop={2} borderRadius={4} borderWidth={1.5} borderColor={ink} backgroundColor={it.done ? ink : "transparent"}
-                    cursor="pointer" role="checkbox" aria-checked={it.done} aria-label={`${it.title} done`}
-                    onPress={async () => setV(await api<SpaceView>("/api/mine/item/done", { id: it.id, done: !it.done }))} />
+            {plain(kindOf(it.kind)?.states ?? []) ? (
+              <YStack width={20} height={20} marginTop={2} borderRadius={4} borderWidth={1.5} borderColor={ink} backgroundColor={it.done ? ink : "transparent"}
+                      cursor="pointer" role="checkbox" aria-checked={it.done} aria-label={`${it.title} done`}
+                      onPress={async () => setV(await api<SpaceView>("/api/mine/item/done", { id: it.id, done: !it.done }))} />
+            ) : <StateChip item={it} states={kindOf(it.kind)?.states ?? []} ink={ink} onView={setV} />}
             <YStack flex={1}>
               <Text fontSize={15} color={it.done ? "$color10" : "$color12"} textDecorationLine={it.done ? "line-through" : "none"}>{it.title}</Text>
               <Small color="$color10">{[kindOf(it.kind)?.title, shown(it)].filter(Boolean).join(" · ")}</Small>

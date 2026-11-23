@@ -118,3 +118,12 @@ a.link { color: var(--gold); cursor: pointer; text-decoration: underline; text-u
         border-bottom: 1px solid var(--gold); font: 12px var(--mono); letter-spacing: .5px; text-align: center; }
 .away b { letter-spacing: 1.5px; }
 .away[hidden] { display: none; }
+
+/* C-478: IN PLAY -- a game's screen, at the GBA's 3:2, kept pixel-sharp; its party with their icons */
+.screen { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: contain; background: #000; border-radius: 8px; image-rendering: pixelated; }
+.screen.big { max-width: 720px; margin: 0 auto; }
+.screen.none { display: flex; align-items: center; justify-content: center; color: var(--faint); font: 12px var(--mono); border: 1px dashed var(--line); background: var(--bg); }
+.party { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin-top: 6px; }
+.party .mon { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 6px 4px;
+              border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.party .mon b { font: 700 12px var(--mono); }

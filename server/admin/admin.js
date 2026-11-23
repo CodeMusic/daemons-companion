@@ -10,6 +10,7 @@
 //   JOBS         the site built at every push, THE HANDS on the computer, the command line's jobs (C-342)
 //   CREATIONS    what the daemons made that the hub keeps -- sleep sounds, paintings -- each let go, or many (C-361)
 //   SAVES        the trail of every save that moved, going back to one, and whose copy goes on (C-364, C-365)
+//   IN PLAY      every game being played in the ecosystem -- its screen, where it was saved, its party; ending an AI run (C-478)
 // The page holds nothing of the user's: it asks the hub's API, with a paired key kept in this browser (on the hub's own
 // machine none is needed). Every word DRAFT.
 const KEY = "engine-room.key";
@@ -62,6 +63,7 @@ const PAGES = [
   { id: "jobs", glyph: "▶", label: "JOBS", short: "JOBS", draw: drawJobs, every: 3000 },       // C-342
   { id: "creations", glyph: "❖", label: "CREATIONS", short: "MADE", draw: drawCreations },     // C-361
   { id: "saves", glyph: "⟲", label: "SAVES", short: "SAVES", draw: drawSaves },               // C-364
+  { id: "play", glyph: "◐", label: "IN PLAY", short: "PLAY", draw: drawInPlay, every: 3000 },    // C-478
 ];
 let timer = null, ui = {}, drawing = null;          // ui: what a page keeps between its redraws (a filter, a task picked, a note)
 // a page asked for before another was opened, answering after it: it writes nothing
@@ -185,6 +187,7 @@ async function drawHub() {
       <button class="btn quiet" data-act="unpair">FORGET THIS BROWSER'S KEY</button></div>`;
 }
 const BLURB = {
+  play: "Every game being played that reports to the hub: its screen, where it was saved, its party; end an AI run-through.",
   mind: "Every mind's work, for everyone: stop, try again, forget; and LATER, the hub's plans.",
   house: "The casino's odds today and why, who is at the reels, what the house keeps.",
   voices: "Make every kept voice again, on every phone.",
@@ -715,6 +718,64 @@ ACTS.forgetphone = async (d) => { await api("/api/pair/forget", { name: d.name }
 ACTS.secret = () => { ui.secret = !ui.secret; };
 ACTS.renewask = () => { ui.renew = !ui.renew; };
 ACTS.renew = async () => { await api("/api/settings/relay", { renew: true }); ui.renew = false; ui.secret = true; said("A new secret: give it to n8n's relay."); };
+
+// ---- IN PLAY (C-478): every game being played in the ecosystem that the hub has heard from ----
+// One in play opens by itself; many are a list. Each: where it runs and for whom, its screen (fetched with this page's
+// key -- an <img> cannot send it -- and only when a newer one has come), where it was last saved, its time and MARKS, its
+// party with their icons; an AI run-through can be ended (asked of it at its next heartbeat). DRAFT.
+const frames = new Map();   // a game's id -> { at, url }: its newest screen, kept between redraws
+async function frameUrl(g) {
+  if (!g.frame) return null;
+  const had = frames.get(g.id);
+  if (had && had.at === g.frame.at) return had.url;
+  const headers = {}, k = keyNow();
+  if (k) headers.authorization = `Bearer ${k}`;
+  try {
+    const r = await fetch(`/api/games/${encodeURIComponent(g.id)}/frame`, { headers });
+    if (!r.ok) return had?.url ?? null;
+    const url = URL.createObjectURL(await r.blob());
+    if (had) URL.revokeObjectURL(had.url);
+    frames.set(g.id, { at: g.frame.at, url });
+    return url;
+  } catch { return had?.url ?? null; }
+}
+const whereSaid = (v, g) => `${esc(v.sources?.[g.source] ?? g.source)} · ${esc(g.device)} · ${esc(g.user)}${g.edition ? ` · ${g.edition}` : ""}`;
+async function drawInPlay() {
+  const v = await api("/api/games"), now = Date.now();
+  const pick = ui.game && [...v.playing, ...v.lately].find((g) => g.id === ui.game);
+  const open = pick ?? (v.playing.length === 1 ? v.playing[0] : null);
+  const urls = new Map(await Promise.all((open ? [open] : v.playing).map(async (g) => [g.id, await frameUrl(g)])));
+  for (const id of [...frames.keys()]) if (![...v.playing, ...v.lately].some((g) => g.id === id)) { URL.revokeObjectURL(frames.get(id).url); frames.delete(id); }
+  if (stale()) return;
+  const screen = (g, big) => urls.get(g.id)
+    ? `<img class="screen${big ? " big" : ""}" src="${urls.get(g.id)}" alt="the screen of ${esc(g.user)}'s game">`
+    : `<div class="screen${big ? " big" : ""} none"><span>${LIVEGAME(v, g) ? "no picture yet" : "not playing"}</span></div>`;
+  const party = (s) => s?.party?.length ? `<div class="party">${s.party.map((d) =>
+    `<div class="mon"><img class="art" src="/art/party/${d.species}.png" alt=""><b>${esc(d.nickname || d.name)}</b><span class="small">L${d.level}${d.nickname && d.nickname !== d.name ? ` · ${esc(d.name)}` : ""}</span></div>`).join("")}</div>` : `<p class="small">No save heard yet.</p>`;
+  const one = (g) => `<div class="card">
+      ${screen(g, true)}
+      <div class="row" style="margin-top:10px"><div class="grow"><div class="big" style="font-size:16px">${esc(g.summary?.name ?? g.user)}</div>
+        <div class="small">${whereSaid(v, g)}</div>
+        <div class="small">${LIVEGAME(v, g) ? `playing · began ${ago(g.began, now)} · heard ${ago(g.heard, now)}` : `played ${ago(g.heard, now)}`}</div></div>
+        ${v.playing.length > 1 || pick ? `<button class="btn quiet" data-act="game" data-id="">ALL GAMES</button>` : ""}</div>
+      ${g.summary ? `<p class="small" style="margin:8px 0 4px">Last saved in <b>${esc(g.summary.savedIn ?? "somewhere")}</b> · ${esc(g.summary.playTime)} played · ${g.summary.marks} MARK${g.summary.marks === 1 ? "" : "S"}</p>` : ""}
+      ${party(g.summary)}
+      ${g.source === "ai" && LIVEGAME(v, g) ? `<div class="row" style="margin-top:10px">${g.ending ? `<span class="small warm">Asked to end -- it stops at its next heartbeat.</span>`
+        : `<button class="btn danger" data-act="gameend" data-id="${esc(g.id)}">END THIS RUN-THROUGH</button>`}</div>` : ""}
+    </div>`;
+  const tile = (g) => `<div class="card tap" data-act="game" data-id="${esc(g.id)}">${screen(g, false)}
+      <div style="margin-top:8px"><b>${esc(g.summary?.name ?? g.user)}</b></div><div class="small">${whereSaid(v, g)}</div>
+      <div class="small">${g.summary?.savedIn ? `saved in ${esc(g.summary.savedIn)} · ` : ""}heard ${ago(g.heard, now)}</div></div>`;
+  $page.innerHTML = `<h1>IN PLAY</h1>
+    <p class="lede">${v.playing.length ? `${v.playing.length} game${v.playing.length === 1 ? "" : "s"} being played` : "No game is being played right now"} in the app, the site, the playground, an AI run-through or a handheld that reports to this hub. A cartridge, or an emulator outside ours, is not known here.</p>
+    ${open ? one(open) : v.playing.length ? `<div class="grid">${v.playing.map(tile).join("")}</div>` : ""}
+    ${v.lately.length && !open ? `<div class="card"><p class="eyebrow">PLAYED LATELY</p><div class="list">${v.lately.map((g) =>
+      `<div class="item" data-act="game" data-id="${esc(g.id)}"><span class="t">${esc(g.summary?.name ?? g.user)} · ${whereSaid(v, g)}</span><span class="small">${ago(g.heard, now)}</span></div>`).join("")}</div></div>` : ""}
+    ${note()}`;
+}
+const LIVEGAME = (v, g) => v.playing.some((x) => x.id === g.id);
+ACTS.game = (d) => { ui.game = d.id || null; };
+ACTS.gameend = async (d) => { await api(`/api/games/${encodeURIComponent(d.id)}/end`, {}); said("Asked to end. It stops at its next heartbeat."); };
 
 // ---- JOBS (C-342): the site, THE HANDS, and the command line's jobs ----
 const LIVE_JOB = (j) => j.state === "waiting" || j.state === "running";

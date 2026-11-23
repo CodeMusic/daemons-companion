@@ -85,6 +85,7 @@ import { hemisphereOf } from "./psyche/months.js";   // C-386
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./machine/sleeptracks.js";   // C-334
 import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./machine/sleepexport.js";   // C-358
 import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
+import { FRAME_MOST, InPlay, SOURCES } from "./game/inplay.js";   // C-478: THE GAMES IN PLAY
 import { dropSmall, smallCover } from "./thumbs.js";   // C-413: a cover's small copy
 import { renderAhead, VoiceBank } from "./machine/voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
 import { readIndex } from "./game/save/index.js";
@@ -901,6 +902,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const TASKS = new Tasks((k) => store.getSetting(k), (k, v) => store.setSetting(k, v));
   // C-360: THE MESH for processing -- the hub and every node that dials in (procmesh.ts); each job a task in the ledger,
   // its node the mind it ran on. Made where a test makes a server too, but its speed measured only once (it takes ~0.3 s)
+  const INPLAY = new InPlay();   // C-478: every game in play the hub has heard from, in memory
   const MESH = new ProcMesh({
     open: (title, mind) => TASKS.open({ kind: "processing", title, state: "thinking", mind: mind || undefined }).id,
     hop: (task, mind) => { TASKS.hop(task, mind); },
@@ -3478,6 +3480,34 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (path !== "/api/game/debug/file" || !(m.patches ?? []).some((x) => x.file === name) || name.includes("/") || name.includes(".."))
           return send(res, 404, { error: "no such testing build" });
         return send(res, 200, { b64: readFileSync(join(dir!, name)).toString("base64") });
+      }
+      // C-478: THE GAMES IN PLAY -- a game's heartbeat {id, source, device?, user?, edition?, save? (base64, when it
+      // changed)}, its screen now and then (a JPEG or PNG body), the list THE ENGINE ROOM draws, and ending one (asked
+      // of it at its next heartbeat). A paired phone or key, or this machine; never a board's key (its own door only).
+      if ((path === "/api/games" || path.startsWith("/api/games/")) && (phone || isLoopback(req.socket.remoteAddress)) && !board) {
+        if (req.method === "GET" && path === "/api/games") return send(res, 200, { ...INPLAY.view(), sources: SOURCES, at: new Date().toISOString() });
+        if (req.method === "POST" && path === "/api/games/beat") {
+          const b = await body(req);
+          const save = typeof b.save === "string" && b.save ? new Uint8Array(Buffer.from(b.save, "base64")) : null;
+          const r = INPLAY.beat({ ...b, device: b.device ?? phone?.name, save: save && save.length >= 0x10000 ? save : null });
+          return "error" in r ? send(res, 400, r) : send(res, 200, r);
+        }
+        const one = path.match(/^\/api\/games\/([A-Za-z0-9._-]{1,64})\/(frame|end|over)$/);
+        if (one && one[2] === "frame" && req.method === "POST") {
+          const bytes = await rawBody(req, FRAME_MOST + 1);
+          if (!bytes) return send(res, 413, { error: `a frame is at most ${FRAME_MOST / 1024} KB` });
+          const r = INPLAY.frame(one[1], new Uint8Array(bytes), String(req.headers["content-type"] ?? ""));
+          return "error" in r ? send(res, 400, r) : send(res, 200, r);
+        }
+        if (one && one[2] === "frame" && req.method === "GET") {
+          const f = INPLAY.frameOf(one[1]);
+          if (!f) return send(res, 404, { error: "no screen yet" });
+          res.writeHead(200, { "content-type": f.type, "content-length": f.bytes.length, "cache-control": "no-store", "access-control-allow-origin": "*" });
+          return res.end(f.bytes);
+        }
+        if (one && one[2] === "end" && req.method === "POST") return INPLAY.end(one[1]) ? send(res, 200, { ok: true }) : send(res, 404, { error: "no such game in play" });
+        if (one && one[2] === "over" && req.method === "POST") return INPLAY.over(one[1]) ? send(res, 200, { ok: true }) : send(res, 404, { error: "no such game in play" });
+        return send(res, 404, { error: "not found" });
       }
       // C-215: every save the companion knows, one chosen as the one it reads; and a save kept here by name (a new game
       // begun in the app, say -- the mirror refuses another game's, and this keeps it beside the others instead)

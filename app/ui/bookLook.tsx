@@ -41,6 +41,7 @@ export const LOOKS: Record<string, BookLook> = {
   eudaimon: look("THE EUDAIMON LAYER", "#C98A1E", "#FBF3E4", "#8C7357", "☀", 6, "swell", 10, 22, true, true),   // lighter, slower, the dawn
   unity:    look("THE UNITY BOOK", "#8E3F80", "#FFFDF8", "#756C7B", "◐", 5, "tide", 6, 26),         // one voice, leaned neither way
   origin:   look("THE ORIGIN OF A DAEMON", "#2C241E", "#C6BCA8", "#5E5242", "◎", 4, "swell", 4, 18),   // DAEMONS T-533: the game's ink on bone, the disc it began on
+  shadow:   look("THE SPELL LEFT RUNNING", "#21295A", "#F7EFDE", "#5E5E78", "✶", 7, "flicker", 4, 24),   // C-474: the hat's night on parchment, slow as the Sorcerer
   notebook: look("NOTEBOOK", "#7a5a2e", "#f5efe4", "#8a7a62", "¶", 3, "even", 3, 14, false, false),
   songbook: look("SONGBOOK", "#2d6a74", "#e9f3f4", "#5f8389", "♪", 1.2, "swell", 18, 16),
   stream:   look("STREAM", "#3d4f8a", "#ecf0f8", "#6c7696", "≈", 4, "tide", 8, 22),

@@ -83,6 +83,7 @@ export const BOOK_VOICE: Record<string, string> = {
   social: "A friendly, open, sociable voice, bright and easy, as if two friends were speaking as one.",
   tiiny: "A calm, precise woman's voice with a clean synthetic edge, like a helpful machine speaking clearly.",
   etymology: "An old storyteller's voice, a deep, kind man's voice, slow and fond of every old word.",
+  shadow: "A low, slow old man's voice with an English accent, warm and dry, an old sorcerer writing to his apprentice; long pauses between sentences.",   // C-474: after bookaudio's 'sorcerer'
   origin: "An even, unhurried voice, neither a man's nor a woman's but both at once, calm and whole.",
 };
 

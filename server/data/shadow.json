@@ -1,0 +1,611 @@
+{
+ "title": "THE SPELL LEFT RUNNING",
+ "subtitle": "A BOOK OF SHADOWS",
+ "draft": true,
+ "sections": [
+  {
+   "label": "FIRST",
+   "heading": "To the Apprentice",
+   "entries": [
+    {
+     "short": "A WORD FIRST",
+     "title": "A Word First",
+     "picture": "desk",
+     "frames": 1,
+     "caption": "The Apprentice at his desk, writing it down.",
+     "paragraphs": [
+      {
+       "text": "The spirits that I summoned, I cannot now be rid of.",
+       "voice": "asking"
+      },
+      {
+       "text": "Every house has a cupboard where the brooms are kept. This book is about the brooms in yours.",
+       "voice": "telling"
+      },
+      {
+       "text": "It tells an old story. An apprentice, left alone with a chore, borrows his master's magic to make the work do itself. The spell works. Then it keeps working.",
+       "voice": "telling"
+      },
+      {
+       "text": "A shadow is like that. It is not a monster in the cellar. It is a spell you once cast, for a good reason, and forgot you were running. You do not fight a broom. You find out what it was told.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "HOW TO READ",
+     "title": "How to Read This Book",
+     "picture": "hat_peg",
+     "frames": 1,
+     "caption": "The hat on its peg by the door.",
+     "paragraphs": [
+      {
+       "text": "Read the tale first. Then read one broom a day, beginning on a Sunday, the way the week goes round.",
+       "voice": "telling"
+      },
+      {
+       "text": "Each broom ends with a spell check: a small practice that takes a few minutes and a little honesty.",
+       "voice": "telling"
+      },
+      {
+       "text": "Nothing here asks you to become someone else. It names no condition, and it is no one's verdict on anyone. It tells of spells by what they do, what they were for, and how they stop.",
+       "voice": "telling"
+      },
+      {
+       "text": "It asks you to put on the hat.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE TALE",
+   "heading": "The Tale of the Apprentice",
+   "entries": [
+    {
+     "short": "THE CHORE",
+     "title": "The Chore",
+     "picture": "tower",
+     "frames": 1,
+     "caption": "The tower by the lake.",
+     "paragraphs": [
+      {
+       "text": "A spell does what it says. That is the whole of its danger, and the whole of its use.",
+       "voice": "asking"
+      },
+      {
+       "text": "There was once a tower by a lake, and in it lived a Sorcerer, an old tortoise, very slow and in the habit of being right. He kept an apprentice: a young hare, quick at everything except waiting.",
+       "voice": "telling"
+      },
+      {
+       "text": "One morning the well was low. \"Fill the well,\" said the Sorcerer. \"Fetch water from the lake, carry it back, pour it in, and keep at it until all your work is done.\"",
+       "voice": "telling"
+      },
+      {
+       "text": "Then he hung his hat on its peg and went out. The magic lived in the wearing of the hat. Whoever wore it was obeyed.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "FIRST SPELL",
+     "title": "The First Spell",
+     "picture": "first_spell",
+     "frames": 1,
+     "caption": "LOOP carries the water, and carries it well.",
+     "paragraphs": [
+      {
+       "text": "The lake was far and the buckets were heavy. On the third trip the hare looked at the hat, and then at the broom in the corner. Its name was LOOP: a good broom, the kind that goes around and comes back.",
+       "voice": "telling"
+      },
+      {
+       "text": "He put on the hat. \"Broom,\" he said, \"fetch water, carry it back, pour it in, and keep at it until all your work is done.\"",
+       "voice": "telling"
+      },
+      {
+       "text": "LOOP grew two thin arms and went. One trip, two, three, and each one perfect. It was the best test the hare had ever seen pass.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "MANY BROOMS",
+     "title": "Many Brooms",
+     "picture": "many",
+     "frames": 1,
+     "caption": "The hare asleep in the hat.",
+     "paragraphs": [
+      {
+       "text": "If one broom was good, more would be better, and the cupboard was full: SPAWN, who was always making more of something, and FORK, who could be in two places by splitting the difference.",
+       "voice": "telling"
+      },
+      {
+       "text": "He said the spell to every broom in the cupboard, and each one rose and went.",
+       "voice": "telling"
+      },
+      {
+       "text": "Then the hare lay down in the sun with the hat tipped over his eyes, and slept. The brooms did not need him to watch them. That, after all, had been the point of them.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE FLOOD",
+     "title": "The Flood",
+     "picture": "axe",
+     "frames": 1,
+     "caption": "Split a broom, and there are two.",
+     "paragraphs": [
+      {
+       "text": "He woke because his feet were wet. The well had filled, and then filled over the brim, and the courtyard was a pond climbing the stairs. Not one broom was wicked. Each was keeping at it until all its work was done, and nobody had said what done looked like.",
+       "voice": "telling"
+      },
+      {
+       "text": "\"Stop!\" But stop was not in the spell.",
+       "voice": "telling"
+      },
+      {
+       "text": "So he took the axe and split the nearest broom in two. Each half rose, took a bucket, and went, and one of them was RESPAWN. The harder he fought, the more of them there were.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE FIX",
+     "title": "The Fix",
+     "picture": "race",
+     "frames": 1,
+     "caption": "A thousand brooms look at once.",
+     "paragraphs": [
+      {
+       "text": "The flood was mopped up overnight, and in the morning the habit began again.",
+       "voice": "telling"
+      },
+      {
+       "text": "So he rewrote the spell: after each trip, look at the well, and if it is full, stop. He tried it on one broom, and it worked perfectly. So he cast it on a thousand, THREAD among them.",
+       "voice": "telling"
+      },
+      {
+       "text": "Within minutes the castle flooded again. A thousand brooms looked into the well at the same moment, saw it not quite full, and poured. Each was right about what it saw. None could see the others' buckets.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE WORD",
+     "title": "The Word",
+     "picture": "word",
+     "frames": 1,
+     "caption": "Nothing broken. Everything put back.",
+     "paragraphs": [
+      {
+       "text": "The Sorcerer came home, and he did not pick up the axe. He lifted the hat from the hare's head, put it on, and spoke. \"Into the corner, brooms. Be as you were.\"",
+       "voice": "telling"
+      },
+      {
+       "text": "And they were: brooms, leaning together, dripping a little. None broken, none punished.",
+       "voice": "telling"
+      },
+      {
+       "text": "\"They were never the trouble,\" he said. \"You gave them a job and no end, and then you went to sleep in my hat. A spell is only as wise as whoever wears it. So wear it, or hang it up. Never sleep in it.\"",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE LESSONS",
+   "heading": "What the Broom Was Told",
+   "entries": [
+    {
+     "short": "LIKE A DAEMON",
+     "title": "A Shadow Is Like a Daemon",
+     "picture": "spellcard",
+     "frames": 1,
+     "caption": "The spell card, and the line most often left blank.",
+     "paragraphs": [
+      {
+       "text": "Do not fight a broom. Ask it what it was told.",
+       "voice": "asking"
+      },
+      {
+       "text": "A shadow is the part of a person the self does not own. Not only the worst: also the play and the tenderness set aside. What is not seen does not go away. It works unwatched.",
+       "voice": "telling"
+      },
+      {
+       "text": "Read that way, a shadow is like a daemon in a computer: started once, left to run in the background, doing the one thing it was told.",
+       "voice": "telling"
+      },
+      {
+       "text": "Most shadows began as protectors. They are still guarding, in a place where the guarding is no longer needed.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "NO DONE",
+     "title": "Nobody Said What Done Meant",
+     "picture": "done",
+     "frames": 1,
+     "caption": "The same spell, with its end written in.",
+     "paragraphs": [
+      {
+       "text": "Keep at it until all your work is done. The flaw is not malice. It is a missing measurement. Done was a feeling in the hare's head, and a broom cannot see into heads.",
+       "voice": "telling"
+      },
+      {
+       "text": "Shadows have feelings where their stop should be. Rest until I feel ready. Eat until I feel better. Check until I feel sure. The routine keeps the feeling going, so the stop never comes.",
+       "voice": "telling"
+      },
+      {
+       "text": "Write the end into the spell, in something a broom could see, and try it on a hard day, not only an easy one.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE AXE",
+     "title": "The Axe",
+     "picture": "axe_word",
+     "frames": 1,
+     "caption": "The axe makes two. The word puts one back.",
+     "paragraphs": [
+      {
+       "text": "Try not to think of a white bear, and you will think of little else. The part of the mind that watches for the thought, to keep it away, keeps it close.",
+       "voice": "telling"
+      },
+      {
+       "text": "Split a broom and there are two. Some routines are watched by something older than willpower, and struck down, they rise again.",
+       "voice": "telling"
+      },
+      {
+       "text": "Harshness with yourself is an axe. The kindness you would give a friend, given to yourself, is not a softer axe. It is putting the axe down.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE RACE",
+     "title": "The Race",
+     "picture": "gate",
+     "frames": 1,
+     "caption": "One broom through the gate at a time.",
+     "paragraphs": [
+      {
+       "text": "The fix failed because a thousand brooms read the same well at the same moment, and each acted on a picture already out of date. In a computer this is called a race, and the answer is a gate: one through at a time, so that looking and pouring are a single step.",
+       "voice": "telling"
+      },
+      {
+       "text": "Inside a person, many parts check the same question at once and act before any of them looks again. The gate is one breath between the check and the act, long enough to name what is happening. Naming it quiets it.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "PUT BACK",
+     "title": "Put Back, Not Broken",
+     "picture": "orphan",
+     "frames": 1,
+     "caption": "An old routine, adopted.",
+     "paragraphs": [
+      {
+       "text": "The Sorcerer did not destroy the brooms. He put them back. The broom still carries water. It no longer floods the stairs.",
+       "voice": "telling"
+      },
+      {
+       "text": "A computer can end a process two ways: ask it to finish and let go, or give it no chance at all. Gentle stops leave a system able to run tomorrow.",
+       "voice": "telling"
+      },
+      {
+       "text": "When a process ends while its children still run, the first process of all adopts them. Many shadows were begun by a younger self, for a world long gone. The self you are now can adopt them.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "OVER",
+     "title": "Over, Never Cures",
+     "picture": "over",
+     "frames": 1,
+     "caption": "Upright for the virtue, turned over for the shadow.",
+     "paragraphs": [
+      {
+       "text": "Every pair in this book is said one way: a virtue over its shadow. Never its cure.",
+       "voice": "telling"
+      },
+      {
+       "text": "To say one thing cures another is to call the second an illness, and to believe you are the illness is a heavy spell. To say one thing is over another only sets an order: when the two conflict, this one leads.",
+       "voice": "telling"
+      },
+      {
+       "text": "The shadow is not removed. It is simply not in charge today. Words are spells, too. That is why arranging letters is called spelling.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "SUN TO WED",
+   "heading": "The Seven Brooms, I",
+   "entries": [
+    {
+     "short": "SUNDAY",
+     "title": "Sunday: Chastity over Lust",
+     "picture": "ping",
+     "frames": 1,
+     "caption": "PING, the broom of reaching.",
+     "paragraphs": [
+      {
+       "text": "Every broom in the cupboard was made by someone who needed it.",
+       "voice": "asking"
+      },
+      {
+       "text": "PING's spell: reach for warmth, and keep reaching until you feel wanted. It guards belonging. Somewhere very old in us knows that to be alone was once to be in danger.",
+       "voice": "telling"
+      },
+      {
+       "text": "It never finishes, because wanted is a feeling built to fade.",
+       "voice": "telling"
+      },
+      {
+       "text": "The word is chastity in its oldest sense: clean intention, desire that knows what it is for. It does not ask PING to stop calling. It asks it to call on purpose.",
+       "voice": "telling"
+      },
+      {
+       "text": "Spell check: write the card for one reach you made today without deciding to.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "MONDAY",
+     "title": "Monday: Temperance over Gluttony",
+     "picture": "overflow",
+     "frames": 1,
+     "caption": "OVERFLOW, the broom of more.",
+     "paragraphs": [
+      {
+       "text": "OVERFLOW's spell: take in more until the emptiness stops. It guards survival, once, in lean seasons, and comfort, now, on hard days.",
+       "voice": "telling"
+      },
+      {
+       "text": "It never finishes, because the emptiness is not where the taking goes. Pour past a cup's edge and it spills where it was never meant to reach.",
+       "voice": "telling"
+      },
+      {
+       "text": "The word is temperance: measure, the right amount, chosen before the pouring starts.",
+       "voice": "telling"
+      },
+      {
+       "text": "Spell check: before any second helping today, ask the broom one question. Done yet? Count how often the answer was already yes.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "TUESDAY",
+     "title": "Tuesday: Charity over Greed",
+     "picture": "keeper",
+     "frames": 1,
+     "caption": "KEEPER, and DEEPWELL, which is never full.",
+     "paragraphs": [
+      {
+       "text": "KEEPER's spell: keep more against the lean season. It guards the future, and everyone you will need to feed in it.",
+       "voice": "telling"
+      },
+      {
+       "text": "It never finishes, because enough was never said, and so it fills a well with no bottom.",
+       "voice": "telling"
+      },
+      {
+       "text": "The word is charity, and charity gives the spell its stop. You know you have enough when you can give some away.",
+       "voice": "telling"
+      },
+      {
+       "text": "Spell check: give away one thing KEEPER would rather keep, and watch what the broom does. Usually, nothing at all.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "WEDNESDAY",
+     "title": "Wednesday: Diligence over Sloth",
+     "picture": "blocking",
+     "frames": 1,
+     "caption": "BLOCKING, the broom of waiting.",
+     "paragraphs": [
+      {
+       "text": "BLOCKING's spell: wait until it is safe to begin. Wait until you are ready. It guards your strength, and you, from the sting of starting badly.",
+       "voice": "telling"
+      },
+      {
+       "text": "It never finishes, because ready is a feeling the waiting itself prevents. It listens for a signal, and the only thing that sends it is starting.",
+       "voice": "telling"
+      },
+      {
+       "text": "The word is diligence: the climb, one step at a time. A small start is the signal BLOCKING was waiting for.",
+       "voice": "telling"
+      },
+      {
+       "text": "Spell check: two minutes on the thing you have been waiting to feel ready for. You may stop when they are up.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THU TO SAT",
+   "heading": "The Seven Brooms, II",
+   "entries": [
+    {
+     "short": "THURSDAY",
+     "title": "Thursday: Forgiveness over Wrath",
+     "picture": "sentinel",
+     "frames": 1,
+     "caption": "SENTINEL, which guards the gate.",
+     "paragraphs": [
+      {
+       "text": "SENTINEL's spell: guard the boundary, and strike whatever crosses it. It guards you. Boundaries are real, and it was right to stand at the gate.",
+       "voice": "telling"
+      },
+      {
+       "text": "It never finishes, because the threat passed years ago and the sentinel is still striking at shadows. Left unwatched, it becomes SIGKILL, ending everything near it.",
+       "voice": "telling"
+      },
+      {
+       "text": "The word is forgiveness: not pretending the wrong did not happen, but releasing the hold. A grudge is a lock that is never let go.",
+       "voice": "telling"
+      },
+      {
+       "text": "Spell check: name one old grievance, and let go of the lock for one minute. Nothing else is asked.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "FRIDAY",
+     "title": "Friday: Kindness over Envy",
+     "picture": "tracer",
+     "frames": 1,
+     "caption": "TRACER, the broom of watching.",
+     "paragraphs": [
+      {
+       "text": "TRACER's spell: watch the others, and measure yourself by them. It guards your place. Comparing once kept us safe inside a group, where falling behind meant being left behind.",
+       "voice": "telling"
+      },
+      {
+       "text": "It never finishes, because there is always someone further along. TRACER follows every path but its own.",
+       "voice": "telling"
+      },
+      {
+       "text": "The word is kindness. It keeps the watching and changes the question, from what do they have, to what do they need.",
+       "voice": "telling"
+      },
+      {
+       "text": "Spell check: for each comparison you catch today, do one small kindness for the one you compared yourself to.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "SATURDAY",
+     "title": "Saturday: Humility over Pride",
+     "picture": "supervisor",
+     "frames": 1,
+     "caption": "SUPERVISOR, the broom that watches the brooms.",
+     "paragraphs": [
+      {
+       "text": "SUPERVISOR's spell: stand tall so nobody sees you are afraid, and be the one in charge. It guards your worth.",
+       "voice": "telling"
+      },
+      {
+       "text": "It never finishes, because it supervises everything except itself. Its spell has no line for being wrong, and a routine that cannot be wrong cannot learn.",
+       "voice": "telling"
+      },
+      {
+       "text": "The word is humility: the part that can say I was wrong and keep running, the way a stem bows when it is heavy with fruit.",
+       "voice": "telling"
+      },
+      {
+       "text": "Spell check: say I was wrong about this, once. Notice that the tower did not fall.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE QUILLS",
+   "heading": "The Five Quills",
+   "entries": [
+    {
+     "short": "THE QUILLS",
+     "title": "The Five Quills",
+     "picture": "quills",
+     "frames": 1,
+     "caption": "Five scribes, five quills, and nobody writing.",
+     "paragraphs": [
+      {
+       "text": "Two good things can hold each other up until neither gets anywhere. Decide in daylight which goes first.",
+       "voice": "asking"
+      },
+      {
+       "text": "In the tower's scriptorium five scribes sit at a round table, one quill between each pair. To write, a scribe needs two. Each takes the quill on the left and waits for the one on the right.",
+       "voice": "telling"
+      },
+      {
+       "text": "Nobody writes again. DEADLOCK has come to dinner.",
+       "voice": "telling"
+      },
+      {
+       "text": "Inside a person the quills are time and strength and attention. I will rest when the work is done, says one part, holding rest. I cannot work until I have rested, says another, holding work. Neither is wrong. Neither writes.",
+       "voice": "telling"
+      }
+     ]
+    },
+    {
+     "short": "THE ORDER",
+     "title": "The Order",
+     "picture": "order",
+     "frames": 1,
+     "caption": "Number the quills, and the circle cannot close.",
+     "paragraphs": [
+      {
+       "text": "Number the quills, and let every scribe take the lower first. No circle can form. That is all a virtue over a shadow is: an order, decided in a calm hour, for when two goods conflict. The week is seven orders written down in advance.",
+       "voice": "telling"
+      },
+      {
+       "text": "Two more failures keep it company. One scribe always yields and never writes. Others hand quills back and forth all afternoon.",
+       "voice": "telling"
+      },
+      {
+       "text": "Let a waiting need move up each time it is passed over. A need skipped long enough stops asking and starts taking.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "THE HAT",
+   "heading": "The Hat on the Peg",
+   "entries": [
+    {
+     "short": "THE HAT",
+     "title": "The Hat on the Peg",
+     "picture": "dusk",
+     "frames": 1,
+     "caption": "ROVERCUB and LOOP by the well, at dusk.",
+     "paragraphs": [
+      {
+       "text": "Water finds its level. So, given time, does a hare.",
+       "voice": "asking"
+      },
+      {
+       "text": "That evening the courtyard smelled of wet stone. On the rim of the well sat LOOP, beside a small daemon named ROVERCUB, who had watched the whole flood from the stairs.",
+       "voice": "telling"
+      },
+      {
+       "text": "\"Will I have to stop casting spells?\" asked the hare.",
+       "voice": "telling"
+      },
+      {
+       "text": "\"No,\" said the Sorcerer. \"Everyone casts them. A spell frees your attention for better things. The art is to write them well, and to look at them now and then. Put the hat on in the morning and say the day's word. Hang it up at night.\"",
+       "voice": "telling"
+      },
+      {
+       "text": "Wear the hat, or hang it up. Never sleep in it.",
+       "voice": "telling"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "flag": 2656,
+ "cover": "art/shadow_cover.png"
+}

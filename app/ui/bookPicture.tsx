@@ -6,7 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Text, YStack } from "tamagui";
 import { Art } from "./ui";
 
-export type BookWithArt = "subtle" | "hermetic" | "eudaimon" | "unity" | "origin";
+export type BookWithArt = "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "shadow";   // C-474
 export type Pictured = { picture: string; frames?: number };
 
 export function TurningPicture({ book, e, scale, standIn }: { book: BookWithArt; e: Pictured; scale: number; standIn?: ReactNode }) {

@@ -148,7 +148,8 @@ export type IndexEntry = { national: number; species: number; name: string; boun
   // C-303: what a bound daemon says of itself, and its open mouth as patches on its 64px picture (null: not found yet)
   said?: string; mouth?: { x: number; y: number; w: number; h: number; rgb: [number, number, number] }[] | null;
   season?: "winter" | "spring" | "summer" | "autumn";      // C-310: the season a daemon with seasonal forms is shown in
-  song?: number };                                         // C-419: how much of its own part the INDEX sings, 1 whole
+  song?: number;                                           // C-419: how much of its own part the INDEX sings, 1 whole
+  shiny?: boolean };                                       // C-482: the one it sings is a shiny (T-602)
 
 export type Index = { held: boolean; seen: number; bound: number; opus: boolean; entries: IndexEntry[] };
 

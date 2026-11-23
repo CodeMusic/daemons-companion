@@ -4,7 +4,7 @@
 // the game's CalculateMonStats gives them from its IVs, EVs and nature (save/stats.ts), and its four routines with their
 // MP (the routine's base MP and the PP Ups the record holds). Only a daemon AWAY fights: one at home is in the game.
 import speciesJson from "../../../data/species.json" with { type: "json" };
-import { LAYOUT, ORDERS, type Layout, readDaemon } from "./reader.js";
+import { LAYOUT, ORDERS, type Layout, readDaemon, shinyOf } from "./reader.js";
 import { describe, tradeRecord } from "./trade.js";
 import { calcStats, unpackIVs } from "./stats.js";
 import { moveRow, type Card } from "../battle.js";
@@ -45,5 +45,6 @@ export function cardOfRecord(rec: Uint8Array, level: number | null = null, l: La
     types: row.types.map((n) => TYPE_NAMES.indexOf(n)).filter((x) => x >= 0),
     stats: calcStats(row.base, lv, ivs, evs, d.personality), moves,
     art: row.art?.front?.split("/").pop()?.replace("_front.png", "") ?? null,
+    ...(shinyOf(d.personality, d.otId) ? { shiny: true } : {}),   // C-482: its song is a shiny's
   };
 }

@@ -222,3 +222,45 @@ describe("the INDEX sings (C-419, DAEMONS T-595)", () => {
     expect(get().entries.find((e: any) => e.species === 4).song).toBeCloseTo(shareOf(own, expFor(label.growth, 6), label.growth));
   });
 });
+
+// C-482 (DAEMONS T-602): a shiny sings its kind's song with the few notes its shiny palette moved
+describe("a shiny's song (C-482, DAEMONS T-602)", () => {
+  it("is told from personality and OT ID as the game tells it", async () => {
+    const { shinyOf } = await import("../src/ownsong.js");
+    expect(shinyOf(0x00000000, 0x00000000)).toBe(true);    // shiny value 0
+    expect(shinyOf(0x00070000, 0x00000000)).toBe(true);    // 7: the last of the eight
+    expect(shinyOf(0x00080000, 0x00000000)).toBe(false);   // 8: not
+    expect(shinyOf(0x12345678, 0x9abcdef0)).toBe(true);    // its four halves cancel: 0
+    expect(shinyOf(0x12345678, 0x9abcde00)).toBe(false);   // 0xf0: not
+  });
+
+  it("moves only the listed notes, a step of its key, and keeps the rhythm, the learning and the bass", () => {
+    expect(Object.keys(SONGS.shiny ?? {}).length).toBeGreaterThan(300);
+    for (const [form, moved] of Object.entries(SONGS.shiny ?? {})) {
+      const kind = SONGS.parts[form];
+      expect(kind).toBeTruthy();
+      for (const [i, midi] of moved) {
+        expect(kind.notes[i]).toBeTruthy();
+        expect(Math.abs(midi - kind.notes[i][0])).toBeLessThanOrEqual(2);   // one note of the key: a step, never a leap
+        const scale = kind.minor ? [0, 2, 3, 5, 7, 8, 10] : [0, 2, 4, 5, 7, 9, 11];
+        expect(scale).toContain((((midi - kind.tonic) % 12) + 12) % 12);   // still in its type's key
+      }
+    }
+    const kind = songOf(3), shiny = songOf(3, true);
+    expect(shiny.map((p) => p.name)).toEqual(kind.map((p) => p.name));
+    shiny.forEach((p, k) => {
+      expect(p.notes.map((n) => [n[1], n[2]])).toEqual(kind[k].notes.map((n) => [n[1], n[2]]));   // rhythm and learning its kind's
+      expect(p.bass).toEqual(kind[k].bass);
+      expect(p.notes.at(-1)![0]).toBe(kind[k].notes.at(-1)![0]);        // still ends home
+    });
+    expect(shiny.some((p, k) => p.notes.some((n, i) => n[0] !== kind[k].notes[i][0]))).toBe(true);
+    expect(songOf(3)[0].notes[10][0]).toBe(SONGS.parts["1"].notes[10][0]);   // the kind's part is never changed in place
+  });
+
+  it("is learned by TRAIN as its kind's is, singing the shiny's part", () => {
+    const a = lesson(1, expFor(curve, 8), curve, 0, true), b = lesson(1, expFor(curve, 8), curve, 0, true, true);
+    expect(b.gain).toBe(a.gain);
+    expect(b.after).toBe(a.after);
+    expect(b.part!.notes.map((n) => n[0])).toEqual(songOf(1, true)[0].notes.map((n) => n[0]));
+  });
+});

@@ -34,6 +34,7 @@ export interface Card {
   stats: Stats; moves: { id: number; pp: number }[];        // its routines and their MP
   art?: string | null;                                       // its front picture's name (the app and boards draw it)
   exp?: number;                                              // C-423: its experience as it went in, where its companion knows it
+  shiny?: boolean;                                           // C-482: a shiny, so its song is a shiny's (T-602)
 }
 
 // ---- the battle as it stands ----

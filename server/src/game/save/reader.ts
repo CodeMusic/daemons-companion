@@ -150,6 +150,10 @@ export function decodeText(bytes: Uint8Array): string {
 export const ORDERS = ["GAEM", "GAME", "GEAM", "GEMA", "GMAE", "GMEA", "AGEM", "AGME", "AEGM", "AEMG", "AMGE", "AMEG",
                 "EGAM", "EGMA", "EAGM", "EAMG", "EMGA", "EMAG", "MGAE", "MGEA", "MAGE", "MAEG", "MEGA", "MEAG"];
 
+// C-482 (DAEMONS T-602): a SHINY, as the game tells one (pokemon.c IsShinyOtIdPersonality: SHINY_ODDS 8 of 65536)
+export const shinyOf = (personality: number, otId: number): boolean =>
+  (((otId >>> 16) ^ (otId & 0xffff) ^ (personality >>> 16) ^ (personality & 0xffff)) >>> 0) < 8;
+
 // One daemon's record: null for an empty slot, an error for a record whose own checksum fails (a bad egg).
 export function readDaemon(rec: Uint8Array, slot: number, l: Layout = LAYOUT): PartyDaemon | null {
   const v = new DataView(rec.buffer, rec.byteOffset, rec.byteLength);

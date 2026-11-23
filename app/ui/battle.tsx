@@ -257,7 +257,7 @@ function BattleSongs({ f, me }: { f: Fight; me: 0 | 1 }) {
   const songs = order.map((i) => {
     const d = f.sides[i].daemon;
     if (!d || d.exp === undefined) return null;
-    const parts = songOf(d.species);
+    const parts = songOf(d.species, d.shiny);   // C-482: a shiny sings a shiny's song
     if (!parts.length) return null;
     const growth = d.growth ?? 0, before = learnedOf(d.species, d.exp, growth), after = learnedOf(d.species, d.exp + (f.exp[i] ?? 0), growth);
     const pct = (x: number[]) => Math.round((x[x.length - 1] ?? 0) * 100);

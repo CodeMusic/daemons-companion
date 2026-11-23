@@ -139,13 +139,13 @@ export function IndexScreen({ ink }: { ink: string }) {
                 ) : null}
                 {e.song !== undefined && songOf(e.species).length ? (   /* C-419: SONG, where the game had its cry */
                   <ListenControl label="SONG" phase={sung.singing === `ix-${e.species}` ? sung.phase : null} ink={ink}
-                                 onListen={() => { if (!own.told && !voice.reading) sung.sing(`ix-${e.species}`, songOf(e.species), shares(e)); }}
+                                 onListen={() => { if (!own.told && !voice.reading) sung.sing(`ix-${e.species}`, songOf(e.species, e.shiny), shares(e)); }}
                                  onStop={sung.hush} />
                 ) : null}
               </XStack>
               {sung.failed && open === e.national ? <Small color="$color8">{sung.failed}</Small> : null}
               {e.song !== undefined && songOf(e.species).length ? (
-                <SongStaves parts={songOf(e.species)} shares={shares(e)} at={sung.singing === `ix-${e.species}` ? sung.at : null} />
+                <SongStaves parts={songOf(e.species, e.shiny)} shares={shares(e)} at={sung.singing === `ix-${e.species}` ? sung.at : null} />
               ) : null}
               {voice.failed && open === e.national ? <Small color="$color8">{voice.failed}</Small> : null}
               {own.failed && open === e.national ? <Small color="$color8">{own.failed}</Small> : null}

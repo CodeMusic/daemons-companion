@@ -27,7 +27,7 @@ import { expFor, levelFromExp } from "./game/save/growth.js";
 import { tradeLocks, tradesToWrite, tradesWritten } from "./game/tradelink.js";   // C-219
 import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.js";
 import { bondAdd, bondOf, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution, AT_HOME } from "./evolve.js";
-import { lesson, shareOf, songOf, TRAINS_A_DAY, type Lesson } from "./ownsong.js";   // C-418
+import { lesson, shareOf, shinyOf, songOf, TRAINS_A_DAY, type Lesson } from "./ownsong.js";   // C-418; C-482: shinyOf
 import { carriedFor } from "./carry.js";
 import { validDeviceId } from "./deviceid.js";
 import { shareCare, togetherView } from "./household.js";
@@ -454,42 +454,49 @@ function trainsToday(store: Store, personality: number, now: Date) {
 // when its bond is deep enough to evolve here too (the user, 2026-11-18: "if you and your daemon reach a certain depth
 // of companionship then it feels at home in this world too")
 export interface SongNow { species: number; total: number; growth: number; trainsToday: number; trainsADay: number;
-                           stage: number; share: number; perfect: boolean; ready: boolean; atHome: boolean }
+                           stage: number; share: number; perfect: boolean; ready: boolean; atHome: boolean;
+                           shiny: boolean }                     // C-482: a shiny, so its song is a shiny's (T-602)
 export function songNow(h: Host, store: Store, deviceId = "", now = new Date()): SongNow | null {
   const d = carriedDaemon(h, store, deviceId);
   if (!d) return null;
-  const species = evolvedOf(store, d.personality)?.to ?? d.species;
-  const song = songOf(species), part = song[song.length - 1];
+  const species = evolvedOf(store, d.personality)?.to ?? d.species, shiny = shinyOf(d.personality, d.otId);
+  const song = songOf(species, shiny), part = song[song.length - 1];
   if (!part) return null;
   const growth = SPECIES[String(species)]?.growth ?? 0, total = d.exp + pendingExp(store, d.personality).exp;
   const share = shareOf(part, total, growth), evolves = (SPECIES[String(species)]?.evolutions ?? []).length > 0;
   return { species, total, growth, trainsToday: trainsToday(store, d.personality, now), trainsADay: TRAINS_A_DAY,
            stage: song.length, share, perfect: share >= 1, ready: share >= 1 && evolves,
-           atHome: bondScore(bondOf(store, d.personality)) >= AT_HOME };
+           atHome: bondScore(bondOf(store, d.personality)) >= AT_HOME, shiny };
 }
 // C-419 (DAEMONS T-595's DaemonSong_PlayForIndex): how far each species' song is known, as the INDEX sings it -- the
 // carried daemon's form as it knows it now (with what it has learned here since SYNC); any other species as the first of
 // it in the party, then the boxes, knows it; a species no one holds, whole. A past form's part is always whole: it is the
 // earlier parts of a song (ownsong.ts learnedOf).
 export function indexSongs(h: Host, store: Store, deviceId = "", now = new Date()): Record<number, number> {
-  const out: Record<number, number> = {};
+  return indexSongsWith(h, store, deviceId, now).share;
+}
+/** C-482: the same, and which species' song is sung by a shiny (the one the INDEX sings is a shiny: T-602). */
+export function indexSongsWith(h: Host, store: Store, deviceId = "", now = new Date()):
+    { share: Record<number, number>; shiny: Record<number, boolean> } {
+  const out: Record<number, number> = {}, shiny: Record<number, boolean> = {};
   const s = songNow(h, store, deviceId, now);
-  if (s) out[s.species] = s.share;
+  if (s) { out[s.species] = s.share; if (s.shiny) shiny[s.species] = true; }
   const file = h.save.read();
-  let held: { species: number; exp: number; personality: number }[] = [];
+  let held: { species: number; exp: number; personality: number; otId: number }[] = [];
   try { held = file ? [...readSave(file).party, ...readBoxes(file)] : []; } catch { /* the carried one only */ }
   for (const d of held) {
     const species = evolvedOf(store, d.personality)?.to ?? d.species, part = songOf(species).at(-1);
     if (species in out || !part) continue;
     out[species] = shareOf(part, d.exp + pendingExp(store, d.personality).exp, SPECIES[String(species)]?.growth ?? 0);
+    if (shinyOf(d.personality, d.otId)) shiny[species] = true;
   }
-  return out;
+  return { share: out, shiny };
 }
 export function trainSong(h: Host, store: Store, deviceId = "", now = new Date()): (Lesson & { species: number }) | null {
   const s = songNow(h, store, deviceId, now), d = s && carriedDaemon(h, store, deviceId);
   if (!s || !d) return null;
   const evolves = (SPECIES[String(s.species)]?.evolutions ?? []).length > 0;
-  const l = lesson(s.species, s.total, s.growth, s.trainsToday, evolves);
+  const l = lesson(s.species, s.total, s.growth, s.trainsToday, evolves, s.shiny);   // C-482: a shiny learns a shiny's part
   if (l.gain > 0) store.logInteraction("exp", `${d.personality} ${l.gain} train ${now.toISOString()}`);
   return { ...l, species: s.species };
 }

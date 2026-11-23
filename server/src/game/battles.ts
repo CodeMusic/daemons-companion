@@ -211,6 +211,7 @@ export function view(f: Fight, seat: string, now = new Date()) {
                               types: card.types.map((t) => TYPE_NAMES[t]), hp: fi?.hp ?? card.stats.maxHP, maxHP: card.stats.maxHP,
                               status: fi?.status ?? "none",
                               growth: growthOf(card.species), exp: card.exp ?? expFor(growthOf(card.species), card.level),
+                              ...(card.shiny ? { shiny: true } : {}),   // C-482: its song is a shiny's
                               moves: i === me ? card.moves.map((m, k) => {
                                 const r = moveRow(m.id);
                                 return { slot: k, id: m.id, name: moveName(m.id), type: r ? TYPE_NAMES[r.type] : null, power: r?.power ?? 0,

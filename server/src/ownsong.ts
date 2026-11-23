@@ -17,6 +17,7 @@
 // Every word DRAFT.
 import songsJson from "../data/songs.json" with { type: "json" };
 import { expFor } from "./game/save/growth.js";
+export { shinyOf } from "./game/save/reader.js";        // C-482: a shiny sings its own song
 
 export type SongNote = [number, number, number];          // MIDI note, beats, the share of its part it is learned at
 export interface SongPart {
@@ -28,6 +29,7 @@ interface Songs {
   keys: Record<string, { tonic: number; minor: boolean; name: string; why: string }>;
   parts: Record<string, SongPart>; songs: Record<string, string[]>;
   summons?: Record<string, [number, (number | null)[]]>;  // C-419 (3): T-598's openings -- [its key wheel, pitch classes]
+  shiny?: Record<string, [number, number][]>;            // C-482 (T-602): a form's notes a shiny sings -- [note index, MIDI]
 }
 export const SONGS = songsJson as unknown as Songs;
 
@@ -59,9 +61,25 @@ export function summonHeard(wheel: number, played: number[], from: Summon[]): Su
   return null;
 }           // the user's pick: about two weeks, three TRAINs a day
 
-/** A species' song: its line's parts, oldest first (none for a species with no song). */
-export const songOf = (species: number | string): SongPart[] =>
-  (SONGS.songs[String(species)] ?? []).map((f) => SONGS.parts[f]).filter(Boolean);
+/**
+ * C-482 (DAEMONS T-602; the user, 2026-11-18: "since the colour palette is modified of the daemon, so would the shiny
+ * version song -- so the shiny song would be derived from the original song and the shiny's new palette"): a form's
+ * part as a SHINY sings it -- its kind's part, the few notes its shiny palette moved (tools/genshinysongs.py: a step of
+ * the key toward the notes its shiny colours name, the contour, opening and cadence kept). The rhythm, the bass, the key
+ * and when each note is learned are its kind's, so it learns as its kind does.
+ */
+export function shinyPart(form: string, part: SongPart): SongPart {
+  const moved = SONGS.shiny?.[form];
+  if (!moved?.length) return part;
+  const notes = part.notes.map((n) => [...n] as SongNote);
+  for (const [i, midi] of moved) if (notes[i]) notes[i][0] = midi;
+  return { ...part, notes };
+}
+
+/** A species' song: its line's parts, oldest first (none for a species with no song); a shiny's, every part a shiny's
+ *  (its earlier forms were shiny too). */
+export const songOf = (species: number | string, shiny = false): SongPart[] =>
+  (SONGS.songs[String(species)] ?? []).flatMap((f) => (SONGS.parts[f] ? [shiny ? shinyPart(f, SONGS.parts[f]) : SONGS.parts[f]] : []));
 
 const clamp = (x: number) => Math.max(0, Math.min(1, x));
 /** How much of a part a daemon of this growth curve with this much experience knows: 0 nothing, 1 perfect. */
@@ -108,8 +126,9 @@ export function trainGain(part: SongPart, growth: number): number {
 export interface Adjusted { note: number; from: number; to: number; bits: string }
 export interface Lesson { part: SongPart | null; stage: number; before: number; after: number; gain: number; counted: boolean;
                           adjusted: Adjusted[]; perfect: boolean; ready: boolean }
-export function lesson(species: number, exp: number, growth: number, trainsToday: number, evolves: boolean): Lesson {
-  const song = songOf(species), part = song[song.length - 1] ?? null;
+export function lesson(species: number, exp: number, growth: number, trainsToday: number, evolves: boolean,
+                       shiny = false): Lesson {
+  const song = songOf(species, shiny), part = song[song.length - 1] ?? null;
   if (!part) return { part: null, stage: 0, before: 0, after: 0, gain: 0, counted: false, adjusted: [], perfect: false, ready: false };
   const before = shareOf(part, exp, growth);
   const counted = trainsToday < TRAINS_A_DAY && before < 1;

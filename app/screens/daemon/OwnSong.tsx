@@ -119,14 +119,14 @@ export function songLine(s: { share: number; perfect: boolean; ready: boolean; a
 // daemon's own page -- the whole of its song so far, each part on its staff, the earlier parts whole and its own as it
 // knows it (static where it has not learned), and SING to hear it so. Every word DRAFT.
 export function SongCard({ song, ink }: { song: SongNow | null | undefined; ink: string }) {
-  const sung = useSinging(), species = song?.species;      // the song stops as the page goes: its player is released (C-440)
-  const parts = useMemo(() => (species !== undefined ? songOf(species) : []), [species]);
+  const sung = useSinging(), species = song?.species, shiny = !!song?.shiny;   // the song stops as the page goes (C-440)
+  const parts = useMemo(() => (species !== undefined ? songOf(species, shiny) : []), [species, shiny]);   // C-482: a shiny's
   if (!song || !parts.length) return null;
   const shares = parts.map((_, i) => (i < parts.length - 1 ? 1 : song.share));
-  const key = `own-${song.species}-${Math.round(song.share * 1000)}`;
+  const key = `own-${song.species}${shiny ? "s" : ""}-${Math.round(song.share * 1000)}`;
   return (
     <Card>
-      <Eyebrow>ITS SONG</Eyebrow>
+      <Eyebrow>{shiny ? "ITS SONG ✦ SHINY" : "ITS SONG"}</Eyebrow>{/* C-482: DRAFT */}
       <Small>{parts.length > 1
         ? "Every part it has been, whole, then its own as it knows it so far. A note it has not learned is static."   // DRAFT
         : "Its own part, as it knows it so far. A note it has not learned is static."}</Small>{/* DRAFT */}

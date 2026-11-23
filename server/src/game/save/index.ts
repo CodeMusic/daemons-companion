@@ -26,7 +26,8 @@ export type IndexEntry = { national: number; species: number; name: string; seen
   colour?: { hex: string; by: "understanding" | "bound"; understanding?: string } | null;
   said?: string; mouth?: Patch[] | null;      // C-303: what a bound daemon says of itself, and its open mouth on its picture
   season?: Season;                            // C-310: the season a daemon with seasonal forms is shown in
-  song?: number };                            // C-419: how much of its own part the INDEX sings, 1 whole (routes.ts)
+  song?: number;                              // C-419: how much of its own part the INDEX sings, 1 whole (routes.ts)
+  shiny?: boolean };                          // C-482: the one it sings is a shiny, so it sings as a shiny (T-602)
 
 // C-186 (the user, 2026-10-24: "full INDEX cards with margins (coloured by understanding gleaned)"; their rule, through
 // the game session: type match). A card stays grey until the save holds the understanding whose lobe shares one of the

@@ -37,7 +37,7 @@ import grovesJson from "../data/groves.json" with { type: "json" };
 import schoolJson from "../data/school.json" with { type: "json" };
 const GROVES = grovesJson, SCHOOL = schoolJson;
 import { readIndex } from "./game/save/index.js";
-import { indexOf, artName, awayNow, careGiven, indexSongs, songNow, trainSong, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
+import { indexOf, artName, awayNow, careGiven, indexSongsWith, songNow, trainSong, careOwner, caresFor, soundings, carriedDaemon, daemonExpression, daemonFeelings, daemonLife, doStep, ENTRY_LIMIT, entry, grown, setWalk, skyOf, sync, today, walk, type Host } from "./core.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 
@@ -137,7 +137,7 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     // C-418: its own song now, and the part it is learning -- for the widget, which draws and sings TRAIN on its own
     if (path === "/api/daemon/song") {
       const s = songNow(h, store, deviceId, now);
-      return ok(s ? { ...s, part: songOf(s.species).at(-1) ?? null, window: SONGS.window, candidates: SONGS.static.candidates,
+      return ok(s ? { ...s, part: songOf(s.species, s.shiny).at(-1) ?? null, window: SONGS.window, candidates: SONGS.static.candidates,
                       floor: SONGS.static.floor } : null);
     }
     if (path === "/api/soundings") return ok({ daemons: soundings(h, store) });   // C-195
@@ -248,9 +248,10 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
                                           : { held: true, ...q, answer: journalOf(store).find((x) => x.date === t.date)?.answer ?? null });
     }   // T-423: THE SUBTLE LAYER, once found (?preview=1, a bench check)
     if (path === "/api/index") {                                        // C-24: the save's own INDEX, OPUS's margins with it
-      const ix = readIndex(save, h.edition), known = indexSongs(h, store, deviceId, now);
-      // C-419: a bound daemon with a song carries how much of its own part the INDEX sings (1, whole)
-      return ok({ ...ix, entries: ix.entries.map((e) => (e.bound && songOf(e.species).length ? { ...e, song: known[e.species] ?? 1 } : e)) });
+      const ix = readIndex(save, h.edition), known = indexSongsWith(h, store, deviceId, now);
+      // C-419: a bound daemon with a song carries how much of its own part the INDEX sings (1, whole); C-482: a shiny's
+      return ok({ ...ix, entries: ix.entries.map((e) => (e.bound && songOf(e.species).length
+        ? { ...e, song: known.share[e.species] ?? 1, ...(known.shiny[e.species] ? { shiny: true } : {}) } : e)) });
     }
     // C-199 (3): the INDEX as a watch reads it -- every daemon met, in a line each; then one entry at a time (its picture
     // is /api/device/art?species=, its voice the reading's, kept on the card once heard)

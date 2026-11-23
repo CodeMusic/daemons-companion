@@ -9,7 +9,7 @@ import { deviceName } from "../state/me";
 export type Daemon = { personality?: number; nickname: string; name: string; species: number; level: number; today?: number };
 export type Move = { slot: number; id: number; name: string; type: string | null; power: number; pp: number; maxPP: number };
 export type Side = { label: string; seat: string; daemon: (Daemon & { types: string[]; hp: number; maxHP: number; status: string; art: string | null; moves?: Move[];
-                                                                    growth?: number; exp?: number }) | null };
+                                                                    growth?: number; exp?: number; shiny?: boolean }) | null };   // C-482: shiny
 export type Line = { text: string; side: 0 | 1 | null; hp: [number, number] | null; sound: string | null };
 export type Fight = { id: string; phase: "asked" | "on" | "over" | "declined" | "lapsed" | "withdrawn"; at: string; me: 0 | 1 | null; turn: number;
                       sides: [Side, Side]; chosen: [boolean, boolean]; deadline: string | null; secondsLeft: number | null; log: Line[][];

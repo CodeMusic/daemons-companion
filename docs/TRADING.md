@@ -27,7 +27,7 @@ which relates to the profile feature". Decided the same day by multiple choice; 
                                      afterSync: tell the exchange
 ```
 
-- **The exchange** (`server/src/exchange.ts`) lives on the hub, in the hub companion's own store. Its **players** are
+- **The exchange** (`server/src/commons/exchange.ts`) lives on the hub, in the hub companion's own store. Its **players** are
   names with device tokens (only each token's hash is kept) and an optional password (scrypt, never the password
   itself). A new player's device joins with an **invite code** made on the hub's site or on a paired phone: eight
   letters, used once, valid for fifteen minutes. Being on the tailnet is not enough to join.
@@ -154,7 +154,7 @@ built and run on the tailnet first.*
   most four seconds at a time; a commons that does not answer leaves the home's own battles as they were. Tested in
   `server/test/battle_commons.test.ts`: three homes over HTTP, two friends battling live and by challenge, the
   stranger seeing neither.
-- **Code:** `server/src/commons.ts` (homes, approval, friends, reach), `commons_api.ts` and `commons_main.ts` (its
+- **Code:** `server/src/commons/commons.ts` (homes, approval, friends, reach), `commons_api.ts` and `commons_main.ts` (its
   own HTTP server and database), `commonslink.ts` (the hub's side), and `keys.ts`. Trades are `exchange.ts`'s, with a
   reach rule. Tested end to end in `server/test/commons.test.ts`: two homes over HTTP, approved, friends, traded, each
   SYNC writing its own save.

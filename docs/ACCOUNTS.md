@@ -16,7 +16,7 @@ them.*
 
 ## What it builds on
 
-- **The exchange** (`server/src/exchange.ts`): players with a per-player token (hashed), invite codes (eight letters,
+- **The exchange** (`server/src/commons/exchange.ts`): players with a per-player token (hashed), invite codes (eight letters,
   once, fifteen minutes), an optional password (scrypt), friends, offers, a ledger. Names today are typed freely,
   2-12 letters.
 - **THE COMMONS** (`commons.ts`): homes approved by a keeper, each vouching for its own players; friends by friend code.
@@ -117,7 +117,7 @@ since nothing depends on roverbyteseer being a Mac.
 
 ## Piece 1, built 2026-11-11 (DRAFT)
 
-On THE COMMONS' server (`npm run commons`, roverbyteseer), every `/accounts/` request: `server/src/accounts.ts` (the
+On THE COMMONS' server (`npm run commons`, roverbyteseer), every `/accounts/` request: `server/src/commons/accounts.ts` (the
 guardians, profiles, kids' devices, controls, passkeys kept, delete -- no Node imports), `idtoken.ts` (an Apple or Google
 ID token checked against the provider's JWKS: RS256, issuer, audience, expiry), `webauthn.ts` (passkeys with no library:
 the new key taken, every sign-in's signature, site, page, presence and counter checked), `accounts_api.ts` (the routes,
@@ -140,14 +140,14 @@ exchange on profiles (piece 4), and the server reachable from outside the tailne
 ## Piece 3, built 2026-11-11 (DRAFT)
 
 The app's GUARDIAN card on YOU (`app/screens/you/Guardian.tsx`), through the hub: the hub passes `/api/accounts/<path>`
-to `/accounts/<path>` on the commons it is linked to (`server/src/accountslink.ts`), with the device's own tokens, which
+to `/accounts/<path>` on the commons it is linked to (`server/src/commons/accountslink.ts`), with the device's own tokens, which
 the app keeps in the keychain or the site's storage (`app/platform/accounts.ts`) and never queues offline. Sign in with
 Apple waits on `expo-apple-authentication` in the phone lane's next build; until then the card says so. For trying it,
 `ACCOUNTS_DEV_SIGNIN=1` on a scratch commons signs a guardian in by name, from that machine only.
 
 ## Piece 4, built 2026-11-11 (DRAFT)
 
-The exchange on profiles, on THE COMMONS (`server/src/profiletrade.ts`). A profile is a player there in one of two ways:
+The exchange on profiles, on THE COMMONS (`server/src/commons/profiletrade.ts`). A profile is a player there in one of two ways:
 
 - **Claimed**: a home's player, claimed into a profile by its guardian with PLAY AS IT HERE on the GUARDIAN card. The
   app sends the guardian's token to its companion (`/api/trade/claim`), the hub passes it to the commons with its

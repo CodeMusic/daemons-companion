@@ -1,9 +1,9 @@
 // C-480 (the user, 2026-11-22, by multiple choice): the daemon chooses its mind -- it weighs the job's size and kind, how
 // each mind has been doing, the job's privacy and cost; with none fitting, the job waits for one (LATER). Off, as before.
 import { beforeEach, describe, expect, it } from "vitest";
-import { choose, COOL_MS, forgetHistory, MIND_POWER, order, record, speedOf, type Mind } from "../src/ai/thoughtroute.js";
-import { preferTiiny } from "../src/ai/tiinyfirst.js";
-import type { House } from "../src/ai/house.js";
+import { choose, COOL_MS, forgetHistory, MIND_POWER, order, record, speedOf, type Mind } from "../src/machine/thoughtroute.js";
+import { preferTiiny } from "../src/machine/tiinyfirst.js";
+import type { House } from "../src/machine/house.js";
 
 const said = (t: string) => async () => t;
 const TIINY: Mind = { name: "the Tiiny", power: MIND_POWER.tiiny, home: true, ask: said("tiiny") };

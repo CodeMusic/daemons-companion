@@ -40,7 +40,8 @@ const headers = (at: TiinyAt, json = true): Record<string, string> =>
 export type WriteJob = { signal?: AbortSignal; spent?: (t: { in?: number; out?: number }) => void; by?: (mind: string) => void;
                          fell?: (error: string) => void;   // C-319 later: the mind just tried failed, and the write goes on
                          named?: (mind: string) => void;   // C-402: the mind just tried, by its own name (which module of the house)
-                         quick?: boolean };                 // C-338: someone is waiting -- the quick thinker, thinking off
+                         quick?: boolean;                   // C-338: someone is waiting -- the quick thinker, thinking off
+                         private?: boolean };               // C-480: the person's own (a journal, a meeting): home minds only, when the daemon chooses
 export const STOPPED = "stopped";
 async function timed<T>(ms: number, run: (signal: AbortSignal) => Promise<T>, outer?: AbortSignal): Promise<T> {
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms), stop = () => ctl.abort();

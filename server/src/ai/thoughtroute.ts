@@ -13,17 +13,49 @@
 
 export const MIND_POWER = { tiiny: 40, endpoint: 30, phone: 8, module: 2 } as const;
 export const HEDGE_QUICK_MS = 25_000, HISTORY = 20;
-export type Mind = { name: string; power: number; ask: () => Promise<string> };
+export type Mind = { name: string; power: number; ask: () => Promise<string>;
+                     home?: boolean;    // C-480: on the house's own networks (false: an endpoint out in the world)
+                     paid?: boolean };  // C-480: may cost money to ask (an endpoint out in the world)
 
-// how each mind has done lately, kept while the hub runs
-const done = new Map<string, boolean[]>();
-export function record(name: string, ok: boolean) { done.set(name, [...(done.get(name) ?? []), ok].slice(-HISTORY)); }
+// how each mind has done lately, kept while the hub runs -- and (C-480) how long its answers took, and when it last failed
+const done = new Map<string, boolean[]>(), took = new Map<string, number[]>(), failedAt = new Map<string, number>();
+export function record(name: string, ok: boolean, ms?: number, at = Date.now()) {
+  done.set(name, [...(done.get(name) ?? []), ok].slice(-HISTORY));
+  if (ok && ms !== undefined) took.set(name, [...(took.get(name) ?? []), ms].slice(-HISTORY));
+  if (!ok) failedAt.set(name, at);
+}
+/** the middle of its recent answer times, or null before it has answered */
+export const speedOf = (name: string): number | null => { const t = [...(took.get(name) ?? [])].sort((a, b) => a - b); return t.length ? t[Math.floor(t.length / 2)] : null; };
 export const reliabilityOf = (name: string) => { const h = done.get(name) ?? []; return (h.filter(Boolean).length + 1) / (h.length + 2); };
-export const forgetHistory = () => done.clear();
+export const forgetHistory = () => { done.clear(); took.clear(); failedAt.clear(); };
 
 export const scoreOf = (m: Pick<Mind, "name" | "power">, holds: number) => m.power * reliabilityOf(m.name) * (1 / (1 + Math.max(0, holds)));
 export function order(minds: Mind[], holds: (name: string) => number): Mind[] {
   return minds.map((m, i) => ({ m, i, s: scoreOf(m, holds(m.name)) })).sort((a, b) => b.s - a.s || a.i - b.i).map((x) => x.m);
+}
+
+// C-480 (the user, 2026-11-22, by multiple choice: "the daemon chooses its mind" -- it weighs the job's size and kind,
+// how each mind has been doing, the job's privacy and cost; with none fitting, the job waits for one): the minds for a
+// write-up, chosen rather than only scored. Only with THE MIND's setting on; off, `order` above is as it was.
+//   privacy    a private job (the journal, a meeting, a memory, a dream) goes only to minds on the house's own networks
+//   doing      a mind whose last three failed rests COOL_MS from its last failure
+//   kind/size  someone waiting: the quickest lately is worth more; a long write: the most power is worth more
+//   cost       a mind that may cost money goes after every free one
+// [] back: no mind fits now -- the caller waits for one (tiinyfirst.ts). Every word DRAFT.
+export const COOL_MS = 10 * 60_000, BIG_WRITE = 6000;
+export type Want = { quick?: boolean; size: number; private?: boolean };
+const resting = (name: string, at: number) => { const h = done.get(name) ?? [];
+  return h.length >= 3 && h.slice(-3).every((x) => !x) && at - (failedAt.get(name) ?? 0) < COOL_MS; };
+export function choose(minds: Mind[], holds: (name: string) => number, want: Want, at = Date.now()): Mind[] {
+  const fit = minds.filter((m) => (!want.private || m.home !== false) && !resting(m.name, at));
+  const worth = (m: Mind) => {
+    let s = scoreOf(m, holds(m.name));
+    if (want.quick) { const ms = speedOf(m.name); if (ms !== null) s /= 1 + ms / 10_000; }   // ten seconds halves it
+    if (want.size > BIG_WRITE) s *= m.power;                                                  // a long write leans on power
+    return s;
+  };
+  return fit.map((m, i) => ({ m, i, s: worth(m) }))
+    .sort((a, b) => Number(!!a.m.paid) - Number(!!b.m.paid) || b.s - a.s || a.i - b.i).map((x) => x.m);
 }
 
 // ask the minds in order; hedged when `hedgeMs` is given. `tried(name)` is told each mind as it is asked, `fell` each
@@ -34,7 +66,8 @@ export async function think(minds: Mind[], o: { hedgeMs?: number; tried?: (name:
   let lastError: unknown = new Error("no mind answered");   // DRAFT
   const one = async (m: Mind) => {
     o.tried?.(m.name);
-    try { const text = await m.ask(); if (!text?.trim()) throw new Error("no words came"); record(m.name, true); return { text, by: m.name }; }   // DRAFT
+    const start = Date.now();
+    try { const text = await m.ask(); if (!text?.trim()) throw new Error("no words came"); record(m.name, true, Date.now() - start); return { text, by: m.name }; }   // DRAFT
     catch (e) { record(m.name, false); o.fell?.(m.name, e); lastError = e; throw e; }
   };
   while (queue.length) {

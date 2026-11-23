@@ -895,7 +895,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // the house's minds put in order at each write (ai/thoughtroute.ts). MESH and TASKS are made below; asked only later.
   preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE, endpointsNowAll,
               () => MESH.thinkers().map((p) => ({ name: p.name, ask: (system, user, most, signal) => MESH.thinkOn(p.id, system, user, most, "a thought", signal) })),
-              (mind) => TASKS.all().filter((t) => t.state === "thinking" && t.mind === mind).length);
+              (mind) => TASKS.all().filter((t) => t.state === "thinking" && t.mind === mind).length,
+              () => store.getSetting("mind.choose") === "1");
   // C-319: THE MIND's ledger of work (ai/tasks.ts), and which mind a write-up goes to first -- as house.write tries them
   const TASKS = new Tasks((k) => store.getSetting(k), (k, v) => store.setSetting(k, v));
   // C-360: THE MESH for processing -- the hub and every node that dials in (procmesh.ts); each job a task in the ledger,
@@ -918,6 +919,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
   // The work is given `write` (house.write, counted) and says how it ended with `end`.
   const RUNNING = new Map<string, AbortController>();
+  const PRIVATE_KINDS = new Set(["journal", "meeting", "memory", "dream"]);   // C-480: the person's own words, or their daemon's nights
   const ledgered = (o: { kind: TaskKind; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string;
                          quick?: boolean }) => {   // C-338: quick -- someone stands waiting: the quick thinker, thinking off
     const ctl = new AbortController();
@@ -927,6 +929,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     let sizeIn = 0, sizeOut = 0;
     const job: WriteJob = { signal: ctl.signal, spent: (t) => { TASKS.update(task.id, { tokens: t }); },
                             by: (m) => TASKS.hop(task.id, m), fell: (e) => TASKS.fell(task.id, e), quick: o.quick,
+                            private: PRIVATE_KINDS.has(o.kind),   // C-480: the person's own -- home minds only, when the daemon chooses
                             named: (m) => TASKS.named(task.id, m) };   // C-402   // C-319 later: its hand-offs
     // quick (C-383): this one write by the quick thinker, thinking off, whatever the task's own
     const write = async (system: string, user: string, most?: number, quick?: boolean) => {
@@ -2058,7 +2061,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                       modules: await house.view(), moduleAddresses: store.getSetting("ai.moduleAddresses") ?? "",
                                       tiiny: tiinyView((k) => store.getSetting(k)), voices: voiceGeneration((k) => store.getSetting(k)),
                                       endpoints: endpointsView((k) => store.getSetting(k)),   // C-280 (1): never a key, only keySet
-                                      rings: { dream: store.getSetting("mind.ring.dream") === "home" ? "home" : "anywhere" } });   // C-307
+                                      rings: { dream: store.getSetting("mind.ring.dream") === "home" ? "home" : "anywhere" },   // C-307
+                                      chooseMind: store.getSetting("mind.choose") === "1" });   // C-480
       if (req.method === "GET" && path === "/api/talk/settings") return send(res, 200, await talkView());
       // C-190 (the user, 2026-11-12, by multiple choice): THE HUB card's CHECK EVERY BRAIN NOW -- the minute's health check
       // (C-211's dots: the AI board, n8n, the Tiiny, the endpoints) run at once, and the view with its answer
@@ -2570,6 +2574,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (b.first === "tiiny" && !tiinyIn((k) => store.getSetting(k))) return send(res, 400, { error: "Give the Tiiny's address first." });   // DRAFT
         if (b.rings?.dream !== undefined && !["anywhere", "home"].includes(b.rings.dream)) return send(res, 400, { error: "rings.dream is anywhere or home" });
         if (b.rings?.dream !== undefined) store.setSetting("mind.ring.dream", b.rings.dream === "home" ? "home" : null);   // C-307
+        if (typeof b.chooseMind === "boolean") store.setSetting("mind.choose", b.chooseMind ? "1" : null);   // C-480
         if (b.provider !== undefined) store.setSetting("talk.provider", b.provider);
         if (b.first !== undefined) setTalkFirst(store, b.first);   // C-211
         if (b.indexVoice !== undefined) store.setSetting("index.voice", b.indexVoice);

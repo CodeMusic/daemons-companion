@@ -11,7 +11,7 @@ import { persona } from "./house.js";
 import { STOPPED, tiinyChat, tiinyHear, tiinySpeak, type TiinyAt, type WriteJob } from "./tiiny.js";
 import { INDEX_VOICE, voiceRecipe } from "./voices.js";   // C-387: the INDEX's voice is a character, kept with the others
 import { chatOn, type EndpointNow } from "./endpoints.js";   // C-280 (1)
-import { MIND_POWER, order, think, type Mind, HEDGE_QUICK_MS } from "./thoughtroute.js";   // C-360
+import { choose, MIND_POWER, order, think, type Mind, HEDGE_QUICK_MS } from "./thoughtroute.js";   // C-360; C-480
 
 export type TiinyNow = () => { at: TiinyAt; model: string; quick?: string } | null;   // null: not set up, or not answering now
 // model: the background thinker; quick: the foreground one (tiiny.ts), the background one when not given
@@ -24,7 +24,8 @@ export type EndpointsNow = (homeOnly: boolean) => EndpointNow[];
 // mind holds now (THE MIND AT WORK's ledger), so a busy mind is passed for a freer one
 export type PhonesNow = () => { name: string; ask: (system: string, user: string, most: number, signal?: AbortSignal) => Promise<string> }[];
 export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => string = () => INDEX_VOICE,
-                            others: EndpointsNow = () => [], phones: PhonesNow = () => [], holds: (mind: string) => number = () => 0): House {
+                            others: EndpointsNow = () => [], phones: PhonesNow = () => [], holds: (mind: string) => number = () => 0,
+                            choosing: () => boolean = () => false): House {   // C-480: THE MIND's "let the daemon choose its mind"
   const was = { talk: house.talk.bind(house), voice: house.voice.bind(house), transcribe: house.transcribe.bind(house),
                 write: house.write.bind(house) };
   const anyWas = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(house), "any")!.get!.bind(house);
@@ -71,31 +72,33 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
     return heard ? hearAs(heard) : heard;   // C-369: whichever ear heard it
   };
   const MODULE_WRITE_MOST = 1800, PHONE_WRITE_MOST = 9000;   // characters, system and user together
+  const WAIT_STEP_MS = 30_000, WAIT_MOST_MS = 60 * 60_000;   // C-480: a job waiting for a fitting mind looks again each half minute, an hour at most
   // C-360: every mind that can write it, in order of its score now (ai/thoughtroute.ts) -- the Tiiny, the player's
   // endpoints, the household's phones that lend, the house's module -- the next asked if one fails; hedged when someone
   // is waiting. C-319: job.by names each mind as it is tried, job.fell each failure; stopped from THE MIND AT WORK, no
   // other mind is asked.
   house.write = async (system: string, user: string, maxTokens = 400, job?: WriteJob) => {
-    const t = now(), minds: Mind[] = [];
-    // the background: a write-up nobody stands waiting for -- the big thinker, thinking on, minutes allowed;
-    // C-338: job.quick -- someone stands waiting (a daemon at its easel): the quick thinker, thinking off, as a talk is
-    if (t) minds.push({ name: "the Tiiny", power: MIND_POWER.tiiny, ask: () => job?.quick
-      ? tiinyChat(t.at, t.quick || t.model, system, [], user, fetch, 90_000, maxTokens, false, false, job)
-      : tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job) });
-    // C-360: a write-up's big thinker may be away (the Tiiny answered 404 for it, 2026-11-14) -- its quick one is a mind too
-    if (t && !job?.quick && t.quick && t.quick !== t.model)
-      minds.push({ name: "the Tiiny (quick)", power: MIND_POWER.tiiny - 5, ask: () => tiinyChat(t.at, t.quick!, system, [], user, fetch, 120_000, maxTokens, false, false, job) });
-    for (const n of others(false))                             // C-280 (1): no thinking budget asked of a stranger's model
-      minds.push({ name: n.e.name, power: MIND_POWER.endpoint, ask: () => chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job) });
-    if (system.length + user.length <= PHONE_WRITE_MOST)     // a phone's on-device model holds about this much
-      for (const p of phones()) minds.push({ name: p.name, power: MIND_POWER.phone, ask: () => p.ask(system, user, maxTokens, job?.signal) });
-    // the module's window is small: a write longer than it holds is never sent to fail there ("The input content exceeds
-    // the maximum length supported by the model", a dream's telling, 2026-11-12)
+    let minds = mindsFor(system, user, maxTokens, job);
     const fits = system.length + user.length <= MODULE_WRITE_MOST;
-    if (fits) minds.push({ name: "the house's module", power: MIND_POWER.module, ask: async () => (await was.write(system, user, maxTokens, job)) ?? "" });
     if (!minds.length) throw new Error("too long for the house's module, and no other mind answered");   // DRAFT
+    // C-480: the daemon chooses -- and, when no mind fits now, the job waits for one (LATER), saying so, then goes on
+    if (choosing()) {
+      const want = { quick: !!job?.quick, size: system.length + user.length, private: !!job?.private };
+      let chosen = choose(minds, holds, want), said = false;
+      for (const until = Date.now() + WAIT_MOST_MS; !chosen.length; chosen = choose(minds, holds, want)) {
+        if (job?.signal?.aborted) throw new Error(STOPPED);
+        if (Date.now() > until) throw new Error("no fitting mind came free within the hour");                  // DRAFT
+        if (!said) { job?.by?.("LATER: waiting for a fitting mind"); said = true; }                          // DRAFT
+        await new Promise<void>((ok) => {                       // a stop ends the wait at once
+          const t = setTimeout(ok, WAIT_STEP_MS);
+          job?.signal?.addEventListener("abort", () => { clearTimeout(t); ok(); }, { once: true });
+        });
+        minds = mindsFor(system, user, maxTokens, job);
+      }
+      minds = chosen;
+    } else minds = order(minds, holds);
     try {
-      return (await think(order(minds, holds), {
+      return (await think(minds, {
         hedgeMs: job?.quick ? HEDGE_QUICK_MS : undefined,
         tried: (name) => job?.by?.(name),
         fell: (_n, e) => { if (!job?.signal?.aborted) job?.fell?.((e as Error)?.message?.slice(0, 80) || "failed"); },
@@ -108,5 +111,27 @@ export function preferTiiny(house: House, now: TiinyNow, indexRecipe: () => stri
       return null;                                             // as before: the module, last, may have nothing to say
     }
   };
+  // every mind that could take this write now (C-360), each marked home or not and paid or not (C-480)
+  function mindsFor(system: string, user: string, maxTokens: number, job?: WriteJob): Mind[] {
+    const t = now(), minds: Mind[] = [];
+    // the background: a write-up nobody stands waiting for -- the big thinker, thinking on, minutes allowed;
+    // C-338: job.quick -- someone stands waiting (a daemon at its easel): the quick thinker, thinking off, as a talk is
+    if (t) minds.push({ name: "the Tiiny", power: MIND_POWER.tiiny, ask: () => job?.quick
+      ? tiinyChat(t.at, t.quick || t.model, system, [], user, fetch, 90_000, maxTokens, false, false, job)
+      : tiinyChat(t.at, t.model, system, [], user, fetch, 300_000, maxTokens, true, false, job) });
+    // C-360: a write-up's big thinker may be away (the Tiiny answered 404 for it, 2026-11-14) -- its quick one is a mind too
+    if (t && !job?.quick && t.quick && t.quick !== t.model)
+      minds.push({ name: "the Tiiny (quick)", power: MIND_POWER.tiiny - 5, ask: () => tiinyChat(t.at, t.quick!, system, [], user, fetch, 120_000, maxTokens, false, false, job) });
+    for (const n of others(false))                             // C-280 (1): no thinking budget asked of a stranger's model
+      minds.push({ name: n.e.name, power: MIND_POWER.endpoint, home: n.home, paid: !n.home,
+                   ask: () => chatOn(n.e, n.model, system, [], user, fetch, 120_000, maxTokens, false, job) });
+    if (system.length + user.length <= PHONE_WRITE_MOST)     // a phone's on-device model holds about this much
+      for (const p of phones()) minds.push({ name: p.name, power: MIND_POWER.phone, ask: () => p.ask(system, user, maxTokens, job?.signal) });
+    // the module's window is small: a write longer than it holds is never sent to fail there ("The input content exceeds
+    // the maximum length supported by the model", a dream's telling, 2026-11-12)
+    const fits = system.length + user.length <= MODULE_WRITE_MOST;
+    if (fits) minds.push({ name: "the house's module", power: MIND_POWER.module, ask: async () => (await was.write(system, user, maxTokens, job)) ?? "" });
+    return minds;
+  }
   return house;
 }

@@ -57,6 +57,7 @@ function LendCard({ ink }: { ink: string }) {
 
 export function MindCard({ ink }: { ink: string }) {
   const [s, setS] = useState<Sense | null>(null);
+  const [chooses, setChooses] = useState(false);   // C-480
   const [rings, setRings] = useState<Record<Kind, Ring> | null>(null);
   const [dream, setDream] = useState<"anywhere" | "home" | null | undefined>(undefined);   // C-344: undefined, not asked yet
   const [e, setE] = useState<{ url: string; model: string; name: string; key: string; keySet: boolean } | null>(null);
@@ -90,11 +91,16 @@ export function MindCard({ ink }: { ink: string }) {
     look();
     if (ON_PHONE) Promise.all([ringOf("talk"), ringOf("guide")]).then(([talk, guide]) => setRings({ talk, guide }));
     else setRings({ talk: "anywhere", guide: "anywhere" });   // the site: every ring is a phone's own
-    api<{ rings?: { dream?: "anywhere" | "home" } }>("/api/talk/settings").then((t) => setDream(t.rings?.dream ?? "anywhere")).catch(() => setDream(null));
+    api<{ rings?: { dream?: "anywhere" | "home" }; chooseMind?: boolean }>("/api/talk/settings")
+      .then((t) => { setDream(t.rings?.dream ?? "anywhere"); setChooses(!!t.chooseMind); }).catch(() => setDream(null));
   }, []);
   if (!s || !rings || !e || dream === undefined) return <Pending title="THE MIND" height={ON_PHONE ? [1650, 1300] : [1199, 857]} />;   // C-344: its place held
 
   const pick = async (k: Kind, r: Ring) => { await setRing(k, r); setRings({ ...rings, [k]: r }); };
+  // C-480: the daemon chooses its mind for the hub's write-ups, or the minds are asked in their usual order
+  const pickChoose = async (on: boolean) => {
+    try { await api("/api/talk/settings", { chooseMind: on }); setChooses(on); } catch (err) { setNote((err as Error).message); }
+  };
   const pickDream = async (r: "anywhere" | "home") => {
     try { await api("/api/talk/settings", { rings: { dream: r } }); setDream(r); } catch (err) { setNote((err as Error).message); }
   };
@@ -158,6 +164,15 @@ export function MindCard({ ink }: { ink: string }) {
         </YStack>
       ) : null}
       <Small color="$color10">The GUIDE and dreams are kept on the hub, so they cannot be thought on this phone alone. The JOURNAL is always written at home.</Small>
+      {dream ? (
+        <YStack gap={4}>
+          <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color="$color10">LET THE DAEMON CHOOSE ITS MIND</Text>
+          <Choice value={chooses ? "on" : "off"} ink={ink} options={[["off", "USUAL ORDER"], ["on", "IT CHOOSES"]]} onPick={(v) => pickChoose(v === "on")} />
+          <Small color="$color10">{chooses
+            ? "For each write-up it weighs the job: someone waiting goes to the quickest lately, a long one to the strongest; your journal, meetings, memories and dreams stay on minds at home; a mind that has been failing rests a while; one that may cost money comes last. With no mind fit and free, the job waits in LATER and says so."
+            : "The hub's minds are asked strongest first, as they are doing now."}</Small>
+        </YStack>
+      ) : null}
       {rings.talk === "phone" && !s.phone.mind ? <Small color="$color8">{`This phone cannot think for itself (${s.phone.why ?? "it needs iOS 26 and Apple Intelligence"}), so TALK will not answer here.`}</Small> : null}
 
       {ON_PHONE ? <>

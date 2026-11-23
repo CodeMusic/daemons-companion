@@ -161,7 +161,7 @@ export function LibraryScreen() {
     const l = LOOKS[book!];
     if (!l) return <YStack gap={14}>{back}{el}</YStack>;
     // T-533: THE ORIGIN OF A DAEMON's ink is the game's dark brown, lost on the night's page -- there its header is bone
-    const ink = book === "origin" && dark ? ORIGIN.page : l.ink;
+    const ink = book === "origin" && dark ? ORIGIN.page : book === "shadow" && dark ? SHADOW.page : l.ink;   // C-474: the night's ink too
     return (
       <BookLookProvider look={l}>
         <YStack gap={14}>

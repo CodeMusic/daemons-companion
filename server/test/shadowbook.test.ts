@@ -10,7 +10,7 @@ import shadow from "../data/shadow.json" with { type: "json" };
 import P from "../data/profile_layout.json" with { type: "json" };
 import { SHADOW_FLAG, readShadow, savedShadow, type Shadow } from "../src/library/shadowbook.js";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { buildSave } from "./build_save.js";
 
 type Book = { flag: number; sections: { label: string; entries: { picture: string; frames: number; paragraphs: { text: string }[] }[] }[] };

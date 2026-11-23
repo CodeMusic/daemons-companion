@@ -15,8 +15,8 @@
 // Every word here is DRAFT, words to a model, never shown.
 import type { Store } from "../shared/store.js";
 import { journalOf, journalsOf } from "../lifemanagement/journal.js";
-import { monthOf, type Hemisphere } from "../months.js";
-import { Synesthesia } from "../synesthesia.js";
+import { monthOf, type Hemisphere } from "./months.js";
+import { Synesthesia } from "./synesthesia.js";
 
 export type MuseFacts = {
   persona: string;              // the persona of the day's text (persona.ts), or personaOf's

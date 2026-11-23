@@ -8,10 +8,10 @@
 // THE SUBTLE LAYER. Every word DRAFT. No node: imports.
 // C-272 (the user, 2026-11-01): each face also carries a PROPHECY, drawn from its daemon, its type and its INDEX entry --
 // the app's alone, under the card; the game and the watches keep the short phrase.
-import arcanaJson from "../data/arcana.json" with { type: "json" };
-import speciesJson from "../data/species.json" with { type: "json" };
-import thirteenJson from "../data/thirteen.json" with { type: "json" };
-import type { Store } from "./shared/store.js";
+import arcanaJson from "../../data/arcana.json" with { type: "json" };
+import speciesJson from "../../data/species.json" with { type: "json" };
+import thirteenJson from "../../data/thirteen.json" with { type: "json" };
+import type { Store } from "../shared/store.js";
 
 // C-239: and SPELLCRAFT, THE HERMETIC LAYER's face of the same twenty-two -- its own deck, drawn once that book is held.
 // C-272/C-273 (the user, 2026-11-01): THE HERMETIC LAYER's two decks are ABOVE and BELOW, as THE SUBTLE LAYER's are REASON

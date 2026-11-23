@@ -9,7 +9,7 @@ import { GUIDE_SETUP, guideQuestion } from "../library/guideask.js";
 import type { House, TalkAnswer, TalkAsk } from "./house.js";
 import { persona } from "./house.js";
 import { STOPPED, tiinyChat, tiinyHear, tiinySpeak, type TiinyAt, type WriteJob } from "./tiiny.js";
-import { INDEX_VOICE, voiceRecipe } from "../ai/voices.js";   // C-387: the INDEX's voice is a character, kept with the others
+import { INDEX_VOICE, voiceRecipe } from "../psyche/voices.js";   // C-387: the INDEX's voice is a character, kept with the others
 import { chatOn, type EndpointNow } from "./endpoints.js";   // C-280 (1)
 import { choose, MIND_POWER, order, think, type Mind, HEDGE_QUICK_MS } from "./thoughtroute.js";   // C-360; C-480
 

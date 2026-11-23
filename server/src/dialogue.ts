@@ -20,7 +20,7 @@
 // (dd/MMM/yyyy hh:mm TT) until there is one. Every word a player reads is DRAFT. No node: imports.
 import type { Store } from "./shared/store.js";
 import { safeLine } from "./meetsafe.js";
-import { cardOf, factsFrom, personaOf, personaVoice, speciesFacts, systemOf, type PersonaFacts } from "./ai/personaof.js";
+import { cardOf, factsFrom, personaOf, personaVoice, speciesFacts, systemOf, type PersonaFacts } from "./psyche/personaof.js";
 import week from "../data/week.json" with { type: "json" };
 
 export type Mode = "standard" | "twovoices";

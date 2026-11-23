@@ -20,7 +20,7 @@
 // 0 -- is BLACK, the light off; past the top is WHITE, the carry, every colour at once spilling into the next place.
 //
 // Every word here DRAFT.
-import week from "../data/week.json" with { type: "json" };
+import week from "../../data/week.json" with { type: "json" };
 import { deviceDay, type Palette } from "./days.js";
 
 export type Cycle = "day" | "month";

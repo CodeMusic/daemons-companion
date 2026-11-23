@@ -3,7 +3,7 @@
 // counts and never vouches (DAEMONS T-459, 4.33). Every word DRAFT.
 // C-357, RECOGNITION and THE MASK (the user's picks, 2026-11-17): every read and lean can be answered with SEEN, once. A
 // seen misread stays, says it was the mend, and counts with the calm; a week with none answered and the daemon wears a
-// mask in the den and stops sending them, until one is (server/src/intuition.ts).
+// mask in the den and stops sending them, until one is (server/src/psyche/intuition.ts).
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { useSubtleInk } from "../../state/look";

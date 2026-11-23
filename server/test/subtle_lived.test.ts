@@ -3,7 +3,7 @@
 // SAME DRIVE's is in weathering.test.ts.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
-import { howOf, maskOf, MASK, readsView, seeRead, takeLean, takeRead } from "../src/intuition.js";
+import { howOf, maskOf, MASK, readsView, seeRead, takeLean, takeRead } from "../src/psyche/intuition.js";
 import { feltOf, processOf, whenSaid } from "../src/processes.js";
 import { journalOf, keepEntry, newJournal } from "../src/lifemanagement/journal.js";
 

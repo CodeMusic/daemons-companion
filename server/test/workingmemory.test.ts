@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { SPAN } from "@daemons/praxis";
 import { Store } from "../src/shared/db.js";
-import { dayMaterial } from "../src/memory.js";
+import { dayMaterial } from "../src/psyche/memory.js";
 import { noticedOf, spaceKey, stepOf, threadOf } from "../src/workingmemory.js";
 
 const DAEMON = 0xdeadbeef;

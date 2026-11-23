@@ -13,7 +13,7 @@ import { driftOf, stageAt } from "../../sound/binaural";
 import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../../sound/sleepSession";
 import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../../sound/song";   // C-362
 import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
-import { Synesthesia } from "../../../server/src/synesthesia";
+import { Synesthesia } from "../../../server/src/psyche/synesthesia";
 import { PALETTE } from "../../state/look";
 
 type Where = "mine" | "household" | "community";

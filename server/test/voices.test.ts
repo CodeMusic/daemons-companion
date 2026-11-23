@@ -1,6 +1,6 @@
 // C-251: a daemon's voice as a description, for a voice-design model
 import { describe, expect, it } from "vitest";
-import { moodOfVoice, ownVoice, TYPE_VOICE, VOICES_OF_OWN, voiceRecipe } from "../src/ai/voices.js";
+import { moodOfVoice, ownVoice, TYPE_VOICE, VOICES_OF_OWN, voiceRecipe } from "../src/psyche/voices.js";
 
 const calm = { glad: 0, mad: 0, sad: 0, calm: 0, restless: 0, strongest: null };
 

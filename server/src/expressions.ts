@@ -14,7 +14,7 @@
 // Which one shows: asleep or drowsy first (C-114), then the strongest feeling past its threshold (C-120), else awake.
 // The names are the code's -- a screen never says them (feelings.ts).
 import type { Life } from "./life.js";
-import type { Axis, Feelings } from "./feelings.js";
+import type { Axis, Feelings } from "./psyche/feelings.js";
 import facesJson from "../data/faces.json" with { type: "json" };
 import mouthsFoundJson from "../data/mouths.found.json" with { type: "json" };   // C-303
 

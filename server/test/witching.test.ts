@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { AS_ABOVE, breathOf, HOUR_LINES, hourDate, hourGone, hourLine, minutesLeft, PULSE, pulseOf, WITCHING_NAMES, WITCHING_TUNE,
-         witchingLine, witchingNow, witchingRoutine } from "../src/witching.js";
+         witchingLine, witchingNow, witchingRoutine } from "../src/psyche/witching.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 
 const at = (h: number, m = 0) => new Date(2026, 9, 29, h, m);
@@ -60,7 +60,7 @@ describe("C-237: the hour's face", () => {
 // DAEMONS T-519 (the user, 2026-11-02): the witching hour's strength as the game's glitch has it, THE CREATOR'S HOUR at
 // 4:24-5:12 (Brahma muhurta at a 6:00 sunrise), and the catch-up for play that starts inside an hour
 describe("T-519: the two hours, and the catch-up", async () => {
-  const W = await import("../src/witching.js");
+  const W = await import("../src/psyche/witching.js");
   const t = (h: number, m: number, s = 0) => new Date(2026, 10, 4, h, m, s);
   it("follows the game's glitch curve in the witching hour: a quarter at 3:00, all at 3:30, 0.28 at 3:59", () => {
     expect([W.witchingStrength(t(2, 59)), W.witchingStrength(t(3, 0)), W.witchingStrength(t(3, 15)), W.witchingStrength(t(3, 30)),

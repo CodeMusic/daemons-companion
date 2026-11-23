@@ -13,7 +13,7 @@ const ART: { pieces: string[]; season: Record<string, [string, string]>; hats: R
   = require("../../server/data/casino_art.json");
 
 export type Dress = { look: string; a: string; b: string; piece: string; hat: string | null };
-// The companion decides it once (server/src/context.ts casinoDress, the state's casino.dress) for the boards, the phone and
+// The companion decides it once (server/src/psyche/context.ts casinoDress, the state's casino.dress) for the boards, the phone and
 // the Tab5 alike; the rule below only for a state without it (no save read yet, or an older companion)
 export function casinoDress(st: PlayerState): Dress {
   const d = st.casino?.dress;

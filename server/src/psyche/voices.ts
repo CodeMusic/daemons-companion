@@ -6,7 +6,7 @@
 // Its type gives the voice's character, its category a word of its own, and how it feels right now shades the delivery
 // (feelings.ts: the feeling is never NAMED in what it says; it is only heard). A trainer may write a daemon's recipe
 // themselves (the store's voice.recipe.<species>), and that is used whole. Every word here is DRAFT. No node: imports.
-import type { Feelings } from "../feelings.js";
+import type { Feelings } from "./feelings.js";
 
 // C-387: the two voices that are not a daemon's -- the INDEX reading, and the device reading an entry -- live here with the
 // daemons' (they were in ai/tiinyfirst.ts, which only routes them to a model).

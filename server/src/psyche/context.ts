@@ -6,12 +6,12 @@
 // world (the user's choice): the clock here, the holidays and seasons by the save's edition, and the weather of a city
 // set on the site (weather.ts fetches it; kept here as "weather.now"). The game's casino follows the game's world (T-422).
 // Nothing here may import Node: a phone hosting alone runs it too.
-import speciesJson from "../data/species.json" with { type: "json" };
-import casinoArt from "../data/casino_art.json" with { type: "json" };
-import type { Store } from "./shared/store.js";
+import speciesJson from "../../data/species.json" with { type: "json" };
+import casinoArt from "../../data/casino_art.json" with { type: "json" };
+import type { Store } from "../shared/store.js";
 import type { Edition, Season } from "./seasons.js";
 import type { Holiday } from "./holidays.js";
-import { RETURN_AT } from "./game/slots.js";
+import { RETURN_AT } from "../game/slots.js";
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; national?: number;
   native?: { seasons?: string[] | null; hours?: string[] | null } | null }>;

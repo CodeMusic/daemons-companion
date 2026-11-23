@@ -1,6 +1,6 @@
 // DAEMON -- Yours (its life, care, TALK, SYNC, NEARBY, meetings), Party; the INDEX and the Routines are their own files. (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
-import { creatorNow } from "../../../server/src/witching";   // C-314: only the real hour keeps a dawn
+import { creatorNow } from "../../../server/src/psyche/witching";   // C-314: only the real hour keeps a dawn
 import { File } from "expo-file-system";
 import { keepStreamed, keepVoice, readingVoice, voiceFile } from "../../platform/voiceFile";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -624,7 +624,7 @@ export function MeetingsCard() {
 }
 
 // C-314 (the user, 2026-11-10): in THE CREATOR'S HOUR, the den open tells the companion once a morning -- seven mornings
-// open THE EUDAIMON LAYER in the companion (server/src/dawns.ts; the hub checks the hour on its own clock). A forced dawn
+// open THE EUDAIMON LAYER in the companion (server/src/psyche/dawns.ts; the hub checks the hour on its own clock). A forced dawn
 // (</>) is never counted: only the real hour.
 function useDawnKept(inHour: boolean) {
   const [k, setK] = useState<{ kept: number; needed: number; earned: boolean } | null>(null);

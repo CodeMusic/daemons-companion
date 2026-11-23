@@ -127,7 +127,7 @@ void paintDen(Stage &s, JsonObject den) {
 
 // A frame: the den, its shadow, and the daemon where the walk has it -- mirrored when it goes right.
 // C-312 (the user, 2026-11-10, by multiple choice: "Breathing top bands"): THE AURORA in the den's night sky, as the
-// app's den draws it -- the den's rule to the bit (server/src/aurora.ts, the cartridge's daemons_aurora.c): the book
+// app's den draws it -- the den's rule to the bit (server/src/psyche/aurora.ts, the cartridge's daemons_aurora.c): the book
 // mended, 20:00 to 5:00, one night in three from the date; six bands of a sixteenth of the sky, the edition's line (red
 // over green under the conjugate light), breathing with the sixteen-second breath on the clock. Blended into the frame
 // over the den, under the daemon.

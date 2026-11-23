@@ -1,7 +1,7 @@
 // C-236 (the user, 2026-10-29): the witching hour -- from 3:00 to 4:00 in the morning, on this phone's clock, the carried
 // daemon wears a thin shimmer and casts no shadow, and, once the save holds THE SUBTLE LAYER, it has a routine of its
 // own named for its first type, here only in the hour: its tune falls, and one half step does not belong. The names and
-// the tune are server/src/witching.ts's, one set with the game's (DAEMONS T-480). Every word DRAFT.
+// the tune are server/src/psyche/witching.ts's, one set with the game's (DAEMONS T-480). Every word DRAFT.
 // C-237: every pulse breathes red<->blue through the book's purple on the clock's eight-second breath (witching.ts PULSE,
 // the watches and the game the same); the shimmer's inner circle fills widdershins in emerald over the hour, the minutes
 // left and the date beside it; and a touch on the den in the hour opens AS ABOVE SO BELOW in place of the care keys.
@@ -10,10 +10,10 @@ import { useEffect, useRef, useState } from "react";
 import { AppState, Pressable, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { AS_ABOVE, creatorLevelNow, creatorNow, creatorToneNow, EMERALD, goldBreathOf, hourDate, hourGone, minutesLeft, pulseNow, WITCHING_TUNE, witchingLevel,
-         witchingLine, witchingNow, witchingRoutine } from "../../../server/src/witching";
+         witchingLine, witchingNow, witchingRoutine } from "../../../server/src/psyche/witching";
 import { api, ON_PHONE } from "../../platform/net";
 import { auroraForced, dawnForced, hourForced, onSession } from "../../state/dev";   // C-275: </> sets the hour, in memory only; T-519 the creator's too; C-305 the aurora's nights
-import { auroraShows, auroraWeight, skyBands } from "../../../server/src/aurora";   // C-305, C-306
+import { auroraShows, auroraWeight, skyBands } from "../../../server/src/psyche/aurora";   // C-305, C-306
 import { dayRoot, soundLevel, soundOf } from "../../sound/tuneSound";
 import { dawnTone } from "../../sound/dawnTone";            // T-519: THE CREATOR'S HOUR's tone
 import { Action, Small } from "../../ui/ui";
@@ -29,7 +29,7 @@ export function useWitching() {
 }
 
 // T-519 (the user, 2026-11-02): when this app last came to the front -- the catch-up counts from here. Opened or brought
-// back inside an hour, its effect waits a minute and then eases up to where the clock has it (server/src/witching.ts).
+// back inside an hour, its effect waits a minute and then eases up to where the clock has it (server/src/psyche/witching.ts).
 let arrived = Date.now();
 AppState.addEventListener("change", (state) => { if (state === "active") arrived = Date.now(); });
 export const arrivedAt = () => arrived;
@@ -236,7 +236,7 @@ export function HalloweenNote({ h, masked, name }: { h: HalloweenT; masked: bool
 }
 
 // C-305 (DAEMONS T-528, vision 4.40): THE AURORA -- once THE UNITY BOOK is mended, on a night of light (about one in three,
-// 8 PM to 5 AM, picked from the date by the game's own rule: server/src/aurora.ts), the den's sky takes the edition's
+// 8 PM to 5 AM, picked from the date by the game's own rule: server/src/psyche/aurora.ts), the den's sky takes the edition's
 // line, as the game's grove skies do: oxygen's red strongest in the top band in CONTENT, its green a band lower in
 // CONTEXT, breathing on the creator's hour's sixteen seconds -- the clock's, so a phone and a GBA breathe together.
 // Looked at each half minute; </> forces it on (as on a night of light) or off. C-306 (T-528 part 2): under the

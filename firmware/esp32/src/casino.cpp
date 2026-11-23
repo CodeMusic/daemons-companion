@@ -112,7 +112,7 @@ static void reportNow() {
 
 // ---- how it is dressed ---------------------------------------------------------------------------------------------
 static bool dressed() { return st.holiday.name.length() && !st.holiday.quiet; }
-// C-158: the companion sends how it is dressed (server/src/context.ts casinoDress), the one rule the phone and the Tab5
+// C-158: the companion sends how it is dressed (server/src/psyche/context.ts casinoDress), the one rule the phone and the Tab5
 // read too; this board's own rule below is for a companion too old to send it -- the same rule, kept the same
 static bool sent() { return st.casino.look.length(); }
 static String lookNow() {                       // the holiday's look, else the weather's, else the season's own

@@ -6,7 +6,7 @@
 // Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Button, Text, XStack, YStack } from "tamagui";
-import { EMERALD, pulseNow } from "../../../server/src/witching";
+import { EMERALD, pulseNow } from "../../../server/src/psyche/witching";
 import { SCREEN } from "../../state/data";
 import { api } from "../../platform/net";
 import { previewing } from "../../state/preview";

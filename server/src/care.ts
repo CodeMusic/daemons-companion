@@ -22,7 +22,7 @@
 // No node: imports (a phone hosting alone works it out too).
 import type { Interaction } from "./life.js";
 import { shade as tint, type Drawn, type Face, type Patch, type Shade } from "./expressions.js";
-import type { Feelings } from "./feelings.js";
+import type { Feelings } from "./psyche/feelings.js";
 
 export type Worn = { shadows: boolean; bloodshot: boolean };
 export type Care = { rest: number; hunger: number; thirst: number; weight: number; companionship: number; worn: Worn;

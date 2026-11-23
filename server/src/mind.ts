@@ -7,7 +7,7 @@
 // Every word DRAFT.
 import eventsJson from "../data/events.json" with { type: "json" };
 import { DREAM_TITLES, DREAM_VARS, type Quality } from "./dreams.js";
-import type { Feelings } from "./feelings.js";
+import type { Feelings } from "./psyche/feelings.js";
 import { blocks, LAYOUT, type Layout } from "./game/save/reader.js";
 import { feelingWord } from "./self.js";
 

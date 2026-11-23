@@ -9,7 +9,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Cards } from "../library/Arcana";   // C-313: the dawn readings, its own deck
 import { Text, XStack, YStack } from "tamagui";
-import { EMERALD, goldBreathOf } from "../../../server/src/witching";
+import { EMERALD, goldBreathOf } from "../../../server/src/psyche/witching";
 import { SCREEN } from "../../state/data";
 import { Art, Small } from "../../ui/ui";
 import { ReadAloud } from "../../ui/readAloud";

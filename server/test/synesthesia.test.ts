@@ -1,7 +1,7 @@
 // C-385: SYNESTHESIA -- the week's seven and the year's twelve, and every translation between them.
 import { describe, expect, it } from "vitest";
-import { CARRY, PITCHES, Synesthesia, VOID } from "../src/synesthesia.js";
-import { monthOf } from "../src/months.js";
+import { CARRY, PITCHES, Synesthesia, VOID } from "../src/psyche/synesthesia.js";
+import { monthOf } from "../src/psyche/months.js";
 
 describe("the twelve-tone year (the user, 2026-11-16)", () => {
   const want: [number, string, string[]][] = [

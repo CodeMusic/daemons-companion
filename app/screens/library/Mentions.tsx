@@ -1,6 +1,6 @@
 // C-455 (the user, 2026-11-21, by multiple choice: a letter in its own voice, the numbers under it; one name per span;
 // on TODAY, then kept in a book on the LIBRARY's shelf beside the DREAM-BOOKS): MENTIONS FROM YOUR DAEMON. TODAY shows the
-// newest letter not yet read (server/src/mentions.ts newestUnread); read, it stays in the book, which reads a page at a time,
+// newest letter not yet read (server/src/psyche/mentions.ts newestUnread); read, it stays in the book, which reads a page at a time,
 // newest first, its cover the daemon who wrote the newest. Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";

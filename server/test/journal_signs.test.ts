@@ -4,7 +4,7 @@ import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
 import { chapterWords, DREAM_PAGE_ASK, PAGE_ASK, journalOf, signsWords, writeChapter, writeSigns } from "../src/lifemanagement/journal.js";
-import { LEXICON, lensesOf, plainSigns, readSigns, returningSigns, signName, signsAsk, SIGNS_ASK, symbolsIn, type Lexicon } from "../src/signs.js";
+import { LEXICON, lensesOf, plainSigns, readSigns, returningSigns, signName, signsAsk, SIGNS_ASK, symbolsIn, type Lexicon } from "../src/psyche/signs.js";
 
 const h: Host = { edition: "CONTENT", save: { read: () => null, write: () => null } };
 const post = (store: Store, path: string, body: object, now = new Date("2026-11-12T12:00:00Z")) =>

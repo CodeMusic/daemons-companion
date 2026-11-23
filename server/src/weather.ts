@@ -4,7 +4,7 @@
 // place are kept ("weather.city"); the weather now is kept as "weather.now" (context.ts reads it), fetched every fifteen
 // minutes while a city is set. Node's own fetch; the phone hosting alone has no weather of its own.
 import type { Store } from "./shared/store.js";
-import { skyOf, type Weather, type WeatherToday } from "./context.js";
+import { skyOf, type Weather, type WeatherToday } from "./psyche/context.js";
 import { fixesOf } from "./where.js";
 
 export interface Place { name: string; country: string; latitude: number; longitude: number }

@@ -6,7 +6,7 @@
 // short paragraph; THE MONTH, yesterday folded into the running month and rewritten the same size, so what falls out of
 // it is gone, as it is for anyone; and KEPT, the moments worth keeping past the month, a line each. If no mind answers,
 // the day waits and is made at the next chance; the self works from the last month kept. Never shown as written: DRAFT.
-import type { Store } from "./shared/store.js";
+import type { Store } from "../shared/store.js";
 import { lastWake } from "./persona.js";
 
 export const KEPT_MOST = 40;

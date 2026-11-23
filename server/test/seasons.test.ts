@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { season } from "../src/seasons.js";
+import { season } from "../src/psyche/seasons.js";
 
 // The same boundaries DAEMONS tools/seasons.py was checked against (vision 9.21: CONTENT north, CONTEXT south).
 const at = (m: number, d: number) => new Date(2026, m - 1, d);

@@ -6,7 +6,7 @@ chosen, with ACE-Step (seer/acestep/install.sh).
 
 ACE-Step 1.5 (musai-services/musaisong) already runs on this machine, on 127.0.0.1:8001 only. This is the hub's keyed
 door to it, beside LiteLLM, the way tiiny_voice_stream.py is the door to the Tiiny's voice: the hub writes the
-caption from the daemon's context (companion server/src/sleepsound.ts), asks for a piece here, and fetches the finished
+caption from the daemon's context (companion server/src/psyche/sleepsound.ts), asks for a piece here, and fetches the finished
 file. Nothing is kept here past that:
 
     POST /v1/sleep/make   {caption, seconds 60-600, bpm, keyscale, seed?}   -> {job}

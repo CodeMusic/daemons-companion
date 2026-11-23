@@ -2,8 +2,8 @@
 // C-149: the holiday a date keeps in an edition -- DAEMONS T-416's table by its real names (data/holidays.json), with
 // how a board dresses for it. CONTENT keeps the COMMON and the NORTHERN ones, CONTEXT the COMMON and the SOUTHERN; on a
 // day with two, the edition's own shows (T-416's open Q2, its first answer). A QUIET day is named and left undressed.
-import holidaysJson from "../data/holidays.json" with { type: "json" };
-import seasonsJson from "../data/seasons.json" with { type: "json" };
+import holidaysJson from "../../data/holidays.json" with { type: "json" };
+import seasonsJson from "../../data/seasons.json" with { type: "json" };
 import type { Edition, Season } from "./seasons.js";
 
 type Rule = { kind: "fixed"; month: number; day: number } | { kind: "nth_weekday"; month: number; n: number; weekday: number }

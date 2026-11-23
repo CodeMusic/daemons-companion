@@ -8,12 +8,12 @@
 // down on the board, and is turned there. The backs are all one (they never show the type). C-272: under a turned card,
 // its PROPHECY -- the app's alone; the game and the watches keep the short phrase. Only read, never an effect.
 // C-357 (2), THE PHYSICS (the user's pick, 2026-11-12): in THE SUBTLE LAYER, PAST / PRESENT / FUTURE is laid once a day and
-// kept (server/src/arcana.ts daySpread). All twenty-two lie faint before it is drawn (ALL PATHS); once turned, PAST and
+// kept (server/src/psyche/arcana.ts daySpread). All twenty-two lie faint before it is drawn (ALL PATHS); once turned, PAST and
 // PRESENT stay where they fell -- touched, they say so (DECOHERENCE) -- and only the FUTURE may be drawn again (WHICH PATH).
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { thinNow } from "../../../server/src/witching";
+import { thinNow } from "../../../server/src/psyche/witching";
 import { api } from "../../platform/net";
 import { previewing } from "../../state/preview";
 import { Art, Small } from "../../ui/ui";

@@ -1,6 +1,6 @@
 // C-334 (the user, 2026-11-11: "generitive sleep sounds ... DAEMON-ified (using again context to steer the output -- such
 // as the daemons index entry or care/mood/companionship)"): SLEEP SOUNDS, above the dreams -- the piece made for the
-// daemon as it is tonight (by the hub, on roverbyteseer's music maker: server/src/sleepsound.ts says how its context
+// daemon as it is tonight (by the hub, on roverbyteseer's music maker: server/src/psyche/sleepsound.ts says how its context
 // steers it), played for thirty minutes and faded out over the last ten; DRIFT DOWN, the binaural layer, for headphones.
 // A piece made once is kept and played again until the daemon's context moves. Every word here is DRAFT.
 import { useEffect, useState } from "react";

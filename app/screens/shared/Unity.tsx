@@ -16,7 +16,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { EMERALD } from "../../../server/src/witching";
+import { EMERALD } from "../../../server/src/psyche/witching";
 import { Listen } from "../../ui/bookAudio";
 import { usePlace } from "../../state/place";   // C-309
 import { BookCover, CoverCrop, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures

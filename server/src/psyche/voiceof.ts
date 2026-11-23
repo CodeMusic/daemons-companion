@@ -11,7 +11,7 @@
 //   a book            each its own; THE NOTEBOOK is the player's, so it is read in the player's voice
 //
 // Every word here is DRAFT, the user's to rewrite. No node: imports (core.ts reaches this on the phone).
-import type { Feelings } from "../feelings.js";
+import type { Feelings } from "./feelings.js";
 import { ENTRY_VOICE, INDEX_VOICE, TYPE_VOICE, voiceKey, voiceRecipe } from "./voices.js";
 
 export type Speaker =

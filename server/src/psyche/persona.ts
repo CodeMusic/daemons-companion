@@ -9,7 +9,7 @@
 // sentences the daemon writes about meeting the day (the house's mind, in the background); until it comes, the persona is
 // used without it. Every word DRAFT. No node: imports.
 import type { Weather, WeatherToday } from "./context.js";
-import { personaOf, type PersonaFacts } from "./ai/personaof.js";
+import { personaOf, type PersonaFacts } from "./personaof.js";
 
 export type DayPersonaFacts = PersonaFacts & { weather?: Weather | null; forecast?: WeatherToday | null };
 export type Persona = { key: string; builtAt: string; validUntil: string; signature: string; text: string; today: string | null };

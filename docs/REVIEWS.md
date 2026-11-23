@@ -32,7 +32,7 @@ Where it is set: **THE ENGINE ROOM's LATER** card, each plan with DAY / WEEK / M
 times (`POST /api/mind/tasks {act: "plan", plan, every, times}`). It is the hub's, on the home network and the tailnet
 only, as the plans already were (C-330).
 
-## MENTIONS (`server/src/mentions.ts`, MIND)
+## MENTIONS (`server/src/psyche/mentions.ts`, MIND)
 
 Four plans: `mentions.day` (every day at 21:00), `mentions.month` (the 1st at 9:00), `mentions.season` (each quarter's
 first day at 9:30) and `mentions.year` (New Year's Day at 10:00), all on.

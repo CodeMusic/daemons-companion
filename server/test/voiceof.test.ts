@@ -1,11 +1,11 @@
 // C-323: one voice from any speaker and what is known of it
 import { describe, expect, it } from "vitest";
-import { BOOK_VOICE, keptMost, playerVoice, speakerNamed, voiceKey, voiceOf } from "../src/ai/voiceof.js";
-import { playerContextOf } from "../src/playervoice.js";
+import { BOOK_VOICE, keptMost, playerVoice, speakerNamed, voiceKey, voiceOf } from "../src/psyche/voiceof.js";
+import { playerContextOf } from "../src/psyche/playervoice.js";
 import { buildSave } from "./build_save.js";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { ENTRY_VOICE, INDEX_VOICE } from "../src/ai/voices.js";
-import { voiceRecipe } from "../src/ai/voices.js";
+import { ENTRY_VOICE, INDEX_VOICE } from "../src/psyche/voices.js";
+import { voiceRecipe } from "../src/psyche/voices.js";
 
 describe("a voice from any speaker", () => {
   it("gives a daemon its own recipe, and the INDEX its two", () => {

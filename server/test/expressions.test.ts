@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { drawnAs, EXPRESSIONS, expressionFor, eyePatch, faceOf, shade, shadePalette } from "../src/expressions.js";
-import type { Feelings } from "../src/feelings.js";
+import type { Feelings } from "../src/psyche/feelings.js";
 
 const calmFeelings = (p: Partial<Feelings>): Feelings => ({ glad: 0, mad: 0, sad: 0, calm: 0, restless: 0, strongest: null, ...p });
 

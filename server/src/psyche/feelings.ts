@@ -19,8 +19,8 @@
 //
 // NEVER NAMED. The words are for the code. On a screen a feeling only shows -- in an expression (C-119), never a label
 // (the game's craft rule: "never say the thesis"; the harness's prompt: "shows in what you notice, not in a label").
-import type { Interaction } from "./life.js";
-import { MEALS } from "./life.js";
+import type { Interaction } from "../life.js";
+import { MEALS } from "../life.js";
 
 export const AXES = ["glad", "mad", "sad", "calm", "restless"] as const;
 export type Axis = (typeof AXES)[number];

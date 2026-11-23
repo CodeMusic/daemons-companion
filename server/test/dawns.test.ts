@@ -1,6 +1,6 @@
 // C-314: THE EUDAIMON LAYER earned in the companion -- seven mornings in THE CREATOR'S HOUR
 import { describe, expect, it } from "vitest";
-import { DAWNS_TO_EARN, dawnEarned, keepDawn } from "../src/dawns.js";
+import { DAWNS_TO_EARN, dawnEarned, keepDawn } from "../src/psyche/dawns.js";
 import { readEudaimon } from "../src/library/eudaimon.js";
 
 const store = () => { const m = new Map<string, string>(); return { getSetting: (k: string) => m.get(k) ?? null, setSetting: (k: string, v: string | null) => { if (v === null) m.delete(k); else m.set(k, v); } }; };

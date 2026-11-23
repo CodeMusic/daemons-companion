@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { cardOf, cardOfDay, daySpread, deckSize, draw, futureAgain, SHINY_ONE_IN, SPREAD, symbolForm } from "../src/arcana.js";
+import { cardOf, cardOfDay, daySpread, deckSize, draw, futureAgain, SHINY_ONE_IN, SPREAD, symbolForm } from "../src/psyche/arcana.js";
 import { Store } from "../src/shared/db.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 
@@ -101,7 +101,7 @@ describe("C-272: ABOVE and BELOW", async () => {
 
 // C-239: THE HERMETIC LAYER's deck, the same twenty-two with a SPELLCRAFT face; C-240: Halloween's thirteen
 describe("C-239, C-240: SPELLCRAFT, and the thirteen", async () => {
-  const { cardOf, cardOfDay, draw, isHalloween, thirteenOfDay } = await import("../src/arcana.js");
+  const { cardOf, cardOfDay, draw, isHalloween, thirteenOfDay } = await import("../src/psyche/arcana.js");
   const arcana = (await import("../data/arcana.json")).default as unknown as { cards: { spellcraft: { keyword: string; phrase: string; species: string } }[] };
   const thirteen = (await import("../data/thirteen.json")).default as unknown as { cards: { n: string; species: string }[] };
   it("gives every card a SPELLCRAFT face, a daemon of its own, its own picture", () => {

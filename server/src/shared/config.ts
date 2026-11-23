@@ -2,7 +2,7 @@
 // safe default: no save is read until one is named, and no model is called until the AI is switched on.
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Edition } from "../seasons.js";
+import type { Edition } from "../psyche/seasons.js";
 
 export interface Config {
   port: number;

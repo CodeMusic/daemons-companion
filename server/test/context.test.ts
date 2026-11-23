@@ -1,10 +1,10 @@
 // C-158: the world the devices live in, and the CASINO's luck in it -- on synthetic saves, never the user's own.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
-import { casinoContext, casinoDress, reelSpecies, skyOf, watchOf, weatherNow } from "../src/context.js";
+import { casinoContext, casinoDress, reelSpecies, skyOf, watchOf, weatherNow } from "../src/psyche/context.js";
 import { setWeatherCity } from "../src/weather.js";
 import { casinoAdmin } from "../src/game/casino.js";
-import { holiday } from "../src/holidays.js";
+import { holiday } from "../src/psyche/holidays.js";
 
 const at = (m: number, d: number, h = 12) => new Date(2026, m - 1, d, h);
 

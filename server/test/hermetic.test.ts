@@ -46,7 +46,7 @@ describe("C-238: SPELLCRAFT, found two ways", () => {
 
 // C-240: Halloween, with THE HERMETIC LAYER held
 describe("C-240: Halloween", async () => {
-  const { costumeOf, halloweenOn, halloweenView, trickOrTreat, treatsOf } = await import("../src/halloween.js");
+  const { costumeOf, halloweenOn, halloweenView, trickOrTreat, treatsOf } = await import("../src/psyche/halloween.js");
   const species = (await import("../data/species.json")).default as unknown as Record<string, { types: string[] }>;
   const fears = (await import("../data/fears.json")).default as unknown as { fears: Record<string, string[]> };
   const hw = new Date(2026, 9, 31, 14, 0);

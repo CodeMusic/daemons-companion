@@ -1,6 +1,6 @@
 // C-232 (the user, 2026-10-28): THE SUBTLE LAYER's cards on the watches -- in BOOKS, once the book is held: THE DAY'S
 // CARD, DRAW A CARD (again with a tap -- one each, with a friend), and PAST PRESENT FUTURE (a swipe between the three).
-// The deck and the draw are the companion's (GET /api/arcana/today, /api/arcana/draw?count=; server/src/arcana.ts); the
+// The deck and the draw are the companion's (GET /api/arcana/today, /api/arcana/draw?count=; server/src/psyche/arcana.ts); the
 // card is drawn here as the app's face is (server/tools/arcana_backs.py): the book's purple deepening upward, the side's
 // colour rising -- REASON a circuit board under green, INSTINCT a living net under gold -- a halo where the daemon
 // stands (its picture as the INDEX loads it), the keyword at the top and the phrase on a dark panel below. SHINY: the

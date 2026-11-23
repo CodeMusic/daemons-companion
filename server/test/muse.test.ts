@@ -1,7 +1,7 @@
 // C-386: THE MUSE -- the persona, a thread of the journal (alluded to, never quoted), and the synesthesia of now
 import { describe, expect, it } from "vitest";
-import { museKey, museOf, nowSensed, paintPalette } from "../src/ai/muse.js";
-import { imagePromptOf } from "../src/ai/easel.js";
+import { museKey, museOf, nowSensed, paintPalette } from "../src/psyche/muse.js";
+import { imagePromptOf } from "../src/psyche/easel.js";
 
 const MONDAY_IN_NOVEMBER = new Date(2026, 10, 16, 9, 0);
 

@@ -10,17 +10,17 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./shared/store.js";
 import { readAway, readBoxes, readSave, type Sounding } from "./game/save/reader.js";
 import { savedUnity } from "./library/unity.js";            // C-312: the aurora waits on the mending
-import { conjugateLight } from "./aurora.js";       // C-312: and both lines on the other edition's daemon
+import { conjugateLight } from "./psyche/aurora.js";       // C-312: and both lines on the other edition's daemon
 import { readProfile } from "./game/save/profile.js";
 import { HOUSE_AT, syncSave } from "./game/save/writer.js";
 import { firstSight, HERMETIC_FLAG, readHermetic, spellcraftToWrite } from "./library/hermetic.js";   // C-238
-import { halloweenView } from "./halloween.js";   // C-240
-import { season } from "./seasons.js";
+import { halloweenView } from "./psyche/halloween.js";   // C-240
+import { season } from "./psyche/seasons.js";
 import { gameRoutines } from "./paint.js";
-import { deviceDay, PALETTES, type Palette } from "./days.js";
+import { deviceDay, PALETTES, type Palette } from "./psyche/days.js";
 import { castsForDevice } from "./broadcast.js";   // C-134
 import { life, type Life } from "./life.js";
-import { feelings } from "./feelings.js";
+import { feelings } from "./psyche/feelings.js";
 import { drawnAs, expressionFor, faceOf } from "./expressions.js";
 import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./game/save/growth.js";
@@ -34,18 +34,18 @@ import { shareCare, togetherView } from "./household.js";
 import { askedOf } from "./game/battles.js";   // C-328   // C-327
 import { SharedNetworks } from "./networks.js";
 import { casinoPending, clampMoney, coinsFor, houseTake, tableFor } from "./game/casino.js";   // C-149, C-151, C-167
-import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./context.js";   // C-158
-import { holiday } from "./holidays.js";                 // C-149
+import { casinoContext, casinoDress, reelSpecies, weatherNow } from "./psyche/context.js";   // C-158
+import { holiday } from "./psyche/holidays.js";                 // C-149
 import { readIndex } from "./game/save/index.js";
 import { readPlay } from "./game/save/play.js";            // T-426: the instrument, on the boards with keys
 import { readSubtle } from "./game/save/subtle.js";
-import { maskOf, senseFor, virtueHeldToday, type Sense } from "./intuition.js";   // C-203: THE SUBTLE LAYER on the boards; C-357: THE MASK
+import { maskOf, senseFor, virtueHeldToday, type Sense } from "./psyche/intuition.js";   // C-203: THE SUBTLE LAYER on the boards; C-357: THE MASK
 import { drowsyFrom, thrived, thriveOf } from "./thrive.js";   // C-207: the daemon looks how the week has gone
 import { careworn, withCare } from "./care.js";   // C-266: the care group -- its girth, its eyes, its sadness
 import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass shows
 import { toneOf } from "./spirits.js";   // C-296: the tone is part of what a picture is
 import type { Spirits } from "./game/save/reader.js";
-import { genderOf } from "./ai/gender.js";   // C-359
+import { genderOf } from "./psyche/gender.js";   // C-359
 import { SHORT } from "@daemons/praxis";   // C-430: an entry is an item's short title
 import { ruleOf, type DaemonGets } from "./lifemanagement/goals.js";        // C-430: what a finish gives the daemon
 

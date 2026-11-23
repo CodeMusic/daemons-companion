@@ -1,6 +1,6 @@
 // C-149: the holiday a date keeps in an edition (DAEMONS T-416's table, by its real names), and how a board dresses.
 import { describe, expect, it } from "vitest";
-import { easter, holiday } from "../src/holidays.js";
+import { easter, holiday } from "../src/psyche/holidays.js";
 
 const on = (y: number, m: number, d: number) => new Date(y, m - 1, d, 12);
 

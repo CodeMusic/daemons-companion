@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { makeServer, today } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import { Store } from "../src/shared/db.js";
-import { exampleBreakdown } from "../src/ai/breakdown.js";
+import { exampleBreakdown } from "../src/psyche/breakdown.js";
 import { buildSave } from "./build_save.js";
 
 const dir = mkdtempSync(join(tmpdir(), "companion-"));
@@ -193,7 +193,7 @@ describe("the true voice, and the voices' generation (C-303)", () => {
 
   it("reads words in the voice named, and never in parts (C-323)", async () => {
     await post("/api/talk/settings", { tiiny: { url: tiinyBase, tts: "tiiny-voice", model: "tiiny-9b" } });
-    const { BOOK_VOICE } = await import("../src/ai/voiceof.js");
+    const { BOOK_VOICE } = await import("../src/psyche/voiceof.js");
     asked.length = 0;
     await post("/api/ai/speak", { text: "A page of the book.", voice: "book:subtle" });
     expect(asked.at(-1)?.instructions).toBe(BOOK_VOICE.subtle);

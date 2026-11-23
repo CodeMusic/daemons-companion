@@ -12,7 +12,7 @@ import layoutJson from "../../data/profile_layout.json" with { type: "json" };
 import { blocks, LAYOUT, type Layout } from "../game/save/reader.js";
 import { flagReader } from "../game/save/profile.js";
 import type { Store } from "../shared/store.js";
-import { witchingNow } from "../witching.js";
+import { witchingNow } from "../psyche/witching.js";
 
 type Para = { text: string; voice: "telling" | "asking"; inscription?: boolean };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };

@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writ
 import { join } from "node:path";
 import { ffmpeg } from "./sleepexport.js";
 import type { SleepDoor } from "./sleeptracks.js";
-import type { SingMode } from "../sing.js";   // C-387: the song's words are MIND, in sing.ts
+import type { SingMode } from "../psyche/sing.js";   // C-387: the song's words are MIND, in sing.ts
 
 export type Song = {
   id: string; mode: SingMode; request: string; title: string; style: string; lyrics: string; about: string;

@@ -9,7 +9,7 @@ import { Cast, Notebook, PlayerState, Profile, TABS, Today } from "../../state/t
 import { Action, Art, Card, careSound, Eyebrow, Small } from "../../ui/ui";
 import { Under } from "../shared/Reads";   // C-204
 import { useWitching } from "../shared/Witching";   // C-237
-import { EMERALD, hourLine } from "../../../server/src/witching";
+import { EMERALD, hourLine } from "../../../server/src/psyche/witching";
 import { useFresh } from "../../platform/useApi";   // C-344
 import { TendingCard } from "../../lifemanagement/Tending";   // C-357 (3)
 import { WeekBalanceCard } from "../../lifemanagement/Balance";   // C-432

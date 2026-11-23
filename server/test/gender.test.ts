@@ -1,8 +1,8 @@
 // C-359: a daemon is spoken of as the game has it -- he, she, or they, never it
 import { describe, expect, it } from "vitest";
 import species from "../data/species.json" with { type: "json" };
-import { genderOf, pronounLine } from "../src/ai/gender.js";
-import { personaOf, speciesFacts } from "../src/ai/personaof.js";
+import { genderOf, pronounLine } from "../src/psyche/gender.js";
+import { personaOf, speciesFacts } from "../src/psyche/personaof.js";
 import { shortSelf, selfOf } from "../src/self.js";
 
 const S = species as unknown as Record<string, { name: string; gender: number }>;

@@ -10,7 +10,7 @@
 import type { Store } from "../shared/store.js";
 import { carrying } from "../carry.js";
 import { BETS, PAYS, catReason } from "./slots.js";
-import type { Reason } from "../context.js";
+import type { Reason } from "../psyche/context.js";
 
 export const MONEY_MAX = 999999;
 const DELTA_MAX = 1000000;

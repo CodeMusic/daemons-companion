@@ -6,7 +6,7 @@
 // answers as the daemon with a TITLE, the SCENE it will paint, and a line ABOUT it; the scene in the style goes to the
 // image model (ai/comfy.ts: FLUX.2 klein 4B on roverbyteseer's ComfyUI). Every word DRAFT. No node: imports.
 // C-387: this file is MIND -- the painter. The machine that paints is ai/comfy.ts, and api.ts joins them.
-import type { Feelings } from "../feelings.js";
+import type { Feelings } from "./feelings.js";
 
 export const TYPE_STYLE: Record<string, string> = {
   CONTENT: "warm oil paint laid on generously, golden and rose tones, soft edges, a storybook richness",

@@ -9,7 +9,7 @@ Read `CONTEXT.md` (what this is), then **`LAYOUT.md` (where everything lives)**,
 - **Keep mind and machine apart** (C-387; `LAYOUT.md` "Mind and machine"): the psychology of mind (feelings, persona,
   dreams, memory, the muse, synesthesia, the words a creation is asked for) never imports the machinery of models
   (thinkers, endpoints, THE MIND's routing, the voice, image and music doors) and never calls a model itself -- it is
-  handed a thinker, or writes a recipe the machine renders. A new file in `server/src/ai/`, or any new MIND or MACHINE
+  handed a thinker, or writes a recipe the machine renders. A new file in `server/src/machine/` or `server/src/psyche/`, or any new MIND or MACHINE
   file, is named on its side in `LAYOUT.md`; `server/test/layout.test.ts` fails otherwise.
 - Move a file with `git mv`, in a commit that only moves it and fixes its imports, so `git log --follow` keeps its history.
 - Tickets are `C-` ids, permanent, **held in Redmine** (project `companion`; DAEMONS' `tools/tickets.py`, and its

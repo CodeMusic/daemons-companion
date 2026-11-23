@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import { ACCENTS } from "../src/accents.js";
-import { hemisphereOf, monthOf } from "../src/months.js";
+import { hemisphereOf, monthOf } from "../src/psyche/months.js";
 import maps from "../data/maps.json" with { type: "json" };
 import regions from "../data/regions.json" with { type: "json" };
 import layout from "../data/profile_layout.json" with { type: "json" };

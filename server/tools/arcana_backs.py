@@ -19,7 +19,7 @@ HUE, LIT, DEEP = (176, 86, 158), (239, 140, 214), (58, 24, 56)          # C_RULE
 GREEN, GREEN_LIT = (22, 150, 92), (128, 240, 180)
 GOLD, GOLD_LIT = (224, 150, 40), (255, 214, 140)
 FOIL = (255, 226, 122)
-EMERALD, EMERALD_LIT = (31, 143, 95), (80, 200, 120)                  # C-239: the tablet's ink (server/src/witching.ts EMERALD)
+EMERALD, EMERALD_LIT = (31, 143, 95), (80, 200, 120)                  # C-239: the tablet's ink (server/src/psyche/witching.ts EMERALD)
 P_RED, P_BLUE = (200, 64, 90), (79, 107, 216)                          # C-237: the breath's two ends (witching.ts PULSE)
 DAWN_SKY, DAWN_GOLD, DAWN_LIT = (26, 30, 62), (201, 138, 30), (232, 169, 58)   # C-313: the night's last blue, the dawn's gold (Eudaimon.tsx DAWN)
 

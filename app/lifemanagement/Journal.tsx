@@ -2,7 +2,7 @@
 // SUMMARIZE closing a chapter of what is new since the last one, written by the talk AI's background thinker (the Tiiny,
 // thinking on) so it takes a while -- "check back later"; and each chapter's page exported or printed (page.ts).
 // C-356: a journal's KIND, STANDARD or DREAM, chosen when it is made -- a dream journal's chapters are the dreams told -- and
-// READ THE SIGNS on any entry or chapter: its symbols read through the four books (server/src/signs.ts).
+// READ THE SIGNS on any entry or chapter: its symbols read through the four books (server/src/psyche/signs.ts).
 // Every word here is DRAFT.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TextInput } from "react-native";

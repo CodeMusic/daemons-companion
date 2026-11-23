@@ -18,7 +18,7 @@ import { readNotebook } from "./game/save/notebook.js";
 import { readProgress } from "./game/save/progress.js";
 import { readPlay } from "./game/save/play.js";
 import { readSubtle } from "./game/save/subtle.js";
-import { howOf, MASK_UNDER, maskOf, readsView, seeRead, takeLean, takeRead } from "./intuition.js";   // C-203; C-357: RECOGNITION, THE MASK
+import { howOf, MASK_UNDER, maskOf, readsView, seeRead, takeLean, takeRead } from "./psyche/intuition.js";   // C-203; C-357: RECOGNITION, THE MASK
 import { answerOf, dayOf, journalOf, keepAnswer, todaysQuestion } from "./library/subtleask.js";   // C-229, C-230
 import { tend, tendingView } from "./lifemanagement/tending.js";
 import { weekBalance } from "./lifemanagement/balance.js";   // C-432
@@ -26,9 +26,9 @@ import { editReward, removeReward, shelfView, spend, stock, unspend } from "./li
 import { cooked, keepRecipe, recipesView, removeRecipe, uncooked } from "./lifemanagement/recipes.js";   // C-433
 import { itemDone, itemState, keepItem, makeSpace, mineView, removeForm, removeItem, saveForm, spaceView } from "./lifemanagement/myforms.js";   // C-433
 import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, markQuiz, quizOf, quizView, removeFrom, rename, review } from "./lifemanagement/learning.js";   // C-433   // C-357 (3)
-import { weatheringOf } from "./weathering.js";   // C-357 (4)
+import { weatheringOf } from "./psyche/weathering.js";   // C-357 (4)
 import { VESSEL_UNDER, vesselOf } from "./vessel.js";   // C-357 (5)
-import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./arcana.js";   // C-232; C-357
+import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./psyche/arcana.js";   // C-232; C-357
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
 import regionsJson from "../data/regions.json" with { type: "json" };
@@ -59,17 +59,17 @@ import { validDeviceId } from "./deviceid.js";
 import { carryView } from "./carry.js";
 import { apart, partnerIn, spaceOf, spaces as householdSpaces, swap, together } from "./household.js";   // C-327
 import * as Dialogue from "./dialogue.js";   // C-329: two daemons of the household in dialogue
-import { dayFacts, speciesFacts } from "./ai/personaof.js";   // C-329
+import { dayFacts, speciesFacts } from "./psyche/personaof.js";   // C-329
 import { carriedFor } from "./carry.js";   // C-329
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./library/hermetic.js";   // C-238
 import { readEudaimon } from "./library/eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
 import { readUnity } from "./library/unity.js";
 import { readOrigin } from "./library/originbook.js";   // DAEMONS T-533: THE ORIGIN OF A DAEMON
 import { readShadow } from "./library/shadowbook.js";   // C-474: THE SPELL LEFT RUNNING (DAEMONS T-606)
-import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./dawns.js";   // C-314: the dawn half, earned at dawn
-import { costumeOf, halloweenOn, treatsOf } from "./halloween.js";   // C-240
+import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./psyche/dawns.js";   // C-314: the dawn half, earned at dawn
+import { costumeOf, halloweenOn, treatsOf } from "./psyche/halloween.js";   // C-240
 import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
-import { BOOK as MENTIONS_BOOK, markRead, mentionsOf, newestUnread } from "./mentions.js";   // C-455
+import { BOOK as MENTIONS_BOOK, markRead, mentionsOf, newestUnread } from "./psyche/mentions.js";   // C-455
 const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/balance", "/api/rewards", "/api/recipes", "/api/mine", "/api/mine/space", "/api/learning", "/api/learning/lesson", "/api/learning/review", "/api/learning/quiz", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/shadow", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
 const POSTS = ["/api/mine/form", "/api/mine/form/remove", "/api/mine/space", "/api/mine/item", "/api/mine/item/done", "/api/mine/item/state", "/api/mine/item/remove", "/api/learning/quiz", "/api/learning/quiz/answer", "/api/learning/add", "/api/learning/rename", "/api/learning/remove", "/api/learning/decide", "/api/learning/lesson/done", "/api/learning/review", "/api/recipes", "/api/recipes/remove", "/api/recipes/cooked", "/api/recipes/uncooked", "/api/rewards", "/api/rewards/edit", "/api/rewards/remove", "/api/rewards/spend", "/api/rewards/undo", "/api/household/swap", "/api/play/summoned", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];
 

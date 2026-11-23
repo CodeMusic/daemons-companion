@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { sync, type Host } from "../src/core.js";
 import { Store } from "../src/shared/db.js";
 import { checkNight, DREAM_TITLES, dreamImage, keepNight, type Night } from "../src/dreams.js";
-import type { Feelings } from "../src/feelings.js";
+import type { Feelings } from "../src/psyche/feelings.js";
 import { FELT, gameDream, mindNow, ORDINARY } from "../src/mind.js";
 import { buildSave } from "./build_save.js";
 

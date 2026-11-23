@@ -1,6 +1,6 @@
-// C-352, C-355: this month's symbol (server/src/months.ts), in the hemisphere SETTINGS' THEME tab says -- the edition's
+// C-352, C-355: this month's symbol (server/src/psyche/months.ts), in the hemisphere SETTINGS' THEME tab says -- the edition's
 // unless set -- and the palette the week wears.
-import { hemisphereOf, monthOf } from "../../server/src/months";
+import { hemisphereOf, monthOf } from "../../server/src/psyche/months";
 import { useAccentSetting } from "./accent";
 import { PALETTE } from "./look";
 import type { Today } from "./types";

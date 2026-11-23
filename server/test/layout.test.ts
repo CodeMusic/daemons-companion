@@ -12,7 +12,7 @@ const SKIP = new Set(["node_modules", "ios", "android", "dist", "build", "web-bu
 
 const dirsIn = (rel: string) => readdirSync(join(ROOT, rel), { withFileTypes: true })
   .filter((d) => d.isDirectory() && !d.name.startsWith(".") && !SKIP.has(d.name)).map((d) => d.name);
-// a folder is named when `name/` appears in the map as a word of its own (`today/`, `src/ai/`, `| `hub/` |`)
+// a folder is named when `name/` appears in the map as a word of its own (`today/`, `src/psyche/`, `| `hub/` |`)
 const names = (dir: string) => new RegExp(`[\\s\`/(]${dir.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/`).test(MAP);
 
 describe("LAYOUT.md", () => {
@@ -69,11 +69,11 @@ describe("mind and machine", () => {
     expect(both, `on both sides: ${both.join(", ")}`).toEqual([]);
   });
 
-  it("names every file in server/src/ai/ on one side", () => {
-    const named = new Set([...MIND, ...MACHINE]);
-    const loose = readdirSync(join(ROOT, "server/src/ai")).filter((f) => /\.tsx?$/.test(f))
-      .map((f) => `server/src/ai/${f}`).filter((f) => !named.has(f));
-    expect(loose, `say which side these are on in LAYOUT.md's "Mind and machine": ${loose.join(", ")}`).toEqual([]);
+  it("names every file in server/src/machine/ MACHINE and every file in server/src/psyche/ MIND (C-428)", () => {
+    const loose = (dir: string, side: string[]) => readdirSync(join(ROOT, "server/src", dir)).filter((f) => /\.tsx?$/.test(f))
+      .map((f) => `server/src/${dir}/${f}`).filter((f) => !side.includes(f));
+    expect(loose("machine", MACHINE), `name these MACHINE in LAYOUT.md's "Mind and machine"`).toEqual([]);
+    expect(loose("psyche", MIND), `name these MIND in LAYOUT.md's "Mind and machine"`).toEqual([]);
   });
 
   it("keeps every MIND module off the machine", () => {

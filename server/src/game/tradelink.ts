@@ -18,7 +18,7 @@ import { homeRoute } from "../commons/commonslink.js";
 import * as M from "../together.js";   // C-220: OUT TOGETHER
 import { dreamsOf } from "../dreams.js";   // C-223
 import * as D from "../dialogue.js";   // C-329: DAEMONS IN DIALOGUE
-import type { PersonaFacts } from "../ai/personaof.js";
+import type { PersonaFacts } from "../psyche/personaof.js";
 import { exchangeBattle } from "./battleroute.js";   // C-328
 
 export interface Link {

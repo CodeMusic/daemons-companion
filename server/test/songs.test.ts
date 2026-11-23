@@ -1,6 +1,6 @@
 // C-362: THE DAEMON SINGS -- what the daemon is asked, and how its answer becomes a song
 import { describe, expect, it } from "vitest";
-import { captionOf, lyricWords, musicWords, readSong, singAsk } from "../src/sing.js";   // C-387
+import { captionOf, lyricWords, musicWords, readSong, singAsk } from "../src/psyche/sing.js";   // C-387
 import { songCreation } from "../src/commons/creations.js";
 
 describe("the song's words", () => {

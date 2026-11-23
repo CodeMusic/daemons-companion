@@ -16,7 +16,7 @@ the BOX-3's pictures are drawn by the companion.
 
 ## The feelings (C-120)
 
-[`server/src/feelings.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/feelings.ts), carried
+[`server/src/psyche/feelings.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/psyche/feelings.ts), carried
 over from the AI harness that plays the game:
 
 | feeling | humour | range |

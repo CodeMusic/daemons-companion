@@ -6,7 +6,7 @@
 // shadow; and it has a routine of its own, named for its first type, that shows only in the hour. One set of names with
 // the game's (DAEMONS T-480): twelve letters at most, a move's width. The watches keep the same table (intuition.cpp).
 // Every word DRAFT. No node: imports (the app reads it too).
-import hermeticJson from "../data/hermetic.json" with { type: "json" };
+import hermeticJson from "../../data/hermetic.json" with { type: "json" };
 
 export const WITCHING = { from: 3, to: 4 };                         // the hour, on the device's clock
 

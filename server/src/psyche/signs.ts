@@ -10,7 +10,7 @@
 // house's mind to read them -- in a DREAM journal as a dream's symbols, in a STANDARD one as the signs and patterns of
 // a life written down. With no mind, or one that would not answer, the lexicon's own readings are the reading. Every
 // word DRAFT.
-import symbolsJson from "../data/symbols.json" with { type: "json" };
+import symbolsJson from "../../data/symbols.json" with { type: "json" };
 
 export type Book = "subtle" | "hermetic" | "eudaimon" | "unity";
 export type Symbol = { sign: string; keys: string[]; readings: { book: Book; reading: string }[] };

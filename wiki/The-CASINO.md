@@ -64,7 +64,7 @@ words:
 | **the season**, by your edition | spring; summer | winter |
 
 DAY (7am to 6pm), a grey sky and autumn leave it as it is. Every number is a draft
-([`server/src/context.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/context.ts)).
+([`server/src/psyche/context.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/psyche/context.ts)).
 
 **The weather is real**: the weather now in one city you name on SETTINGS, **THE WEATHER**, from
 [Open-Meteo](https://open-meteo.com), which needs no account. Only the city is kept, with the weather it last had, and

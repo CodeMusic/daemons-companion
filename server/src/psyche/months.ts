@@ -9,7 +9,7 @@
 // THE SEASON: what the year is doing, which flips with the hemisphere: CONTENT keeps the north, CONTEXT the south (as
 // seasons.ts), with a setting to say otherwise; the south's year is the north's six months on.
 // Every word here DRAFT.
-import week from "../data/week.json" with { type: "json" };
+import week from "../../data/week.json" with { type: "json" };
 import { type Palette } from "./days.js";
 import { Synesthesia } from "./synesthesia.js";
 

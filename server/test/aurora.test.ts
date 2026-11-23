@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { AURORA_BANDS, AURORA_CONJUGATE, AURORA_LINE, auroraShows, auroraWeight, conjugateLight, dayNumber, fromOtherSide, isLightNight,
-         lightNight, nightNumber, nightOfClock, nightOfPlay, skyBands } from "../src/aurora.js";
+         lightNight, nightNumber, nightOfClock, nightOfPlay, skyBands } from "../src/psyche/aurora.js";
 import { readSave } from "../src/game/save/reader.js";
 import { buildSave } from "./build_save.js";
 

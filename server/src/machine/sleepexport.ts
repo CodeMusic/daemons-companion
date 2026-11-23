@@ -17,7 +17,7 @@
 import { existsSync, readFileSync, renameSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { argvFor, runFfmpeg } from "./procmesh.js";
-import { carrierOf, driftOf, type Stage } from "../drift.js";
+import { carrierOf, driftOf, type Stage } from "../psyche/drift.js";
 
 export { carrierOf, driftOf };
 

@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { Store, type Db } from "../src/shared/store.js";
 import { LIFE, RULES } from "../src/lifemanagement/goals.js";
 import { thriveOf } from "../src/thrive.js";
-import { dayMaterial } from "../src/memory.js";
+import { dayMaterial } from "../src/psyche/memory.js";
 
 const at = (d: number, h = 9, m = 0) => new Date(2026, 10, d, h, m).toISOString();
 const rule = (kind: string) => RULES.find((r) => r.kind === kind)!;

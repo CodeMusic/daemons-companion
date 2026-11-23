@@ -89,7 +89,7 @@ enum SongMath {
 }
 
 // C-312 (the user, 2026-11-10, by multiple choice: "Bands over its sky"): the aurora in the widget's night sky -- the den's
-// rule to the bit (server/src/aurora.ts, itself the cartridge's daemons_aurora.c): THE UNITY BOOK mended, the game's night
+// rule to the bit (server/src/psyche/aurora.ts, itself the cartridge's daemons_aurora.c): THE UNITY BOOK mended, the game's night
 // watch (20:00 to 5:00), and one night in three picked from the date. A widget cannot breathe, so its bands are drawn at
 // the breath's middle. Every edge of it is the den's; nothing here is decided again.
 struct Sky: Codable { let edition: String; let mended: Bool; let both: Bool }

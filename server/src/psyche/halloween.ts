@@ -6,10 +6,10 @@
 // mask off); TRICK OR TREAT (every daemon it meets that day leaves a treat: a SPELLCRAFT card, or a sweet line); THE
 // THIRTEEN as the day's card (arcana.ts thirteenOfDay); THE HANDLESS CLOCK (the boards' clock face without its hands).
 // Every word DRAFT. No node: imports.
-import fearsJson from "../data/fears.json" with { type: "json" };
-import speciesJson from "../data/species.json" with { type: "json" };
+import fearsJson from "../../data/fears.json" with { type: "json" };
+import speciesJson from "../../data/species.json" with { type: "json" };
 import { draw } from "./arcana.js";
-import type { Store } from "./shared/store.js";
+import type { Store } from "../shared/store.js";
 
 const FEARS = (fearsJson as unknown as { fears: Record<string, string[]> }).fears;
 const SPECIES = speciesJson as unknown as Record<string, { name: string; types: string[]; art?: { front?: string } }>;

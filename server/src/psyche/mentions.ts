@@ -7,10 +7,10 @@
 // player a short letter about it, in its own voice, the numbers set under it. With no mind in the house the letter is
 // written plainly from the numbers instead, so a span is never lost. Every one is kept for good (docs/REVIEWS.md).
 // MIND: it is handed its writer (a Writer); it never calls a model itself. Every word DRAFT.
-import type { Store } from "./shared/store.js";
+import type { Store } from "../shared/store.js";
 import { DAY_WORDS } from "./memory.js";
-import { dreamsOf } from "./dreams.js";
-import { entriesBetween, type Writer } from "./lifemanagement/journal.js";
+import { dreamsOf } from "../dreams.js";
+import { entriesBetween, type Writer } from "../lifemanagement/journal.js";
 
 export type Span = "day" | "month" | "season" | "year";
 export const SPANS: Span[] = ["day", "month", "season", "year"];

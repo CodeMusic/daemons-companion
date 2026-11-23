@@ -8,12 +8,12 @@
 // Each stage is a short loop, the carrier and the beat whole numbers of hertz, so every loop holds whole cycles of both
 // and repeats without a seam. The carrier sits in the sleep piece's own key (its root, in the octave from C3), so the tone
 // belongs to the music. Quiet by design: it lies under the music, never over it. DRAFT.
-// C-386: the key is the month's and the day places each beat inside its band -- the numbers are server/src/drift.ts's,
+// C-386: the key is the month's and the day places each beat inside its band -- the numbers are server/src/psyche/drift.ts's,
 // shared with the hub's exports.
 import { Platform } from "react-native";
 
 const RATE = 22050, SECONDS = 4, N = RATE * SECONDS;
-export { carrierOf, driftOf, stageAt, type Stage } from "../../server/src/drift";
+export { carrierOf, driftOf, stageAt, type Stage } from "../../server/src/psyche/drift";
 
 // one stage, as a stereo 16-bit WAV's bytes: left at the carrier, right at carrier + beat, a soft edge-free loop
 export function binauralWav(carrier: number, beat: number, level = 0.5): Uint8Array {

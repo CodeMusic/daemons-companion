@@ -91,7 +91,7 @@ static String faintTag; static uint32_t faintAt = 0;
 static long lastGiven() { Preferences p; p.begin("subtle", false); long t = p.getLong("last", 0); p.end(); return t; }   // read-write: a first read makes the namespace (read-only logged nvs NOT_FOUND)
 static void keepGiven(long t) { Preferences p; p.begin("subtle", false); p.putLong("last", t); p.end(); }
 
-static String lineOf(About a, const String &w) {     // DRAFT, as server/src/intuition.ts words them
+static String lineOf(About a, const String &w) {     // DRAFT, as server/src/psyche/intuition.ts words them
   if (a == READ_NEAR) return "someone close by.";
   if (a == READ_RAIN) return "rain, before long.";
   if (a == READ_NIGHT) return "a long, still night.";
@@ -193,7 +193,7 @@ void drawUnder() {
 // purple, faint, flickering, as if the seam were thin -- and casts no shadow; and a routine of its own, named for its
 // first type, shows in ROUTINES (THE HOUR) only then: a tune that falls and a half step that does not belong, the screen
 // pulsing purple. Anyone up at three sees the shimmer; the routine comes only once the save holds THE SUBTLE LAYER (the
-// user, for the game, 2026-10-29 -- the same here). The names are server/src/witching.ts's, one set with the game's
+// user, for the game, 2026-10-29 -- the same here). The names are server/src/psyche/witching.ts's, one set with the game's
 // (DAEMONS T-480). Every word DRAFT.
 static const char *const WITCH_TYPES[] = { "VECTOR", "ENTROPY", "GROWTH", "CONTENT", "LOGIC", "SWARM", "CORRUPT", "SIGNAL", "STRATUM",
                                            "FLOW", "CONTEXT", "LATENT", "LEGACY", "HARDENED", "FROZEN", "OPAQUE", "EMERGENT", "ORACLE" };
@@ -204,7 +204,7 @@ bool witchingNow() { struct tm t; return st.carrying && watchLocalTime(t) && t.t
 bool witchingRoutineNow() { return witchingNow() && intuitionOn(); }   // its routine, only with the book held
 
 // C-237 (the user, 2026-10-29): every pulse breathes red<->blue through purple -- CONTENT's red and CONTEXT's blue made
-// one, the middle the book's own purple (server/src/witching.ts PULSE; the game's T-482 the same): one breath every
+// one, the middle the book's own purple (server/src/psyche/witching.ts PULSE; the game's T-482 the same): one breath every
 // eight seconds on the clock's phase, so boards side by side breathe together. Emerald is the tablet's ink.
 static const uint8_t P_RED[3] = { 200, 64, 90 }, P_PURPLE[3] = { 176, 86, 158 }, P_BLUE[3] = { 79, 107, 216 };
 static const uint16_t EM_DEEP = (1 << 11) | (16 << 5) | 5, EM_LIT = (10 << 11) | (50 << 5) | 15;   // #0E402B, #50C878
@@ -332,7 +332,7 @@ void halloweenFromState(JsonVariant h) {
 bool halloweenNow() { return hwOn && st.carrying; }
 
 // ---- how strong each hour is, and the catch-up (C-295, DAEMONS T-519; the user, 2026-11-02) --------------------------------
-// server/src/witching.ts, by value. THE WITCHING HOUR's shimmer follows the game's glitch curve -- a quarter at 3:00, full at
+// server/src/psyche/witching.ts, by value. THE WITCHING HOUR's shimmer follows the game's glitch curve -- a quarter at 3:00, full at
 // 3:30, 0.28 at 3:59, on whole minutes. THE CREATOR'S HOUR, 4:24 to 5:12, a soft gold rim instead: it rises over seven
 // minutes, holds, and resolves over the last seven. THE CATCH-UP: a watch that wakes or starts inside an hour shows
 // nothing for a minute, then eases over two up to where the clock has it; one awake before the hour began follows the clock.
@@ -361,7 +361,7 @@ float creatorLevelNow() {                                  // 0..1: the gold rim
 }
 bool shimmerNow() { return witchLevel() > 0.04f; }         // no shadow once it shows: not in the catch-up's quiet minute
 // C-312 (the user, 2026-11-10, by multiple choice: "Breathing top bands"): THE AURORA on a board's night screen -- the
-// den's rule to the bit (server/src/aurora.ts, the cartridge's daemons_aurora.c): THE UNITY BOOK mended, the game's night
+// den's rule to the bit (server/src/psyche/aurora.ts, the cartridge's daemons_aurora.c): THE UNITY BOOK mended, the game's night
 // watch (20:00 to 5:00), one night in three picked from the date; the edition's line in six bands across the top quarter
 // (red crowning green under the conjugate light, once both editions have met), each as strong as the den's and breathing
 // with the same sixteen-second breath. Drawn first, behind the daemon and every word.

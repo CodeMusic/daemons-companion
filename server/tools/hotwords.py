@@ -3,7 +3,7 @@
 
 Every daemon's name and every place's name from the game's data, less those that are ordinary English words (FORK, CANON,
 PING: heard right already, and a near miss of one is more likely a real word -- "cannon" must not become CANON). The hub
-corrects a near miss of one of these after hearing (server/src/ai/hotwords.ts), whatever model heard it, and hands the
+corrects a near miss of one of these after hearing (server/src/machine/hotwords.ts), whatever model heard it, and hands the
 list to an ear that takes hotwords. Run with --write to write; without, it says what it would change.
 """
 import json, os, re, sys

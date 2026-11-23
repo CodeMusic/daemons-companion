@@ -24,7 +24,7 @@ import { execFile } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { cpus, loadavg } from "node:os";
 import { existsSync, renameSync, rmSync } from "node:fs";
-import { FOUND_FFMPEG } from "./ai/voice.js";
+import { FOUND_FFMPEG } from "./voice.js";
 
 export type Caps = string[];
 export type MeshNode = { id: string; name: string; caps: Caps; cores: number; speed: number; load: number; seen: number;

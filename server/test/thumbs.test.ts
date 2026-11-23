@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { dropSmall, smallCover, smallOf } from "../src/thumbs.js";
-import { FOUND_FFMPEG } from "../src/ai/voice.js";
+import { FOUND_FFMPEG } from "../src/machine/voice.js";
 
 const dir = () => mkdtempSync(join(tmpdir(), "thumbs-"));
 // a stand-in for ffmpeg: writes its last argument (the part file), counting the runs

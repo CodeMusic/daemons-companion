@@ -1,5 +1,5 @@
 #!/bin/zsh
-# C-360: a node of THE MESH (server/src/mesh_worker_main.ts), run as a LaunchAgent on a Mac -- roverbyteseer, THE HANDS'
+# C-360: a node of THE MESH (server/src/machine/mesh_worker_main.ts), run as a LaunchAgent on a Mac -- roverbyteseer, THE HANDS'
 # Mac. It dials out to the hub, says what it can do and how busy it is, and takes the processing jobs the hub gives it
 # (today: ffmpeg -- sleep sounds' conversions and exports).
 #   hub/mesh.sh install     pair it with the hub, write the LaunchAgent, start it. The hub is MESH_HUB (default: .hub's
@@ -25,7 +25,7 @@ case "${1:-}" in
     [[ -f "$ENV" ]] || { echo "mesh: not installed -- hub/mesh.sh install" >&2; exit 2; }
     set -a; source "$ENV"; set +a
     cd "$HERE/server"
-    exec node --import tsx src/mesh_worker_main.ts ;;
+    exec node --import tsx src/machine/mesh_worker_main.ts ;;
   install)
     [[ -d "$HERE/server/node_modules" ]] || (cd "$HERE/server" && npm ci --no-audit --no-fund)
     mkdir -p "$DATA" "$(dirname "$PLIST")"; chmod 700 "$DATA"

@@ -1,7 +1,7 @@
 // C-319 later: THE MIND's plans (LATER), hand-offs between minds, and the hedge made visible
 import { describe, expect, it } from "vitest";
-import { isDue, keepPlan, lastDue, nextDue, PLANS, planTask, plans, weekSpan } from "../src/ai/schedule.js";
-import { Tasks, traceTask } from "../src/ai/tasks.js";
+import { isDue, keepPlan, lastDue, nextDue, PLANS, planTask, plans, weekSpan } from "../src/machine/schedule.js";
+import { Tasks, traceTask } from "../src/machine/tasks.js";
 
 const mem = () => { const m = new Map<string, string>(); return { get: (k: string) => m.get(k) ?? null, set: (k: string, v: string | null) => { if (v === null) m.delete(k); else m.set(k, v); } }; };
 const week = PLANS.find((p) => p.id === "whatsnew.week")!;

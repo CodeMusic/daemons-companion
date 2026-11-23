@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { argvFor, keepSpeed, measureSpeed, runFfmpeg, safeArgs, SPEED_EVERY_MS, type ProcJob } from "./procmesh.js";
-import { FOUND_FFMPEG } from "./ai/voice.js";
+import { FOUND_FFMPEG } from "./voice.js";
 
 const HUB = (process.env.MESH_HUB ?? "").replace(/\/+$/, ""), KEY = process.env.MESH_KEY ?? "";
 const NAME = process.env.MESH_NAME || hostname().replace(/\.local$/, "");

@@ -1,6 +1,6 @@
 // C-369: the ear hears the lexicon
 import { describe, expect, it } from "vitest";
-import { edits, hearAs, HOTWORD_LIST } from "../src/ai/hotwords.js";
+import { edits, hearAs, HOTWORD_LIST } from "../src/machine/hotwords.js";
 
 describe("C-369: the ear hears the lexicon", () => {
   it("puts right what the Tiiny heard on 2026-11-15", () => {

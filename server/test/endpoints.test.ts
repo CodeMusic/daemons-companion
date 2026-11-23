@@ -1,10 +1,10 @@
 // C-280 (1): ENDPOINTS on the hub -- kept, shown without their keys, checked, and walked after the Tiiny, before the boards
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { House } from "../src/ai/house.js";
-import { preferTiiny } from "../src/ai/tiinyfirst.js";
-import type { TiinyAt } from "../src/ai/tiiny.js";
+import { House } from "../src/machine/house.js";
+import { preferTiiny } from "../src/machine/tiinyfirst.js";
+import type { TiinyAt } from "../src/machine/tiiny.js";
 import { atHome, checkEndpoints, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint,
-         type Endpoint } from "../src/ai/endpoints.js";
+         type Endpoint } from "../src/machine/endpoints.js";
 
 const store = () => { const m = new Map<string, string>();
   return { get: (k: string) => m.get(k) ?? null, set: (k: string, v: string | null) => { if (v === null) m.delete(k); else m.set(k, v); } }; };

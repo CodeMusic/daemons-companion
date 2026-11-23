@@ -2,7 +2,7 @@
 // together"; by multiple choice, its SETTINGS: "default to what u recommended but also have options for whenever the app
 // is open/background, and an option to opt out and never do others work only self work, and an option to never use the
 // phone's processing as part of the mind mesh"): THIS PHONE IN THE MESH. While its setting allows, the phone is a node of
-// the household's mesh (server/src/procmesh.ts): it asks the hub for work it can do -- a thought, on Apple's on-device
+// the household's mesh (server/src/machine/procmesh.ts): it asks the hub for work it can do -- a thought, on Apple's on-device
 // model (mind.ts) -- does it, and sends the words back. The hub decides who gets each thought (the most reliable mind
 // with the most potential free; a phone's model ranks below the Tiiny and a full model, above the hub's small module).
 //

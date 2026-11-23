@@ -1,7 +1,7 @@
 // C-375: the hub keeps the Tiiny's models loaded
 import { beforeEach, describe, expect, it } from "vitest";
-import { tiinyIn } from "../src/ai/tiiny.js";
-import { gateOf, keepLoaded, keepOf, keepReset, KEEP, KEEP_AGAIN_MS, missing } from "../src/ai/tiinykeep.js";
+import { tiinyIn } from "../src/machine/tiiny.js";
+import { gateOf, keepLoaded, keepOf, keepReset, KEEP, KEEP_AGAIN_MS, missing } from "../src/machine/tiinykeep.js";
 
 const settings = (o: Record<string, string>) => (k: string) => o[k] ?? null;
 const at = tiinyIn(settings({ "tiiny.url": "http://seer.test:4000/v1", "tiiny.key": "k", "tiiny.stream": "http://seer.test:4001/v1" }))!;

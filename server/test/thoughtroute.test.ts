@@ -1,7 +1,7 @@
 // C-360, thought: the house's minds in order of their score now, the next on failure, hedged when someone waits
 import { beforeEach, describe, expect, it } from "vitest";
-import { forgetHistory, MIND_POWER, order, record, think, type Mind } from "../src/ai/thoughtroute.js";
-import { ProcMesh } from "../src/procmesh.js";
+import { forgetHistory, MIND_POWER, order, record, think, type Mind } from "../src/machine/thoughtroute.js";
+import { ProcMesh } from "../src/machine/procmesh.js";
 
 const mind = (name: string, power: number, answer: string | Error, ms = 0): Mind =>
   ({ name, power, ask: () => new Promise((ok, no) => setTimeout(() => (answer instanceof Error ? no(answer) : ok(answer)), ms)) });

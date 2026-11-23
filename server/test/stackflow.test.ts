@@ -3,9 +3,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createServer, type Server } from "node:net";
 import type { AddressInfo } from "node:net";
-import { House, type TalkAsk } from "../src/ai/house.js";
-import { LATE } from "../src/ai/module.js";
-import { firstSentences, StackFlow } from "../src/ai/stackflow.js";
+import { House, type TalkAsk } from "../src/machine/house.js";
+import { LATE } from "../src/machine/module.js";
+import { firstSentences, StackFlow } from "../src/machine/stackflow.js";
 import { fakeModule } from "./fake_module.js";
 import { GUIDE_SETUP } from "../src/library/guideask.js";
 

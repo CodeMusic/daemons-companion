@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { asWav, CAN_CONVERT, Conversations, DEVICE_RATE, FOUND_FFMPEG, mp3OfWav, pcmOfWav, phoneAudio, toDevicePcm, VoiceShelf, wavOf } from "../src/ai/voice.js";
+import { asWav, CAN_CONVERT, Conversations, DEVICE_RATE, FOUND_FFMPEG, mp3OfWav, pcmOfWav, phoneAudio, toDevicePcm, VoiceShelf, wavOf } from "../src/machine/voice.js";
 
 // A second of a 440 Hz tone as a WAV, at a rate the handheld does not play (the voice server's is 24 kHz).
 function wav(rate: number, seconds = 1): Buffer {
@@ -124,7 +124,7 @@ describe("a voice for the phone", () => {
 
 describe("a whole piece's voice", () => {
   it("is read in parts cut at sentences, each within what the voice takes", async () => {
-    const { voicePieces } = await import("../src/ai/voice.js");
+    const { voicePieces } = await import("../src/machine/voice.js");
     const long = Array.from({ length: 30 }, (_, i) => `Sentence number ${i} is here.`).join(" ");
     const parts = voicePieces(`A short first paragraph.\n\n${long}`);
     expect(parts[0]).toBe("A short first paragraph.");
@@ -133,7 +133,7 @@ describe("a whole piece's voice", () => {
     expect(parts.slice(1).every((p) => p.endsWith("."))).toBe(true);
   });
   it("joins its parts' voices into one, a breath between", async () => {
-    const { joinVoices, wavOf, CAN_CONVERT, FOUND_FFMPEG } = await import("../src/ai/voice.js");
+    const { joinVoices, wavOf, CAN_CONVERT, FOUND_FFMPEG } = await import("../src/machine/voice.js");
     if (!FOUND_FFMPEG) return;
     const tone = wavOf(Buffer.alloc(24000 * 2), 24000);   // a second of silence each
     const one = (await joinVoices([tone, tone]))!;

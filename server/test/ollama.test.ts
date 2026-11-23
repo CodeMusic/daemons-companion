@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
-import { DEFAULT_MODEL, QUIET, chatReply, heard, modelOf, pick, tags, type AgentDaemon } from "../src/ollama.js";
+import { DEFAULT_MODEL, QUIET, chatReply, heard, modelOf, pick, tags, type AgentDaemon } from "../src/machine/ollama.js";
 import { buildSave } from "./build_save.js";
 
 const d = (nickname: string): AgentDaemon => ({ model: modelOf(nickname), nickname, name: "", types: "", category: "", entry: "" });

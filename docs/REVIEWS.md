@@ -16,7 +16,7 @@ job, the nightly dreams among them, gets a cadence: daily, weekly, monthly, or n
 | Where it arrives | **A card on TODAY**, then kept for good as a page of the MENTIONS book on the LIBRARY's shelf, beside the DREAM-BOOKS |
 | What a cadence means for dreams | **Told only on the chosen nights**: every night slept is still kept and written; the thinker's telling (the dreamer's voice) happens only on the nights the cadence picks |
 
-## The cadence (`server/src/ai/schedule.ts`)
+## The cadence (`server/src/machine/schedule.ts`)
 
 Every plan in THE MIND's LATER (C-319) now carries a cadence: `every` -- a **day**, a **week** (from Sunday), a **month**,
 a **quarter** (from January, April, July, October) or a **year** -- and `times`, how many times in it, spread evenly from

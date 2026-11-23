@@ -12,7 +12,7 @@
 // It runs on the hub (the module is on the hub's own link) or on any computer that reaches the module. It reads only.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { chat, hear, listModels, speak, type ModuleModel } from "../src/ai/module.js";
+import { chat, hear, listModels, speak, type ModuleModel } from "../src/machine/module.js";
 
 const args = process.argv.slice(2);
 const flag = (name: string) => { const i = args.indexOf(name); return i >= 0 ? args.splice(i, 2)[1] : undefined; };

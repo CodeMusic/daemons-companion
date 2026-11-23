@@ -1,6 +1,6 @@
 // C-307: THE MIND's traces -- kept short and safe, newest first, and each mind's recent speed
 import { describe, expect, it } from "vitest";
-import { keepTrace, speeds, traceOf, traces } from "../src/ai/mindlog.js";
+import { keepTrace, speeds, traceOf, traces } from "../src/machine/mindlog.js";
 
 describe("mindlog", () => {
   it("keeps only names and numbers, never what was said", () => {

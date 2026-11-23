@@ -14,7 +14,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ffmpeg } from "./sleepexport.js";   // C-360: through THE MESH
-import type { SleepRecipe } from "./sleepsound.js";
+import type { SleepRecipe } from "../sleepsound.js";
 
 export type SleepTrack = {
   id: string; key: string; species: number; nickname: string;

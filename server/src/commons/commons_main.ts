@@ -9,7 +9,7 @@ import { makeCommons } from "./commons_api.js";
 import { accountsConfigFromEnv, eraseIdle } from "./accounts_api.js";
 import { Store } from "../shared/db.js";
 import { reach } from "./commons.js";
-import { llmTalker } from "../llmtalker.js";
+import { llmTalker } from "../machine/llmtalker.js";
 import { meetOnTheirOwn, setMeetTalker } from "../together.js";
 
 const db = process.env.COMMONS_DB || fileURLToPath(new URL("../../commons.sqlite", import.meta.url));

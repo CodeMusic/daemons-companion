@@ -206,7 +206,7 @@ const stepColour = (n) => (n >= 1 && n <= STEPS.length ? STEPS[n - 1][0] : BEYON
 // the chakras' colours are deep; a line or a ring on the night page is drawn lighter, toward white
 const lift = (hex, f) => "#" + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - f) + 255 * f).toString(16).padStart(2, "0")).join("");
 // every other colour on the page is off that spectrum, so a colour that is a step always means a step (C-363) -- DRAFT.
-// C-400: the hub sends the one table (server/src/ai/tasks.ts TASK_KINDS) with every view; this copy is only for a hub
+// C-400: the hub sends the one table (server/src/machine/tasks.ts TASK_KINDS) with every view; this copy is only for a hub
 // older than it
 let KIND = { talk: ["#c9d1e0", "TALK"], guide: ["#3fc7d6", "THE GUIDE"], dream: ["#e07aa8", "DREAMS"], whatsnew: ["#d9a74a", "WHAT'S NEW"],
                journal: ["#b08d64", "JOURNAL"], meeting: ["#e8dcb5", "MEETINGS"], voice: ["#d64fbf", "VOICES"], chatter: ["#7d8aa6", "CHATTER"],

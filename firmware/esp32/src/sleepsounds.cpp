@@ -1,6 +1,6 @@
 // C-334 (the user, 2026-11-11: "on the watch where we would want the battery to last as long as possible as you drift to
 // sleep -- it should be smart enough to turn off other power hungry features to maximize the sleep sounds"): SLEEP
-// SOUNDS on the Ultra. The hub makes a piece for the carried daemon as tonight finds them (server/src/sleeptracks.ts,
+// SOUNDS on the Ultra. The hub makes a piece for the carried daemon as tonight finds them (server/src/machine/sleeptracks.ts,
 // on roverbyteseer's ACE-Step); the watch keeps it on its card as watch.wav (16 kHz mono PCM) and plays it from there,
 // looped, for thirty minutes, the last ten fading to nothing -- the same as the app. While it plays the screen is dark
 // and GPS, Wi-Fi, LoRa and Bluetooth are off (nightQuiet(), powerLora(), powerMeet() ask sleepSoundsPlaying()); a tap

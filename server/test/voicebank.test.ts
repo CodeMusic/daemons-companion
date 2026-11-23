@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { renderAhead, VoiceBank } from "../src/voicebank.js";
+import { renderAhead, VoiceBank } from "../src/machine/voicebank.js";
 
 const dirs: string[] = [];
 const bank = () => { const d = mkdtempSync(join(tmpdir(), "bank-")); dirs.push(d); return new VoiceBank(d); };

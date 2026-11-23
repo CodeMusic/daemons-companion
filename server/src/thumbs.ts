@@ -8,7 +8,7 @@
 // MIND AT WORK -- a first visit would push the ledger's real work out of its last 120. When ffmpeg cannot make one,
 // the caller sends the painting instead: a page is never left without its cover.
 import { existsSync, renameSync, rmSync, statSync } from "node:fs";
-import { runFfmpeg } from "./procmesh.js";
+import { runFfmpeg } from "./machine/procmesh.js";
 
 export const SMALL_PX = 256;
 export const smallOf = (full: string) => full.replace(/\.png$/i, "") + "-small.jpg";

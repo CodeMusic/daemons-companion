@@ -1,8 +1,8 @@
 // C-249: the house's AI work goes to the Tiiny first when one is set up and answering, the boards after
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { House } from "../src/ai/house.js";
-import { preferTiiny } from "../src/ai/tiinyfirst.js";
-import type { TiinyAt } from "../src/ai/tiiny.js";
+import { House } from "../src/machine/house.js";
+import { preferTiiny } from "../src/machine/tiinyfirst.js";
+import type { TiinyAt } from "../src/machine/tiiny.js";
 
 const at: TiinyAt = { url: "http://tiiny.test/v1", key: "k", model: "tiiny-35b", quick: "", tts: "tiiny-voice", asr: "", voice: "" };
 const boards = () => {

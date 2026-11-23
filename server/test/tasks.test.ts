@@ -1,7 +1,7 @@
 // C-319: THE MIND's ledger of work, and C-318: WHAT'S NEW's spans
 import { describe, expect, it } from "vitest";
-import { Tasks, queuedTask, traceTask, tasksView, usersOf } from "../src/ai/tasks.js";
-import { STOPPED, tiinyChat } from "../src/ai/tiiny.js";
+import { Tasks, queuedTask, traceTask, tasksView, usersOf } from "../src/machine/tasks.js";
+import { STOPPED, tiinyChat } from "../src/machine/tiiny.js";
 import { NOTES, digestAsk, digests, keepDigest, readDigest, spanOf, spanText } from "../src/whatsnew.js";
 
 const mem = () => { const m = new Map<string, string>(); return { get: (k: string) => m.get(k) ?? null, set: (k: string, v: string | null) => { if (v === null) m.delete(k); else m.set(k, v); } }; };

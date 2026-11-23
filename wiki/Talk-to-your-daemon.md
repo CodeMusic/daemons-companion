@@ -79,7 +79,7 @@ Name the n8n machine by an address that works wherever your computer is (a Tails
 read aloud reach the voice from anywhere.
 
 The server sends every recording on as a 16 kHz WAV, and hands a board the answer's voice as 16 kHz samples it streams
-straight into its speaker (`server/src/ai/voice.ts`; needs `ffmpeg`, or macOS's own `afconvert`).
+straight into its speaker (`server/src/machine/voice.ts`; needs `ffmpeg`, or macOS's own `afconvert`).
 
 **Home Assistant uses the same talk.** As Home Assistant's conversation agent (C-142), the companion passes what was
 said, and the few turns before it, to `daemon/talk`, saying the home is asking and asking for words only: Home

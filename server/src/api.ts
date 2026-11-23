@@ -41,9 +41,9 @@ import { execFile, execFileSync } from "node:child_process";
 import { platform, tmpdir } from "node:os";
 import speciesJson from "../data/species.json" with { type: "json" };
 import irCodesJson from "../data/ir_codes.json" with { type: "json" };
-import { keepTrace, speeds, traceOf, traces } from "./ai/mindlog.js";   // C-307
+import { keepTrace, speeds, traceOf, traces } from "./machine/mindlog.js";   // C-307
 import { breakdown } from "./ai/breakdown.js";
-import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, PIECE_MOST, TIINY_PIECE_MOST, wavOf } from "./ai/voice.js";
+import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, PIECE_MOST, TIINY_PIECE_MOST, wavOf } from "./machine/voice.js";
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
 import type { Config } from "./shared/config.js";
 import { Store } from "./shared/db.js";
@@ -64,43 +64,43 @@ import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-33
 import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
 import { siteNow, siteUpdate, siteView } from "./sitefetch.js";
 import { deviceName } from "./devicenames.js";                           // C-405: a device by its name           // C-342: the site, built on every push
-import { PRIORITY, TalkJobs } from "./ai/talkjobs.js";
+import { PRIORITY, TalkJobs } from "./machine/talkjobs.js";
 import { keepSave, listSaves } from "./game/saves.js";   // C-215
 import { recordSave, savedBytes, trail } from "./game/savehistory.js";   // C-364
-import { StackFlow } from "./ai/stackflow.js";
-import { keepLoaded, keepOf } from "./ai/tiinykeep.js";   // C-375
-import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./ai/tiiny.js";   // C-249
+import { StackFlow } from "./machine/stackflow.js";
+import { keepLoaded, keepOf } from "./machine/tiinykeep.js";   // C-375
+import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./machine/tiiny.js";   // C-249
 import { ENTRY_VOICE, INDEX_VOICE, voiceGeneration, voiceRecipe } from "./ai/voices.js";   // C-251; C-303: the voices' generation; C-387: the INDEX's and the entry's too
 import { speakerNamed, voiceOf } from "./ai/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./ai/personaof.js";   // C-329: a persona from what is known of a daemon
 import { recover as recoverDialogues, setDialogueThinker } from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
 import { playerContextOf } from "./playervoice.js";        // C-323: the player's, from their save
-import { preferTiiny } from "./ai/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
-import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./ai/endpoints.js";   // C-280 (1)
+import { preferTiiny } from "./machine/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
+import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./machine/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
 import { readProfile } from "./game/save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, SLEEP_SYSTEM, type SleepContext } from "./sleepsound.js";   // C-334
 import { journalThreads, museKey, museOf, paintPalette } from "./ai/muse.js";   // C-386
 import { hemisphereOf } from "./months.js";   // C-386
-import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./sleeptracks.js";   // C-334
-import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./sleepexport.js";   // C-358
-import { ProcMesh } from "./procmesh.js";   // C-360: THE MESH for processing
+import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./machine/sleeptracks.js";   // C-334
+import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./machine/sleepexport.js";   // C-358
+import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
 import { dropSmall, smallCover } from "./thumbs.js";   // C-413: a cover's small copy
-import { renderAhead, VoiceBank } from "./voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
+import { renderAhead, VoiceBank } from "./machine/voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
 import { readIndex } from "./game/save/index.js";
-import { Songs, type Song } from "./songs.js";   // C-362: THE DAEMON SINGS
+import { Songs, type Song } from "./machine/songs.js";   // C-362: THE DAEMON SINGS
 import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./sing.js";   // C-387: its words
 import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type Creation } from "./commons/creations.js";   // C-358; C-362
 import { BookRecordings } from "./library/bookrecordings.js";   // C-331 (1)
 import { GameMusic } from "./gamemusic.js";   // C-332
 import { FirmwareImages } from "./firmwareimages.js";   // C-335
 import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
-import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./ai/house.js";
+import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./machine/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
 import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
-import { discoverModules, discoveryLoop, moduleUrl } from "./ai/discover.js";
-import { LATE } from "./ai/module.js";
-import { devicePcmOf } from "./ai/wav.js";
+import { discoverModules, discoveryLoop, moduleUrl } from "./machine/discover.js";
+import { LATE } from "./machine/module.js";
+import { devicePcmOf } from "./machine/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import * as X from "./commons/exchange.js";                               // C-218, C-219: THE EXCHANGE
 import { takeBlob } from "@daemons/praxis";
@@ -129,14 +129,14 @@ import { den as denOf } from "./dens.js";
 import { Home } from "./home.js";
 import { Tvs, lanHost, tvsForDevice } from "./tv.js";
 import { createSocket } from "node:dgram";
-import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./ollama.js";
+import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./machine/ollama.js";
 import { kindOf } from "./deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./game/casino.js";          // C-158, C-167
 import { weatherNow, weatherToday } from "./context.js";
 import { consolidate, dayMaterial, gameDay, gameNow, memoryDue, readGame, readKept, RETRY_MIN, type GameNow } from "./memory.js";   // C-253
 import { buildPersona, personaFresh, readPersona, signatureOf, skyLine, todayOf, TODAY_SYSTEM, withToday, type DayPersonaFacts, type Persona } from "./persona.js";   // C-338
 import { imagePromptOf, paintAsk, paintStyle, PAINT_SYSTEM, readPainting } from "./ai/easel.js";   // C-338
-import { comfyPaint, EASEL_HOST } from "./ai/comfy.js";   // C-387: the image door the painter is rendered through
+import { comfyPaint, EASEL_HOST } from "./machine/comfy.js";   // C-387: the image door the painter is rendered through
 import { setWeatherCity, weatherLoop, weatherPlace } from "./weather.js";
 import { guidePages, guidePassages, keptToPage } from "./library/guideask.js";   // C-209
 import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./library/subtleask.js";   // C-229, C-230
@@ -150,12 +150,12 @@ import { formToShare, mineView, takeForm } from "./lifemanagement/myforms.js";  
 import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, MARK_ASK, markAsk, markQuiz, newCourse, proposeSyllabus, quizQuestions, readMarks, readSyllabus, SYLLABUS_ASK, tutorState, type Mark } from "./lifemanagement/learning.js";   // C-433
 import { actionDone, allHeard, audioGone, endMeeting, forgetMeeting, meetingForWatch, meetingOf, meetingsOf, beganAt, partHeard, partsOfPcm, setState, startMeeting, writeUp } from "./lifemanagement/meetings.js";   // C-212
 import { readGuide } from "./game/save/guide.js";
-import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./ai/tasks.js";   // C-319; C-400: the kinds
-import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./ai/schedule.js";   // C-319 later; C-455: cadence
+import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./machine/tasks.js";   // C-319; C-400: the kinds
+import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./machine/schedule.js";   // C-319 later; C-455: cadence
 import { SPAN, SPANS, writeMention, type Span } from "./mentions.js";   // C-455: MENTIONS FROM YOUR DAEMON
 import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
 import { readSubtle } from "./game/save/subtle.js";   // C-204
-import { sayable } from "./ai/say.js";   // C-270
+import { sayable } from "./machine/say.js";   // C-270
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };

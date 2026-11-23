@@ -3,7 +3,7 @@
 // through sayable() first.
 import Mind from "../modules/daemons-mind";
 import { api, ON_PHONE } from "./net";
-import { sayable } from "../../server/src/ai/say";
+import { sayable } from "../../server/src/machine/say";
 
 export const mindHere = () => ON_PHONE && !!Mind;
 

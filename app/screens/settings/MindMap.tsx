@@ -8,7 +8,7 @@
 //   - THE RIVER: one lane per mind across the time picked (an hour, a day, a week), each task a bar from start to end in
 //     its kind's colour; the live run on to NOW; past NOW, LATER -- empty until the mind can be given work for later
 //   - THE LIST: what is thinking now, with STOP; what finished, with TRY AGAIN and FORGET
-// MINE, EVERYONE or one user; the ledger is the hub's (/api/mind/tasks, server/src/ai/tasks.ts). Every word DRAFT.
+// MINE, EVERYONE or one user; the ledger is the hub's (/api/mind/tasks, server/src/machine/tasks.ts). Every word DRAFT.
 // C-330: the app keeps this phone's user's own (MINE); EVERYONE, each other user and LATER (the hub's plans) are THE
 // ENGINE ROOM's, the hub's admin -- a link to it below.
 // C-363 (the user, 2026-11-14: "red = first processing step... orange = 2nd.... purple = 7th... and colours outside of
@@ -18,7 +18,7 @@
 // task shows its pipeline, each step of it opening in turn.
 import { useEffect, useMemo, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { TASK_KINDS, kindSaid, type Task } from "../../../server/src/ai/tasks";   // C-400: the kinds' one table
+import { TASK_KINDS, kindSaid, type Task } from "../../../server/src/machine/tasks";   // C-400: the kinds' one table
 import { api } from "../../platform/net";
 import { me, whoAmI } from "../../state/me";
 import { Action, Card, Eyebrow, Pending, Small } from "../../ui/ui";

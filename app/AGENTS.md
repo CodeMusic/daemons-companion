@@ -119,11 +119,11 @@ said **DAY-mon**: the Greek *daimon*, a guiding spirit, and the background proce
 
 - **Never write that frightening word** in anything a player or reader sees, not even to say "not that". If a reader
   must be steered away from it, say "a similarly spelt but frightening word forked from it; this is not that one".
-- **Every line handed to a voice goes through `sayable()`** (`server/src/ai/say.ts`). It respells any word ending in
+- **Every line handed to a voice goes through `sayable()`** (`server/src/machine/say.ts`). It respells any word ending in
   daemon(s) as daymon(s) and keeps the rest of the word (eudaemon becomes eudaymon). It changes only what is spoken,
   never what is shown or stored.
 - **A new speech path must call it.** Today these do: the hub's `/api/ai/speak` (`server/src/api.ts`), the house module
-  (`server/src/ai/module.ts`), the Tiiny (`server/src/ai/tiiny.ts`), the phone's own voice when it answers by itself (`app/platform/mind.ts` sayHere, reached through THE MIND, `app/platform/mesh.ts`,
+  (`server/src/machine/module.ts`), the Tiiny (`server/src/machine/tiiny.ts`), the phone's own voice when it answers by itself (`app/platform/mind.ts` sayHere, reached through THE MIND, `app/platform/mesh.ts`,
   C-280), and n8n's daemon/voice, daemon/talk and
   daemon/chat (`seer/n8n/make_workflows.py`, `SAYABLE`). The book recordings respell the same way.
 - **Not covered yet**: the LLM630 board's on-device MeloTTS (`firmware/esp32/src/brain.cpp`) and the BOX-3's Home

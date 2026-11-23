@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { guidePages, guidePassages, guidePersona, keptToPage, NO_PAGE } from "../src/library/guideask.js";
-import { persona } from "../src/ai/house.js";
+import { persona } from "../src/machine/house.js";
 import { guideOf } from "../src/game/save/guide.js";
 
 describe("C-209: asking the GUIDE", () => {

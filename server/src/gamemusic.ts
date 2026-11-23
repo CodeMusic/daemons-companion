@@ -7,7 +7,7 @@
 import { execFile } from "node:child_process";
 import { existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { FOUND_FFMPEG } from "./ai/voice.js";
+import { FOUND_FFMPEG } from "./machine/voice.js";
 
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/music/audio/";
 const LIST_FOR_MS = 60 * 60 * 1000;

@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { fakeModule } from "./fake_module.js";
-import { candidates, discoverModules, moduleUrl } from "../src/ai/discover.js";
+import { candidates, discoverModules, moduleUrl } from "../src/machine/discover.js";
 
 let board: Server, port = 0;
 beforeAll(async () => { board = fakeModule(); await new Promise<void>((d) => board.listen(0, "127.0.0.1", () => d())); port = (board.address() as AddressInfo).port; });

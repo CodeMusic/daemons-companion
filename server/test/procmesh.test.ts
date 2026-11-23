@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { argvFor, free, keepSpeed, ProcMesh, reliability, safeArgs, score, SPEED_READINGS, type MeshNode } from "../src/procmesh.js";
+import { argvFor, free, keepSpeed, ProcMesh, reliability, safeArgs, score, SPEED_READINGS, type MeshNode } from "../src/machine/procmesh.js";
 
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); });

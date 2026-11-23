@@ -1,6 +1,6 @@
 // C-180: a talk answered at once with an id, the answer fetched when ready; the device in the hand first.
 import { describe, expect, it } from "vitest";
-import { PRIORITY, TalkJobs } from "../src/ai/talkjobs.js";
+import { PRIORITY, TalkJobs } from "../src/machine/talkjobs.js";
 
 const gate = () => { let open!: (v: string) => void; const p = new Promise<string>((r) => { open = r; }); return { p, open }; };
 const tick = () => new Promise((r) => setTimeout(r, 0));

@@ -4,9 +4,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { fakeModule } from "./fake_module.js";
-import { checkModules, House, persona, setModules, type ModuleAt, type TalkAsk } from "../src/ai/house.js";
-import { LATE } from "../src/ai/module.js";
-import { devicePcmOf } from "../src/ai/wav.js";
+import { checkModules, House, persona, setModules, type ModuleAt, type TalkAsk } from "../src/machine/house.js";
+import { LATE } from "../src/machine/module.js";
+import { devicePcmOf } from "../src/machine/wav.js";
 
 let quick: Server, slow: Server, qUrl = "", sUrl = "";
 const up = (s: Server) => new Promise<string>((done) => s.listen(0, "127.0.0.1", () => done(`http://127.0.0.1:${(s.address() as AddressInfo).port}`)));

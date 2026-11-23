@@ -46,7 +46,7 @@ With the cable as the link, **both Wi-Fi radios are free**:
 | **Bluetooth to the phone** | the internet when there is no Wi-Fi (the phone's tethering, Bluetooth PAN, on the Zero) | when the Zero's Wi-Fi has no network |
 | none of these | the pair goes on offline: the game, talk, sight and actions all run on the two boards | always possible |
 
-**The Kit is a node in THE MESH** (C-360, `server/src/procmesh.ts`). It dials in as the other nodes do and takes the
+**The Kit is a node in THE MESH** (C-360, `server/src/machine/procmesh.ts`). It dials in as the other nodes do and takes the
 jobs it does well: whisper, a small LLM, YOLO, melotts. Its power score reflects the NPU, not its two cores, and it is
 dropped when its charge is low (section 2) or the pair is away from every hub.
 

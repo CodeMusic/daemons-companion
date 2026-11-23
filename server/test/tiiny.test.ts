@@ -1,7 +1,7 @@
 // C-249 / C-252: the Tiiny as a thinker, and the daemon's self in words
 import { describe, expect, it } from "vitest";
-import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS, tiinyHear, tiinyWhy, unloaded, tiinyEnhance } from "../src/ai/tiiny.js";
-import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/ai/voice.js";
+import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS, tiinyHear, tiinyWhy, unloaded, tiinyEnhance } from "../src/machine/tiiny.js";
+import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/machine/voice.js";
 import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
 
 const settings = (o: Record<string, string>) => (k: string) => o[k] ?? null;

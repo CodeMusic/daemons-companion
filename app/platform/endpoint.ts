@@ -3,7 +3,7 @@
 // key is never sent to the hub or shown again. Whether it is "at home" (a private, local or tailnet address) decides
 // which of THE MIND's rings may use it. Plain fetch, no node: imports.
 import * as SecureStore from "expo-secure-store";
-import { atHome as atHomeUrl } from "../../server/src/ai/endpoints";
+import { atHome as atHomeUrl } from "../../server/src/machine/endpoints";
 
 export type Endpoint = { url: string; model: string; name: string };
 const AT = "mind.endpoint", KEY = "mind.endpoint.key";
@@ -27,7 +27,7 @@ export async function forgetEndpoint() {
   await SecureStore.deleteItemAsync(KEY).catch(() => {});
 }
 
-// At home: the hub's own rule (server/src/ai/endpoints.ts), so the phone and the hub agree on what stays in the house
+// At home: the hub's own rule (server/src/machine/endpoints.ts), so the phone and the hub agree on what stays in the house
 export const atHome = (url: string) => atHomeUrl(baseOf(url));
 
 const timed = (ms: number) => { const c = new AbortController(); const t = setTimeout(() => c.abort(), ms); return { signal: c.signal, done: () => clearTimeout(t) }; };

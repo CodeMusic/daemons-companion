@@ -1,7 +1,7 @@
 // C-358: creations in one shape, and the sleep piece's exports' arithmetic
 import { describe, expect, it } from "vitest";
 import { beatsSaid, gallery, paintingCreation, sleepCreation, uidOf } from "../src/commons/creations.js";
-import { beatsBy, beatsExpr, carrierOf, driftScenes, imedxId, SESSION_S, stagesOf } from "../src/sleepexport.js";
+import { beatsBy, beatsExpr, carrierOf, driftScenes, imedxId, SESSION_S, stagesOf } from "../src/machine/sleepexport.js";
 // the stages as they were before C-386 placed them by the day -- the arithmetic is the same for any beats
 const OLD = [{ at: 0, beat: 10, word: "ALPHA" }, { at: 600, beat: 6, word: "THETA" }, { at: 1200, beat: 2, word: "DELTA" }];
 

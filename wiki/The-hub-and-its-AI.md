@@ -30,7 +30,7 @@ The AX630C Module LLM sits on its own small network on the hub's second Ethernet
 YOUR NETWORK**, in SETTINGS, takes the address of another one -- a standalone board such as the LLM630 Compute Kit
 (C-194) -- and looks for it at once. Each board found is a worker, one talk at a time.
 
-**What it runs**, picked as the hub measured them (`server/src/ai/module.ts`; the benchmark is
+**What it runs**, picked as the hub measured them (`server/src/machine/module.ts`; the benchmark is
 `server/tools/ax630bench.ts`):
 
 | | model | |

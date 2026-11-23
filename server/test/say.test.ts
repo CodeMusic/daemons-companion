@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sayable } from "../src/ai/say.js";
+import { sayable } from "../src/machine/say.js";
 
 // C-270: DAEMON as it is said, DAY-mon -- only in what a voice is handed
 describe("a line made sayable", () => {

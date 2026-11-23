@@ -8,7 +8,7 @@ import type { Server } from "node:http";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import { partsOfPcm } from "../src/lifemanagement/meetings.js";
-import { CAN_CONVERT, wavOf } from "../src/ai/voice.js";
+import { CAN_CONVERT, wavOf } from "../src/machine/voice.js";
 
 describe("a whole recording cut as the watch cuts it", () => {
   it("makes half-minute parts, drops a scrap at the end, and stops at four hours", () => {

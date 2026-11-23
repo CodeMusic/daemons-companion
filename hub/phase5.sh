@@ -7,7 +7,7 @@
 #   ssh -t debian@daemons-hearth 'sudo bash /opt/daemons-companion/hub/phase5.sh'
 #
 # The module takes its address by DHCP from the hub (M5's image asks for one on the Mate's port); the /30 leaves it
-# only .2, which is where server/src/ai/discover.ts looks. Safe to run again. Run on the hub 2026-10-28: the link and
+# only .2, which is where server/src/machine/discover.ts looks. Safe to run again. Run on the hub 2026-10-28: the link and
 # the address work; the sharing does not -- this kernel has no nftables NAT, so the module fetches its packages through
 # the hub's SSH instead (ssh -R 1080, apt's Acquire::https::Proxy socks5h://127.0.0.1:1080).
 set -euo pipefail

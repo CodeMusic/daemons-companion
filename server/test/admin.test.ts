@@ -8,7 +8,7 @@ import { networkInterfaces } from "node:os";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import { ADMIN_DIR } from "../src/admin.js";
-import { TASK_KINDS } from "../src/ai/tasks.js";
+import { TASK_KINDS } from "../src/machine/tasks.js";
 
 const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: null });
 let port = 0;

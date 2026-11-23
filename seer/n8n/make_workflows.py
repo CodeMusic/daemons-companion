@@ -20,7 +20,7 @@ INTERNAL = (sys.argv[2] if len(sys.argv) > 2 else "http://127.0.0.1:5678").rstri
 os.makedirs(os.path.join(OUT, "public-relay"), exist_ok=True)
 
 # C-270 (companion; the user, 2026-11-01: "the TTS returns the pronouciation of daemon as (DEE-MON)"): what a voice is
-# handed, never what is shown -- DAEMON respelled as it is said, DAY-mon (the companion's server/src/ai/say.ts, the same rule)
+# handed, never what is shown -- DAEMON respelled as it is said, DAY-mon (the companion's server/src/machine/say.ts, the same rule)
 # A word ending in daemon keeps its front (eudaemon -> eudaymon, 2026-11-01); no braces, so n8n's {{ }} cannot misread it
 SAYABLE = r".replace(/\b(\w*?)daemon(s?)\b/gi, (w) => ((d) => w[0] === w[0].toLowerCase() ? d : d[0].toUpperCase() + d.slice(1))(w.toLowerCase().replace(/daemon(s?)$/, 'daymon$1')))"
 

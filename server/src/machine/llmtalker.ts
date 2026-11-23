@@ -1,7 +1,7 @@
 // C-220: a meeting's talker on THE COMMONS -- any OpenAI-compatible endpoint (roverbyteseer's LiteLLM, and the Tiiny AI
 // behind it when it comes), asked for one turn with the meeting's own short setup and question (together.ts). Its line
 // still passes the filter (meetsafe.ts) before anyone reads it. No node: imports.
-import { MEET_SETUP, meetQuestion, type Talker } from "./together.js";
+import { MEET_SETUP, meetQuestion, type Talker } from "../together.js";
 
 export function llmTalker(base: string, model: string, key = "", f: typeof fetch = fetch, ms = 15000): Talker {
   const url = `${base.replace(/\/+$/, "")}/v1/chat/completions`;

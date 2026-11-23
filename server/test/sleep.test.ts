@@ -7,8 +7,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { cleanImage, moodBand, sleepRecipe, sleepSaid, TYPE_SOUND } from "../src/sleepsound.js";
-import { SleepTracks, sleepDoor } from "../src/sleeptracks.js";
-import { FOUND_FFMPEG } from "../src/ai/voice.js";
+import { SleepTracks, sleepDoor } from "../src/machine/sleeptracks.js";
+import { FOUND_FFMPEG } from "../src/machine/voice.js";
 import { TYPE_VOICE } from "../src/ai/voices.js";
 
 const care = { rest: 60, hunger: 20, thirst: 20, companionship: 60 };

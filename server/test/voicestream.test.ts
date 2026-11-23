@@ -1,7 +1,7 @@
 // C-317: a voice streamed -- the Tiiny's PCM turned to MP3 as it comes, followed from its first bytes
 import { describe, expect, it } from "vitest";
-import { tiinySpeakStream, type TiinyAt } from "../src/ai/tiiny.js";
-import { CAN_CONVERT, FIRST_PART, mp3Into, streamMp3, streamParts, voiceParts, VoiceStreams } from "../src/ai/voice.js";
+import { tiinySpeakStream, type TiinyAt } from "../src/machine/tiiny.js";
+import { CAN_CONVERT, FIRST_PART, mp3Into, streamMp3, streamParts, voiceParts, VoiceStreams } from "../src/machine/voice.js";
 
 const at: TiinyAt = { url: "http://tiiny.test/v1", key: "k", model: "m", quick: "", tts: "tiiny-voice", asr: "", voice: "" };
 // half a second of a 440 Hz tone, 24 kHz 16-bit mono, sent in pieces of odd sizes (a sample split between two)
@@ -77,7 +77,7 @@ describe("the voice in growing parts", () => {
 
 describe("the voice stream's own address", () => {
   it("is kept as a /v1 base, and nothing when it is not one", async () => {
-    const { tiinyIn } = await import("../src/ai/tiiny.js");
+    const { tiinyIn } = await import("../src/machine/tiiny.js");
     const s: Record<string, string> = { "tiiny.url": "http://roverbyteseer:4000/v1", "tiiny.stream": "http://roverbyteseer:4001/v1/" };
     expect(tiinyIn((k) => s[k] ?? null)?.stream).toBe("http://roverbyteseer:4001/v1");
     s["tiiny.stream"] = "http://roverbyteseer:4001";

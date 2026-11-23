@@ -1,7 +1,7 @@
 // C-180: the hub's Module LLM through its OpenAI-format API -- checked against a stand-in that answers as it should.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
-import { chat, hear, kindOf, listModels, pickModels, speak } from "../src/ai/module.js";
+import { chat, hear, kindOf, listModels, pickModels, speak } from "../src/machine/module.js";
 import { fakeModule } from "./fake_module.js";
 
 const server = fakeModule();

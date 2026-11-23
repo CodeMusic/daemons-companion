@@ -1,7 +1,7 @@
 #!/bin/bash
 # C-168 Phase 3: boards linked by cable to the hub itself (HUB.md Phase 3). Run it ON THE HUB, once:
 #
-#   ssh -t debian@coremp135 'sudo bash /opt/daemons-companion/hub/phase3.sh'
+#   ssh -t debian@daemons-hearth 'sudo bash /opt/daemons-companion/hub/phase3.sh'
 #
 # Installs daemons-companion-bridges.service (hub/bridges.py: one usb_bridge.py per allowed board, by its USB serial),
 # makes the allow-list if there is none (boards.allow, editable by the login user too), and installs the newer

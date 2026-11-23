@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Server } from "node:http";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { partsOfPcm } from "../src/lifemanagement/meetings.js";
 import { CAN_CONVERT, wavOf } from "../src/ai/voice.js";
 

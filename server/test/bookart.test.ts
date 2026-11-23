@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { buildSave } from "./build_save.js";
 import subtle from "../data/subtle.json" with { type: "json" };
 import hermetic from "../data/hermetic.json" with { type: "json" };

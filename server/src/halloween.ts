@@ -9,7 +9,7 @@
 import fearsJson from "../data/fears.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import { draw } from "./arcana.js";
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 const FEARS = (fearsJson as unknown as { fears: Record<string, string[]> }).fears;
 const SPECIES = speciesJson as unknown as Record<string, { name: string; types: string[]; art?: { front?: string } }>;

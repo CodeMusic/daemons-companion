@@ -1,7 +1,7 @@
 // C-432 (PRAXIS 5): TENDING on PRAXIS, THE DAY'S VIRTUE (+2 ARETE on the day's first finish, once a day) and THE WEEK'S
 // BALANCE (a virtue lived when something was done on its own day; its shadow untended when the day passed with nothing).
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { tend, tendedOf, TENDING } from "../src/lifemanagement/tending.js";
 import { weekBalance } from "../src/lifemanagement/balance.js";
 import { DAY_VIRTUE, spaceOf } from "../src/lifemanagement/practice.js";

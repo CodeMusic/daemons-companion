@@ -11,7 +11,7 @@ import * as Sharing from "expo-sharing";
 import { Asset } from "expo-asset";
 import { Directory, File, Paths } from "expo-file-system";
 import speciesJson from "../../server/data/species.json";
-import { Store, type Db } from "../../server/src/store";
+import { Store, type Db } from "../../server/src/shared/store";
 import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "../../server/src/routes";
 import { show as glassShow } from "../../server/src/glass";   // C-262
 import { awayNow, deviceSettings, deviceState, type Edition, type Host, type SaveFile } from "../../server/src/core";
@@ -23,7 +23,7 @@ import { readSave } from "../../server/src/game/save/reader";
 import { afterSync, beforeSync, remoteLink, setHub, TRADE_PATHS, tradeRoute } from "../../server/src/game/tradelink";   // C-219
 import { BATTLE_PATHS, battleRoute } from "../../server/src/game/battleroute";   // C-328
 import { SPECIES_ART } from "../art/speciesArt";
-import { handOver as handOverTo, hubPeer, type HandedOver } from "../../server/src/praxissync";   // C-431
+import { handOver as handOverTo, hubPeer, type HandedOver } from "../../server/src/shared/praxissync";   // C-431
 import type { BlobStore } from "@daemons/praxis";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
@@ -81,7 +81,7 @@ const phoneBlobs: BlobStore = {
 
 // C-431 (docs/PROJECTS.md 5: "a phone that hosted alone joins a hub later and loses nothing"): paired with a hub, the
 // phone hands it what it made here -- its goals, what it finished and the ARETE each earned -- and the hub reads them in
-// its own LIFE (server/src/praxissync.ts). Only a phone that ever hosted alone has a database to hand over; one that
+// its own LIFE (server/src/shared/praxissync.ts). Only a phone that ever hosted alone has a database to hand over; one that
 // could not reach the hub, or whose clock ran too far ahead of it, tries again the next time the app opens.
 const HANDOVER = "praxis.handover";
 const hostedAlone = () => STORE !== null || new File(Paths.document, "SQLite", "companion.db").exists;

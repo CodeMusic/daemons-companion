@@ -11,7 +11,7 @@
 import arcanaJson from "../data/arcana.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import thirteenJson from "../data/thirteen.json" with { type: "json" };
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 // C-239: and SPELLCRAFT, THE HERMETIC LAYER's face of the same twenty-two -- its own deck, drawn once that book is held.
 // C-272/C-273 (the user, 2026-11-01): THE HERMETIC LAYER's two decks are ABOVE and BELOW, as THE SUBTLE LAYER's are REASON

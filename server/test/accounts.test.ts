@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { createHash, generateKeyPairSync, sign, type KeyObject } from "node:crypto";
 import { makeCommons } from "../src/commons/commons_api.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { verifyIdToken, type Jwks } from "../src/commons/idtoken.js";
 import type { AccountsConfig } from "../src/commons/accounts_api.js";
 
@@ -179,7 +179,7 @@ describe("ACCOUNTS through a home's hub (accountslink.ts), and the dev sign-in",
   });
   it("signs a guardian in by name only where ACCOUNTS_DEV_SIGNIN is set, from the commons' own machine", async () => {
     const { accountsRoute } = await import("../src/commons/accounts_api.js");
-    const { ACCOUNT_KEYS } = await import("../src/keys.js");
+    const { ACCOUNT_KEYS } = await import("../src/shared/keys.js");
     const store = new Store(":memory:"), base = { audiences: { apple: [], google: [] }, rpId: null, origins: [] };
     const dev = { provider: "dev", sub: "scratch" };
     expect((await accountsRoute(store, ACCOUNT_KEYS, base, "POST", "/accounts/signin", dev, {}, true)).status).toBe(403);

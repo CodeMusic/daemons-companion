@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { checkNight, dreamWords, dreamsOf, freshDream, keepNight, quality, rested, rewriteDream } from "../src/dreams.js";
 import { bondAdd, bondOf, bondScore } from "../src/evolve.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 
 const night = (hours: number, stirs: number, tucked = false) => {
   const to = new Date("2026-10-29T07:00:00Z");

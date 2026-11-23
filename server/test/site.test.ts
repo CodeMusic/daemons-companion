@@ -6,7 +6,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { networkInterfaces, tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { siteFile } from "../src/site.js";
 
 const dir = mkdtempSync(join(tmpdir(), "site-"));

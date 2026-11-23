@@ -1,6 +1,6 @@
 // C-455: MENTIONS FROM YOUR DAEMON, and a cadence on every plan (the dreams told among them)
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, lastDue, nextDue, PLANS, plans, type Plan } from "../src/ai/schedule.js";
 import { lastOf, markRead, mentionsAsk, mentionsOf, newestUnread, plainLetter, spanSaid, statLines, statsOf, windowOf, writeMention } from "../src/mentions.js";
 import { keepEntry, newJournal } from "../src/lifemanagement/journal.js";

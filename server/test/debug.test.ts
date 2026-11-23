@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 
 const dir = mkdtempSync(join(tmpdir(), "debug-"));
 writeFileSync(join(dir, "debug_patches.json"), JSON.stringify({ version: "11.315.4", debug: true,

@@ -9,7 +9,7 @@
 // through one fixed setup so meetings share a single thinker; a turn the module cannot say in time (a setup under way,
 // a busy module, none at all -- a phone hosting alone) is written instead, from the lines below. All DRAFT.
 // Home only for now: THE COMMONS (friends' homes) does not carry meetings yet. No node: imports.
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 import { safeLine } from "./meetsafe.js";   // C-220: what one daemon says to another player's, checked (kids play)
 import speciesJson from "../data/species.json" with { type: "json" };
 

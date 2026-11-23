@@ -45,8 +45,8 @@ import { keepTrace, speeds, traceOf, traces } from "./ai/mindlog.js";   // C-307
 import { breakdown } from "./ai/breakdown.js";
 import { asWav, Conversations, joinVoices, mp3Into, phoneAudio, streamParts, toDevicePcm, voicePieces, VoiceShelf, VoiceStreams, DEVICE_RATE, PIECE_MOST, TIINY_PIECE_MOST, wavOf } from "./ai/voice.js";
 const WHOLE_MOST = 8000;   // a whole piece's voice: about ten minutes of it, at most
-import type { Config } from "./config.js";
-import { Store } from "./db.js";
+import type { Config } from "./shared/config.js";
+import { Store } from "./shared/db.js";
 import { readAway, readSave } from "./game/save/reader.js";
 import { sha1 } from "./game/hash.js";
 import { deviceArt, headOf, repaint, streakColours } from "./art.js";
@@ -104,10 +104,10 @@ import { devicePcmOf } from "./ai/wav.js";
 import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import * as X from "./commons/exchange.js";                               // C-218, C-219: THE EXCHANGE
 import { takeBlob } from "@daemons/praxis";
-import { blobsBeside, sha256 as sha256hex } from "./blobstore.js";   // C-431: PRAXIS's blobs, by their SHA-256
-import { praxisRoute } from "./praxissync.js";                      // C-431: PRAXIS's SYNC
+import { blobsBeside, sha256 as sha256hex } from "./shared/blobstore.js";   // C-431: PRAXIS's blobs, by their SHA-256
+import { praxisRoute } from "./shared/praxissync.js";                      // C-431: PRAXIS's SYNC
 import { Backup, backupFile, setVault, vaultOf } from "./backup.js";                    // C-434: the backup to THE VAULT, sealed
-import { KEYS } from "./keys.js";
+import { KEYS } from "./shared/keys.js";
 import { commonsFriend, commonsHome, commonsOf, homeRoute, linkCommons } from "./commons/commonslink.js";   // C-222: THE COMMONS
 import { fetchManualText } from "./library/manual.js";   // C-233 on the devices
 import { afterSync, beforeSync, localLink, remoteLink, setHub, TRADE_PATHS, tradeRoute, type Link } from "./game/tradelink.js";

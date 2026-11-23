@@ -2,7 +2,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { fetchManualText, manualText } from "../src/library/manual.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 
 const MD = `# Welcome to DAEMONS {#welcome .t-CONTEXT}
 

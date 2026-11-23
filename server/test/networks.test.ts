@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
-import { Store } from "../src/db.js";
+import { DEFAULTS } from "../src/shared/config.js";
+import { Store } from "../src/shared/db.js";
 import { SharedNetworks } from "../src/networks.js";
 
 describe("one list of networks for every device (C-93)", () => {

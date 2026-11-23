@@ -4,7 +4,7 @@ import { expFor } from "../src/game/save/growth.js";
 import { syncSave } from "../src/game/save/writer.js";
 import { readSave, readBoxes, readAway, blocks, ORDERS } from "../src/game/save/reader.js";
 import { evolveTarget, judgeEvolution, evolvedOf, bondAdd, bondOf, bondScore, bondSeen, AT_HOME } from "../src/evolve.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;

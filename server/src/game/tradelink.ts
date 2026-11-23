@@ -7,7 +7,7 @@
 // fetched into the store (`trade.inbox`), and any borrowed daemon a loan asks back is handed back as it is now; SYNC
 // writes the inbox (writer.ts `trade`) and keeps what it wrote (`trade.outbox`); AFTER, the exchange is told.
 // No node: imports -- fetch is the platform's, and the keys are made by whoever made the link (api.ts).
-import type { Store } from "../store.js";
+import type { Store } from "../shared/store.js";
 import type { Reply } from "../routes.js";
 import type { TradeIn } from "./save/writer.js";
 import { readAway } from "./save/reader.js";

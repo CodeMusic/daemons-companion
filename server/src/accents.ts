@@ -5,7 +5,7 @@
 // the player can fly to). A fresh save has its first town or two. `here` is where the save was made, for IN STEP.
 import accentsJson from "../data/accents.json" with { type: "json" };
 import regionsJson from "../data/regions.json" with { type: "json" };
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 export type Accent = { deep: string; main: string; light: string; spark: string; map: string; breathe?: boolean };
 export const ACCENTS = (accentsJson as unknown as { accents: Record<string, Accent> }).accents;

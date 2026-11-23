@@ -231,7 +231,7 @@ blob plus the event that says what made it (the recipe, the mind, the persona of
 **Built (C-431, 2026-11-20; daemons-praxis v0.2.0):**
 
 - **The exchange, both ways or one** (`sync`, `push`): per space and replica, "what I have seen", safe to repeat, over
-  any transport. The hub answers it over HTTP at `/api/praxis/` (`server/src/praxissync.ts`) to a paired phone or
+  any transport. The hub answers it over HTTP at `/api/praxis/` (`server/src/shared/praxissync.ts`) to a paired phone or
   itself, at home and on the tailnet, never through the relay; it sends HOME, SHARED and PUBLIC spaces, never THIS PHONE.
 - **A phone that hosted alone joins a hub and loses nothing.** When it pairs (and again whenever the app opens, until it
   is done), it pushes every space of its own with anything in it (`app/platform/local.ts` `handOver`). The hub then
@@ -239,7 +239,7 @@ blob plus the event that says what made it (the recipe, the mind, the persona of
   after the hub's (each keeping its old number in its history), every finish and its ARETE kept, counted under the
   day it was earned. What the phone makes later, alone, lands in the same LIFE at the next hand-over.
 - **Blobs by hash.** A field of type `blob` names a SHA-256; the hub keeps the bytes in `blobs/` beside its database
-  (`server/src/blobstore.ts`), the phone in its documents, and an exchange moves every blob one side names and the other
+  (`server/src/shared/blobstore.ts`), the phone in its documents, and an exchange moves every blob one side names and the other
   holds, checked against its name before it is kept. Nothing in GOALS has a blob yet: C-432 and C-433 bring the
   features that do.
 - **A clock set wrong cannot drag the others.** An event more than a day ahead of the receiver's clock waits, and is

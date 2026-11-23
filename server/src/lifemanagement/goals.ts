@@ -17,7 +17,7 @@
 //   another LIFE    C-431: a phone that hosted alone, joining a hub, pushes its own LIFE; the hub JOINS it to its own
 //                   (joinOthers), so there is one LIFE again -- the phone's goals numbered here, their ARETE counted here
 import { hlcIso, parseHlc, Praxis, type Form, type Item, type StateDef } from "@daemons/praxis";
-import type { Goal, Plan, Step, Store, SubItem } from "../store.js";
+import type { Goal, Plan, Step, Store, SubItem } from "../shared/store.js";
 import { dayVirtue } from "./practice.js";
 
 /** what a finish gives the daemon (core.ts gives it): its time together (the log's "step": a meal, training, its mood),

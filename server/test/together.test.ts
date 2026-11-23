@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import * as X from "../src/commons/exchange.js";
 import * as M from "../src/together.js";
 import { exchangeRoute } from "../src/game/tradelink.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 
 let n = 0;
 const KEYS: X.Keys = { token: () => `tok${++n}`, hash: (t) => `h:${t}`, password: (pw) => `pw:${pw}`, check: (pw, kept) => kept === `pw:${pw}`, code: () => `CODE${++n}` };

@@ -6,7 +6,7 @@ import { expFor } from "../src/game/save/growth.js";
 import { syncSave } from "../src/game/save/writer.js";
 import { giftableItems, putItem, takeItem, PC_MAX, type Pockets, type Words } from "../src/game/save/items.js";
 import * as X from "../src/commons/exchange.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
 const PK: Pockets = { PC: { at: 0x298, count: 30 }, ITEMS: { at: 0x310, count: 42 }, BALLS: { at: 0x430, count: 13 }, BERRIES: { at: 0x54c, count: 43 } };

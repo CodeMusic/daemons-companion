@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { cardOf, cardOfDay, daySpread, deckSize, draw, futureAgain, SHINY_ONE_IN, SPREAD, symbolForm } from "../src/arcana.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { name: string; national: number; art: { front: string } }>;

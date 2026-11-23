@@ -10,7 +10,7 @@
 // weathering in: six days in a row weather in, and the seventh and every day after it in the same run WAIT. They settle
 // on the first day the goal is let be -- a day with no step, today included once it has none -- and count from then. While
 // any wait, the goal says so: WAITING_LINE.
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 export const LAYERS = 7;                                             // a week of days, as the centres climb
 export const RUN = 6;                                                // SAME DRIVE: six days in a row, then the rest wait

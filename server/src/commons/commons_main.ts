@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { makeCommons } from "./commons_api.js";
 import { accountsConfigFromEnv, eraseIdle } from "./accounts_api.js";
-import { Store } from "../db.js";
+import { Store } from "../shared/db.js";
 import { reach } from "./commons.js";
 import { llmTalker } from "../llmtalker.js";
 import { meetOnTheirOwn, setMeetTalker } from "../together.js";

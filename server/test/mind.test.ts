@@ -2,7 +2,7 @@
 // dream the save carries, read back from VAR_0x40D4..0x40D7 as SYNC wrote it. Synthetic saves (build_save.ts).
 import { describe, expect, it } from "vitest";
 import { sync, type Host } from "../src/core.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { checkNight, DREAM_TITLES, dreamImage, keepNight, type Night } from "../src/dreams.js";
 import type { Feelings } from "../src/feelings.js";
 import { FELT, gameDream, mindNow, ORDINARY } from "../src/mind.js";

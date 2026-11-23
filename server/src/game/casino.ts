@@ -7,7 +7,7 @@
 // <boot>.<seq> is the board's own count of its reports since it started, so a report sent twice (the outbox tries
 // again when an answer is lost) is counted once, and the board can tell from `seen` which of its reports are in the
 // balance it is sent and which it must still add itself.
-import type { Store } from "../store.js";
+import type { Store } from "../shared/store.js";
 import { carrying } from "../carry.js";
 import { BETS, PAYS, catReason } from "./slots.js";
 import type { Reason } from "../context.js";

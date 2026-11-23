@@ -8,7 +8,7 @@
 // Nothing here may import Node: a phone hosting alone runs it too.
 import speciesJson from "../data/species.json" with { type: "json" };
 import casinoArt from "../data/casino_art.json" with { type: "json" };
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 import type { Edition, Season } from "./seasons.js";
 import type { Holiday } from "./holidays.js";
 import { RETURN_AT } from "./game/slots.js";

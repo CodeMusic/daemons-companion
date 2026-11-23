@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { request } from "node:http";
 import { makeServer, ourHost } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 
 describe("whose pages and names the companion answers", () => {
   it("knows its own names, and no one else's", () => {

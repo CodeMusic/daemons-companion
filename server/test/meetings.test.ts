@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { allHeard, endMeeting, meetingOf, partHeard, readWriteUp, startMeeting, stretches, transcriptOf, writeUp } from "../src/lifemanagement/meetings.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 
 describe("C-212: a meeting, recorded and written up", () => {
   it("keeps the parts in order, however they arrive", () => {

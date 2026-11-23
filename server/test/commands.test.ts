@@ -1,7 +1,7 @@
 // C-244: INDEX, a spoken command -- the rules, the model's JSON checked against the list, and what the watch is told
 import { describe, expect, it } from "vitest";
 import { checkCommand, commandPatch, commandSaid, commandWords, ruleCommand } from "../src/commands.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { deviceSettings, setOwnSettings } from "../src/core.js";
 
 describe("INDEX commands (C-244)", () => {

@@ -2,9 +2,9 @@
 // species' own name, and the profile's first word for its trainer -- and a loan coming home gets its own names back.
 import { describe as group, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import * as X from "../src/commons/exchange.js";
-import { KEYS } from "../src/keys.js";
+import { KEYS } from "../src/shared/keys.js";
 import { describe, fromB64, toB64 } from "../src/game/save/trade.js";
 import { decodeText, LAYOUT } from "../src/game/save/reader.js";
 import { buildDaemon, buildSave } from "./build_save.js";

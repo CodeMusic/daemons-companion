@@ -22,13 +22,13 @@
 // and every address has a budget of requests besides the tries below. A request that carries a forwarding header is
 // never the keeper's on either listener.
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import type { Store } from "../store.js";
-import { KEYS } from "../keys.js";
+import type { Store } from "../shared/store.js";
+import { KEYS } from "../shared/keys.js";
 import * as C from "./commons.js";
 import * as X from "./exchange.js";
 import * as A from "./accounts.js";
 import * as P from "./profiletrade.js";   // C-226 piece 4
-import { ACCOUNT_KEYS } from "../keys.js";
+import { ACCOUNT_KEYS } from "../shared/keys.js";
 import { accountsRoute, type AccountsConfig } from "./accounts_api.js";   // C-226
 import { CommonsCreations } from "./commonscreations.js";   // C-358
 import { createReadStream, statSync } from "node:fs";

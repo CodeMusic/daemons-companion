@@ -1,6 +1,6 @@
 // C-357 (4): SLOW WRITES -- a goal's steps weather a mark in, a layer a day however many steps that day, seven to a mark.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { LAYERS, RUN, WAITING_LINE, weatheringOf } from "../src/weathering.js";
 
 // C-430: a step is ticked through PRAXIS, at the time its clock says -- a store on a clock the test turns

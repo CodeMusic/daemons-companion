@@ -23,7 +23,7 @@
 // past its window that has not landed is closed. LEANS -- "lean <pays|not> <landed>" -- a CASINO pull, judged on the
 // board at once (the reels' result is drawn as the lever is pulled). The log decides: the companion counts, never vouches.
 // Every word DRAFT. No node: imports (it runs on the phone, hosting alone).
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 import type { Feelings } from "./feelings.js";
 import { dreamsOf } from "./dreams.js";
 import { fixesOf, type Fix } from "./where.js";

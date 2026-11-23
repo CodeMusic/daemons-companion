@@ -12,7 +12,7 @@
 // The night (memory.ts, api.ts's rememberDay) gives what it holds to the day's material, so YESTERDAY and KEPT are made
 // from it, and then lets it all go. MIND: no model is called here; an open thread is found by its words. Every word DRAFT.
 import { hold, inMind, letGo, WORKING_MEMORY, type Praxis } from "@daemons/praxis";
-import type { Goal } from "./store.js";
+import type { Goal } from "./shared/store.js";
 
 export type Held = { id: string; words: string; about: string; from: string | null; at: string };
 

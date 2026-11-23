@@ -1,6 +1,6 @@
 // C-433 (PRAXIS 6): THE REWARD SHELF -- rewards stocked with their prices, SPENT at once, taken back the same day only.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { shelfView, spend, stock, unspend, editReward, removeReward, type Reward } from "../src/lifemanagement/rewards.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);

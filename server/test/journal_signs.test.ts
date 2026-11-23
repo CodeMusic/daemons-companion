@@ -1,6 +1,6 @@
 // C-356: a journal's KIND (STANDARD or DREAM), a dream journal's page, and READ THE SIGNS from the four books' lexicon
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
 import { chapterWords, DREAM_PAGE_ASK, PAGE_ASK, journalOf, signsWords, writeChapter, writeSigns } from "../src/lifemanagement/journal.js";

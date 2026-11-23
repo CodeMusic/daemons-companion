@@ -5,7 +5,7 @@
 // It fills a database that holds no PRAXIS events yet, and writes backup.json beside it, so the backup carries on.
 import { existsSync } from "node:fs";
 import { restore } from "./backup.js";
-import { loadConfig } from "./config.js";
+import { loadConfig } from "./shared/config.js";
 
 const named = process.env.COMPANION_CONFIG || undefined;
 if (named && !existsSync(named)) { console.error(`COMPANION_CONFIG names ${named}, which is not there`); process.exit(1); }

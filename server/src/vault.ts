@@ -14,8 +14,8 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { HASH, isSealed, keepSealed, Praxis, type BlobPeer, type Db, type PxEvent } from "@daemons/praxis";
-import { folderBlobs } from "./blobstore.js";
-import { MOST_EVENTS, MOST_HASHES } from "./praxissync.js";
+import { folderBlobs } from "./shared/blobstore.js";
+import { MOST_EVENTS, MOST_HASHES } from "./shared/praxissync.js";
 
 /** the households a vault keeps: each one's name and the SHA-256 of its token */
 export interface VaultBook { households: Record<string, { token: string; since: string }> }

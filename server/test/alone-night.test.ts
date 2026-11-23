@@ -1,7 +1,7 @@
 // C-200, C-174: a watch's night and its fixes taken by the shared rules (routes.ts) -- what a phone hosting alone runs
 import { describe, expect, it } from "vitest";
 import { route, takeFix, takeNight } from "../src/routes.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import type { Host } from "../src/core.js";
 
 const h: Host = { edition: "CONTENT", save: { read: () => null, write: () => null } };

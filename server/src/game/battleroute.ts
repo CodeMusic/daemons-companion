@@ -13,7 +13,7 @@
 // C-421: /api/battle/challenge leaves a CHALLENGE that waits a day (battles.ts) -- for one seat that need not be online
 // (`to`: a device or app of this home, or "player:<id>"), or open to anyone at home or on the exchange (`where`) -- and
 // /api/battle/seen marks a battle watched, so a challenge's replay is shown once, at its player's next look.
-import type { Store } from "../store.js";
+import type { Store } from "../shared/store.js";
 import type { Reply } from "../routes.js";
 import type { Link } from "./tradelink.js";
 import * as A from "./battles.js";

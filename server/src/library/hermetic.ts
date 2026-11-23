@@ -11,7 +11,7 @@ import hermeticJson from "../../data/hermetic.json" with { type: "json" };
 import layoutJson from "../../data/profile_layout.json" with { type: "json" };
 import { blocks, LAYOUT, type Layout } from "../game/save/reader.js";
 import { flagReader } from "../game/save/profile.js";
-import type { Store } from "../store.js";
+import type { Store } from "../shared/store.js";
 import { witchingNow } from "../witching.js";
 
 type Para = { text: string; voice: "telling" | "asking"; inscription?: boolean };

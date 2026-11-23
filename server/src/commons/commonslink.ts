@@ -8,7 +8,7 @@
 // that lives on the commons carries "c:" before its id, and every request for one is passed there. An offer made with
 // scope "friends" goes to the commons; one made at home stays home. A commons that does not answer leaves the home's
 // own trading as it was. No node: imports.
-import type { Store } from "../store.js";
+import type { Store } from "../shared/store.js";
 import * as X from "./exchange.js";
 import type { HomeView } from "./commons.js";
 import { exchangeRoute } from "../game/tradelink.js";

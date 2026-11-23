@@ -8,7 +8,7 @@
 // dream. Every dream is kept in the journal (the store's `dreams`, the newest first, ninety of them) for the app and the
 // site; a rested night counts toward the carried daemon's bond (evolve.ts). Every word is DRAFT. No node: imports (it
 // runs on the phone, hosting alone).
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 export type Night = { from: string; to: string; hours: number; stirs: number; tucked: boolean };
 export type Quality = "vivid" | "quiet" | "broken";

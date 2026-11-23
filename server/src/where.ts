@@ -5,7 +5,7 @@
 // -- and they are kept here (the store's `where`, the newest first, five hundred of them) for the app's map. Never
 // public: only the companion's own clients read them. FIND asks one device to say where it is, and to sound so it can be
 // found -- the ask rides that device's own state (`find`), so no other board takes it. No node: imports.
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 export type Fix = { at: string; lat: number; lon: number; metres: number; device: string };
 const KEEP = 500;

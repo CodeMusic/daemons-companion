@@ -6,7 +6,7 @@
 // ITEMS kept there -- finished, paid by their kind's rule, and the day's virtue on the day's first finish. A changed
 // form is a new version, taken by every space made from it. Shared through THE COMMONS (api.ts) as a form alone, never
 // its items, and a friend's taken in as one's own. In MINE on JOURNEY. Every word the app shows is DRAFT.
-import type { Store } from "../store.js";
+import type { Store } from "../shared/store.js";
 import type { FieldDef, Form, Item, KindDef } from "@daemons/praxis";
 import { checkForm } from "@daemons/praxis";
 import { dayVirtue, ensureSpace, midnight } from "./practice.js";

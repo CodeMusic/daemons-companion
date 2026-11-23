@@ -18,7 +18,7 @@
 // Kept on the hub, the last sixty; both players see each one. INTEGRATE sends the tagged thread to the mind hub (its
 // write-up path: the Tiiny first) and keeps a write-up with a title; the history shows the title, or the time
 // (dd/MMM/yyyy hh:mm TT) until there is one. Every word a player reads is DRAFT. No node: imports.
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 import { safeLine } from "./meetsafe.js";
 import { cardOf, factsFrom, personaOf, personaVoice, speciesFacts, systemOf, type PersonaFacts } from "./ai/personaof.js";
 import week from "../data/week.json" with { type: "json" };

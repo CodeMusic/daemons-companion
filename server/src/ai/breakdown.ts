@@ -3,7 +3,7 @@
 // is a built-in example, marked as one, and NO MODEL IS CALLED. A model is reached through an OpenAI-compatible
 // endpoint (DAEMONS' LiteLLM, ai/), only when config.ai.enabled is true.
 // C-387: MIND -- Musai's shape, the three asks and how they are joined. The model it asks is handed in, never imported.
-import type { Plan } from "../db.js";
+import type { Plan } from "../shared/db.js";
 
 export interface Breakdown { example: boolean; logical: string; associative: string; plan: Plan }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "../src/lifemanagement/voicenotes.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 
 describe("C-199 (5): voice notes", () => {
   it("files a note when it was said, newest first, and keeps its words once heard", () => {

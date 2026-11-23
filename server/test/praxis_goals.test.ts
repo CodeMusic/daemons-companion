@@ -3,7 +3,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";   // C-432
 import { describe, expect, it } from "vitest";
-import { Store, type Db } from "../src/store.js";
+import { Store, type Db } from "../src/shared/store.js";
 import { LIFE, RULES } from "../src/lifemanagement/goals.js";
 import { thriveOf } from "../src/thrive.js";
 import { dayMaterial } from "../src/memory.js";

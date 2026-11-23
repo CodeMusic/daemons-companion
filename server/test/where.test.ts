@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { askFind, checkFix, findAsked, fixesOf, keepFix, walkedSince } from "../src/where.js";
 import { weatherSpot } from "../src/weather.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 
 describe("C-174: where a watch has been, and FIND", () => {
   it("checks a fix as the watch tells it", () => {
@@ -74,7 +74,7 @@ describe("C-199: a fix told late, from the card", () => {
 
 describe("FIND taken back (the user, 2026-10-28)", () => {
   it("stops when the app says it was found", async () => {
-    const { Store } = await import("../src/db.js");
+    const { Store } = await import("../src/shared/db.js");
     const { route } = await import("../src/routes.js");
     const store = new Store(":memory:"), h = { edition: "CONTENT" as const, save: { read: () => null, write: () => null } };
     const post = (body: object) => route(h, store, { method: "POST", path: "/api/where/find", body, deviceId: "" });

@@ -6,11 +6,11 @@ import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import { makeCommons, PUBLIC_MOST } from "../src/commons/commons_api.js";
 import { accountsConfigFromEnv, safeOrigin, type AccountsConfig } from "../src/commons/accounts_api.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { eraseIdle } from "../src/commons/accounts_api.js";
 import { masked } from "../src/commons/profiletrade.js";
 import * as A from "../src/commons/accounts.js";
-import { ACCOUNT_KEYS } from "../src/keys.js";
+import { ACCOUNT_KEYS } from "../src/shared/keys.js";
 
 const servers: Server[] = [];
 const up = async (s: Server) => { servers.push(s); await new Promise<void>((r) => s.listen(0, "127.0.0.1", () => r())); return `http://127.0.0.1:${(s.address() as AddressInfo).port}`; };

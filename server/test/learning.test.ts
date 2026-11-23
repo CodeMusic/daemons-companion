@@ -1,7 +1,7 @@
 // C-433 (PRAXIS 6): LEARNING -- the TUTOR's syllabus read leniently and proposed (modules, lessons, cards nested), accepted
 // whole or one at a time (a card taking its lesson and module with it), declined; lessons finished; cards reviewed.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, newCourse, proposeSyllabus, readSyllabus, review } from "../src/lifemanagement/learning.js";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
 

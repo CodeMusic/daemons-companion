@@ -1,6 +1,6 @@
 // C-298: the JOURNAL -- journals, titled entries, and SUMMARIZE closing a chapter of what is new since the last one
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
 import { chapterWords, journalOf, plainPage, readPage, writeChapter, writePage, STALE_MIN } from "../src/lifemanagement/journal.js";

@@ -8,7 +8,7 @@
 // What counts is read from ARETE's ledger, in every space: LIFE, TENDING, MEETINGS, the journals and the dream journals
 // (a finish past its day's cap is still there, at nothing). Every word the app shows is DRAFT.
 import { parseHlc } from "@daemons/praxis";
-import type { Store } from "../store.js";
+import type { Store } from "../shared/store.js";
 import { localDate, WEEK } from "./practice.js";
 
 export type Acts = { goals: number; tended: number; entries: number; dreams: number; actions: number; learning: number; cooked: number; mine: number };

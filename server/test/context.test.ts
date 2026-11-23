@@ -1,6 +1,6 @@
 // C-158: the world the devices live in, and the CASINO's luck in it -- on synthetic saves, never the user's own.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { casinoContext, casinoDress, reelSpecies, skyOf, watchOf, weatherNow } from "../src/context.js";
 import { setWeatherCity } from "../src/weather.js";
 import { casinoAdmin } from "../src/game/casino.js";

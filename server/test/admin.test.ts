@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { networkInterfaces } from "node:os";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { ADMIN_DIR } from "../src/admin.js";
 import { TASK_KINDS } from "../src/ai/tasks.js";
 

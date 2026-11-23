@@ -1,8 +1,8 @@
 // The companion's server, on this machine: npm start (Node 24).
 import { existsSync } from "node:fs";
-import { loadConfig } from "./config.js";
+import { loadConfig } from "./shared/config.js";
 import { makeServer, watchSave } from "./api.js";
-import { Store } from "./db.js";
+import { Store } from "./shared/db.js";
 
 // C-53: whether it listens on the network is set on the site (Settings) and kept by the server; config.json is the default.
 // C-169: COMPANION_CONFIG names another config file -- the DAEMONS playground runs companions of its own this way, each

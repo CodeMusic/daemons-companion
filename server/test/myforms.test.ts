@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { formToShare, itemDone, keepItem, makeSpace, mineView, saveForm, spaceView, takeForm, type MineForm } from "../src/lifemanagement/myforms.js";
 import { CommonsCreations } from "../src/commons/commonscreations.js";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";

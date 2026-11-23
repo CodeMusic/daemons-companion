@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { deviceName, kindOfId } from "../src/devicenames.js";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import type { AddressInfo } from "node:net";
 
 describe("a device's name (C-405)", () => {

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { kindOf, validDeviceId } from "../src/devices.js";
 
 const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: null });

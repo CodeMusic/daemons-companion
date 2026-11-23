@@ -9,7 +9,7 @@
 // a word is never answered (it is read). Nothing here may import Node: it runs on the phone too (app/platform/local.ts).
 import actsJson from "../data/acts.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 export type Act = { code: string; label: string; seen: string; reply: string };
 export const ACTS: Act[] = (actsJson as { acts: Act[] }).acts;

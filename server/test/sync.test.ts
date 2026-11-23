@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import P from "../data/profile_layout.json" with { type: "json" };
 import { sync } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
-import { Store } from "../src/db.js";
+import { DEFAULTS } from "../src/shared/config.js";
+import { Store } from "../src/shared/db.js";
 import { readSave, readSlot } from "../src/game/save/reader.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 

@@ -1,7 +1,7 @@
 // C-433 (PRAXIS 6): RECIPES -- typed in or read from a page's schema.org Recipe, COOKED paid 3 (at most three meals a day)
 // and the day's virtue, a meal taken back on its own day.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { cooked, keepRecipe, readRecipePage, recipesView, removeRecipe, uncooked, type Recipe } from "../src/lifemanagement/recipes.js";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
 

@@ -17,10 +17,10 @@ import {
   fromBase64, keyringName, local, newKey, Praxis, syncSealed, toBase64, unwrapKeys, wrapKeys,
   type BlobPeer, type BlobStore, type Db, type Peer, type Reach,
 } from "@daemons/praxis";
-import { blobsBeside } from "./blobstore.js";
-import { hubPeer } from "./praxissync.js";
+import { blobsBeside } from "./shared/blobstore.js";
+import { hubPeer } from "./shared/praxissync.js";
 import { chacha, recoveryCode, wrappingKey } from "./sealing.js";
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 /** where this hub's vault is, and its household's token there (config.json's `vault`) */
 export interface VaultConfig { url: string; token: string }

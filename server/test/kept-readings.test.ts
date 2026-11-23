@@ -1,7 +1,7 @@
 // The hub's one slow core: what every device asks for each time it looks is kept between looks -- the daemon's life and
 // feelings while the log is unwritten and the minute unturned, the INDEX while the save is the same bytes (2026-11-14).
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { daemonFeelings, daemonLife, indexOf } from "../src/core.js";
 import { readIndex } from "../src/game/save/index.js";
 import { casinoPending, casinoResults } from "../src/game/casino.js";

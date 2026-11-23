@@ -4,7 +4,7 @@
 // the form it last saw the carried daemon in, by its personality, and when that form changes -- evolved here (C-184) or in
 // the game and brought home by SYNC -- for a week after, and only once the save holds the book, a line under the daemon's
 // own, in the book's purple: words under words (C-204), never a feeling. Every word DRAFT. No node: imports.
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 export const VESSEL_UNDER = "Still me.";                             // DRAFT: the game lane drafts the game's, the user picks
 export const VESSEL_DAYS = 7;

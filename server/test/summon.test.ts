@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { SONGS, summonHeard, summonsFor } from "../src/ownsong.js";
 import { syncSave } from "../src/game/save/writer.js";
 import { buildSave } from "./build_save.js";

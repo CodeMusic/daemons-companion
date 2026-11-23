@@ -9,7 +9,7 @@ import { arriving, describe as describeRecord, fromB64, toB64, tradeRecord } fro
 import * as X from "../src/commons/exchange.js";
 import { afterSync, beforeSync, exchangeRoute, localLink, remoteLink, tradeRoute, type Link } from "../src/game/tradelink.js";
 import * as core from "../src/core.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;

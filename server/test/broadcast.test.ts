@@ -1,6 +1,6 @@
 // C-134: broadcasts -- one id is one broadcast however many ways it arrives; the app speaks as a daemon away.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { ACTS, castLine, castsForDevice, castsSince, hubTag, sendCast, takeCast } from "../src/broadcast.js";
 
 describe("broadcasts (C-134)", () => {

@@ -3,7 +3,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 
 // n8n set to an address nothing answers at, so the check has something to find out of reach
 const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: null,

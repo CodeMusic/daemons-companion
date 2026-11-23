@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { inflateSync } from "node:zlib";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { den } from "../src/dens.js";
 import { EXPRESSIONS, faceOf } from "../src/expressions.js";
 import { FRAMES, PHASES, SCREEN, faceRev, lookFor, renderFace } from "../src/face.js";

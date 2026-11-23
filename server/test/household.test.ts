@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import * as core from "../src/core.js";
 import { carriedFor } from "../src/carry.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import { SPACE_MS } from "../src/household.js";
 import { buildSave } from "./build_save.js";

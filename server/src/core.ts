@@ -7,7 +7,7 @@ import { findAsked } from "./where.js";
 import { den } from "./dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 import { readAway, readBoxes, readSave, type Sounding } from "./game/save/reader.js";
 import { savedUnity } from "./library/unity.js";            // C-312: the aurora waits on the mending
 import { conjugateLight } from "./aurora.js";       // C-312: and both lines on the other edition's daemon

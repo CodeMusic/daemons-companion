@@ -7,8 +7,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { networkInterfaces, tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
-import { Store } from "../src/db.js";
+import { DEFAULTS } from "../src/shared/config.js";
+import { Store } from "../src/shared/db.js";
 import * as JOBS from "../src/jobs.js";
 import { siteNow, siteUpdate } from "../src/sitefetch.js";
 

@@ -74,7 +74,7 @@ describe("a daemon's own song (C-418, DAEMONS T-594)", () => {
 // C-418 through the companion's own routes, on a synthetic save built as the game builds them -- never the user's own
 import * as core from "../src/core.js";
 import { carriedFor } from "../src/carry.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import { evolvedOf } from "../src/evolve.js";
 import { buildSave } from "./build_save.js";

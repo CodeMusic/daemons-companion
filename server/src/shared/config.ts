@@ -2,7 +2,7 @@
 // safe default: no save is read until one is named, and no model is called until the AI is switched on.
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Edition } from "./seasons.js";
+import type { Edition } from "../seasons.js";
 
 export interface Config {
   port: number;
@@ -27,15 +27,15 @@ export interface Config {
 export const DEFAULTS: Config = {
   port: 4730,
   host: "127.0.0.1",
-  database: fileURLToPath(new URL("../companion.sqlite", import.meta.url)),
+  database: fileURLToPath(new URL("../../companion.sqlite", import.meta.url)),
   edition: "CONTENT",
   savePath: null,
-  artDir: fileURLToPath(new URL("../../../DAEMONS/gfx/daemons", import.meta.url)),   // ~/Projects/DAEMONS beside this repo
+  artDir: fileURLToPath(new URL("../../../../DAEMONS/gfx/daemons", import.meta.url)),   // ~/Projects/DAEMONS beside this repo
   ai: { enabled: false, baseUrl: "http://localhost:4000/v1", model: "", apiKeyEnv: null },
   talk: { url: null, secretEnv: "DEX_SHARED_SECRET" },
 };
 
-export function loadConfig(path = fileURLToPath(new URL("../config.json", import.meta.url))): Config {
+export function loadConfig(path = fileURLToPath(new URL("../../config.json", import.meta.url))): Config {
   if (!existsSync(path)) return DEFAULTS;
   const local = JSON.parse(readFileSync(path, "utf-8"));
   return { ...DEFAULTS, ...local, ai: { ...DEFAULTS.ai, ...(local.ai ?? {}) }, talk: { ...DEFAULTS.talk, ...(local.talk ?? {}) } };

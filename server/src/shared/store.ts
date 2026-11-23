@@ -3,8 +3,8 @@
 // the computer (db.ts), Expo's on a phone that hosts on its own (C-111, app/platform/local.ts) -- each hands the Store a Db.
 // C-430: the goals are PRAXIS's items now (goals.ts), in the same database; the Store's goal calls answer from there, in
 // the shapes they always had. The tables goals, subitems and steps are kept as they were, read once into events.
-import { Goals } from "./lifemanagement/goals.js";
-import { WorkingMemory } from "./workingmemory.js";
+import { Goals } from "../lifemanagement/goals.js";
+import { WorkingMemory } from "../workingmemory.js";
 
 // C-111: what the Store asks of a database -- Node's DatabaseSync has it, and so does a thin wrapper over expo-sqlite
 export interface Statement {

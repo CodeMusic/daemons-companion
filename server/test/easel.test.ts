@@ -12,8 +12,8 @@ import { buildPersona, lastWake, nextWake, personaFresh, personaText, signatureO
 import { selfOf } from "../src/self.js";
 import { dayFacts, speciesFacts } from "../src/ai/personaof.js";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
-import { Store } from "../src/db.js";
+import { DEFAULTS } from "../src/shared/config.js";
+import { Store } from "../src/shared/db.js";
 import { buildSave } from "./build_save.js";
 
 const feel = (o: Partial<Record<"glad" | "sad" | "mad" | "calm" | "restless", number>>) =>

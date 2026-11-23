@@ -1,6 +1,6 @@
 // C-253: memory made at night -- yesterday, the month folded, the moments kept
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { consolidate, dayMaterial, gameDay, gameNow, keepMoments, memoryDue, readGame, readKept, readYesterday, KEPT_MOST, MONTH_ASK, YESTERDAY_ASK } from "../src/memory.js";
 import { selfOf } from "../src/self.js";
 

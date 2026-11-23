@@ -2,7 +2,7 @@
 // night folds it into the day's material and lets it go
 import { describe, expect, it } from "vitest";
 import { SPAN } from "@daemons/praxis";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { dayMaterial } from "../src/memory.js";
 import { noticedOf, spaceKey, stepOf, threadOf } from "../src/workingmemory.js";
 

@@ -14,7 +14,7 @@ import { exchangeRoute, localLink, remoteLink, type Link } from "../src/game/tra
 import { pendingExp } from "../src/core.js";
 import { learnedOf } from "../src/ownsong.js";
 import { assign } from "../src/carry.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;

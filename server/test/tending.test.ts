@@ -1,7 +1,7 @@
 // C-357 (3): THE BODY's centres -- the day's centre's tending in the book's own words, tended by a touch or by what the
 // companion sees (a walk on the root's day, a dream kept on the third eye's), and the week's climb, root to crown.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { CENTRES, tend, tendedOf, tendingOf, tendingView } from "../src/lifemanagement/tending.js";
 import { checkNight, keepNight } from "../src/dreams.js";
 

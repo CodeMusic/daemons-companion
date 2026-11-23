@@ -1,7 +1,7 @@
 // C-432 (PRAXIS 5): MEETINGS (each action an item), VOICE NOTES and THE SUBTLE QUESTION's answers on PRAXIS -- what their
 // settings held read in once, keeping each one's number, and every call answering in the shape it always had.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { actionDone, meetingOf, meetingsOf, startMeeting, MEETINGS } from "../src/lifemanagement/meetings.js";
 import { newVoiceNote, noteHeard, voiceNotesOf, forgetVoiceNote } from "../src/lifemanagement/voicenotes.js";
 import { journalOf as answersOf, keepAnswer } from "../src/library/subtleask.js";

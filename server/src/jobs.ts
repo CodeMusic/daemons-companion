@@ -4,7 +4,7 @@
 // DAEMONS' art and the releases (hands_main.ts, hub/hands.sh) -- dials out, takes the next, runs it and sends back what it
 // printed. Only the jobs named here run, each a fixed command; the one thing a job is given is checked against its pattern.
 // The queue is kept in the store, so a restart keeps what was asked and what was said.
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 export type JobKind = { said: string; group: string; arg?: { pattern: string; said: string }; danger?: boolean;
                         run: string[] };                     // argv from the computer's checkout; "$ARG" is the one argument

@@ -10,7 +10,7 @@
 //   draws it for CARE_SHOWN_MS -- the PROVISION in the middle (C-302's, chosen by the kind as each host's GIVEN does)
 //   and a daemon either side eating -- and the other daemon's bond counts it too (core.careGiven).
 // DRAFT: every rule here is the companion lane's first reading of the user's words, to be seen and changed.
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 import { carriedFor, carrying } from "./carry.js";
 import { validDeviceId } from "./deviceid.js";
 

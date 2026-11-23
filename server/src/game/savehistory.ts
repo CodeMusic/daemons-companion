@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync, appendFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { deflateSync, inflateSync } from "node:zlib";
-import { DEFAULTS, type Config } from "../config.js";
+import { DEFAULTS, type Config } from "../shared/config.js";
 import { readProfile } from "./save/profile.js";
 
 // game: a device's game saved (the phone's, or the computer's save file changing); sync: a SYNC wrote it; link: the link

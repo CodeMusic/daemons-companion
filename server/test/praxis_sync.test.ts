@@ -9,10 +9,10 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { memoryBlobs } from "@daemons/praxis";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
-import { Store } from "../src/db.js";
-import { folderBlobs } from "../src/blobstore.js";
-import { handOver, hubPeer } from "../src/praxissync.js";
+import { DEFAULTS } from "../src/shared/config.js";
+import { Store } from "../src/shared/db.js";
+import { folderBlobs } from "../src/shared/blobstore.js";
+import { handOver, hubPeer } from "../src/shared/praxissync.js";
 
 const hub = new Store(":memory:");
 const server = makeServer({ ...DEFAULTS, database: ":memory:", savePath: null }, hub);

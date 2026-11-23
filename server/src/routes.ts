@@ -5,7 +5,7 @@
 // may import Node: it runs in the app too (app/platform/local.ts).
 import speciesJson from "../data/species.json" with { type: "json" };
 import weekJson from "../data/week.json" with { type: "json" };   // C-412: a dream's day colour
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 import { readAway, readSave } from "./game/save/reader.js";
 import { readProfile } from "./game/save/profile.js";
 import { accentsOf } from "./accents.js";   // C-349

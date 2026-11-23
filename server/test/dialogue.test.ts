@@ -6,7 +6,7 @@ import * as X from "../src/commons/exchange.js";
 import * as D from "../src/dialogue.js";
 import { cardOf, dayFacts, factsFrom, personaOf, speciesFacts } from "../src/ai/personaof.js";
 import { exchangeRoute } from "../src/game/tradelink.js";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import * as core from "../src/core.js";
 import { carriedFor } from "../src/carry.js";
 import { route } from "../src/routes.js";

@@ -1,6 +1,6 @@
 // C-283: a night from SLEEP to the waking care, when no watch told it -- and the day before it, for the dream's telling
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { appNight, route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
 import { asDreamt, dayOf, dreamAsk, dreamerSaid, dreamsOf, keepNight } from "../src/dreams.js";

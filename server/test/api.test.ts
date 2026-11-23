@@ -4,8 +4,8 @@ import { copyFileSync, mkdirSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer, today } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
-import { Store } from "../src/db.js";
+import { DEFAULTS } from "../src/shared/config.js";
+import { Store } from "../src/shared/db.js";
 import { exampleBreakdown } from "../src/ai/breakdown.js";
 import { buildSave } from "./build_save.js";
 

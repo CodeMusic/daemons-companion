@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { makeServer } from "../src/api.js";
-import { DEFAULTS } from "../src/config.js";
+import { DEFAULTS } from "../src/shared/config.js";
 import { bodyOf, titleOf, TITLE_MAX } from "../src/glass.js";
 
 // C-262: the T-Glass -- one screen, chosen in the app; the app's selection is what the glasses show

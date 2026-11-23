@@ -10,7 +10,7 @@
 // daemon evolves here only once its bond is AT HOME -- until then its song's whole part sends it home to SING (DAEMONS
 // T-595). CARRIED, which is only ever met here, is judged as before.
 import speciesJson from "../data/species.json" with { type: "json" };
-import type { Store } from "./store.js";
+import type { Store } from "./shared/store.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 export interface Evolution { method: string; param: number | string; target: number; judged: boolean }

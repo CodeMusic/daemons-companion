@@ -1,7 +1,7 @@
 // C-349, C-352, C-355: THE ACCENTS unlocked as the save reaches each place, and THE MONTHS. On synthetic saves built as
 // the game builds them; never the user's own.
 import { describe, expect, it } from "vitest";
-import { Store } from "../src/db.js";
+import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import { ACCENTS } from "../src/accents.js";
 import { hemisphereOf, monthOf } from "../src/months.js";

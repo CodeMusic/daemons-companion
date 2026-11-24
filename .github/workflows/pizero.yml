@@ -1,0 +1,62 @@
+# C-515 (the user, 2026-11-24, by multiple choice: "GitHub builds, user install" -- free while this repository is public;
+# if it ever costs, it becomes opt-in and a volunteer on the mind network builds it instead): the Linux boards' program
+# (firmware/pizero), built for every board on an ARM runner in Debian 13 (the boards' own system), and kept in one
+# rolling release, `pizero`: for each board its program (daemons-zero-<board>.tar.gz: the program and patches.json),
+# its .deb, and manifest.json saying which build each is. A device's `daemons-zero --update` reads the manifest, takes
+# its board's, checks its SHA-1 and keeps it in the user's own folder (no password); the launcher then runs the newest
+# kept copy.
+name: pizero
+on:
+  push:
+    branches: [main]
+    paths: ["firmware/pizero/**", "server/data/patches.json", ".github/workflows/pizero.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: pizero, cancel-in-progress: true }
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    container: debian:trixie
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [cardputer-zero, gamepi20, gamehat]
+    steps:
+      - name: Tools
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq git cmake g++ ninja-build pkg-config libcurl4-openssl-dev device-tree-compiler dpkg-dev ca-certificates >/dev/null
+      - uses: actions/checkout@v4
+      - name: Build
+        working-directory: firmware/pizero
+        env: { BOARD: "${{ matrix.board }}", ZERO_VERSION: "${{ github.sha }}" }
+        run: ./build.sh device
+      - name: Package
+        working-directory: firmware/pizero
+        env: { BOARD: "${{ matrix.board }}" }
+        run: |
+          out=build/device; [ "$BOARD" != cardputer-zero ] && out=build/device-$BOARD
+          cp ../../server/data/patches.json patches.json
+          deb=$(tools/make_deb.sh "$out/daemons-zero")
+          mkdir -p ../../dist && cp "$deb" "../../dist/daemons-zero-$BOARD.deb"
+          tar -czf "../../dist/daemons-zero-$BOARD.tar.gz" -C "$out" daemons-zero -C "$PWD" patches.json
+          sha=$(sha1sum "../../dist/daemons-zero-$BOARD.tar.gz" | cut -d' ' -f1)
+          printf '{"board":"%s","commit":"%s","at":"%s","sha1":"%s","file":"daemons-zero-%s.tar.gz"}\n' \
+            "$BOARD" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$sha" "$BOARD" > "../../dist/$BOARD.json"
+      - uses: actions/upload-artifact@v4
+        with: { name: "pizero-${{ matrix.board }}", path: dist/ }
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dist, pattern: "pizero-*", merge-multiple: true }
+      - name: The rolling release
+        env: { GH_TOKEN: "${{ github.token }}", GH_REPO: "${{ github.repository }}" }
+        run: |
+          cd dist
+          jq -s 'map({ (.board): . }) | add | { boards: ., commit: env.GITHUB_SHA }' *.json > manifest.json
+          gh release view pizero >/dev/null 2>&1 || gh release create pizero --title "The Pi devices' program" \
+            --notes "Built by .github/workflows/pizero.yml from main at every change to firmware/pizero (C-515). A device takes its own with daemons-zero --update." --prerelease
+          gh release upload pizero --clobber *.tar.gz *.deb manifest.json

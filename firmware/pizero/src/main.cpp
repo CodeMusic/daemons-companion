@@ -12,6 +12,9 @@
 //   daemons-zero --saved               as if the game had just saved: HOME SYNCs as it is entered (C-397; for checks)
 //   daemons-zero --rom FILE.gba        play any ROM as it is (a DEBUG build: testing)
 //   daemons-zero --app engine          open as one of its apps (C-509: daemons, engine, dashboard, account, caps, talk, kit)
+//   daemons-zero --update check|take|back  this board's newest build on GitHub: say it, or fetch, check and keep it (no
+//                                      password; the next start runs it), or go back to the copy before (C-515)
+//   daemons-zero --version             when and from what this program was built, and stop
 //   daemons-zero --apps [--desktop DIR]  say every app, and with --desktop write a launcher entry for each into DIR; stop
 //   daemons-zero --page care           start on a page (home, play, games, link, care, step, party, say)
 //   daemons-zero --headless --frames N [--press 300:ENTER,420:L] [--shot out.bmp] [--every 100]
@@ -45,6 +48,7 @@
 
 #include "app.h"
 #include "apps.h"
+#include "update.h"
 #include "board.h"
 #include "canvas.h"
 #include "caps/cap.h"
@@ -166,9 +170,13 @@ static int bench(int frames) {
 }
 
 int main(int argc, char **argv) {
+  // C-515: say when this program was built and stop (asked of a new one before it is kept); else run the newest kept copy
+  if (argc == 2 && !strcmp(argv[1], "--version")) { printf("%lld %s %s\n", update::built(), update::commit(), board::ID); return 0; }
+  update::hop(argc, argv);
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
   std::string start = "home", shot, makeFrom, makeTestingOf, gameKey, romFrom, hubArg, pairCode;
   bool listGames = false, listCaps = false, kitStatus = false, listApps = false;
+  std::string updateWhat;   // C-515: check, take or back
   std::string desktopDir;
   std::string kitSay, kitHear;
   std::string bandArg;
@@ -190,6 +198,7 @@ int main(int argc, char **argv) {
       start = "";
     }
     else if (a == "--apps") listApps = true;
+    else if (a == "--update") updateWhat = val();
     else if (a == "--desktop") desktopDir = val();
     else if (a == "--make") makeFrom = val();
     else if (a == "--rom") romFrom = val();
@@ -272,6 +281,17 @@ int main(int argc, char **argv) {
     int rc = kitSay.empty() ? kit::cliHear(kitHear, speak) : kit::cliSay(kitSay, speak);
     sound::end();
     return rc;
+  }
+  if (!updateWhat.empty()) {   // C-515
+    printf("running: built %lld from %s%s\n", update::built(), update::commit(), getenv("DAEMONS_HOPPED") ? " (the kept copy)" : "");
+    if (updateWhat == "back") { std::string w = update::back(); printf("%s\n", w.empty() ? "back to the copy before" : w.c_str()); return w.empty() ? 0 : 1; }
+    update::Offer o = update::look();
+    if (!o.found) { printf("%s\n", o.why.c_str()); return 1; }
+    printf("GitHub: %s built %s -- %s\n", o.commit.substr(0, 12).c_str(), o.at.c_str(), o.newer ? "newer than this" : "this is it");
+    if (updateWhat != "take" || !o.newer) return 0;
+    std::string w = update::take();
+    printf("%s\n", w.empty() ? "kept, and current: the next start runs it" : w.c_str());
+    return w.empty() ? 0 : 1;
   }
   if (listApps) {   // C-509: every app, and a launcher entry for each (tools/make_deb.sh writes them into the .deb)
     for (auto &a : apps()) {

@@ -1,0 +1,7 @@
+// C-515: when and from what this program was built -- written by CMake at each configure (build.sh configures every
+// build), so only this file is compiled again when it changes.
+#include "update.h"
+namespace update {
+long long built() { return @ZERO_BUILT@LL; }
+const char *commit() { return "@ZERO_COMMIT@"; }
+}

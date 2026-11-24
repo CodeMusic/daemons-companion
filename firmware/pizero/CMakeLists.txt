@@ -88,8 +88,19 @@ message(STATUS "board: ${ZERO_BOARD}")
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
 
+# C-515: when and from what it was built, written at each configure (build.sh configures every build); only version.cpp
+# is compiled again
+string(TIMESTAMP ZERO_BUILT "%s" UTC)
+set(ZERO_COMMIT "$ENV{ZERO_VERSION}")
+if(NOT ZERO_COMMIT)
+  set(ZERO_COMMIT local)
+endif()
+configure_file(src/version.cpp.in ${CMAKE_BINARY_DIR}/version.cpp @ONLY)
+
 set(SRC
   src/main.cpp
+  src/update.cpp
+  ${CMAKE_BINARY_DIR}/version.cpp
   src/paths.cpp
   src/keys.cpp
   src/canvas.cpp

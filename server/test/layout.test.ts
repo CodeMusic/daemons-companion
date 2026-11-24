@@ -82,4 +82,14 @@ describe("mind and machine", () => {
     const calls = MIND.filter((f) => /\bfetch\s*\(|from\s+["']node:/.test(code(f)));
     expect(calls, "a MIND module calls a model or the machine itself: hand it the call instead").toEqual([]);
   });
+
+  // C-428: the folders say it now. psyche/, damagotchi/ and lifemanagement/ are MIND, whole: nothing in them, at any
+  // depth, imports anything in machine/ (docs/PROJECTS.md 3).
+  it("keeps psyche/, damagotchi/ and lifemanagement/ off machine/", () => {
+    const filesIn = (rel: string): string[] => readdirSync(join(ROOT, rel), { withFileTypes: true }).flatMap((d) =>
+      d.isDirectory() ? filesIn(`${rel}/${d.name}`) : /\.tsx?$/.test(d.name) ? [`${rel}/${d.name}`] : []);
+    const crossings = ["psyche", "damagotchi", "lifemanagement"].flatMap((dir) => filesIn(`server/src/${dir}`))
+      .flatMap((f) => importsOf(f).filter((d) => d.startsWith("server/src/machine/")).map((d) => `${f} -> ${d}`));
+    expect(crossings, "a MIND folder imports the machine: hand it a thinker, or move the words to MIND").toEqual([]);
+  });
 });

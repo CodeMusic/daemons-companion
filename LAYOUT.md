@@ -87,7 +87,8 @@ is machine vocabulary: the minds it routes across are machines. `server/src/dama
 
 Paths are under `server/src/` unless they begin `app/`. `server/test/layout.test.ts` checks that every file named here
 exists, that no MIND file imports a MACHINE one or calls `fetch` or `node:*`, and that **every file in `server/src/machine/` is
-named MACHINE and every file in `server/src/psyche/` MIND** (C-428), so a new file there says which it is. A new MIND or MACHINE file elsewhere
+named MACHINE and every file in `server/src/psyche/` MIND** (C-428), so a new file there says which it is. **Nothing in
+`psyche/`, `damagotchi/` or `lifemanagement/`, at any depth, imports anything in `machine/`** (C-428): those folders are MIND whole. A new MIND or MACHINE file elsewhere
 is added here in the same commit; when one file starts to hold both, split it (the words to MIND, the call to MACHINE).
 
 | Side | Modules |

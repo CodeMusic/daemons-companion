@@ -10,7 +10,8 @@ Read `CONTEXT.md` (what this is), then **`LAYOUT.md` (where everything lives)**,
   dreams, memory, the muse, synesthesia, the words a creation is asked for) never imports the machinery of models
   (thinkers, endpoints, THE MIND's routing, the voice, image and music doors) and never calls a model itself -- it is
   handed a thinker, or writes a recipe the machine renders. A new file in `server/src/machine/` or `server/src/psyche/`, or any new MIND or MACHINE
-  file, is named on its side in `LAYOUT.md`; `server/test/layout.test.ts` fails otherwise.
+  file, is named on its side in `LAYOUT.md`; `server/test/layout.test.ts` fails otherwise. Nothing in `server/src/psyche/`,
+  `damagotchi/` or `lifemanagement/` imports `server/src/machine/` (C-428); the same test fails if one does.
 - Move a file with `git mv`, in a commit that only moves it and fixes its imports, so `git log --follow` keeps its history.
 - Tickets are `C-` ids, permanent, **held in Redmine** (project `companion`; DAEMONS' `tools/tickets.py`, and its
   CLAUDE.md for the commands). `TODO.md` here is Redmine's mirror, rebuilt nightly: never edit a ticket row by hand.

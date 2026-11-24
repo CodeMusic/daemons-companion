@@ -401,7 +401,8 @@ function namedRecipe(ecfg: Config, store: Store, deviceId: string, name: unknown
 }
 // C-329: a daemon's persona card (ai/personaof.ts) by its personality, as it travels to the hub: its telling and record,
 // the day's virtue over its shadow and its chakra, the goals by title and the next step (the user's choice: titles only
-// across accounts) -- and, for the daemon carried, how it is cared for, its mood and last night's dream. Its voice is its
+// across accounts) -- and, for the daemon carried, how it is cared for, its mood and last night's dream; for another daemon
+// of the home, the same from its own cares and dreams when it has them (C-472, core.ownLife). Its voice is its
 // trainer's own recipe or its species', without the mood, so a talk's voice does not move with it.
 function personaCard(ecfg: Config, store: Store, personality: number, now = new Date()): PersonaFacts | null {
   const d = awayNow(ecfg).find((x) => x.personality >>> 0 === personality);
@@ -409,9 +410,12 @@ function personaCard(ecfg: Config, store: Store, personality: number, now = new 
   const w = talkWho(ecfg, store, ""), carried = carriedDaemon(ecfg, store);
   const goals = store.openGoals().slice(0, 4).map((g) => ({ goal: g.title, ...(w.goal?.goal === g.title ? { step: w.goal.step } : {}) }));
   const f = speciesFacts(d.species, d.nickname, ecfg.edition, d.personality);
-  const life = carried && carried.personality >>> 0 === personality ? core.daemonLife(store, now) : null;
+  const isCarried = !!carried && carried.personality >>> 0 === personality;
+  const life = isCarried ? core.daemonLife(store, now) : null;
+  const own = isCarried ? null : core.ownLife(store, personality, now);   // C-472: another daemon of the home, with a life of its own
   return cardOf({ ...f, level: d.level, goals, day: dayFacts(now),
                   ...(life ? { mood: life.word, care: life.care, dream: (w.daemon as { dream?: string }).dream } : {}),
+                  ...(own ? { mood: own.mood, care: own.care, ...(own.dream ? { dream: own.dream } : {}) } : {}),
                   voice: voiceRecipe({ types: f.types, category: f.category, species: d.species }, null, store.getSetting(`voice.recipe.${d.species}`) ?? "") });
 }
 // C-329 + C-469: the card a talk sends -- personaCard and what the daemon has in mind now (cardOf keeps anything its

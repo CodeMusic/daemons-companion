@@ -2,7 +2,7 @@
 // C-111: the companion's own logic, wherever it runs. Everything here reads and writes through a Store and a SaveFile, so
 // the server (api.ts, over Node's SQLite and the save on disk) and a phone hosting on its own (app/platform/local.ts, over
 // expo-sqlite and the save Delta shared through Files) run the same rules. Nothing here may import Node.
-import { DREAM_VARS, dreamVars, freshDream } from "./damagotchi/dreams.js";
+import { DREAM_VARS, dreamsOf, dreamVars, freshDream } from "./damagotchi/dreams.js";
 import { findAsked } from "./where.js";
 import { den } from "./damagotchi/dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
@@ -423,6 +423,20 @@ export function careOwner(h: Host, store: Store, kind: string, deviceId = ""): n
 export function daemonLife(store: Store, now = new Date(), who: number | null = null): Life {
   const r = readingOf(store, now, who);
   return r.life ??= life(store.interactionsSince(new Date(now.getTime() - 14 * 86400000), who), now);
+}
+
+// C-472 (C-329's remainder; the user, 2026-11-11: "care/goal/dream ... all of that would form the persona"): a daemon's OWN
+// life, for one that is not the daemon carried -- its mood and care from the cares given to it (the interactions kept
+// under its personality, the shared ones beside them), and the last dream it dreamt in two days. null when it has had no
+// care of its own in two weeks and no dream: it has no life of its own yet, and a talk says nothing of how it feels.
+export function ownLife(store: Store, personality: number, now = new Date()): { mood: string; care: Life["care"]; dream?: string } | null {
+  const p = personality >>> 0, since = new Date(now.getTime() - 14 * 86400000).toISOString();
+  const cared = !!store.db.prepare("SELECT 1 FROM interactions WHERE daemon = ? AND at >= ? LIMIT 1").get(String(p), since);
+  const dream = dreamsOf(store).filter((d) => d.personality != null && d.personality >>> 0 === p && Date.parse(d.at) > now.getTime() - 2 * 86400000)
+    .sort((a, b) => b.at.localeCompare(a.at))[0];
+  if (!cared && !dream) return null;
+  const l = daemonLife(store, now, p);
+  return { mood: l.word, care: l.care, ...(dream ? { dream: dream.text.replace(/\s+/g, " ").trim().slice(0, 240) } : {}) };
 }
 
 // C-120 / C-119: how it feels (from the last day), and the expression that shows it -- a description every host draws

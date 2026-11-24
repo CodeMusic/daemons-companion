@@ -2,7 +2,10 @@
 """The Tab5's screen as a PNG, over its USB cable, with a page to go to and presses to make first, so a screen can be
 checked without a camera.
 
-    python3 shot.py OUT.png [--port PORT] [--go LIBRARY] [--tap X Y]... [--scroll DY]...
+    python3 shot.py OUT.png [--port PORT] [--wait-home] [--go LIBRARY] [--tap X Y]... [--scroll DY]...
+
+Opening the port restarts the Tab5 (it is the P4's own USB), so a page is drawn from what it keeps, before it has joined
+its network. --wait-home first waits (up to two minutes) for its NET line to say the companion answered.
 
 Steps run in order (--go, then each --tap and --scroll as given), each given a moment to draw. The Tab5 answers SHOT
 with "SHOT w h 16", one "R<y> <base64>" line a row (RGB565, high byte first) and "SHOT END"; a row a log line split is
@@ -58,12 +61,22 @@ def main():
     ap.add_argument("--go")
     ap.add_argument("--tap", nargs=2, type=int, action="append", default=[])
     ap.add_argument("--scroll", type=int, action="append", default=[])
+    ap.add_argument("--wait-home", action="store_true")
     a = ap.parse_args()
     port = a.port or (sorted(glob.glob("/dev/cu.usbmodem*")) or [None])[0]
     if not port:
         sys.exit("shot: no Tab5 on USB")
     dev = open_tab5(port)
     time.sleep(0.3)
+    if a.wait_home:                                     # the NET line every 30 s (main.cpp) says when the companion answered
+        until, line = time.time() + 120, b""
+        while time.time() < until:
+            line += dev.read(dev.in_waiting or 1)
+            *done, line = line.split(b"\n")
+            if any(l.startswith(b"NET ") and b" answered" in l and b"nothing" not in l for l in done):
+                break
+        else:
+            print("shot: the companion had not answered after two minutes", file=sys.stderr)
     steps = ([("GO " + a.go)] if a.go else []) + ["TAP %d %d" % tuple(t) for t in a.tap] + ["SCROLL %d" % d for d in a.scroll]
     for s in steps:
         dev.write((s + "\n").encode())

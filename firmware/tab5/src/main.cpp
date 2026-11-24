@@ -40,6 +40,9 @@ void loop() {
     Serial.printf("MEM internal %u free, %u least, %u largest; psram %u free\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
                   heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL),
                   heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+    // the network as SETTINGS would show it, so the cable can tell without a picture (opening the port restarts the Tab5)
+    Serial.printf("NET wifi %s, %s, %s\n", net.wifi ? netNetworkName().c_str() : "none", net.paired ? "paired" : "not paired",
+                  net.home ? "home answered" : net.away ? "the relay answered" : "nothing answered yet");
   }
   delay(5);
 }

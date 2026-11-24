@@ -13,8 +13,12 @@ static void pairServerTyped(const String &s) {
   pairServer = s;
   askText("The code on the site (SETTINGS, PAIR A PHONE, Show a code)", "", false, true, pairWithCode);
 }
+// The hub has been daemons-hearth since 2026-11-11 (docs/HUB.md): offered when nothing has been paired yet, its .local name
+// found on the home network by mDNS (net.cpp's reachable). Any other address may still be typed over it.
 static void tapPair(lv_event_t *) {
-  askText("The companion's address on this network (the site shows it beside the code)", serverAddress(), false, false, pairServerTyped);
+  String was = serverAddress();
+  askText("The companion's address on this network (the site shows it beside the code)",   // DRAFT
+          was.length() ? was : String("daemons-hearth.local:4730"), false, false, pairServerTyped);
 }
 static void tapSyncNow(lv_event_t *) { netDownloadAll(); }
 

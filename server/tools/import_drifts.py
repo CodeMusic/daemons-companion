@@ -146,7 +146,8 @@ def write_index():
             drifts[d["id"]] = d
     index = sorted(({"id": i, "name": d["meta"].get("name", i), "kind": d["kind"], "group": d["meta"].get("category"),
                      "description": d["meta"].get("description", ""), "durationSec": d["meta"].get("durationSec"),
-                     "strength": d["meta"].get("strength"), "phone": bool(d.get("phone"))} for i, d in drifts.items()),
+                     "strength": d["meta"].get("strength"), "phone": bool(d.get("phone")),
+                     "side": d.get("side", "you")} for i, d in drifts.items()),
                    key=lambda r: (r["kind"], r["group"] or "", r["name"]))
     with open(os.path.join(OUT, "index.json"), "w") as f:
         json.dump(index, f, ensure_ascii=False, indent=1)

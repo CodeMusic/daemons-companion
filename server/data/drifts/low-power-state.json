@@ -1,0 +1,61 @@
+{
+ "formatVersion": 2,
+ "id": "low-power-state",
+ "kind": "sleep",
+ "side": "daemon",
+ "meta": {
+  "name": "LOW-POWER STATE",
+  "description": "SUSPEND: everything held, the clock slowing, a glitch now and then as the last processes close.",
+  "category": "SLEEP",
+  "strength": 1,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-553"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 10
+   },
+   {
+    "atSec": 480,
+    "beatHz": 6
+   },
+   {
+    "atSec": 1200,
+    "beatHz": 3
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 2
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 160
+  },
+  "beds": [],
+  "isochronic": {
+   "level": 0.2,
+   "voice": "glitch"
+  }
+ },
+ "machine": {
+  "wave": "square",
+  "glitch": {
+   "perSec": 0.3,
+   "level": 0.5
+  },
+  "waver": {
+   "what": "beat",
+   "deltaHz": 0.5,
+   "periodSec": 8
+  }
+ }
+}

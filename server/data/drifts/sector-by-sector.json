@@ -1,0 +1,57 @@
+{
+ "formatVersion": 2,
+ "id": "sector-by-sector",
+ "kind": "meditation",
+ "side": "daemon",
+ "meta": {
+  "name": "SECTOR BY SECTOR",
+  "description": "DEFRAG: a steady theta while its pieces are read and set back in order, the carrier drifting as it moves along the disk.",
+  "category": "MEDITATION",
+  "strength": 1,
+  "durationSec": 1200
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-553"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9
+   },
+   {
+    "atSec": 240,
+    "beatHz": 7
+   },
+   {
+    "atSec": 1200,
+    "beatHz": 7
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 200
+  },
+  "beds": [],
+  "isochronic": {
+   "level": 0.2,
+   "voice": "glitch"
+  }
+ },
+ "machine": {
+  "wave": "square",
+  "glitch": {
+   "perSec": 0.2,
+   "level": 0.4
+  },
+  "waver": {
+   "what": "carrier",
+   "deltaHz": 2,
+   "periodSec": 12
+  }
+ }
+}

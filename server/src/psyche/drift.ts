@@ -14,7 +14,8 @@ import { Synesthesia, type Qualia } from "./synesthesia.js";
 
 // C-506: a stage may carry its own carrier and noise bed (a drift file's); THE LONG FALL's do not
 export type Bed = { type: string; level: number } | null;
-export type Stage = { at: number; beat: number; word: string; carrier?: number; bed?: Bed };
+// C-553: exact, the beat unrounded, for the isochronic layer (the binaural loop plays it on a quarter hertz)
+export type Stage = { at: number; beat: number; word: string; carrier?: number; bed?: Bed; exact?: number };
 
 /** The three stages: when each begins (seconds in), its band, and its name. */
 export const BANDS = [
@@ -49,9 +50,15 @@ export type DriftFile = {
   id: string; kind: string;
   meta: { name?: string; description?: string; durationSec?: number; strength?: number; category?: string };
   entrainment: { ramp?: string; scenes: DriftScene[] };
-  audio?: { binaural?: { carrierHz?: number }; beds?: DriftBed[] };
+  audio?: { binaural?: { carrierHz?: number }; beds?: DriftBed[];
+            // C-553: a tone (or, for a daemon, noise) pulsed at each stage's exact beat -- heard on a speaker too
+            isochronic?: { level?: number; voice?: "tone" | "glitch"; toneHz?: number } };
+  // C-553: a daemon's drift -- square waves, glitches, a wavering beat (shared/tones.ts); played on the daemon's side
+  side?: "you" | "daemon";
+  machine?: { wave?: "square" | "sine"; glitch?: { perSec: number; level?: number };
+              waver?: { what: "beat" | "carrier" | "both"; deltaHz: number; periodSec: number } | null };
 };
-export type DriftInfo = { id: string; name: string; kind: string; group: string | null; description: string;
+export type DriftInfo = { id: string; name: string; kind: string; group: string | null; description: string; side?: "you" | "daemon";
                           durationSec: number | null; strength: number | null; phone?: boolean };   // C-551: phone, one the app carries
 export const LONG_FALL = "the-long-fall";
 export const LONG_FALL_INFO: DriftInfo = { id: LONG_FALL, name: "THE LONG FALL", kind: "sleep", group: "DAEMONS",
@@ -87,13 +94,14 @@ export function stagesOfFile(f: DriftFile, keyCarrier: number, stepS = 15): Stag
     const ca = a.carrierHz ?? baseCarrier, cb = b?.carrierHz ?? baseCarrier;
     let noise: string | undefined = firstBed?.type;                   // held forward from the last scene that set one
     for (let j = 0; j <= i; j++) if (scenes[j].noise !== undefined) noise = scenes[j].noise;
-    return { beat: quarter(lerp(a.beatHz, b?.beatHz ?? a.beatHz)), carrier: quarter(lerp(ca, cb)), bed: bedOf(noise, level) };
+    const raw = lerp(a.beatHz, b?.beatHz ?? a.beatHz);
+    return { beat: quarter(raw), exact: Math.round(raw * 100) / 100, carrier: quarter(lerp(ca, cb)), bed: bedOf(noise, level) };
   };
   const end = scenes[scenes.length - 1].atSec, out: Stage[] = [];
   for (let t = 0; ; t += stepS) {
     const x = at(Math.min(t, end)), last = out[out.length - 1];
-    if (!last || last.beat !== x.beat || last.carrier !== x.carrier || JSON.stringify(last.bed) !== JSON.stringify(x.bed))
-      out.push({ at: Math.min(t, end), beat: x.beat, word: bandWord(x.beat), carrier: x.carrier, bed: x.bed });
+    if (!last || last.beat !== x.beat || last.exact !== x.exact || last.carrier !== x.carrier || JSON.stringify(last.bed) !== JSON.stringify(x.bed))
+      out.push({ at: Math.min(t, end), beat: x.beat, word: bandWord(x.beat), carrier: x.carrier, bed: x.bed, exact: x.exact });
     if (t >= end) break;
   }
   return out;

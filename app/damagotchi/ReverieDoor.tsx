@@ -4,7 +4,7 @@
 // would become SUSPEND ... when u hover over an item u will see a phrase that gives context about the reverie"; by
 // multiple choice, MEDITATION is DEFRAG and NATURE is SANDBOX for a daemon): REVERIE's door. First, with no words, you or
 // your daemons; then the four kinds of that side, each with its phrase on a hover (a long press on the phone). A
-// daemon's four play your drifts of the same kind until their own machine sound comes (C-553). Every word DRAFT.
+// daemon's four play its own drifts (a machine's voice, C-553), or yours of the same kind where it has none. Every word DRAFT.
 import { useMemo, useState } from "react";
 import { Image, Pressable, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
@@ -80,7 +80,6 @@ export function ReverieDoor({ side, kind, choice, party, onSide, onKind }:
         })}
       </XStack>
       <Small color="$color10">{phrase || (kind ? NAMES[side][kind][1] : " ")}</Small>
-      {side === "daemon" ? <Small color="$color8">{"A daemon's own drifts come with its machine sound; until then it hears yours of the same kind."}</Small> : null}
       <Text fontFamily="$mono" fontSize={12} letterSpacing={1.5} color="$color10" cursor="pointer" role="link"
             onPress={() => { onKind(null); onSide(null); setPhrase(""); }}>{"‹ BACK"}</Text>
     </YStack>

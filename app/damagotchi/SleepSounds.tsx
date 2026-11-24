@@ -44,6 +44,10 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
     api<{ party: { slot: number }[] }>("/api/party").then((r) => setParty(r.party ?? [])).catch(() => {});
   }, []);
   const pickKind = (k: Kind | null) => { setKind(k); if (k) setPicking(true); };
+  // C-553: a kind's drifts for the side chosen -- a daemon's own where it has them (its machine voice), else yours
+  const ofKind = kind ? drifts.filter((x) => x.kind === kind) : drifts;
+  const daemons = ofKind.filter((x) => x.side === "daemon");
+  const shown = side === "daemon" && daemons.length ? daemons : ofKind.filter((x) => x.side !== "daemon");
   const [tonight, setTonight] = useState<Creation | null>(null);                 // C-358: tonight's piece as a creation (its cover)
   const load = () => api<Sleep>("/api/sleep").then(setSleep).catch((e) => setError(e.message));
   useEffect(() => { load(); return onSleep(setNow); }, []);
@@ -138,7 +142,7 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
               ? `With headphones: a slow beat between your ears under the music, easing from ${driftOf().map((x) => `${x.word.toLowerCase()} ${x.beat} Hz`).join(" to ")} as you fall asleep. Headphones only; on a speaker it waits.`
               : `${d.description} The beat between your ears needs headphones; its noise bed plays either way.`}</Small>
             {now.playing && picking ? <Small color="$color8">{"A drift chosen now plays from the next PLAY."}</Small> : null}
-            {picking ? <DriftList drifts={kind ? drifts.filter((x) => x.kind === kind) : drifts} chosen={chosen} onChoose={choose} /> : null}
+            {picking ? <DriftList drifts={shown} chosen={chosen} onChoose={choose} /> : null}
           </YStack>
         );
       })()}

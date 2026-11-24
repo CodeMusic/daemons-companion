@@ -6,11 +6,12 @@
 import { AppState } from "react-native";
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
 import Night from "../modules/daemons-night";
-import { bedSound, binauralStage, carrierOf, driftOf, stageAt, stagesOfFile, type DriftFile, type Stage } from "./binaural";
+import { bedSound, binauralStage, carrierOf, driftOf, isochronicSound, machineSound, stageAt, stagesOfFile, type DriftFile, type Stage } from "./binaural";
 
 export const SESSION_S = 30 * 60, FADE_S = 10 * 60;
 const DRIFT_LEVEL = 0.22;                    // under the music, never over it
 const BED_LEVEL = 0.6;                       // C-506: a drift's noise bed, at its own level times this
+const ISO_LEVEL = 0.5;                       // C-553: the isochronic pulse, at its own level times this
 const MODE = { playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: "doNotMix" } as const;
 
 export type SleepState = { playing: boolean; id: string | null; startedAt: number; drift: boolean; stage: string | null;
@@ -25,6 +26,9 @@ export const onSleep = (f: (s: SleepState) => void) => { heard.add(f); return ()
 
 let music: AudioPlayer | null = null, drift: AudioPlayer | null = null, bed: AudioPlayer | null = null, tick: ReturnType<typeof setInterval> | null = null;
 let bedUri = "";
+// C-553: the drift's machine voice (a daemon's) and its isochronic layer, while it plays
+let machine: DriftFile["machine"] | null = null, iso: NonNullable<DriftFile["audio"]>["isochronic"] | null = null;
+let isoPlayer: AudioPlayer | null = null, isoUri = "";
 let carrier = 0, stageUri = "", stages: Stage[] = driftOf();   // C-386: the night's beats, placed by the day it began
 
 // headphones now: true, false, or null where this build cannot tell (then the listener's word is taken)
@@ -48,12 +52,23 @@ function step() {
     const ears = headphones();
     if (ears === false) { if (drift?.playing) drift.pause(); if (!state.driftHeld) tell({ driftHeld: "Quiet until headphones are in." }); }   // DRAFT
     else {
-      const st = stageAt(s, stages), uri = binauralStage(st.carrier ?? carrier, st.beat);
+      const st = stageAt(s, stages);
+      const uri = machine ? machineSound(st.carrier ?? carrier, st.beat, machine) : binauralStage(st.carrier ?? carrier, st.beat);
       drift ??= createAudioPlayer(null);
       if (uri !== stageUri) { drift.replace({ uri }); drift.loop = true; stageUri = uri; }
       drift.volume = DRIFT_LEVEL * v;
       if (!drift.playing) drift.play();
       if (state.stage !== st.word || state.driftHeld) tell({ stage: st.word, driftHeld: null });
+    }
+    // C-553: the isochronic pulse at the stage's exact beat -- heard on a speaker too
+    const sti = stageAt(s, stages);
+    if (!iso) { if (isoPlayer?.playing) isoPlayer.pause(); isoUri = ""; }
+    else {
+      const u = isochronicSound(iso.toneHz ?? sti.carrier ?? carrier, sti.exact ?? sti.beat, iso.voice ?? (machine ? "glitch" : "tone"));
+      isoPlayer ??= createAudioPlayer(null);
+      if (u !== isoUri) { isoPlayer.replace({ uri: u }); isoPlayer.loop = true; isoUri = u; }
+      isoPlayer.volume = ISO_LEVEL * (iso.level ?? 0.3) * v;
+      if (!isoPlayer.playing) isoPlayer.play();
     }
     // C-506: the drift's noise bed, if it has one -- no headphones needed for it
     const b = stageAt(s, stages).bed;
@@ -65,7 +80,7 @@ function step() {
       bed.volume = BED_LEVEL * b.level * v;
       if (!bed.playing) bed.play();
     }
-  } else if (bed?.playing) { bed.pause(); bedUri = ""; }
+  } else { if (bed?.playing) { bed.pause(); bedUri = ""; } if (isoPlayer?.playing) { isoPlayer.pause(); isoUri = ""; } }
 }
 
 // C-506: `driftFile`, the drift chosen (REVERIE); none, THE LONG FALL as it always was
@@ -77,7 +92,8 @@ export async function playSleep(o: { id: string; uri: string; title: string; key
   music.volume = 1;
   music.setActiveForLockScreen(true, { title: o.title, artist: "DAEMONS", albumTitle: "Sleep sounds, DRAFT" });   // DRAFT
   music.play();
-  carrier = carrierOf(o.keyscale); stageUri = ""; bedUri = "";
+  carrier = carrierOf(o.keyscale); stageUri = ""; bedUri = ""; isoUri = "";
+  machine = o.driftFile?.machine ?? null; iso = o.driftFile?.audio?.isochronic ?? null;   // C-553
   stages = o.driftFile ? stagesOfFile(o.driftFile, carrier) : driftOf(new Date());
   if (!stages.length) stages = driftOf(new Date());
   tell({ playing: true, id: o.id, startedAt: Date.now(), drift: o.drift, stage: null, driftHeld: null, beat: null, trend: -1, kind: o.driftFile?.kind ?? "sleep" });
@@ -109,12 +125,13 @@ export function setDrift(on: boolean) {
   tell({ drift: on, driftHeld: null, stage: on ? state.stage : null });
   if (!on && drift) { drift.pause(); stageUri = ""; }
   if (!on && bed) { bed.pause(); bedUri = ""; }
+  if (!on && isoPlayer) { isoPlayer.pause(); isoUri = ""; }
   step();
 }
 
 export function stopSleep() {
   if (tick) { clearInterval(tick); tick = null; }
-  music?.pause(); drift?.pause(); bed?.pause(); stageUri = ""; bedUri = "";
+  music?.pause(); drift?.pause(); bed?.pause(); isoPlayer?.pause(); stageUri = ""; bedUri = ""; isoUri = "";
   try { music?.clearLockScreenControls(); } catch { /* none set */ }
   tell({ playing: false, id: null, stage: null, driftHeld: null, beat: null });
 }

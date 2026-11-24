@@ -94,6 +94,11 @@
     "type": "pink",
     "level": 0.1
    }
-  ]
+  ],
+  "isochronic": {
+   "level": 0.3,
+   "voice": "tone",
+   "toneHz": 440
+  }
  }
 }

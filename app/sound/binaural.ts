@@ -11,6 +11,7 @@
 // C-386: the key is the month's and the day places each beat inside its band -- the numbers are server/src/psyche/drift.ts's,
 // shared with the hub's exports.
 import { Platform } from "react-native";
+import { isochronicWav, machineWav, type Machine, type Voice } from "../../server/src/shared/tones";   // C-553
 
 const RATE = 22050, SECONDS = 4, N = RATE * SECONDS;
 export { carrierOf, driftOf, stageAt, stagesOfFile, LONG_FALL, LONG_FALL_INFO, type Stage, type Bed, type DriftFile, type DriftInfo } from "../../server/src/psyche/drift";
@@ -83,3 +84,21 @@ export function bedSound(colour: string): string {
   if (!f.exists) { f.create(); f.write(noiseWav(colour)); }
   return f.uri;
 }
+
+// C-553: the isochronic layer and a daemon's machine pair (server/src/shared/tones.ts), as sounds to play -- made once each
+function soundOf(name: string, make: () => Uint8Array): string {
+  if (Platform.OS === "web") {
+    const bytes = make();
+    let bin = ""; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return `data:audio/wav;base64,${btoa(bin)}`;
+  }
+  const { File, Paths }: typeof import("expo-file-system") = require("expo-file-system");
+  const f = new File(Paths.cache, `${name}.wav`);
+  if (!f.exists) { f.create(); f.write(make()); }
+  return f.uri;
+}
+export const isochronicSound = (tone: number, rate: number, voice: Voice) =>
+  soundOf(`iso-${tone}-${rate}-${voice}`, () => isochronicWav(tone, rate, voice));
+export const machineSound = (carrier: number, beat: number, m: Machine) =>
+  soundOf(`machine-${carrier}-${beat}-${[m.wave, m.glitch?.perSec, m.glitch?.level, m.waver?.what, m.waver?.deltaHz, m.waver?.periodSec].join("_")}`,
+          () => machineWav(carrier, beat, m));

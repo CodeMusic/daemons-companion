@@ -90,6 +90,11 @@
     "type": "brown",
     "level": 0.12
    }
-  ]
+  ],
+  "isochronic": {
+   "level": 0.3,
+   "voice": "tone",
+   "toneHz": 400
+  }
  }
 }

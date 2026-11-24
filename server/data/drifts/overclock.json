@@ -1,0 +1,61 @@
+{
+ "formatVersion": 2,
+ "id": "overclock",
+ "kind": "tinctures",
+ "side": "daemon",
+ "meta": {
+  "name": "OVERCLOCK",
+  "description": "DEV CONSOLE: its own clock pushed by hand -- alpha climbing into a fast, glitching beta.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "durationSec": 900
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-553"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 10
+   },
+   {
+    "atSec": 240,
+    "beatHz": 14
+   },
+   {
+    "atSec": 600,
+    "beatHz": 18
+   },
+   {
+    "atSec": 900,
+    "beatHz": 22
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 240
+  },
+  "beds": [],
+  "isochronic": {
+   "level": 0.3,
+   "voice": "glitch"
+  }
+ },
+ "machine": {
+  "wave": "square",
+  "glitch": {
+   "perSec": 2,
+   "level": 0.7
+  },
+  "waver": {
+   "what": "beat",
+   "deltaHz": 3,
+   "periodSec": 4
+  }
+ }
+}

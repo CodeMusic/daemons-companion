@@ -1,0 +1,71 @@
+{
+ "formatVersion": 2,
+ "id": "open-ports",
+ "kind": "nature",
+ "side": "daemon",
+ "meta": {
+  "name": "OPEN PORTS",
+  "description": "SANDBOX: a world of static and carrier hum to wander, its beat wandering with it.",
+  "category": "NATURE",
+  "strength": 1,
+  "durationSec": 1200
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-553"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9
+   },
+   {
+    "atSec": 300,
+    "beatHz": 7.5
+   },
+   {
+    "atSec": 600,
+    "beatHz": 9
+   },
+   {
+    "atSec": 900,
+    "beatHz": 7.5
+   },
+   {
+    "atSec": 1200,
+    "beatHz": 8
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 180
+  },
+  "beds": [
+   {
+    "source": "texture",
+    "type": "wind",
+    "level": 0.18
+   }
+  ],
+  "isochronic": {
+   "level": 0.15,
+   "voice": "glitch"
+  }
+ },
+ "machine": {
+  "wave": "square",
+  "glitch": {
+   "perSec": 1,
+   "level": 0.5
+  },
+  "waver": {
+   "what": "both",
+   "deltaHz": 1,
+   "periodSec": 8
+  }
+ }
+}

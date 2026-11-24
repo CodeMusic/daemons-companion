@@ -7,7 +7,7 @@
 // tending.ts's rule): its light sits at the centre's height, root at the foot and crown at the top; a vivid night paints in
 // a few broad strokes, a quiet one softly, a broken one in scattered pieces. The same dream always paints the same.
 // Every word DRAFT.
-import { useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { Action, Art, Segments, Small, whenSaid } from "../../ui/ui";
@@ -16,10 +16,15 @@ import speciesJson from "../../../server/data/species.json";
 import { VoiceButton } from "../../ui/voiceButton";
 import { DreamSymbol } from "../daemon/Dreams";
 import { useDark } from "../../state/look";
+import { api } from "../../platform/net";   // C-484: a dream's signs asked of the house
+import week from "../../../server/data/week.json";   // C-484: the seven days' sections
 
 export type BookDream = { id: number; from: string; to: string; at: string; hours: number; tucked: boolean;
                           quality: "vivid" | "quiet" | "broken"; text: string; nickname: string; species: number;
-                          title: string; day: string; centre: number; dayColour: string };
+                          title: string; day: string; centre: number; dayColour: string; signs?: BookSigns };
+// C-484: a dream's SIGNS & SYMBOLS (server/src/psyche/dreamsigns.ts)
+export type BookSigns = { signs: { sign: string; seen: string; reading: string; books: string[]; glyph: string; ink?: string }[];
+                          thread: string; books: string[]; by: "thinker" | "lexicon" };
 export type DreamVolume = { id: string; who: string; nickname: string; species: number; month: string; title: string; dreams: BookDream[] };
 // C-483: a daemon's own book, every dream it dreamt (server/src/dreams.ts dreamAuthors)
 export type DreamAuthor = { id: string; who: string; nickname: string; species: number; title: string; count: number; last: string; dreams: BookDream[] };
@@ -85,47 +90,155 @@ export function DreamCover({ v, w, h }: { v: DreamVolume; w: number; h: number }
 }
 
 // ---- the book, a page at a time ----
+// C-484 (the user, 2026-11-23: "within the specific daemons dream book, we use the 7 virtue over vice & chakra color
+// codings, the book will have the red sections (eg for today in Red with the note C, Chastity over Lust / Root, and all the
+// dreams the daemon had for that sections -- with a date stamp beside the entry, then the dream title like we have, and the
+// body ... we select a particular dream, then it jumps to that page, you see the dream -- and under it 'signs & symbols'"):
+// the title page, the CONTENTS (each day's section and its dreams; a dream chosen opens its page), then each day that has
+// dreams -- Sunday's red first, as week.json is -- its opening page, then its dreams in the order dreamt. Under each
+// dream, its SIGNS & SYMBOLS: the house's reading once it has read them (asked when the page is first shown), the
+// lexicon's until then. Every word DRAFT.
+type Page = { kind: "title" } | { kind: "contents" } | { kind: "day"; day: number; n: number } | { kind: "dream"; d: BookDream; day: number };
+const WEEK = week as unknown as { days: { day: string; colour: string; hue: string; note: string; chakra: string; cue: string; theme: string }[] };
+const KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+const dayIndex = (d: BookDream) => Math.max(0, KEYS.indexOf(d.day));
+const stamp = (iso: string) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }).toUpperCase();
+
+export function pagesOf(dreams: BookDream[]): Page[] {
+  const out: Page[] = [{ kind: "title" }, { kind: "contents" }];
+  for (let day = 0; day < 7; day++) {
+    const here = dreams.filter((d) => dayIndex(d) === day);
+    if (!here.length) continue;
+    out.push({ kind: "day", day, n: here.length }, ...here.map((d) => ({ kind: "dream" as const, d, day })));
+  }
+  return out;
+}
+
+const asked = new Set<number>();   // a dream's signs asked of the house once a session, however often its page is shown
+function DreamSigns({ d, dark }: { d: BookDream; dark: boolean }) {
+  const [s, setS] = useState(d.signs ?? null);
+  const [reading, setReading] = useState(false);
+  useEffect(() => {
+    setS(d.signs ?? null);
+    if (d.signs?.by === "thinker" || asked.has(d.id)) return;
+    asked.add(d.id);
+    let on = true, tries = 0;
+    const ask = () => api<{ signs: BookSigns; reading: boolean }>("/api/dreams/signs", { id: d.id }).then((r) => {
+      if (!on) return;
+      setS(r.signs); setReading(r.reading && r.signs.by !== "thinker");
+      if (r.reading && r.signs.by !== "thinker" && ++tries < 6) setTimeout(ask, 20000);   // look again while the house reads
+    }).catch(() => {});
+    ask();
+    return () => { on = false; };
+  }, [d.id]);
+  if (!s?.signs.length) return reading ? <Small>The house is reading this dream's signs…  DRAFT</Small> : null;
+  return (
+    <YStack gap={10} borderRadius={6} borderWidth={1} borderColor="$color6" padding={14} backgroundColor="$color2">
+      <XStack justifyContent="space-between" alignItems="baseline" flexWrap="wrap" gap={6}>
+        <Text fontFamily="$mono" fontSize={13} fontWeight="800" letterSpacing={2} color="$color12">SIGNS & SYMBOLS</Text>
+        {s.books.length ? <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">{`read through ${s.books.join(", ")}`}</Text> : null}
+      </XStack>
+      {s.signs.map((g) => (
+        <XStack key={g.sign} gap={12} alignItems="flex-start">
+          <YStack width={42} height={42} borderRadius={21} alignItems="center" justifyContent="center" backgroundColor={dark ? "#221c2c" : "#efe7d6"}>
+            <Text fontSize={20} color={g.ink ?? (dark ? "#e2c27c" : "#5a4630")}>{`${g.glyph}\uFE0E`}</Text>
+          </YStack>
+          <YStack flex={1} gap={3}>
+            <Text fontFamily="$mono" fontSize={13} fontWeight="700" letterSpacing={1.5} color="$color12">{g.sign}</Text>
+            {g.seen ? <Text fontSize={13} fontStyle="italic" color="$color10">{`“${g.seen}”`}</Text> : null}
+            <Text fontSize={14} lineHeight={20} color="$color12">{g.reading}</Text>
+          </YStack>
+        </XStack>
+      ))}
+      {s.thread ? <Text fontSize={14} fontStyle="italic" color="$color11">{s.thread}</Text> : null}
+      <Small>{reading ? "The house is reading these more closely…  DRAFT" : s.by === "lexicon" ? "From the books' own words.  DRAFT" : "Read by the house.  DRAFT"}</Small>
+    </YStack>
+  );
+}
+
+function Contents({ pages, go, ink }: { pages: Page[]; go: (i: number) => void; ink: string }) {
+  return (
+    <YStack gap={10} padding={18}>
+      <Text fontFamily="$mono" fontSize={16} fontWeight="800" letterSpacing={2} color={ink}>CONTENTS</Text>
+      {pages.map((p, i) => p.kind === "day" ? (
+        <XStack key={`d${p.day}`} gap={8} alignItems="center" marginTop={8} onPress={() => go(i)} cursor="pointer" role="button">
+          <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: WEEK.days[p.day].colour }} />
+          <Text flex={1} fontFamily="$mono" fontSize={13} fontWeight="700" letterSpacing={1} color={ink}>{`${WEEK.days[p.day].hue.toUpperCase()} · ${WEEK.days[p.day].cue.toUpperCase()}`}</Text>
+          <Text fontFamily="$mono" fontSize={11} color={ink} opacity={0.7}>{`${p.n}`}</Text>
+        </XStack>
+      ) : p.kind === "dream" ? (
+        <XStack key={`r${p.d.id}`} gap={10} paddingLeft={20} onPress={() => go(i)} cursor="pointer" role="button">
+          <Text fontFamily="$mono" fontSize={11} color={ink} opacity={0.7} width={118}>{stamp(p.d.from || p.d.at)}</Text>
+          <Text flex={1} fontSize={14} color={ink}>{p.d.title}</Text>
+          <Text fontFamily="$mono" fontSize={11} color={ink} opacity={0.6}>{`${i + 1}`}</Text>
+        </XStack>
+      ) : null)}
+    </YStack>
+  );
+}
+
 export function DreamBook({ v }: { v: DreamVolume }) {
   const dark = useDark();
+  const pages = useMemo(() => pagesOf(v.dreams), [v.dreams]);
   const [page, setPage] = useState(0);
   const [w, setW] = useState(0);
-  const last = v.dreams.length, d = page > 0 ? v.dreams[page - 1] : null;
+  const p = pages[Math.min(page, pages.length - 1)], last = pages.length - 1;
   const h = Math.round(Math.min(560, Math.max(380, w * 1.35))), ink = dark ? "#EDE7DA" : "#1C1B1A";
+  const first = v.dreams[0];
+  const body = !w ? <YStack height={380} />
+    : p.kind === "title" ? (
+      <Wash d={{ id: first?.id ?? 1, dayColour: first?.dayColour ?? "#6a5a7a", centre: 6, quality: "quiet" }} w={w} h={h} dark={dark}>
+        <YStack position="absolute" top={0} left={0} right={0} bottom={0} alignItems="center" justifyContent="center" gap={14} padding={24}>
+          <Art path={`/art/species/${v.species}.png`} size={112} />
+          <Text fontFamily="$mono" fontSize={20} fontWeight="800" letterSpacing={2} color={ink} textAlign="center">{v.title}</Text>
+          <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color={ink} opacity={0.75}>{v.month}</Text>
+          <Text fontSize={14} fontStyle="italic" color={ink} opacity={0.8} textAlign="center">{`Dreamt, and written down, by ${v.nickname}.  DRAFT`}</Text>
+        </YStack>
+      </Wash>)
+    : p.kind === "contents" ? <Contents pages={pages} go={setPage} ink={ink} />
+    : p.kind === "day" ? (
+      <Wash d={{ id: 7000 + p.day, dayColour: WEEK.days[p.day].colour, centre: p.day, quality: "vivid" }} w={w} h={h} dark={dark}>
+        <YStack position="absolute" top={0} left={0} right={0} bottom={0} alignItems="center" justifyContent="center" gap={10} padding={24}>
+          <DreamSymbol day={KEYS[p.day]} centre={p.day} colour={WEEK.days[p.day].colour} size={84} dark={dark} />
+          <Text fontFamily="$mono" fontSize={22} fontWeight="800" letterSpacing={3} color={ink}>{WEEK.days[p.day].hue.toUpperCase()}</Text>
+          <Text fontFamily="$mono" fontSize={14} letterSpacing={2} color={ink}>{`${WEEK.days[p.day].cue.toUpperCase()}`}</Text>
+          <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color={ink} opacity={0.8}>{`${WEEK.days[p.day].chakra.toUpperCase()} · THE NOTE ${WEEK.days[p.day].note} · ${WEEK.days[p.day].day.toUpperCase()}S`}</Text>
+          <Text fontSize={14} fontStyle="italic" color={ink} opacity={0.8}>{`${p.n} ${p.n === 1 ? "dream" : "dreams"} dreamt on its nights.  DRAFT`}</Text>
+        </YStack>
+      </Wash>)
+    : (
+      <Wash d={p.d} w={w} h={h} dark={dark}>
+        <YStack position="absolute" top={0} left={0} right={0} bottom={0} padding={18} gap={12} justifyContent="space-between">
+          <YStack gap={6}>
+            <Text fontFamily="$mono" fontSize={11} letterSpacing={1.5} color={ink} opacity={0.8}>{stamp(p.d.from || p.d.at)}</Text>
+            <XStack alignItems="center" gap={10}>
+              <DreamSymbol day={p.d.day} centre={p.d.centre} colour={p.d.dayColour} size={56} dark={dark} />
+              <Text flex={1} fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1.5} color={ink}>{p.d.title}</Text>
+            </XStack>
+          </YStack>
+          <YStack borderRadius={6} padding={14} backgroundColor={dark ? "rgba(16,13,10,0.55)" : "rgba(250,246,236,0.62)"}>
+            <Text fontSize={16} lineHeight={25} color={ink} fontStyle="italic">{p.d.text}</Text>
+          </YStack>
+          <XStack justifyContent="space-between" alignItems="flex-end">
+            <Text fontFamily="$mono" fontSize={11} color={ink} opacity={0.75}>{`${p.d.nickname}, woke ${whenSaid(p.d.to)}`}</Text>
+            <Text fontFamily="$mono" fontSize={11} color={ink} opacity={0.75}>{`${page + 1} / ${pages.length}`}</Text>
+          </XStack>
+        </YStack>
+      </Wash>);
   return (
     <YStack gap={12}>
-      <YStack onLayout={(e) => setW(e.nativeEvent.layout.width)} borderRadius={6} overflow="hidden" borderWidth={1} borderColor="$color6">
-        {!w ? <YStack height={380} /> : !d ? (
-          <Wash d={{ id: v.dreams[0]?.id ?? 1, dayColour: v.dreams[0]?.dayColour ?? "#6a5a7a", centre: 6, quality: "quiet" }} w={w} h={h} dark={dark}>
-            <YStack position="absolute" top={0} left={0} right={0} bottom={0} alignItems="center" justifyContent="center" gap={14} padding={24}>
-              <Art path={`/art/species/${v.species}.png`} size={112} />
-              <Text fontFamily="$mono" fontSize={20} fontWeight="800" letterSpacing={2} color={ink} textAlign="center">{v.title}</Text>
-              <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color={ink} opacity={0.75}>{v.month}</Text>
-              <Text fontSize={14} fontStyle="italic" color={ink} opacity={0.8} textAlign="center">{`Dreamt, and written down, by ${v.nickname}.  DRAFT`}</Text>
-            </YStack>
-          </Wash>
-        ) : (
-          <Wash d={d} w={w} h={h} dark={dark}>
-            <YStack position="absolute" top={0} left={0} right={0} bottom={0} padding={18} gap={12} justifyContent="space-between">
-              <XStack alignItems="center" gap={10}>
-                <DreamSymbol day={d.day} centre={d.centre} colour={d.dayColour} size={56} dark={dark} />
-                <Text flex={1} fontFamily="$mono" fontSize={15} fontWeight="700" letterSpacing={1.5} color={ink}>{d.title}</Text>
-              </XStack>
-              <YStack borderRadius={6} padding={14} backgroundColor={dark ? "rgba(16,13,10,0.55)" : "rgba(250,246,236,0.62)"}>
-                <Text fontSize={16} lineHeight={25} color={ink} fontStyle="italic">{d.text}</Text>
-              </YStack>
-              <XStack justifyContent="space-between" alignItems="flex-end">
-                <Text fontFamily="$mono" fontSize={11} color={ink} opacity={0.75}>{`${d.nickname}, woke ${whenSaid(d.to)}`}</Text>
-                <Text fontFamily="$mono" fontSize={11} color={ink} opacity={0.75}>{`${page} / ${last}`}</Text>
-              </XStack>
-            </YStack>
-          </Wash>
-        )}
+      <YStack onLayout={(e) => setW(e.nativeEvent.layout.width)} borderRadius={6} overflow="hidden" borderWidth={1} borderColor="$color6"
+              backgroundColor={p.kind === "contents" ? (dark ? "#16130f" : "#f6f1e6") : undefined}>
+        {body}
       </YStack>
       <XStack justifyContent="space-between" alignItems="center" gap={8} flexWrap="wrap">
-        <Action label="‹ BACK" onPress={() => setPage((p) => Math.max(0, p - 1))} />
-        {d ? <VoiceButton text={d.text} voice="daemon" /> : <Small>{`${last} ${last === 1 ? "dream" : "dreams"} in this book.`}</Small>}
-        <Action label="NEXT ›" onPress={() => setPage((p) => Math.min(last, p + 1))} />
+        <Action label="‹ BACK" onPress={() => setPage((x) => Math.max(0, x - 1))} />
+        {p.kind === "dream" ? <VoiceButton text={p.d.text} voice="daemon" />
+          : p.kind === "contents" ? <Small>{`${v.dreams.length} ${v.dreams.length === 1 ? "dream" : "dreams"} in this book.`}</Small>
+          : <Action label="CONTENTS" onPress={() => setPage(1)} />}
+        <Action label="NEXT ›" onPress={() => setPage((x) => Math.min(last, x + 1))} />
       </XStack>
+      {p.kind === "dream" ? <DreamSigns key={p.d.id} d={p.d} dark={dark} /> : null}
     </YStack>
   );
 }

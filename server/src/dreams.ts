@@ -8,6 +8,7 @@
 // dream. Every dream is kept in the journal (the store's `dreams`, the newest first, ninety of them) for the app and the
 // site; a rested night counts toward the carried daemon's bond (evolve.ts). Every word is DRAFT. No node: imports (it
 // runs on the phone, hosting alone).
+import type { DreamSigns } from "./psyche/dreamsigns.js";   // C-484
 import type { Store } from "./shared/store.js";
 
 export type Night = { from: string; to: string; hours: number; stirs: number; tucked: boolean };
@@ -15,7 +16,8 @@ export type Quality = "vivid" | "quiet" | "broken";
 export type Dream = Night & { id: number; at: string; quality: Quality; text: string; by: "module" | "words";
                               nickname: string; species: number; personality: number | null; device: string;
                               title?: string; left?: string; right?: string;   // C-308: its title, and the two tellings it was made from
-                              centre?: number };   // C-412: the body centre the dream lived in, 0 root .. 6 crown, named by its writer
+                              centre?: number;   // C-412: the body centre the dream lived in, 0 root .. 6 crown, named by its writer
+                              signs?: DreamSigns };   // C-484: its SIGNS & SYMBOLS as the house's mind read them
 
 // the night as the watch tells it: two times, an hour or more apart and at most sixteen; its stirs; tucked in or not
 export function checkNight(b: any): Night | string {
@@ -274,6 +276,17 @@ function keep(store: Store, list: Dream[]) {
   }
   store.setSetting("dreams", JSON.stringify(list.slice(0, KEEP)));
 }
+
+// C-484: a dream's signs kept on it, in the journal or bound; false if no such dream
+export function keepDreamSigns(store: Store, id: number, signs: DreamSigns): boolean {
+  const list = dreamsOf(store), d = list.find((x) => x.id === id);
+  if (d) { d.signs = signs; store.setSetting("dreams", JSON.stringify(list)); return true; }
+  const bound = boundOf(store), b = bound.find((x) => x.id === id);
+  if (b) { b.signs = signs; store.setSetting(BOUND, JSON.stringify(bound)); return true; }
+  return false;
+}
+export const dreamById = (store: Store, id: number): Dream | undefined =>
+  dreamsOf(store).find((x) => x.id === id) ?? boundOf(store).find((x) => x.id === id);
 
 // ---- C-456: DREAM-BOOKS -- every dream a daemon dreamt, a volume a month (the user's pick), the daemon its author ----
 const MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];

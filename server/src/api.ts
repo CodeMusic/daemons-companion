@@ -95,7 +95,7 @@ import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type C
 import { BookRecordings } from "./library/bookrecordings.js";   // C-331 (1)
 import { GameMusic } from "./gamemusic.js";   // C-332
 import { FirmwareImages } from "./firmwareimages.js";   // C-335
-import { dayOf as dayBefore, dreamAsk, dreamerSaid, dreamsOf, dreamTwice, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
+import { dayOf as dayBefore, dreamAsk, dreamById, dreamerSaid, dreamsOf, dreamTwice, keepDreamSigns, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./machine/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
 import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
@@ -146,6 +146,7 @@ import { trickOrTreat } from "./psyche/halloween.js";   // C-240
 import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./lifemanagement/voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter, writeSigns } from "./lifemanagement/journal.js";   // C-298; C-356 the signs
+import { inventoryList, readDreamSigns, signsOfDream, symbolAgain } from "./psyche/dreamsigns.js";   // C-484
 import { readRecipePage } from "./lifemanagement/recipes.js";   // C-433
 import { formToShare, mineView, takeForm } from "./lifemanagement/myforms.js";   // C-433
 import { learningView, LESSON_ASK, lessonOf, lessonWriting, lessonWritten, MARK_ASK, markAsk, markQuiz, newCourse, proposeSyllabus, quizQuestions, readMarks, readSyllabus, SYLLABUS_ASK, tutorState, type Mark } from "./lifemanagement/learning.js";   // C-433
@@ -1444,6 +1445,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       .then(() => w.end("done"), (e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }))
       .finally(() => signing.delete(id));
   };
+  // C-484: a dream's SIGNS & SYMBOLS read by the house's mind, once, kept on the dream (its new symbols in the inventory).
+  // Asked by the DREAM-BOOK when a page shows the lexicon's reading; one at a time per dream.
+  const dreamSigning = new Set<number>();
+  const readDreamSignsJob = (id: number) => {
+    const d = dreamById(store, id);
+    if (!d || !house.any || dreamSigning.has(id) || d.signs?.by === "thinker") return;
+    dreamSigning.add(id);
+    const w = ledgered({ kind: "dream", title: `the signs in a dream read (${d.nickname || "a daemon"})` });   // DRAFT
+    readDreamSigns(store, d.text, w.write)
+      .then((r) => { if (r) keepDreamSigns(store, id, r); w.end(r ? "done" : "failed", r ? {} : { error: "no reading came back" }); },
+            (e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }))
+      .finally(() => dreamSigning.delete(id));
+  };
   const dreamerOf = (ecfg: Config, deviceId: string): Dreamer => {
     const f = selfFacts(ecfg, store, deviceId), care = (f.life as { care?: Dreamer["care"] } | null)?.care ?? null;
     return { nickname: f.nickname, name: f.name, types: f.types, category: f.category, entry: f.entry, said: f.said, trainer: f.trainer,
@@ -1917,6 +1931,23 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/sync")             // C-219: what the exchange sent, fetched first; told after
         return reply(res, await runSync(ecfg, store, { deviceId, query: Object.fromEntries(url.searchParams), body: await body(req) }));
       if (req.method === "GET" && path === "/api/sync/heard") return send(res, 200, heardOf(store));   // C-261
+      // C-484: a dream's SIGNS & SYMBOLS -- as they stand, and read by the house's mind if it has not yet (POST {id})
+      if (req.method === "POST" && path === "/api/dreams/signs") {
+        const id = Number((await body(req) as { id?: unknown } | null)?.id), d = dreamById(store, id);
+        if (!d) return send(res, 404, { error: "no such dream" });   // DRAFT
+        const reading = d.signs?.by !== "thinker" && house.any;
+        if (reading) readDreamSignsJob(id);
+        return send(res, 200, { id, signs: signsOfDream(store, d), reading: reading || dreamSigning.has(id) });
+      }
+      // C-484: THE SYMBOLS' INVENTORY, for THE ENGINE ROOM -- every symbol kept, and one made again (POST {sign})
+      if (req.method === "GET" && path === "/api/symbols") return send(res, 200, { symbols: inventoryList(store) });
+      if (req.method === "POST" && path === "/api/symbols/again") {
+        const sign = String((await body(req) as { sign?: unknown } | null)?.sign ?? "");
+        const w = house.any ? ledgered({ kind: "signs", title: `a symbol made again (${sign.slice(0, 40)})`, quick: true }) : null;   // DRAFT
+        const r = await symbolAgain(store, sign, w ? w.write : null).catch((e) => (e as Error)?.message ?? "it could not be made again");
+        w?.end(typeof r === "string" ? "failed" : "done", typeof r === "string" ? { error: r.slice(0, 120) } : {});
+        return typeof r === "string" ? send(res, 404, { error: r }) : send(res, 200, { symbol: r, symbols: inventoryList(store) });
+      }
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
       if (handles(req.method ?? "", path) && path !== "/api/subtle/ask"   // C-229: answered below, with the module and the voice
           && !(path === "/api/learning/quiz/answer" && house.any)) {   // C-433: and a quiz, marked below by THE TUTOR

@@ -8,6 +8,7 @@
 #include <future>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "game/rom.h"
 #include "hal/hal.h"
@@ -57,7 +58,7 @@ struct Play : Page {
       Bytes save;
       std::string why;
       readFile(savePath(), save);
-      if (!emu.load(romPath(), save, why)) { fprintf(stderr, "play: %s\n", why.c_str()); go(PageId::Home); return; }
+      if (!emu.load(romPath(), save, why)) { fprintf(stderr, "play: %s\n", why.c_str()); goHome(); return; }
     }
     // this device's save, newer than the one the hub holds (kept while it was away), goes out now -- as the app's open does
     if (!in.took && mirror::mode() == mirror::Mode::Send) {
@@ -68,7 +69,7 @@ struct Play : Page {
   }
 
   void key(const KeyEvent &e) override {
-    if (e.down && e.key == Key::Esc && !settling) { keepSave(); go(PageId::Home); }   // the game waits, paused, where it was
+    if (e.down && e.key == Key::Esc && !settling) { keepSave(); goHome(); }   // the game waits, paused, where it was
   }
   void runOne() {
     emu.frame(gameKeysHeld(held));

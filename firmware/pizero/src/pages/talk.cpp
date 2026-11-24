@@ -6,6 +6,7 @@
 #include <future>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
@@ -117,7 +118,7 @@ struct Talk : Page {
       return;
     }
     if (!e.down || hubBusy() || kit::view().talking) return;
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
     if (e.key == Key::Backspace) { if (!word.empty()) word.pop_back(); return; }
     if (e.key == Key::Enter) { if (!word.empty()) { sendWords(word); word.clear(); } return; }
     if (e.ch && word.size() < 120) word += e.ch;

@@ -9,6 +9,22 @@ device it uses the screen (`/dev/fb0`) and the keys (evdev). The plan and the ha
 Nothing of Nintendo's is here or in what it builds. The player brings their own FireRed or LeafGreen, and
 `.gitignore` refuses `*.gba`, `*.bps` and `*.sav`.
 
+## One program, several apps (C-509)
+
+The launcher shows an icon for each app, and every icon opens this same program on its own first page
+(`daemons-zero --app ID`). So one install updates them all, and they share one pairing, one save and one hub. The list is
+`src/apps.cpp`; `daemons-zero --apps` says it, and `tools/make_deb.sh` writes a launcher entry for each row with
+`--apps --desktop DIR`. Adding an app means adding its row and its page. Inside an app, BACK returns to the app's own
+first page, and BACK there leaves the app.
+
+| App | Opens on | |
+|---|---|---|
+| DAEMONS | HOME | the game and the companion, every page on HOME's row |
+| ENGINE ROOM | ENGINE (C-510) | the hub's own room: JOBS (THE HANDS' runs; ENTER reads one), RUN (a job that needs no words; a DANGER one asks twice), SITE, DEVICES, SAVES, HUB. It uses the same API as the phone's web app at `/admin/`, with this device's paired key, and works on the home network or the tailnet only |
+| CAPS | CAPS | the cap on the header (the Cardputer Zero only) |
+| TALK | TALK | talking with the daemon carried |
+| KIT | KIT | the LLM630 Kit on the back (the Cardputer Zero only) |
+
 ## On a computer
 
 Needs CMake, a C++17 compiler, SDL2 and libcurl (macOS: `brew install sdl2`; curl comes with the system).

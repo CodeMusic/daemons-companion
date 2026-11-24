@@ -1,6 +1,7 @@
 // C-381: CARE -- the daemon tended from the device, as every board tends it (POST /api/device/interact {kind}: feed,
 // water, train, sleep or wake), and what it says back. Z C choose, ENTER gives, ESC goes back. Every word DRAFT.
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
@@ -27,10 +28,10 @@ struct Care : Page {
   }
   void key(const KeyEvent &e) override {
     if (!e.down) return;
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
     if (choices.key(e.key) || e.key != Key::Enter || sending.busy()) return;
     std::string kind = upper(choices.chosen());
-    if (kind == "BACK") { go(PageId::Home); return; }
+    if (kind == "BACK") { goHome(); return; }
     if (!hub::view().carrying) { said = "There is no daemon here to tend."; return; }
     for (auto &c : kind) c = (char)tolower((unsigned char)c);
     said = "...";

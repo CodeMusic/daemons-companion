@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "caps/cap.h"
 #include "hal/hal.h"
@@ -20,7 +21,7 @@ struct Caps : Page {
   void enter() override { caps::find(true); told.clear(); loudest = -127; }
   void key(const KeyEvent &e) override {
     if (!e.down) return;
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
     if (e.key == Key::Enter) { caps::find(true); told = "Asked the cap again."; loudest = -127; return; }   // DRAFT
     if (caps::found().kind != caps::Kind::Cc1101Nfc) return;
     Dir d = dirOf(e.key);

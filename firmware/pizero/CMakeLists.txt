@@ -113,6 +113,8 @@ set(SRC
   src/pages/caps.cpp
   src/pages/talk.cpp
   src/pages/kit.cpp
+  src/pages/engine.cpp
+  src/apps.cpp
   src/kit/stackflow.cpp
   src/kit/kit.cpp
   src/kit/policy.cpp

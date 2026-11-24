@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "hal/hal.h"
 #include "kit/kit.h"
@@ -29,7 +30,7 @@ struct KitPage : Page {
       asking = false;
       return;
     }
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
     if (e.key == Key::Enter) {
       if (k.state == kit::State::Awake || k.state == kit::State::Busy) { kit::sleep(); told = "The Kit rests."; return; }
       hal::Power z = hal::power();

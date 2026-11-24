@@ -11,6 +11,8 @@
 //   daemons-zero --games               say every game kept here and every original found, and stop
 //   daemons-zero --saved               as if the game had just saved: HOME SYNCs as it is entered (C-397; for checks)
 //   daemons-zero --rom FILE.gba        play any ROM as it is (a DEBUG build: testing)
+//   daemons-zero --app engine          open as one of its apps (C-509: daemons, engine, caps, talk, kit)
+//   daemons-zero --apps [--desktop DIR]  say every app, and with --desktop write a launcher entry for each into DIR; stop
 //   daemons-zero --page care           start on a page (home, play, games, link, care, step, party, say)
 //   daemons-zero --headless --frames N [--press 300:ENTER,420:L] [--shot out.bmp] [--every 100]
 //                                      run N frames unseen, keys pressed at those frames, a picture at the end
@@ -42,6 +44,7 @@
 #include <thread>
 
 #include "app.h"
+#include "apps.h"
 #include "board.h"
 #include "canvas.h"
 #include "caps/cap.h"
@@ -64,6 +67,7 @@ Page *sayPage();
 Page *capsPage();
 Page *talkPage();
 Page *kitPage();
+Page *enginePage();
 
 Emu emu;
 bool held[(size_t)Key::Count];
@@ -85,6 +89,7 @@ Page *pageFor(PageId id) {
     case PageId::Caps: return capsPage();
     case PageId::Talk: return talkPage();
     case PageId::Kit: return kitPage();
+    case PageId::Engine: return enginePage();
     default: return homePage();
   }
 }
@@ -159,7 +164,8 @@ static int bench(int frames) {
 int main(int argc, char **argv) {
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
   std::string start = "home", shot, makeFrom, makeTestingOf, gameKey, romFrom, hubArg, pairCode;
-  bool listGames = false, listCaps = false, kitStatus = false;
+  bool listGames = false, listCaps = false, kitStatus = false, listApps = false;
+  std::string desktopDir;
   std::string kitSay, kitHear;
   std::string bandArg;
   bool mirrorIn = false, sendSave = false, syncOnce = false, keepThere = false;
@@ -173,6 +179,14 @@ int main(int argc, char **argv) {
     else if (a == "--shot") shot = val();
     else if (a == "--every") every = atoi(val().c_str());
     else if (a == "--page") start = val();
+    else if (a == "--app") {   // C-509: which app this run is
+      const AppDef *ap = appNamed(val());
+      if (!ap) { fprintf(stderr, "no app by that name: daemons-zero --apps\n"); return 2; }
+      useApp(*ap);
+      start = "";
+    }
+    else if (a == "--apps") listApps = true;
+    else if (a == "--desktop") desktopDir = val();
     else if (a == "--make") makeFrom = val();
     else if (a == "--rom") romFrom = val();
     else if (a == "--make-testing") makeTestingOf = val();
@@ -254,6 +268,21 @@ int main(int argc, char **argv) {
     int rc = kitSay.empty() ? kit::cliHear(kitHear, speak) : kit::cliSay(kitSay, speak);
     sound::end();
     return rc;
+  }
+  if (listApps) {   // C-509: every app, and a launcher entry for each (tools/make_deb.sh writes them into the .deb)
+    for (auto &a : apps()) {
+      if (a.zeroOnly && std::string(board::ID) != "cardputer-zero") continue;
+      printf("%-8s %-12s %s\n", a.id, a.name, a.about);
+      if (desktopDir.empty()) continue;
+      std::string path = desktopDir + "/daemons" + (std::string(a.id) == "daemons" ? "" : std::string("-") + a.id) + ".desktop";
+      FILE *f = fopen(path.c_str(), "w");
+      if (!f) { fprintf(stderr, "cannot write %s\n", path.c_str()); return 1; }
+      fprintf(f, "[Desktop Entry]\nName=%s\nComment=%s\nExec=/usr/share/APPLaunch/bin/daemons-zero%s%s\n"
+                 "Icon=share/images/daemons_100.png\nTerminal=false\nType=Application\n",
+              a.name, a.about, std::string(a.id) == "daemons" ? "" : " --app ", std::string(a.id) == "daemons" ? "" : a.id);
+      fclose(f);
+    }
+    return 0;
   }
   if (listGames) {
     Game now;
@@ -346,8 +375,8 @@ int main(int argc, char **argv) {
   caps::find();   // C-444: once at start; a cap is never fitted while the Zero is on
   const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "games", PageId::Make }, { "link", PageId::Pair },
                                            { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say },
-                                           { "caps", PageId::Caps }, { "talk", PageId::Talk }, { "kit", PageId::Kit } };
-  go(pages.count(start) ? pages.at(start) : PageId::Home);
+                                           { "caps", PageId::Caps }, { "talk", PageId::Talk }, { "kit", PageId::Kit }, { "engine", PageId::Engine } };
+  go(pages.count(start) ? pages.at(start) : app().home);   // C-509: --page, else the app's own first page
 
   auto lastDraw = std::chrono::steady_clock::now();
   uint64_t loops = 0;

@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
@@ -25,7 +26,7 @@ struct Step : Page {
   bool canUndo() const { return ticked >= 0 && Clock::now() - tickedAt < std::chrono::seconds(15); }
   void key(const KeyEvent &e) override {
     if (!e.down || sending.busy()) return;
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
     HubView v = hub::view();
     if (e.key == Key::Enter && v.stepId >= 0) {
       ticked = v.stepId;

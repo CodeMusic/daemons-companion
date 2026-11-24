@@ -5,6 +5,7 @@
 #include <ctime>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "game/hash.h"
 #include "hal/hal.h"
@@ -28,7 +29,7 @@ struct Say : Page {
   void enter() override { answer.clear(); }
   void key(const KeyEvent &e) override {
     if (!e.down || sending.busy()) return;
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
     if (e.key == Key::Backspace) { if (!word.empty()) word.pop_back(); return; }
     if (e.key == Key::Enter) { send(); return; }
     if (e.ch && word.size() < 80) word += e.ch;

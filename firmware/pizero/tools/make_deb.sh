@@ -20,7 +20,9 @@ root=build/deb
 rm -rf "$root"
 if [[ $board == cardputer-zero ]]; then
   install -D -m 0755 "$bin" "$root/usr/share/APPLaunch/bin/daemons-zero"
-  install -D -m 0644 packaging/daemons.desktop "$root/usr/share/APPLaunch/applications/daemons.desktop"
+  # C-509: one program, several apps -- a launcher entry for each, written by the program itself from its own list
+  mkdir -p "$root/usr/share/APPLaunch/applications"
+  "$bin" --apps --desktop "$root/usr/share/APPLaunch/applications" >/dev/null
   install -D -m 0644 packaging/daemons_100.png "$root/usr/share/APPLaunch/share/images/daemons_100.png"
   install -D -m 0644 "$patches" "$root/usr/share/APPLaunch/share/daemons/patches.json"
   section=APPLaunch

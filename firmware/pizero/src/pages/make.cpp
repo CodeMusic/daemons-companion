@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "game/rom.h"
 #include "hal/hal.h"
@@ -105,7 +106,7 @@ struct Games : Page {
     if (!e.down) return;
     std::unique_lock<std::mutex> l(lock);
     if (state == Working || state == Looking) return;
-    if (e.key == Key::Esc) { if (state == Choosing) go(PageId::Home); else state = Choosing; return; }
+    if (e.key == Key::Esc) { if (state == Choosing) goHome(); else state = Choosing; return; }
     if (state == Done) { if (e.key == Key::Enter) { state = Choosing; playThis(made.key(), true); } return; }
     if (state == Failed) { if (e.key == Key::Enter) { state = Choosing; moved = true; } return; }
     Dir d = dirOf(e.key);

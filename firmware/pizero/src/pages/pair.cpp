@@ -3,6 +3,7 @@
 #include <future>
 
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
@@ -25,8 +26,8 @@ struct Pair : Page {
   bool busy() { return asking.valid() && asking.wait_for(std::chrono::seconds(0)) != std::future_status::ready; }
   void key(const KeyEvent &e) override {
     if (!e.down || busy()) return;
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
-    if (done) { if (e.key == Key::Enter) go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
+    if (done) { if (e.key == Key::Enter) goHome(); return; }
     if (e.key == Key::Tab || e.key == Key::Up || e.key == Key::Down) { at = 1 - at; return; }
     if (e.key == Key::Backspace) { if (!field[at].empty()) field[at].pop_back(); return; }
     if (e.key == Key::Enter) {

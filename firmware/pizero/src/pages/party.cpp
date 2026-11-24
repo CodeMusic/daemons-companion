@@ -1,6 +1,7 @@
 // C-381: PARTY -- the save's party, one at a time (Z C, or the arrows), each with its picture and its four routines in the
 // colours their streaks take on its body (C-68, as the boards' GAME ROUTINES show them). ESC goes back. Every word DRAFT.
 #include "app.h"
+#include "apps.h"
 #include "canvas.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
@@ -15,7 +16,7 @@ struct Party : Page {
 
   void key(const KeyEvent &e) override {
     if (!e.down) return;
-    if (e.key == Key::Esc) { go(PageId::Home); return; }
+    if (e.key == Key::Esc) { goHome(); return; }
     const int n = (int)hub::view().party.size();
     if (!n) return;
     Dir d = dirOf(e.key);

@@ -751,7 +751,7 @@ async function drawInPlay() {
     ? `<img class="screen${big ? " big" : ""}" src="${urls.get(g.id)}" alt="the screen of ${esc(g.user)}'s game">`
     : `<div class="screen${big ? " big" : ""} none"><span>${LIVEGAME(v, g) ? "no picture yet" : "not playing"}</span></div>`;
   const party = (s) => s?.party?.length ? `<div class="party">${s.party.map((d) =>
-    `<div class="mon"><img class="art" src="/art/party/${d.species}.png" alt=""><b>${esc(d.nickname || d.name)}</b><span class="small">L${d.level}${d.nickname && d.nickname !== d.name ? ` · ${esc(d.name)}` : ""}</span></div>`).join("")}</div>` : `<p class="small">No save heard yet.</p>`;
+    `<div class="mon"><img class="art" src="/art/species/${d.species}.png" alt=""><b>${esc(d.nickname || d.name)}</b><span class="small">L${d.level}${d.nickname && d.nickname !== d.name ? ` · ${esc(d.name)}` : ""}</span></div>`).join("")}</div>` : `<p class="small">No save heard yet.</p>`;
   const one = (g) => `<div class="card">
       ${screen(g, true)}
       <div class="row" style="margin-top:10px"><div class="grow"><div class="big" style="font-size:16px">${esc(g.summary?.name ?? g.user)}</div>

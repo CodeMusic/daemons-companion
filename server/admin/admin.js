@@ -146,6 +146,8 @@ function drawPair(why) {
     <p>THE ENGINE ROOM runs the hub, so it asks for a paired key, as a phone does.</p>
     <p class="small">Hold the hub's button until its screen shows a code, and type it here. (On the hub's own machine,
       or from the companion's site there, it opens without one.)</p>
+    <p class="small">Away from home (C-499): KEYS, in THE ENGINE ROOM wherever it is already paired -- at home, or on your
+      phone -- makes a code too.</p>
     <form id="pairform" class="row"><input id="code" class="text mono" inputmode="numeric" autocomplete="one-time-code"
       placeholder="the code on the hub's screen" aria-label="pairing code" required><button class="btn">PAIR</button></form>
     <div class="note" id="pairnote">${esc(why && !/pair this phone|not paired/.test(why) ? why : "")}</div></div>`;

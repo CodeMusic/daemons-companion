@@ -717,6 +717,19 @@ const isLoopback = (a?: string) => !a || a === "127.0.0.1" || a === "::1" || a =
 // whose host is this machine, an address, a .local or .ts.net name, or a bare name on the LAN), and the Host it asked
 // for must be one of those too, so a look-alike name pointed at this machine (DNS rebinding) is refused. The phone app,
 // the boards, n8n and Home Assistant send no Origin.
+// C-499 (the user, 2026-11-23: THE ENGINE ROOM "should be accessible to the outside world (but protected by a password if
+// it is an outside world address), remember we are moving away from tailscale"): its public name(s), the Mac mini's Apache
+// in front (a password, then a proxy to the hub over the home network, as dashboard.daemons is to EUDAIMONIA, E-18/E-19).
+// A public name is taken only on a request that came through a proxy (it carries X-Forwarded-For), and such a request is
+// THE OUTSIDE WORLD: a paired key opens the API, nothing else does -- no board's key, no device door; only the page's own
+// files, its pictures and a pairing code are open without one. The rule only ever narrows: a forged header gains nothing.
+export const PUBLIC_ADMIN_HOSTS = (process.env.ENGINE_ROOM_PUBLIC_HOSTS ?? "engine.daemons.codemusic.ca")
+  .split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
+export function publicAdminHost(hostOrUrl: string): boolean {
+  let name = hostOrUrl.trim().toLowerCase();
+  try { name = new URL(name.includes("://") ? name : `https://${name}`).hostname; } catch { return false; }
+  return PUBLIC_ADMIN_HOSTS.includes(name);
+}
 export function ourHost(hostOrUrl: string): boolean {
   let name = hostOrUrl.trim().toLowerCase();
   if (!name) return true;
@@ -1616,9 +1629,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     try {
       const url = new URL(req.url ?? "/", "http://localhost");
       const path = url.pathname;
-      if (req.headers.origin !== undefined && !ourHost(String(req.headers.origin)))
+      // C-499: through a proxy by THE ENGINE ROOM's public name -- the outside world (PUBLIC_ADMIN_HOSTS)
+      const outside = req.headers["x-forwarded-for"] !== undefined && publicAdminHost(String(req.headers.host ?? ""));
+      if (req.headers.origin !== undefined && !ourHost(String(req.headers.origin)) && !(outside && publicAdminHost(String(req.headers.origin))))
         return send(res, 403, { error: "not from a page of the companion's" });
-      if (!ourHost(String(req.headers.host ?? ""))) return send(res, 403, { error: "not an address of the companion's" });
+      if (!ourHost(String(req.headers.host ?? "")) && !outside) return send(res, 403, { error: "not an address of the companion's" });
       // C-330: THE ENGINE ROOM, the hub's admin -- its files to the home network and the tailnet, never through the relay
       if (isAdminPath(req.method ?? "", path)) {
         if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "THE ENGINE ROOM is on the home network and the tailnet only" });   // DRAFT
@@ -1663,6 +1678,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const bearer = /^Bearer (.+)$/.exec(String(req.headers.authorization ?? ""))?.[1];
       const phone = bearer ? store.phoneFor(bearer) : null;              // C-53: a paired phone has the whole API
       const board = !phone && bearer ? devices.deviceFor(bearer) : null;  // C-82: a board's own key: its own door only
+      if (outside) {                                                     // C-499: the outside world -- a paired key, or nothing
+        if (board) return send(res, 403, { error: "a board's key works at home, not from outside" });   // DRAFT
+        const open = (req.method === "POST" && path === "/api/pair") || (req.method === "GET" && path.startsWith("/art/"));
+        if (!phone && !open) return send(res, 401, { error: "from outside, THE ENGINE ROOM asks for a paired key -- pair this browser first" });   // DRAFT
+      }
       const relayed = req.headers[RELAY_HEADER] !== undefined;
       if (relayed) {                                                     // C-56
         if (!same(String(req.headers[RELAY_HEADER]), relaySecret(store)))

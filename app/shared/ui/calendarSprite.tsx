@@ -5,7 +5,7 @@
 import { Platform, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { mix, NIGHT, PAPER } from "./pixels";
-import { useDark } from "../state/look";
+import { useDark } from "../../state/look";
 
 // a thin outline around a number: four shadows, one each way, as a pixel font is outlined (the web draws a stroke)
 const outlined = (c: string) => Platform.OS === "web"

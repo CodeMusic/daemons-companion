@@ -6,7 +6,7 @@ import { Input, Text, XStack, YStack } from "tamagui";
 import { meshTalk, RINGS, ringOf, sense, setRing, trailSaid, type Kind, type Ring, type Sense } from "../../platform/mesh";
 import { endpoint, endpointModels, endpointThink, forgetEndpoint, keepEndpoint } from "../../platform/endpoint";
 import { api, ON_PHONE } from "../../platform/net";
-import { Action, Card, Choice, Entry, Eyebrow, Pending, Small } from "../../ui/ui";
+import { Action, Card, Choice, Entry, Eyebrow, Pending, Small } from "../../shared/ui/ui";
 import { useVoice } from "../daemon/Daemon";
 import { HubEndpoints } from "./HubEndpoints";   // C-280 (1)
 import { LEND_ABOUT, LEND_SAID, lendOf, onLending, setLend, type Lend, type Lending } from "../../platform/lend";   // C-360

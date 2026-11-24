@@ -8,7 +8,7 @@ import { ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { Index, IndexEntry, Notebook } from "../../state/types";
-import { Art, Card, Eyebrow, Small } from "../../ui/ui";
+import { Art, Card, Eyebrow, Small } from "../../shared/ui/ui";
 import { NotebookPage } from "../library/Library";
 import { heldKeys, newlyFound, type Found as FoundT } from "../../../server/src/game/save/found";
 

@@ -7,7 +7,7 @@ import { TextInput } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api, ALONE } from "../platform/net";
 import { useApi } from "../platform/useApi";
-import { Action, Card, Entry, Eyebrow, Pending, Small } from "../ui/ui";
+import { Action, Card, Entry, Eyebrow, Pending, Small } from "../shared/ui/ui";
 
 type Recipe = { id: number; title: string; ingredients: string[]; steps: string[]; serves: string; minutes: number | null;
                 source: string; note: string; cooked: { id: number; at: string }[] };

@@ -8,7 +8,7 @@
 import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { Art } from "../../ui/ui";
+import { Art } from "../../shared/ui/ui";
 
 export type CaseBook = {
   id: string;

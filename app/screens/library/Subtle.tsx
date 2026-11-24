@@ -7,14 +7,14 @@
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { SCREEN } from "../../state/data";
-import { Art } from "../../ui/ui";
-import { TurningPicture } from "../../ui/bookPicture";   // C-299: shared with the third book
-import { ReadAloud } from "../../ui/readAloud";   // C-208
+import { Art } from "../../shared/ui/ui";
+import { TurningPicture } from "../../shared/ui/bookPicture";   // C-299: shared with the third book
+import { ReadAloud } from "../../shared/ui/readAloud";   // C-208
 import { AskSubtle, TodaysQuestion } from "./AskSubtle";   // C-229, C-230
 import { Cards } from "./Arcana";   // C-232
-import { Listen } from "../../ui/bookAudio";   // C-277
+import { Listen } from "../../shared/ui/bookAudio";   // C-277
 import { usePlace } from "../../state/place";   // C-309
-import { SpokenPara } from "../../ui/spoken";   // C-309
+import { SpokenPara } from "../../shared/ui/spoken";   // C-309
 
 type Para = { text: string; voice: "telling" | "asking" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };

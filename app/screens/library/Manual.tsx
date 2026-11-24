@@ -11,8 +11,8 @@ import { WebView } from "react-native-webview";
 import { XStack, YStack } from "tamagui";
 import { freshManual, keptManual, manualDir, type Manual, type Which } from "../../state/manual";
 import { ON_PHONE } from "../../platform/net";
-import { Action, Card, Eyebrow, Small } from "../../ui/ui";
-import { Listen, type Recorded } from "../../ui/bookAudio";
+import { Action, Card, Eyebrow, Small } from "../../shared/ui/ui";
+import { Listen, type Recorded } from "../../shared/ui/bookAudio";
 
 // what the shelf says of it: the release it was made for, once one is kept
 // Each book's words

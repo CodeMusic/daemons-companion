@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, Modal, Platform, Pressable, View } from "react-native";
 import { Text, YStack } from "tamagui";
 import { useAudioPlayer, setAudioModeAsync } from "expo-audio";
-import { bowlTone } from "../sound/bowl";
+import { bowlTone } from "../../sound/bowl";
 import { bowlPalettes, bowlRows, PixelSprite, TuningFork } from "./pixels";
-import { useDark } from "../state/look";
+import { useDark } from "../../state/look";
 
 const CELL = 6, W = 46;
 // a Modal on the site is drawn outside the app's root, where the theme's body face is not set: name the phone's own

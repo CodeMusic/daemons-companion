@@ -21,9 +21,9 @@ import * as Sharing from "expo-sharing";
 import { useEffect, useState } from "react";
 import { AppState } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { ON_PHONE } from "../platform/net";
-import { keyOfBook, unseal } from "../state/sealed";
-import { ListenControl } from "../screens/shared/Index";
+import { ON_PHONE } from "../../platform/net";
+import { keyOfBook, unseal } from "../../state/sealed";
+import { ListenControl } from "../pages/Index";
 import { Action, Small, useInk } from "./ui";
 import { barHeight, darkPaper, PLAIN, useBookLook, wash } from "./bookLook";   // C-309
 

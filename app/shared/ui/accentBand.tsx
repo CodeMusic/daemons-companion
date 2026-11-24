@@ -4,7 +4,7 @@
 import { useEffect, useRef } from "react";
 import { Animated, Easing } from "react-native";
 import { XStack, YStack } from "tamagui";
-import type { AccentColours } from "../tamagui.config";
+import type { AccentColours } from "../../tamagui.config";
 
 export function AccentBand({ colours, height = 5 }: { colours: AccentColours; height?: number }) {
   const breath = useRef(new Animated.Value(1)).current;

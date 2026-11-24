@@ -10,8 +10,8 @@ import { useEffect, useRef, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { Art } from "./ui";
 import { useSinging } from "./staff";
-import { learnedOf, songOf } from "../../server/src/damagotchi/ownsong";
-import { act, arena, listen, replayDue, untilSaid, whereSaid, type Arena, type Fight, type Line } from "../platform/battle";
+import { learnedOf, songOf } from "../../../server/src/damagotchi/ownsong";
+import { act, arena, listen, replayDue, untilSaid, whereSaid, type Arena, type Fight, type Line } from "../../platform/battle";
 
 const INK = "#1d2029", PAPER = "#fbfaf6", RULE = "#2b2f3a", FIELD = "#e8efe2", GOOD = "#3fae5a", MID = "#e0b13a", LOW = "#d4483b";
 const STATUS: Record<string, string> = { psn: "LEAK", tox: "LEAK", brn: "HEAT", par: "THR", slp: "SUSP", frz: "HUNG" };   // DRAFT: the states, short

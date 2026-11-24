@@ -13,11 +13,11 @@ import { SCREEN } from "./state/data";
 import { forgetPlaces, forgetScroll, keepScroll } from "./state/place";   // C-309
 import { loadLook, LOOK, lookHeard, PALETTE } from "./state/look";
 import { loadAccent, useAccentSetting, useUnlocked, wornAccent } from "./state/accent";   // C-349
-import { AccentBand } from "./ui/accentBand";   // C-349
+import { AccentBand } from "./shared/ui/accentBand";   // C-349
 import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./platform/net";
 import { bumpFresh } from "./platform/useApi";   // C-344
 import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
-import { openWhatsNew, useWhatsNewDue, WhatsNewOverlay } from "./ui/whatsnew";   // C-318
+import { openWhatsNew, useWhatsNewDue, WhatsNewOverlay } from "./shared/ui/whatsnew";   // C-318
 import { JourneyScreen } from "./lifemanagement/Journey";   // C-298: GOALS and the JOURNAL
 import { LibraryScreen } from "./screens/library/Library";
 import { PairScreen } from "./screens/settings/Pair";
@@ -29,15 +29,15 @@ import { TodayScreen } from "./screens/today/Today";
 import { ProfileScreen } from "./screens/you/You";
 import config, { DAYS, RAINBOW_COLOURS, WEEK_COLOURS } from "./tamagui.config";
 import { SHOWN_TABS, TABS, Today } from "./state/types";
-import { DayContext, InkContext, onColour, Stuck } from "./ui/ui";
+import { DayContext, InkContext, onColour, Stuck } from "./shared/ui/ui";
 import { voiceFor } from "./sound/tuneSound";
 import { muteAway } from "./state/away";
 import { useDev } from "./state/dev";       // C-268
-import { Logs } from "./ui/devpanel";
+import { Logs } from "./shared/ui/devpanel";
 import { DevScreen } from "./screens/dev/Dev";                  // C-275: </>
-import { Received } from "./ui/received";   // C-261
-import { BattleOverlay } from "./ui/battle";   // C-328
-import { HowToOverlay, openHowTo, showHowToWith, type HowTo } from "./ui/howto";          // C-264; C-339
+import { Received } from "./shared/ui/received";   // C-261
+import { BattleOverlay } from "./shared/ui/battle";   // C-328
+import { HowToOverlay, openHowTo, showHowToWith, type HowTo } from "./shared/ui/howto";          // C-264; C-339
 import MENU from "./modules/daemons-menu";                    // C-264: the menu bar's Help
 import { TabStrip } from "./shell/TabStrip";
 import { Divider, Edge, LogsDivider, LogsEdge } from "./shell/panes";

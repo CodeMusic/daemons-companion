@@ -10,17 +10,17 @@ import { api, ON_PHONE } from "../../platform/net";
 import { meshTalk } from "../../platform/mesh";   // C-307
 import { songSound } from "../../sound/songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData, Spoken } from "../../state/types";
-import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, Small } from "../../ui/ui";
+import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, Small } from "../../shared/ui/ui";
 import { useVoice } from "../daemon/Daemon";   // C-209
 import { useApi } from "../../platform/useApi";
 import { previewQuery } from "../../state/preview";
 import { bookForced } from "../../state/dev";   // C-299: the mended book forced held on the </> tab
 import { PlayBook } from "./Play";
-import { ReadAloud } from "../../ui/readAloud";   // C-208
+import { ReadAloud } from "../../shared/ui/readAloud";   // C-208
 import { SubtleBook, type SubtleT } from "./Subtle";
-import { HermeticBook, type HermeticT } from "../shared/Hermetic";   // C-238
-import { DAWN, EudaimonBook, type EudaimonT } from "../shared/Eudaimon";   // C-297
-import { Mending, UNITY, UnityBook, type UnityT } from "../shared/Unity";   // C-299
+import { HermeticBook, type HermeticT } from "../../shared/pages/Hermetic";   // C-238
+import { DAWN, EudaimonBook, type EudaimonT } from "../../shared/pages/Eudaimon";   // C-297
+import { Mending, UNITY, UnityBook, type UnityT } from "../../shared/pages/Unity";   // C-299
 import { ORIGIN, OriginBook, type OriginT } from "./Origin";   // DAEMONS T-533
 import { ShadowBook, SHADOW, type ShadowT } from "./Shadow";   // C-474
 import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the mending, once
@@ -28,10 +28,10 @@ import { ManualBook, manualAbout } from "./Manual";   // C-233
 import { Bookcase, type CaseBook, type Shelf } from "./Bookcase";
 import { asVolume, DaemonDreams, DaemonDreamsCover, DreamBook, type DreamAuthor } from "./DreamBooks";   // C-483
 import { MentionsBook, MentionsCover, type MentionsT } from "./Mentions";   // C-455   // C-456   // C-320: the LIBRARY as a bookcase
-import { Listen } from "../../ui/bookAudio";   // C-277
+import { Listen } from "../../shared/ui/bookAudio";   // C-277
 import { usePlace } from "../../state/place";   // C-309: the open book and its page outlive a refresh
-import { BookLookProvider, LOOKS } from "../../ui/bookLook";   // C-309: the book brings its look to the library
-import { SpokenPara } from "../../ui/spoken";   // C-309: the paragraph being said
+import { BookLookProvider, LOOKS } from "../../shared/ui/bookLook";   // C-309: the book brings its look to the library
+import { SpokenPara } from "../../shared/ui/spoken";   // C-309: the paragraph being said
 
 // T-218's certificate as the game draws it (DAEMONS src/school_exam.c DrawDiploma): the school's own paper and ink on the
 // GBA's black, its 224-pixel windows centred in 240 by 160 -- the game's own words, the player's name and the best mark

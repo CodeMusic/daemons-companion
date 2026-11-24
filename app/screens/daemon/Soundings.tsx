@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { Text, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
+import { Card, Eyebrow, Small, whenSaid } from "../../shared/ui/ui";
 import { useFresh } from "../../platform/useApi";   // C-344
 
 type Heard = { personality: number; nickname: string; name: string; species: number; level: 0 | 1 | 2 | 3; at: string | null };

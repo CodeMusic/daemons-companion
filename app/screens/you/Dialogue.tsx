@@ -14,7 +14,7 @@ import { apiLater, apiLive, ON_PHONE } from "../../platform/net";
 import { readingVoice, voiceExt } from "../../platform/voiceFile";
 import { followVoice, setSpeaking } from "../../sound/speaking";
 import type { Spoken } from "../../state/types";
-import { Action, Art, Entry, Eyebrow, Segments, Small } from "../../ui/ui";
+import { Action, Art, Entry, Eyebrow, Segments, Small } from "../../shared/ui/ui";
 
 type Mode = "standard" | "twovoices";
 type Party = { player: string; species: number; nickname: string; name: string; level: number; lean?: "red" | "blue"; role?: "tells" | "asks"; voice: string; voiceKey: string };

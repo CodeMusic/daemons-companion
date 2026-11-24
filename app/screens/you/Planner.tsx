@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { Card, Eyebrow, Fact, Pending, Small } from "../../ui/ui";
+import { Card, Eyebrow, Fact, Pending, Small } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
 
 type Plan = {

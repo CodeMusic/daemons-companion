@@ -170,7 +170,7 @@ export const BINARY = () => SONGS.binary;
 
 // C-419 (DAEMONS T-600's staff; the user, 2026-11-18: "so the visual pattern can also teach you the key"): A PART ON A
 // STAFF -- its clef, its type's key signature, and each note spelt in that key on its line or space. Notation, not sound:
-// the app draws it (app/ui/staff.tsx), for the INDEX and the daemon's own page. Every word DRAFT.
+// the app draws it (app/shared/ui/staff.tsx), for the INDEX and the daemon's own page. Every word DRAFT.
 const LETTERS = "CDEFGAB", NATURAL = [0, 2, 4, 5, 7, 9, 11];
 const pc = (m: number) => ((m % 12) + 12) % 12;
 /** A key's place on the circle of fifths, from its name: sharps plus, flats minus (F-sharp major 6, E-flat minor -6). */

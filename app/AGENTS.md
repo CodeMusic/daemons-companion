@@ -47,7 +47,7 @@ user deciding it. Navigation is local React state:
 - **The app imports server source** (`../server/src/*`, `../server/data/*`) so a phone can host the companion's rules
   itself (C-111; `metro.config.js` allows it). Those server files must stay free of Node-only APIs.
 - **Phone-only modules load lazily**: `platform/net.ts` `require()`s `handheld`, `beacon`, `widget` and `local`, and
-  `ui/ui.tsx` `sound/careSound`, inside a check. A top-level import would pull native modules into the site's build.
+  `shared/ui/ui.tsx` `sound/careSound`, inside a check. A top-level import would pull native modules into the site's build.
 - **Code comments cite tickets** (`// C-264: ...`) from the companion's `TODO.md`. Keep them when code moves.
 
 ## A player is gone before your cleanup runs (C-440)
@@ -63,7 +63,7 @@ once the element's `src` is removed.
 
 ## WHAT'S NEW, and its SET UP (C-318, C-339)
 
-WHAT'S NEW (`ui/whatsnew.tsx`) reads `server/data/whatsnew.json`, written from history by `server/tools/whatsnew.py`
+WHAT'S NEW (`shared/ui/whatsnew.tsx`) reads `server/data/whatsnew.json`, written from history by `server/tools/whatsnew.py`
 (`--write --build N` before each TestFlight build, C-210). **Never edit whatsnew.json by hand** -- the next run
 rewrites it. A section is `{ticket, title, lines, setup?}`.
 

@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { useSubtleInk } from "../../state/look";
 import { ReadHow, Reads } from "../../state/types";
-import { Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
+import { Card, Eyebrow, Small, whenSaid } from "../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { api } from "../../platform/net";
 

@@ -6,16 +6,16 @@ import { castLine, playerId } from "../../state/data";
 import { api, ON_PHONE } from "../../platform/net";
 import { hearSettings, soundLevel } from "../../sound/tuneSound";
 import { Cast, Notebook, PlayerState, Profile, TABS, Today } from "../../state/types";
-import { Action, Art, Card, careSound, Eyebrow, Small } from "../../ui/ui";
-import { Under } from "../shared/Reads";   // C-204
-import { useWitching } from "../shared/Witching";   // C-237
+import { Action, Art, Card, careSound, Eyebrow, Small } from "../../shared/ui/ui";
+import { Under } from "../../shared/pages/Reads";   // C-204
+import { useWitching } from "../../shared/pages/Witching";   // C-237
 import { EMERALD, hourLine } from "../../../server/src/psyche/witching";
 import { useFresh } from "../../platform/useApi";   // C-344
 import { TendingCard } from "../../lifemanagement/Tending";   // C-357 (3)
 import { WeekBalanceCard } from "../../lifemanagement/Balance";   // C-432
-import { useDay } from "../../ui/ui";
-import { ForkKey, SingingBowl, type BowlOf } from "../../ui/bowl";   // C-351
-import { CalendarSprite } from "../../ui/calendarSprite";   // C-353
+import { useDay } from "../../shared/ui/ui";
+import { ForkKey, SingingBowl, type BowlOf } from "../../shared/ui/bowl";   // C-351
+import { CalendarSprite } from "../../shared/ui/calendarSprite";   // C-353
 import { CalendarScreen } from "./Calendar";   // C-354
 import { useMonth } from "../../state/month";   // C-352, C-355
 import { MentionsCard } from "../library/Mentions";   // C-455

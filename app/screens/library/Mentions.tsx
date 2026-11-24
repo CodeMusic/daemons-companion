@@ -6,8 +6,8 @@ import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { useApi } from "../../platform/useApi";
-import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
-import { VoiceButton } from "../../ui/voiceButton";
+import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../../shared/ui/ui";
+import { VoiceButton } from "../../shared/ui/voiceButton";
 import { coverLine } from "./DreamBooks";
 
 export type Mention = { id: number; span: "day" | "month" | "season" | "year"; title: string; from: string; to: string; said: string; at: string;

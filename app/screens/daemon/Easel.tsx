@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Modal, Platform, Pressable, useWindowDimensions } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { Action, Art, Card, Entry, Eyebrow, Small } from "../../ui/ui";
+import { Action, Art, Card, Entry, Eyebrow, Small } from "../../shared/ui/ui";
 
 const WORDS = {   // DRAFT
   eyebrow: "THE EASEL", ask: "What should it paint?", paint: "PAINT", painting: (n: string) => `${n} is painting…`,

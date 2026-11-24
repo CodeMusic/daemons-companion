@@ -2,10 +2,10 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Image, Platform, useWindowDimensions } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
-import { ALONE, ART, artByJson, FRESH_ART, isAway, KEYED, ON_PHONE, pairAgain, homeBase, SERVER } from "../platform/net";
-import { Link } from "../state/types";
+import { ALONE, ART, artByJson, FRESH_ART, isAway, KEYED, ON_PHONE, pairAgain, homeBase, SERVER } from "../../platform/net";
+import { Link } from "../../state/types";
  // C-114: each care's phrase, made on the phone (careSound.ts) -- only on the phone, which has a file system to play from
-export const { careSound }: typeof import("../sound/careSound") = ON_PHONE ? require("../sound/careSound") : { careSound: () => "" };
+export const { careSound }: typeof import("../../sound/careSound") = ON_PHONE ? require("../../sound/careSound") : { careSound: () => "" };
 
 export const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};
 // A new path is a new picture: drawn afresh, never the one held for the path before (the user, 2026-10-28: TODAY kept

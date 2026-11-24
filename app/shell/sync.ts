@@ -6,7 +6,7 @@ import { AppState, Linking } from "react-native";
 import { ALONE, api, freshHeard, HANDHELD, isAway, KEEP, keepEverything, LOCAL, MEETING, offlineHeard, ON_PHONE, SERVER, setConnection, TOKEN, WIDGET } from "../platform/net";
 import { paletteHeard, setPalette } from "../state/look";
 import { sendTodaysSteps } from "../screens/settings/Pair";
-import { heardElsewhere } from "../ui/received";   // C-261
+import { heardElsewhere } from "../shared/ui/received";   // C-261
 import { lifeHeard } from "../state/lifeHeard";     // C-300
 import type { Arrival } from "../../server/src/core";
 import type { TABS } from "../state/types";

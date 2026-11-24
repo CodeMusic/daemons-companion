@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { apiLive, SITE_HOME } from "../../platform/net";
-import { Action, Card, Choice, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, Choice, Eyebrow, Small } from "../../shared/ui/ui";
 
 type Platform = "roku" | "apple" | "google" | "fire";
 type Tv = { id: string; name: string; platform: Platform; host?: string; entity?: string };

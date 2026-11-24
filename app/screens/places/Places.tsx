@@ -1,7 +1,7 @@
 // PLACES -- the devices under their makers, each one's settings, routines and remotes; the handheld's link. (C-157: out of App.tsx.)
 import { useEffect, useState } from "react";
 import { Linking } from "react-native";
-import { EngineRoom } from "../../ui/engineRoom";   // C-330
+import { EngineRoom } from "../../shared/ui/engineRoom";   // C-330
 import { Input, Text, XStack, YStack } from "tamagui";
 import { KIND_NAMES } from "../../state/data";
 import { DeviceSprite, lookFor, makerOf, MAKERS } from "../../art/deviceSprites";
@@ -9,7 +9,7 @@ import { setPalette } from "../../state/look";
 import * as SecureStore from "expo-secure-store";
 import { ALONE, api, HANDHELD, HandheldNow, isAway, KEEP, OFFLINE, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
 import { Brand, Carried, DeviceRow, DeviceSettings, Link, type Yours } from "../../state/types";
-import { Action, Art, Card, Choice, Eyebrow, Pending, Result, Small } from "../../ui/ui";
+import { Action, Art, Card, Choice, Eyebrow, Pending, Result, Small } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
 import { HubCard, TalkFirstRow } from "./Hub";   // C-190; C-211
 import { GlassCard } from "./Glass";   // C-262

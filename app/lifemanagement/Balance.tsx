@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { useApi } from "../platform/useApi";
-import { Card, Eyebrow, Pending, Small } from "../ui/ui";
+import { Card, Eyebrow, Pending, Small } from "../shared/ui/ui";
 
 type Acts = { goals: number; tended: number; entries: number; dreams: number; actions?: number; learning?: number; cooked?: number; mine?: number };
 type Day = { day: string; date: string; virtue: string; shadow: string; today: boolean; ahead: boolean; lived: boolean; acts: Acts };

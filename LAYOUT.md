@@ -29,8 +29,8 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `shell/` | the tab strip, the beside split's panes and sizes (`panes.tsx`, `split.ts`), the background syncs (`sync.ts`) |
 | `screens/<tab>/` | each tab's page and the pages only it opens: `today/`, `daemon/`, `library/`, `you/`, `places/`, `settings/`, `game/`, `dev/` |
 | `lifemanagement/` | C-428: the JOURNEY tab (`Journey.tsx`) and its sections -- GOALS, the JOURNAL, RECIPES, LEARNING, MINE, ARETE and THE REWARD SHELF -- with TODAY's TENDING and THE WEEK'S BALANCE |
-| `screens/shared/` | pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index`, and `OwnVoice` (a daemon telling of itself over its card) |
-| `ui/` | the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud (and the voice button that says if a voice is made, `voiceButton.tsx`), the book recordings (the voice module, in the open book's look: `bookLook.tsx`, and the paragraph being said, `spoken.tsx`, C-309), the books' covers and pictures from the game, HALFTONE's two tones (`tone.tsx`), the LOGS, WHAT'S NEW (`whatsnew.tsx`, C-318), the link to THE ENGINE ROOM where the hub's admin is kept (`engineRoom.tsx`, C-330), THE BATTLE over every screen (`battle.tsx`, C-328), a daemon's song on its staves and sung (`staff.tsx`, C-419) |
+| `shared/pages/` | C-428: pages more than one tab opens: `Witching`, `Reads`, `Hermetic`, `Index`, and `OwnVoice` (a daemon telling of itself over its card) |
+| `shared/ui/` | C-428: the shared pieces (`ui.tsx`), HOW TO PLAY, RECEIVED, reading aloud (and the voice button that says if a voice is made, `voiceButton.tsx`), the book recordings (the voice module, in the open book's look: `bookLook.tsx`, and the paragraph being said, `spoken.tsx`, C-309), the books' covers and pictures from the game, HALFTONE's two tones (`tone.tsx`), the LOGS, WHAT'S NEW (`whatsnew.tsx`, C-318), the link to THE ENGINE ROOM where the hub's admin is kept (`engineRoom.tsx`, C-330), THE BATTLE over every screen (`battle.tsx`, C-328), a daemon's song on its staves and sung (`staff.tsx`, C-419) |
 | `sound/` | tunes, songs, care sounds, the instruments, the voice (`speaking.ts`) |
 | `platform/` | the connection (`net.ts`), the handheld, the beacon, the widget, the phone hosting alone (`local.ts`), the phone's own mind (`mind.ts`), THE MIND that routes across every mind (`mesh.ts`, C-307) and an endpoint called from the phone (`endpoint.ts`), a meeting recorded or a voice memo sent to the hub (`meetings.ts`, C-316), the voices kept on the phone (`voiceFile.ts`) and made in the background (`rendering.ts`), `useApi` |
 | `state/` | types, data, the look, the reader's places that outlive a refresh (`place.ts`, C-309), the manual, the sealed pages, previews, DEVELOPER MODE (`dev.ts`), the split's kept settings (`away.ts`), who this phone is to THE MIND (`me.ts`, C-319) |
@@ -42,7 +42,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `tamagui.config.ts`, `app.json`, `metro.config.js` | stay at `app/`'s root (Tamagui, Expo and Metro look for them there) |
 
 **Where a new file goes:** a page or card one tab opens goes in that tab's folder; one two tabs open, in
-`screens/shared/`; a piece of UI any page uses, in `ui/`; anything that talks to the phone, a device or the network, in
+`shared/pages/`; a piece of UI any page uses, in `shared/ui/`; anything that talks to the phone, a device or the network, in
 `platform/`. Nothing new goes loose at `app/`'s root.
 
 ## `server/` -- the companion's rules, on a computer, the hub, or the phone

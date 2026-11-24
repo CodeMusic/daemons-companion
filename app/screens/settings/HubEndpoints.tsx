@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { Action, Choice, Eyebrow, Small, useHeld } from "../../ui/ui";
+import { Action, Choice, Eyebrow, Small, useHeld } from "../../shared/ui/ui";
 
 type View = { id: string; name: string; url: string; model: string; keySet: boolean; home: boolean };
 type Health = { id: string; ok: boolean; at: string; models: string[] };

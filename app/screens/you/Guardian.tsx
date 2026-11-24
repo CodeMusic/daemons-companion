@@ -11,7 +11,7 @@ import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { accounts, appleHere, appleToken, grownUpHere, keepToken, readToken, saveExport } from "../../platform/accounts";
 import { api } from "../../platform/net";
-import { Action, Card, Entry, Eyebrow, Pending, Segments, Small, useInk } from "../../ui/ui";
+import { Action, Card, Entry, Eyebrow, Pending, Segments, Small, useInk } from "../../shared/ui/ui";
 
 type Controls = { friends: "approve" | "own"; trade: "friends" | "home" | "lobby"; meet: "friends" | "trades" | "off"; lobby: "off" | "on" };
 type Profile = { id: string; name: string; tag: number; first: number; second: number; nickname: string | null; controls: Controls; at: string;

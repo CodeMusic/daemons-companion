@@ -10,7 +10,7 @@ import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api, apiLater } from "../../platform/net";
 import type { Spoken } from "../../state/types";
-import { Action, Art, Card, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
+import { Action, Art, Card, Eyebrow, Segments, Small, whenSaid } from "../../shared/ui/ui";
 import { useVoice } from "./Daemon";
 import { useFresh } from "../../platform/useApi";   // C-344
 

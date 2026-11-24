@@ -9,7 +9,7 @@ import { Pressable, TextInput } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api, HANDHELD } from "../../platform/net";
 import type { Carried, DeviceRow, Life, Today } from "../../state/types";
-import { Action, Art, Card, CareKey, Choice, Eyebrow, Small } from "../../ui/ui";
+import { Action, Art, Card, CareKey, Choice, Eyebrow, Small } from "../../shared/ui/ui";
 
 type Show = "home" | "note" | "daemon" | "dark";
 type Note = { id: number; text: string; title: string; updated: string };

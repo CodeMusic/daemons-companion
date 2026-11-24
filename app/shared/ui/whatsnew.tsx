@@ -19,11 +19,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Linking, ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { NOTES, stepText, wikiUrl, type BuildNotes, type Digest, type Section } from "../../server/src/site/whatsnew";
-import { api, SERVER } from "../platform/net";
-import type { Which } from "../state/manual";
-import { deviceName, whoAmI } from "../state/me";   // C-319
-import { placeOf, setPlace } from "../state/place";
+import { NOTES, stepText, wikiUrl, type BuildNotes, type Digest, type Section } from "../../../server/src/site/whatsnew";
+import { api, SERVER } from "../../platform/net";
+import type { Which } from "../../state/manual";
+import { deviceName, whoAmI } from "../../state/me";   // C-319
+import { placeOf, setPlace } from "../../state/place";
 import { showHowTo } from "./howto";
 
 // a chronicle's colours: night paper, a lamp's gold, pale words

@@ -7,7 +7,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { Animated, Easing, Text, View } from "react-native";
 import { api } from "../platform/net";
 import type { PlayerState } from "../state/types";
-import { Art } from "../ui/ui";
+import { Art } from "../shared/ui/ui";
 
 const ART: { pieces: string[]; season: Record<string, [string, string]>; hats: Record<string, { w: number; h: number; x: number; y: number }> }
   = require("../../server/data/casino_art.json");

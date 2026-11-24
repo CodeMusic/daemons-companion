@@ -5,9 +5,9 @@
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { useEffect, useRef, useState } from "react";
 import { XStack } from "tamagui";
-import { ON_PHONE } from "../platform/net";
-import { makeVoice, useVoiceState, wholeVoice, type VoiceState } from "../platform/rendering";
-import { followVoice, setSpeaking } from "../sound/speaking";
+import { ON_PHONE } from "../../platform/net";
+import { makeVoice, useVoiceState, wholeVoice, type VoiceState } from "../../platform/rendering";
+import { followVoice, setSpeaking } from "../../sound/speaking";
 import { Action, Small } from "./ui";
 
 export const VOICE_WORDS = {   // DRAFT

@@ -5,7 +5,7 @@
 // away and shows the next. Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Text, YStack } from "tamagui";
-import type { Arrival } from "../../server/src/core";
+import type { Arrival } from "../../../server/src/core";
 import { Art } from "./ui";
 
 type Shown = { player: string; a: Arrival };

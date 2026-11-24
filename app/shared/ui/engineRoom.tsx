@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Linking, Modal, Platform } from "react-native";
 import { WebView } from "react-native-webview";
 import { Text, XStack, YStack } from "tamagui";
-import { ALONE, KEPT, SERVER, TOKEN, api, isAway } from "../platform/net";
+import { ALONE, KEPT, SERVER, TOKEN, api, isAway } from "../../platform/net";
 import { Action, Small } from "./ui";
 
 // the page in THE ENGINE ROOM, on the hub this app talks to: hub, mind, house, voices, devices, exchange, commons, saves

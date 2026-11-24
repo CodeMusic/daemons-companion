@@ -7,13 +7,13 @@ import { Platform } from "react-native";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { BUILD } from "../../state/data";
 import { ALONE, api, LOCAL, ON_PHONE, pairAgain, redrawWidgetNow, SERVER, SITE_HOME } from "../../platform/net";
-import { EngineRoom } from "../../ui/engineRoom";   // C-330: MAKE THE VOICES AGAIN moved there
+import { EngineRoom } from "../../shared/ui/engineRoom";   // C-330: MAKE THE VOICES AGAIN moved there
 import { Settings } from "../../state/types";
-import { Action, Card, Choice, Entry, Eyebrow, Pending, Segments, Small, useHeld } from "../../ui/ui";
+import { Action, Card, Choice, Entry, Eyebrow, Pending, Segments, Small, useHeld } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
 import { SavesCard, useSaves } from "./Saves";   // C-215
 import { muteAway, setMuteAway } from "../../state/away";
-import { DevModeCard } from "../../ui/devpanel";
+import { DevModeCard } from "../../shared/ui/devpanel";
 import { MindCard } from "./Mind";   // C-307 (was C-280's PhoneMind)
 import { MindAtWork } from "./MindMap";   // C-319
 import { HomeAssistantCard } from "../places/Home";

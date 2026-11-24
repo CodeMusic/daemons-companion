@@ -10,13 +10,13 @@ import { EMERALD, pulseNow } from "../../../server/src/psyche/witching";
 import { SCREEN } from "../../state/data";
 import { api } from "../../platform/net";
 import { previewing } from "../../state/preview";
-import { Art, Small } from "../../ui/ui";
-import { BookCover, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
-import { ReadAloud } from "../../ui/readAloud";   // C-208
-import { Cards } from "../library/Arcana";   // C-239; C-273: ?deck=hermetic, ABOVE and BELOW
-import { Listen } from "../../ui/bookAudio";   // C-277: its recording, opened with the key its warning gives
+import { Art, Small } from "../ui/ui";
+import { BookCover, TurningPicture } from "../ui/bookPicture";   // C-299: the game's own cover and pictures
+import { ReadAloud } from "../ui/readAloud";   // C-208
+import { Cards } from "../../screens/library/Arcana";   // C-239; C-273: ?deck=hermetic, ABOVE and BELOW
+import { Listen } from "../ui/bookAudio";   // C-277: its recording, opened with the key its warning gives
 import { usePlace } from "../../state/place";   // C-309
-import { SpokenPara } from "../../ui/spoken";   // C-309
+import { SpokenPara } from "../ui/spoken";   // C-309
 
 type Para = { text: string; voice: "telling" | "asking" | "inscription" };
 type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[] };

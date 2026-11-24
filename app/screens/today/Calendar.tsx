@@ -6,10 +6,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Input, Text, Theme, XStack, YStack } from "tamagui";
 import { Today } from "../../state/types";
-import { Action, Card, Choice, Eyebrow, Segments, Small, useDay } from "../../ui/ui";
-import { ForkKey, SingingBowl, type BowlOf } from "../../ui/bowl";
-import { CalendarSprite } from "../../ui/calendarSprite";
-import { mix, PAPER } from "../../ui/pixels";
+import { Action, Card, Choice, Eyebrow, Segments, Small, useDay } from "../../shared/ui/ui";
+import { ForkKey, SingingBowl, type BowlOf } from "../../shared/ui/bowl";
+import { CalendarSprite } from "../../shared/ui/calendarSprite";
+import { mix, PAPER } from "../../shared/ui/pixels";
 import { addEvent, calendarBooks, calendarHere, changeEvent, defaultBook, eventsBetween, mayUseCalendar, removeEvent,
          type CalBook, type CalEvent } from "../../platform/calendar";
 import { usePlace } from "../../state/place";

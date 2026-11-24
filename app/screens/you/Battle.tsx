@@ -3,8 +3,8 @@
 // request to this device, show over every screen (ui/battle.tsx). Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { Action, Art, Card, Eyebrow, Pending, Small, useInk } from "../../ui/ui";
-import { useArena } from "../../ui/battle";
+import { Action, Art, Card, Eyebrow, Pending, Small, useInk } from "../../shared/ui/ui";
+import { useArena } from "../../shared/ui/battle";
 import { act, arenaError, untilSaid, whereSaid } from "../../platform/battle";
 
 const BATTLE_H: [number, number] = [289, 209];   // C-344: its usual height, 375 and 720 wide

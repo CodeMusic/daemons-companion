@@ -10,10 +10,10 @@ import { ACTS, castLine, playerId } from "../../state/data";
 import { DenStage } from "./Den";
 import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
 import { Carried, Cast, Daemon, DeviceRow, IndexEntry, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../../state/types";
-import { Action, Art, Card, CareKey, careSound, Choice, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
+import { Action, Art, Card, CareKey, careSound, Choice, Eyebrow, Segments, Small, whenSaid } from "../../shared/ui/ui";
 import { hearSettings, soundLevel } from "../../sound/tuneSound";
-import { IndexScreen } from "../shared/Index";
-import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "../shared/OwnVoice";   // C-303
+import { IndexScreen } from "../../shared/pages/Index";
+import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "../../shared/pages/OwnVoice";   // C-303
 import { RoutinesCard } from "./Routines";
 import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
@@ -21,12 +21,12 @@ import { MindScreen } from "./Mind";       // C-254
 import { CreationsScreen } from "./Creations";   // C-358
 import { followVoice, useMouth } from "../../sound/speaking";   // C-213
 import { MeetingsScreen } from "./Meetings";   // C-212
-import { ReadsCard, Under } from "../shared/Reads";   // C-203, C-204
-import { AsAbove, HalloweenNote, HourCount, useAurora, useDawn, useDawnTone, useHalloween, useWitching, useWitchingLevel, WitchingHour } from "../shared/Witching";   // C-236, C-237, C-240; T-519
-import { FirstSight } from "../shared/Hermetic";   // C-238
+import { ReadsCard, Under } from "../../shared/pages/Reads";   // C-203, C-204
+import { AsAbove, HalloweenNote, HourCount, useAurora, useDawn, useDawnTone, useHalloween, useWitching, useWitchingLevel, WitchingHour } from "../../shared/pages/Witching";   // C-236, C-237, C-240; T-519
+import { FirstSight } from "../../shared/pages/Hermetic";   // C-238
 import { meshTalk, trailSaid } from "../../platform/mesh";   // C-307
 import { useApi, useFresh } from "../../platform/useApi";
-import { heardSync } from "../../ui/received";              // C-261
+import { heardSync } from "../../shared/ui/received";              // C-261
 import type { Arrival } from "../../../server/src/core";
 import type { Care } from "../../../server/src/damagotchi/care";   // C-266
 import { pretendLife, useDev } from "../../state/dev";

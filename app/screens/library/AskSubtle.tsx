@@ -9,7 +9,7 @@ import { File } from "expo-file-system";
 import { useEffect, useState } from "react";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { api, apiLater, ON_PHONE } from "../../platform/net";
-import { Entry, Small } from "../../ui/ui";
+import { Entry, Small } from "../../shared/ui/ui";
 import { useVoice } from "../daemon/Daemon";
 import { useFresh } from "../../platform/useApi";   // C-344
 

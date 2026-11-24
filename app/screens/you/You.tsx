@@ -5,7 +5,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { GROVES, lessonParas, MARK_ART, MARKS, onNight, PLAYER_ART, REGIONS, rgbOf, rootOfMark } from "../../state/data";
 import { useDark } from "../../state/look";
 import { Profile, Progress, RegionsData, Wis } from "../../state/types";
-import { Card, Eyebrow, Fact, Panel, Para, Points, Quote, Small, SubHead } from "../../ui/ui";
+import { Card, Eyebrow, Fact, Panel, Para, Points, Quote, Small, SubHead } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
 import { PlannerCard } from "./Planner";
 import { TradeScreen } from "./Trade";   // C-218, C-219

@@ -13,7 +13,7 @@ import { join } from "node:path";
 import { FOUND_FFMPEG } from "../machine/voice.js";
 
 const AUDIO = "https://raw.githubusercontent.com/CodeMusic/DAEMONS/main/docs/books/audio/";
-// a shelf book (books.ts BookId) -> its recording's file (app/ui/bookAudio.tsx BOOKS)
+// a shelf book (books.ts BookId) -> its recording's file (app/shared/ui/bookAudio.tsx BOOKS)
 export const RECORDED: Record<string, string> = { guide: "guide", subtle: "the-subtle-layer" };
 type Mark = { kind: string; title: string; start: number; end: number };
 type Marks = { sources?: string; duration?: number; chapters: Mark[] };

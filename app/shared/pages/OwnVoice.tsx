@@ -16,8 +16,8 @@ import { apiLater, ON_PHONE } from "../../platform/net";
 import { readingVoice, voiceExt } from "../../platform/voiceFile";
 import { followVoice, setSpeaking, useMouth } from "../../sound/speaking";
 import type { Spoken } from "../../state/types";
-import { Art } from "../../ui/ui";
-import { DenStage } from "../daemon/Den";
+import { Art } from "../ui/ui";
+import { DenStage } from "../../screens/daemon/Den";
 
 const NATIVE = Platform.OS !== "web";
 const MONO = Platform.OS === "ios" ? "Menlo" : "monospace";

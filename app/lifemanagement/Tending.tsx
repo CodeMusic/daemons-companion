@@ -5,7 +5,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { api } from "../platform/net";
 import { useApi } from "../platform/useApi";
 import { useSubtleInk } from "../state/look";
-import { Action, Card, Eyebrow, Small } from "../ui/ui";
+import { Action, Card, Eyebrow, Small } from "../shared/ui/ui";
 
 type Tending = { held: boolean; day?: string; centre?: string; page?: string | null; tending?: string | null;
                  done?: { at: string; by: "you" | "walk" | "dream" } | null;

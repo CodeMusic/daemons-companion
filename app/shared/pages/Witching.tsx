@@ -16,7 +16,7 @@ import { auroraForced, dawnForced, hourForced, onSession } from "../../state/dev
 import { auroraShows, auroraWeight, skyBands } from "../../../server/src/psyche/aurora";   // C-305, C-306
 import { dayRoot, soundLevel, soundOf } from "../../sound/tuneSound";
 import { dawnTone } from "../../sound/dawnTone";            // T-519: THE CREATOR'S HOUR's tone
-import { Action, Small } from "../../ui/ui";
+import { Action, Small } from "../ui/ui";
 
 // in the hour or not, looked at again each half minute -- or as </> sets it (C-275: on any time, read only, its count the
 // clock's own minutes; or off in the hour itself)

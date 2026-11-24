@@ -7,8 +7,8 @@
 // is still to come. The books are DAEMONS' own PDFs as the LIBRARY fetches and keeps them (manual.ts). Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import type { Which } from "../state/manual";
-import { BookPdf } from "../screens/library/Manual";
+import type { Which } from "../../state/manual";
+import { BookPdf } from "../../screens/library/Manual";
 
 export type HowTo = "closed" | "choose" | Which;
 let now: HowTo = "closed";

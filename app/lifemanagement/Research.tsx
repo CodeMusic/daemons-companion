@@ -10,7 +10,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
 import { api, ALONE } from "../platform/net";
 import { useApi } from "../platform/useApi";
-import { Action, Card, Entry, Eyebrow, Pending, Small } from "../ui/ui";
+import { Action, Card, Entry, Eyebrow, Pending, Small } from "../shared/ui/ui";
 
 type Row = { id: number; title: string; field: string; hypothesis: string; state: string; created: string;
              sources: number; asks: number; findings: number; proposed: number; last: string };

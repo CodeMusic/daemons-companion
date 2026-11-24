@@ -17,12 +17,12 @@ import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { EMERALD } from "../../../server/src/psyche/witching";
-import { Listen } from "../../ui/bookAudio";
+import { Listen } from "../ui/bookAudio";
 import { usePlace } from "../../state/place";   // C-309
-import { BookCover, CoverCrop, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
-import { Art, Card } from "../../ui/ui";
-import { Cards } from "../library/Arcana";
-import { toneHex, type Tone } from "../../ui/tone";
+import { BookCover, CoverCrop, TurningPicture } from "../ui/bookPicture";   // C-299: the game's own cover and pictures
+import { Art, Card } from "../ui/ui";
+import { Cards } from "../../screens/library/Arcana";
+import { toneHex, type Tone } from "../ui/tone";
 import { DAWN, DawnBack, LayerPages, type Entry, type EudaimonT, type LayerPalette } from "./Eudaimon";
 
 type Sections = NonNullable<EudaimonT["sections"]>;

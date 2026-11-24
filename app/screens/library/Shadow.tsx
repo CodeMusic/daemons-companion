@@ -8,12 +8,12 @@
 // with the next minor release; until then a page is read aloud as any is. Every word DRAFT.
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { Action, Art, Card, Eyebrow, Small } from "../../ui/ui";
+import { Action, Art, Card, Eyebrow, Small } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
 import { previewQuery } from "../../state/preview";
 import { setPlace } from "../../state/place";
-import { TurningPicture } from "../../ui/bookPicture";
-import { LayerPages, type EudaimonT, type LayerPalette } from "../shared/Eudaimon";
+import { TurningPicture } from "../../shared/ui/bookPicture";
+import { LayerPages, type EudaimonT, type LayerPalette } from "../../shared/pages/Eudaimon";
 
 export type ShadowT = EudaimonT;
 // parchment (247 239 222); the hat's night (33 41 90), 11:1 on it; its faint (115 115 140); the boards, the night;

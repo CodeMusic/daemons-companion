@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Text, TextArea, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
 import { keep, mine, type Creation } from "../../platform/creations";
-import { Action, Card, CareKey, Entry, Eyebrow, Small } from "../../ui/ui";
+import { Action, Card, CareKey, Entry, Eyebrow, Small } from "../../shared/ui/ui";
 import { CreationsScreen, RecordCover, SongPlayer } from "./Creations";
 
 type Mode = "prompt" | "lyrics" | "own";

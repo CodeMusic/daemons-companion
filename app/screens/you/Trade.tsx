@@ -6,9 +6,9 @@
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api, ON_PHONE } from "../../platform/net";
-import { Action, Art, Card, Choice, Entry, Eyebrow, Pending, Small, useInk } from "../../ui/ui";
+import { Action, Art, Card, Choice, Entry, Eyebrow, Pending, Small, useInk } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
-import { EngineRoom } from "../../ui/engineRoom";   // C-330
+import { EngineRoom } from "../../shared/ui/engineRoom";   // C-330
 import { KIND_NAMES, playerId } from "../../state/data";
 import type { DeviceRow } from "../../state/types";
 import { DialogueCard } from "./Dialogue";   // C-329: IN DIALOGUE

@@ -9,8 +9,8 @@ import { TextInput } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { api, ON_PHONE } from "../platform/net";
 import { useVoiceState, wholeVoice } from "../platform/rendering";
-import { VoiceButton } from "../ui/voiceButton";
-import { Action, Card, Entry, Eyebrow, Small, whenSaid } from "../ui/ui";
+import { VoiceButton } from "../shared/ui/voiceButton";
+import { Action, Card, Entry, Eyebrow, Small, whenSaid } from "../shared/ui/ui";
 import { exportPage, exportVoice, printPage, spanOf, spokenOf, type Page } from "./page";
 import { useApi, useFresh } from "../platform/useApi";   // C-344; C-357: the book held
 import { FEELINGS, FEELING_MOST } from "../../server/src/processes";   // C-357, PROCESSES: the few offered

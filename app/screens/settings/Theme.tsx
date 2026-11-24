@@ -8,8 +8,8 @@ import { type AccentMode, type HemisphereSetting, sameAccent, setAccent, setHemi
 import { DeviceSettings } from "../../state/types";
 import { api, ON_PHONE } from "../../platform/net";
 import { useApi } from "../../platform/useApi";
-import { Card, Choice, Eyebrow, Small, useDay } from "../../ui/ui";
-import { AccentBand } from "../../ui/accentBand";
+import { Card, Choice, Eyebrow, Small, useDay } from "../../shared/ui/ui";
+import { AccentBand } from "../../shared/ui/accentBand";
 
 const Label = ({ children }: { children: string }) =>
   <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10" marginTop={6}>{children}</Text>;

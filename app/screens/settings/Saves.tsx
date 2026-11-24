@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../../platform/net";
-import { Card, Eyebrow, Small } from "../../ui/ui";
+import { Card, Eyebrow, Small } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
 
 type SaveEntry = { id: string; kind: "given" | "mirror" | "kept"; label: string; current: boolean; at: string;

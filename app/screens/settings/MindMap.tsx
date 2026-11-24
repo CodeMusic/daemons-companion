@@ -21,8 +21,8 @@ import { Text, XStack, YStack } from "tamagui";
 import { TASK_KINDS, kindSaid, type Task } from "../../../server/src/machine/tasks";   // C-400: the kinds' one table
 import { api } from "../../platform/net";
 import { me, whoAmI } from "../../state/me";
-import { Action, Card, Eyebrow, Pending, Small } from "../../ui/ui";
-import { EngineRoom } from "../../ui/engineRoom";   // C-330
+import { Action, Card, Eyebrow, Pending, Small } from "../../shared/ui/ui";
+import { EngineRoom } from "../../shared/ui/engineRoom";   // C-330
 import week from "../../../server/data/week.json";   // C-363: the steps' colours
 
 type Plan = { id: string; kind: string; title: string; said: string; on: boolean; last: string | null; next: string };

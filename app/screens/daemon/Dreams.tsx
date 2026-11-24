@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { View } from "react-native";
 import { api } from "../../platform/net";
-import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../../ui/ui";
+import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../../shared/ui/ui";
 import { useDark } from "../../state/look";
 
 // C-412 (the user, 2026-11-18, by multiple choice: "which centre"): the stage the dream took place at -- a spine of seven
@@ -29,7 +29,7 @@ export function DreamSymbol({ day, centre, colour, size, dark }: { day: string; 
     </View>
   );
 }
-import { VoiceButton } from "../../ui/voiceButton";
+import { VoiceButton } from "../../shared/ui/voiceButton";
 import { SleepSoundsCard } from "./SleepSounds";   // C-334
 import { useFresh } from "../../platform/useApi";   // C-344
 

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { api, apiLive, ON_PHONE, SITE_HOME } from "../../platform/net";
 import { HomeSettings, HomeView, Thing } from "../../state/types";
-import { Action, Card, Choice, Eyebrow, Pending, Small } from "../../ui/ui";
+import { Action, Card, Choice, Eyebrow, Pending, Small } from "../../shared/ui/ui";
    // C-142: the daemon as its agent
 export const HOME_POLL_MS = 30000;
 

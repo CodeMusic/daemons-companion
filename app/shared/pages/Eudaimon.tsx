@@ -7,18 +7,18 @@
 // the lead daemon's SPIRITS chose, set apart so it can be seen to be read by someone (GET /api/eudaimon). Every word DRAFT.
 // The decks' dawn readings, the mending at DAEMON TOWER and BALANCE come later (C-297's row).
 import { useEffect, useState, type ReactNode } from "react";
-import { Cards } from "../library/Arcana";   // C-313: the dawn readings, its own deck
+import { Cards } from "../../screens/library/Arcana";   // C-313: the dawn readings, its own deck
 import { Text, XStack, YStack } from "tamagui";
 import { EMERALD, goldBreathOf } from "../../../server/src/psyche/witching";
 import { SCREEN } from "../../state/data";
-import { Art, Small } from "../../ui/ui";
-import { ReadAloud } from "../../ui/readAloud";
-import { BookCover, TurningPicture } from "../../ui/bookPicture";   // C-299: the game's own cover and pictures
-import { Listen } from "../../ui/bookAudio";   // C-299: its recording, sealed with its own key, from its BLESSING
-import { Toned, toneHex, tonePalette, type Tone } from "../../ui/tone";   // C-304: the mended book's lens
-import type { BookWithArt } from "../../ui/bookPicture";
+import { Art, Small } from "../ui/ui";
+import { ReadAloud } from "../ui/readAloud";
+import { BookCover, TurningPicture } from "../ui/bookPicture";   // C-299: the game's own cover and pictures
+import { Listen } from "../ui/bookAudio";   // C-299: its recording, sealed with its own key, from its BLESSING
+import { Toned, toneHex, tonePalette, type Tone } from "../ui/tone";   // C-304: the mended book's lens
+import type { BookWithArt } from "../ui/bookPicture";
 import { usePlace } from "../../state/place";   // C-309
-import { SpokenPara } from "../../ui/spoken";   // C-309
+import { SpokenPara } from "../ui/spoken";   // C-309
 
 export type Para = { text: string; voice: "telling" | "asking" | "inscription" | "observer" };
 export type Entry = { short: string; title: string; picture: string; caption: string; frames?: number; paragraphs: Para[]; book?: BookWithArt };

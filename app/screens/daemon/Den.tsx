@@ -3,7 +3,7 @@
 // views (a line is a thin rotated bar), so it needs nothing native and draws the same on the site. The daemon walks it
 // side to side and faces the way it goes; asleep, it stays put with a z; `hop` changes when it is tended.
 import type { Thrive } from "../../../server/src/damagotchi/thrive";
-import { AuroraSky, DawnLight, DawnRim, HourPie, WitchShimmer } from "../shared/Witching";   // C-305 the aurora
+import { AuroraSky, DawnLight, DawnRim, HourPie, WitchShimmer } from "../../shared/pages/Witching";   // C-305 the aurora
 import { SingNotes, singingMs, type Singing } from "./OwnSong";   // C-418: TRAIN sings
 import { Served, type Serving } from "./Provision";   // C-302   // C-236, C-237; T-519 the creator's hour
 import { useEffect, useMemo, useRef, useState } from "react";

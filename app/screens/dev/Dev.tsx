@@ -8,8 +8,8 @@ import { Text, XStack, YStack } from "tamagui";
 import { apiTruth } from "../../platform/net";
 import { restoreSession, sessionNow, sessionTouched, setSession, useDev, type Book } from "../../state/dev";
 import { mendAgain } from "../../state/mended";   // C-299
-import { Logs, PretendPanel } from "../../ui/devpanel";
-import { Action, Card, Choice, Eyebrow, Small } from "../../ui/ui";
+import { Logs, PretendPanel } from "../../shared/ui/devpanel";
+import { Action, Card, Choice, Eyebrow, Small } from "../../shared/ui/ui";
 import type { Life } from "../../state/types";
 
 type Progress = { events: { n: number; name: string; section: string; held: boolean | null }[];

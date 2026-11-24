@@ -16,7 +16,7 @@ import { Text, XStack, YStack } from "tamagui";
 import { thinNow } from "../../../server/src/psyche/witching";
 import { api } from "../../platform/net";
 import { previewing } from "../../state/preview";
-import { Art, Small } from "../../ui/ui";
+import { Art, Small } from "../../shared/ui/ui";
 
 export type Card = { n: number; roman: string; side: "reason" | "instinct" | "above" | "below" | "spellcraft" | "dawn"; keyword: string; phrase: string;
                      prophecy?: string; name: string; shiny: boolean; art: string; face: string; at?: string };

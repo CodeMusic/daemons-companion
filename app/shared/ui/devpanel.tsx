@@ -3,8 +3,8 @@
 import { ScrollView, Share, useWindowDimensions } from "react-native";
 import { useState } from "react";
 import { Slider, Text, XStack, YStack } from "tamagui";
-import { clearLog, devLog, devMode, heap, pretending, setDevMode, setPretend, useDev, type Pretend } from "../state/dev";
-import { ALONE, api, ON_PHONE, SERVER } from "../platform/net";
+import { clearLog, devLog, devMode, heap, pretending, setDevMode, setPretend, useDev, type Pretend } from "../../state/dev";
+import { ALONE, api, ON_PHONE, SERVER } from "../../platform/net";
 import { Card, Choice, Eyebrow, Small } from "./ui";
 
 const Pill = ({ label, hint, onPress }: { label: string; hint: string; onPress: () => void }) => (

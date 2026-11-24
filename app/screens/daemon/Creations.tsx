@@ -12,7 +12,7 @@ import { adoptOld, coverUri, thumbUri, exportFile, keep, letGo, mine, mineSet, o
 import { driftOf, stageAt } from "../../sound/binaural";
 import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../../sound/sleepSession";
 import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../../sound/song";   // C-362
-import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../../ui/ui";
+import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../../shared/ui/ui";
 import { Synesthesia } from "../../../server/src/psyche/synesthesia";
 import { PALETTE } from "../../state/look";
 

@@ -203,7 +203,7 @@ struct Home : Page {
       canvas.setCursor(6, 128);
       canvas.print(upper(told).substr(0, 51).c_str());
     }
-    if (!received.empty()) {   // C-397: RECEIVED, as the app's card (app/ui/received.tsx): who, what, where it is, from whom
+    if (!received.empty()) {   // C-397: RECEIVED, as the app's card (app/shared/ui/received.tsx): who, what, where it is, from whom
       const mirror::Arrival &a = received.front();
       const uint16_t paper = rgb(0xfb, 0xfa, 0xf6), ink = rgb(0x1d, 0x20, 0x29), rule = rgb(0x2b, 0x2f, 0x3a);
       canvas.fillRoundRect(40, 18, hal::W - 80, 140, 6, rule);

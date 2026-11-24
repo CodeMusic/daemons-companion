@@ -21,10 +21,10 @@ import { ALONE, api, LOCAL, TOKEN } from "../../platform/net";
 import { sha1 } from "../../../server/src/game/hash";
 import { mirrorChoice } from "../../../server/src/game/mirror";
 import { applyPlan, livePlan } from "../../../server/src/game/live";       // C-261
-import { heardSync } from "../../ui/received";
+import { heardSync } from "../../shared/ui/received";
 import PAD from "../../modules/daemons-pad";                              // C-263
-import { HowToOverlay, openHowTo, useHowTo } from "../../ui/howto";          // C-264
-import { Action, Card, Eyebrow, Small } from "../../ui/ui";
+import { HowToOverlay, openHowTo, useHowTo } from "../../shared/ui/howto";          // C-264
+import { Action, Card, Eyebrow, Small } from "../../shared/ui/ui";
 import { devLog, devStats, useDev } from "../../state/dev";                 // C-268
 
 const CDN = "https://cdn.emulatorjs.org/4.2.3/data/";       // the playground's EmulatorJS, the same version

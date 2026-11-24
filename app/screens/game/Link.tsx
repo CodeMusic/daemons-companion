@@ -5,7 +5,7 @@ import { useState } from "react";
 import { WebView } from "react-native-webview";
 import { Text, XStack, YStack } from "tamagui";
 import { ALONE, isAway, homeBase, TOKEN } from "../../platform/net";
-import { Small } from "../../ui/ui";
+import { Small } from "../../shared/ui/ui";
 
 const SEATS = [{ seat: 0, edition: "CONTENT" }, { seat: 1, edition: "CONTEXT" }] as const;
 

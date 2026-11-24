@@ -8,9 +8,9 @@ import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Text as RNText, View } from "react-native";
 import { Text, YStack } from "tamagui";
-import { BOTTOM, heardAt, noteColours, spell, staffOf, type Heard, type SongPart } from "../../server/src/damagotchi/ownsong";
-import { ON_PHONE } from "../platform/net";
-import { songTimes, songUri } from "../sound/ownSong";
+import { BOTTOM, heardAt, noteColours, spell, staffOf, type Heard, type SongPart } from "../../../server/src/damagotchi/ownsong";
+import { ON_PHONE } from "../../platform/net";
+import { songTimes, songUri } from "../../sound/ownSong";
 
 /** A note head's oval in its colour, a black key's split between the two either side; `hollow`, a ring, for a long note. */
 export function Oval({ midi, s, hollow = false }: { midi: number; s: number; hollow?: boolean }) {

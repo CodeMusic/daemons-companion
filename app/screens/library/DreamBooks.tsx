@@ -10,10 +10,10 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { Action, Art, Segments, Small, whenSaid } from "../../ui/ui";
+import { Action, Art, Segments, Small, whenSaid } from "../../shared/ui/ui";
 import { Bookcase, type Shelf } from "./Bookcase";
 import speciesJson from "../../../server/data/species.json";
-import { VoiceButton } from "../../ui/voiceButton";
+import { VoiceButton } from "../../shared/ui/voiceButton";
 import { DreamSymbol } from "../daemon/Dreams";
 import { useDark } from "../../state/look";
 import { api } from "../../platform/net";   // C-484: a dream's signs asked of the house

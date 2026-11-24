@@ -4,10 +4,10 @@
 // chapter starts at once. A paragraph past what the voice takes at once (600) is cut at its sentences, as the watch's
 // are (server/src/library/books.ts). Tapped again, it stops. Only where the voice is (ON_PHONE, with the companion behind it).
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
-import { readingVoice } from "../platform/voiceFile";
+import { readingVoice } from "../../platform/voiceFile";
 import { useEffect, useRef, useState } from "react";
-import { ON_PHONE } from "../platform/net";
-import { followVoice, setSpeaking } from "../sound/speaking";   // C-213
+import { ON_PHONE } from "../../platform/net";
+import { followVoice, setSpeaking } from "../../sound/speaking";   // C-213
 import { Action } from "./ui";
 import { setSaying } from "./spoken";   // C-309
 

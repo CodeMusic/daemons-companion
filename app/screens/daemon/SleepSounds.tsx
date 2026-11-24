@@ -10,7 +10,7 @@ import { keep, mine, type Creation } from "../../platform/creations";   // C-358
 import { CreationsScreen, RecordCover } from "./Creations";   // C-358
 import { driftOf } from "../../sound/binaural";
 import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../../sound/sleepSession";
-import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../../ui/ui";
+import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../../shared/ui/ui";
 
 type Track = { id: string; key: string; nickname: string; said: string; keyscale: string; state: "making" | "ready" | "failed";
                error?: string; asked: string; made?: string; seconds?: number; files: Record<string, string> | null };

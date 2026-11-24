@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Linking, Platform } from "react-native";
 import { Input, Text, YStack } from "tamagui";
 import { api, AWAY, hostAlone, KEEP, keepSiteToken, keepTailnet, LOCAL, ON_PHONE, SERVER, setConnection, WIDGET } from "../../platform/net";
-import { Action, Choice, Small } from "../../ui/ui";
+import { Action, Choice, Small } from "../../shared/ui/ui";
 
 export function PairScreen({ onPaired }: { onPaired: () => void }) {
   // C-170: the site away from home pairs with the companion that served it -- no address to type, its key in the browser

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Input, Text, XStack, YStack } from "tamagui";
 import { api } from "../platform/net";
 import { GoalNow, Step, Walk } from "../state/types";
-import { Action, Card, Entry, Eyebrow, Small } from "../ui/ui";
+import { Action, Card, Entry, Eyebrow, Small } from "../shared/ui/ui";
 import { useApi, useFresh } from "../platform/useApi";
 import { useSubtleInk } from "../state/look";
 

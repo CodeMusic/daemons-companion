@@ -10,10 +10,10 @@
 // book's own last page -- which the device holds only then (bookkeys.ts keyOfOrigin). Every word DRAFT.
 import { useState } from "react";
 import { Text, YStack } from "tamagui";
-import { Art } from "../../ui/ui";
-import { TurningPicture } from "../../ui/bookPicture";
-import { Listen } from "../../ui/bookAudio";   // T-533: its recording, sealed, keyed by its last page
-import { LayerPages, type EudaimonT, type LayerPalette } from "../shared/Eudaimon";
+import { Art } from "../../shared/ui/ui";
+import { TurningPicture } from "../../shared/ui/bookPicture";
+import { Listen } from "../../shared/ui/bookAudio";   // T-533: its recording, sealed, keyed by its last page
+import { LayerPages, type EudaimonT, type LayerPalette } from "../../shared/pages/Eudaimon";
 
 // whole: every section back (GET /api/origin), a yes or a no, never a count
 export type OriginT = EudaimonT & { whole?: boolean };

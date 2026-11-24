@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { api } from "../platform/net";
 import { useApi } from "../platform/useApi";
-import { Action, Card, Entry, Eyebrow, Pending, Small } from "../ui/ui";
+import { Action, Card, Entry, Eyebrow, Pending, Small } from "../shared/ui/ui";
 
 type Tree = { id: string; kind: string; title: string; done: boolean; back?: string; due?: string; hasBody?: boolean; writing?: boolean; kids: Tree[] };
 type Proposal = { id: string; item: string; kind: string; title: string; parent: string | null; back: string };

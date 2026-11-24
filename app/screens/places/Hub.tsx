@@ -8,7 +8,7 @@ import { sendSaveNow } from "../game/Game";   // C-190: SEND THE SAVE NOW
 import { KIND_NAMES } from "../../state/data";
 import { lookFor } from "../../art/deviceSprites";
 const kindName = (k: string) => lookFor(k)?.name ?? KIND_NAMES[k] ?? k;   // as YOUR DEVICES names it
-import { Action, Card, Choice, Eyebrow, Pending, Small } from "../../ui/ui";
+import { Action, Card, Choice, Eyebrow, Pending, Small } from "../../shared/ui/ui";
 import { Pressable } from "react-native";
 import { useApi } from "../../platform/useApi";
 

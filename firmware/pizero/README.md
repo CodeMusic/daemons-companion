@@ -21,6 +21,8 @@ first page, and BACK there leaves the app.
 |---|---|---|
 | DAEMONS | HOME | the game and the companion, every page on HOME's row |
 | ENGINE ROOM | ENGINE (C-510) | the hub's own room: JOBS (THE HANDS' runs; ENTER reads one), RUN (a job that needs no words; a DANGER one asks twice), SITE, DEVICES, SAVES, HUB. It uses the same API as the phone's web app at `/admin/`, with this device's paired key, and works on the home network or the tailnet only |
+| DASHBOARD | DASHBOARD (C-511) | EUDAIMONIA's board: WAITING (a ticket opened, and answered by its choices once signed in), LANES, PROJECTS. Read by anyone; S signs in by name and password, and the thirty-day session is kept in `~/.config/daemons/eudaimonia-session`. The site is `~/.config/daemons/eudaimonia`, else `http://roverbyteseer:4741` |
+| ACCOUNT | ACCOUNT (C-513) | the profile this device plays as on THE COMMONS: the eight-letter code from the app's GUARDIAN > a profile > OPEN ON A DEVICE, typed once; then its name, tag, friend code and controls. The token is kept in `~/.config/daemons/profile-token`; the commons is `~/.config/daemons/commons`, else whichever one the hub is linked to |
 | CAPS | CAPS | the cap on the header (the Cardputer Zero only) |
 | TALK | TALK | talking with the daemon carried |
 | KIT | KIT | the LLM630 Kit on the back (the Cardputer Zero only) |

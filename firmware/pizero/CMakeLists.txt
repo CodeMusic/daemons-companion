@@ -116,6 +116,8 @@ set(SRC
   src/pages/engine.cpp
   src/pages/dashboard.cpp
   src/sites/eudaimonia.cpp
+  src/sites/commons.cpp
+  src/pages/account.cpp
   src/apps.cpp
   src/kit/stackflow.cpp
   src/kit/kit.cpp

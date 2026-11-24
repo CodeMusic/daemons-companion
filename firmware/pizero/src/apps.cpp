@@ -7,6 +7,7 @@ const std::vector<AppDef> kApps = {
   { "daemons", "DAEMONS", PageId::Home, "The game and the companion: your daemon, its care and its steps", false },
   { "engine", "ENGINE ROOM", PageId::Engine, "The hub's own room: its jobs, its site, its devices and its saves", false },
   { "dashboard", "DASHBOARD", PageId::Dashboard, "EUDAIMONIA: what waits on you, the lanes at work, and your answers", false },
+  { "account", "ACCOUNT", PageId::Account, "The profile this device plays as, on THE COMMONS", false },
   { "caps", "CAPS", PageId::Caps, "The cap on the header: which it is, and what it can do", true },
   { "talk", "TALK", PageId::Talk, "Talk with the daemon you carry", false },
   { "kit", "KIT", PageId::Kit, "The LLM630 Kit on the back: awake or resting, its cell and its models", true },

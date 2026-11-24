@@ -34,6 +34,10 @@ export const JOBS: Record<string, JobKind> = {
   "ai-start": { group: "IN PLAY", said: "Start an AI run-through on this computer: its own save, a local mind",
                 run: SH(`"$HOME/Projects/DAEMONS/ai/airun.sh" start`) },
   "ai-stop":  { group: "IN PLAY", said: "Stop the AI run-through on this computer", run: SH(`"$HOME/Projects/DAEMONS/ai/airun.sh" stop`) },
+  // C-496: THE HANDS started again, which brings their own checkout up to main -- so a job added since is known. The
+  // restart waits a moment, so this job's own answer reaches the hub first.
+  "hands-update": { group: "THE HANDS", said: "Bring THE HANDS up to date with main, and start them again",
+                    run: SH(`git -C "$PWD" log -1 --format='before: %h %s' | cut -c1-90; (sleep 3; launchctl kickstart -k "gui/$(id -u)/ca.codemusic.daemons.hands") >/dev/null 2>&1 &`) },
   // C-406 (the user, 2026-11-22: "sure, start it"): the boards on the computer's cable, each found by its USB serial (an
   // ESP32-S3's MAC), never by its port; hub/boards.py refuses NEVER_FLASH (.hub) and a build that is not the board's own.
   // DEVICES' ON THE CABLE card drives them; THE HANDS run them with PlatformIO's own Python (it has pyserial).

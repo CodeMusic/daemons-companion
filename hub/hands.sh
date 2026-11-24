@@ -4,10 +4,14 @@
 # and runs them from this checkout. It dials out: nothing new listens here.
 #   hub/hands.sh install     pair it with the hub (a code by ssh, from .hub's HUB), write the LaunchAgent, start it
 #   hub/hands.sh log         the last lines of its log
-#   hub/hands.sh restart     start it again (after a pull)
+#   hub/hands.sh restart     start it again -- which brings its checkout up to main first (C-496)
 #   hub/hands.sh uninstall   stop it and remove the LaunchAgent (its key stays paired until forgotten in THE ENGINE ROOM)
 #   hub/hands.sh run         what the LaunchAgent runs
 # Its key is kept in ~/Library/Application Support/daemons-hands/hands.env (mode 600), never in this repository.
+# C-496 (the user, 2026-11-23: "use your recommendation"): THE HANDS run from a checkout of their own,
+# ~/Projects/daemons-companion-hands (a worktree on hands-node, following origin/main), installed from there, so nobody's
+# work in progress is ever in what they run. Each start brings it up to main (fast-forward only, never over a change made
+# in it), so THE ENGINE ROOM's newest jobs are known once THE HANDS restart -- the hands-update job does that from there.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 export PATH="/opt/homebrew/opt/node@22/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
@@ -24,6 +28,15 @@ case "${1:-}" in
   run)
     [[ -f "$ENV" ]] || { echo "hands: not installed -- hub/hands.sh install" >&2; exit 2; }
     set -a; source "$ENV"; set +a
+    # its own checkout follows main; a shared or changed one is left as it is
+    if [[ "$(git -C "$HERE" rev-parse --abbrev-ref HEAD 2>/dev/null)" == hands-node && -z "$(git -C "$HERE" status --porcelain -uno 2>/dev/null)" ]]; then
+      before=$(git -C "$HERE" rev-parse HEAD)
+      git -C "$HERE" pull -q --ff-only origin main 2>&1 | tail -2 || true
+      if [[ "$before" != "$(git -C "$HERE" rev-parse HEAD)" ]]; then
+        echo "hands: up to $(git -C "$HERE" log -1 --format=%h)"
+        git -C "$HERE" diff --quiet "$before" HEAD -- server/package-lock.json || (cd "$HERE/server" && npm ci --no-audit --no-fund >/dev/null)
+      fi
+    fi
     cd "$HERE/server"
     HANDS_ROOT="$HERE" exec node --import tsx src/site/hands_main.ts ;;
   install)

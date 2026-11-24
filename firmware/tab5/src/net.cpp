@@ -33,7 +33,8 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
       !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide") || !strcmp(name, "subtle") ||
-      !strcmp(name, "hermetic") || !strcmp(name, "manual")) return K_PROFILE;   // C-145: the LIBRARY's GUIDE; T-423: THE SUBTLE LAYER; C-238, C-233
+      !strcmp(name, "hermetic") || !strcmp(name, "manual")) return K_PROFILE;
+  if (!strcmp(name, "spell") || !strcmp(name, "tending") || !strcmp(name, "balance") || !strcmp(name, "mentions")) return K_TODAY;   // C-137   // C-145: the LIBRARY's GUIDE; T-423: THE SUBTLE LAYER; C-238, C-233
   if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;
   if (!strcmp(name, "home")) return K_HOME;                                    // C-139: the HOME page's own   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
   static const char *N[] = { "today", "goals", "party", "profile", "devices", "state", "index" };
@@ -521,6 +522,10 @@ static void keepEverything(bool withArt) {
   bool ok = fetchKeep("/api/today", "today");
   if (ok) {
     fetchKeep("/api/goals", "goals");
+    fetchKeep(netPreview() ? "/api/shadow/today?preview=1" : "/api/shadow/today", "spell");   // C-137: TODAY's newer cards --
+    fetchKeep("/api/subtle/tending", "tending");      // the day's SPELL CHECK (C-488), THE DAY'S TENDING (C-357 (3)),
+    fetchKeep("/api/balance", "balance");             // THE WEEK'S BALANCE (C-432) and the newest letter from your daemon (C-455)
+    fetchKeep("/api/mentions", "mentions");
     fetchKeep("/api/party", "party");
     fetchKeep("/api/profile", "profile");
     fetchKeep("/api/notebook", "notebook");           // C-131: the PROFILE's NOTEBOOK, as the app reads it
@@ -725,6 +730,7 @@ static void netTask(void *) {
         lastToday = now;
         if (outboxCount()) flushOutbox();
         fetchKeep("/api/today", "today"); fetchKeep("/api/device/state", "state");
+        fetchKeep("/api/balance", "balance"); fetchKeep("/api/subtle/tending", "tending");   // C-137: a step done shows at once
         fetchKeep("/api/broadcasts", "broadcasts");        // C-134: what the daemons have said, here and nearby
         if (netsDue) shareNetworks();                       // C-93
       }

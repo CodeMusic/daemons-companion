@@ -50,6 +50,7 @@ static void goTab(lv_event_t *e) {
 // TODAY: the day and the one thing, then a glance at each place, each opening it (every word DRAFT)
 static void drawToday(lv_obj_t *p) {
   drawTodayDay(p);
+  drawSpellCheck(p); drawTending(p); drawBalance(p); drawMentions(p);   // C-137: as the app's TODAY has them (today.inl)
   JsonDocument st = newDoc(), pr = newDoc(), nb = newDoc(), b = newDoc(), acts = newDoc();
   if (kept("state", st) && !st["daemon"].isNull()) {
     lv_obj_t *c = card(p), *r = row(c);

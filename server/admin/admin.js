@@ -10,7 +10,7 @@
 //   JOBS         the site built at every push, THE HANDS on the computer, the command line's jobs (C-342)
 //   CREATIONS    what the daemons made that the hub keeps -- sleep sounds, paintings -- each let go, or many (C-361)
 //   SAVES        the trail of every save that moved, going back to one, and whose copy goes on (C-364, C-365)
-//   IN PLAY      every game being played in the ecosystem -- its screen, where it was saved, its party; ending an AI run (C-478)
+//   IN PLAY      every game being played in the ecosystem -- its screen, where it was saved, its party; starting (C-496) and ending an AI run (C-478)
 //   SYMBOLS      every symbol a dream has called up, its glyph and meaning, and any one drawn AGAIN (C-484)
 // The page holds nothing of the user's: it asks the hub's API, with a paired key kept in this browser (on the hub's own
 // machine none is needed). Every word DRAFT.
@@ -743,8 +743,28 @@ async function frameUrl(g) {
   } catch { return had?.url ?? null; }
 }
 const whereSaid = (v, g) => `${esc(v.sources?.[g.source] ?? g.source)} · ${esc(g.device)} · ${esc(g.user)}${g.edition ? ` · ${g.edition}` : ""}`;
+// C-496: GAME MANAGEMENT -- start an AI run-through (THE HANDS run DAEMONS' ai/airun.sh on the computer), and how the
+// last start or stop went
+async function manageCard(v) {
+  const j = await api("/api/engine/jobs").catch(() => null);
+  if (!j) return "";
+  const last = j.jobs.find((x) => x.name === "ai-start" || x.name === "ai-stop");
+  const going = last && (last.state === "waiting" || last.state === "running");
+  const ai = v.playing.find((g) => g.source === "ai");
+  const awake = j.hands && Date.now() - Date.parse(j.hands.seen) < 30000;
+  const tail = last?.output ? last.output.trim().split("\n").filter((l) => l.startsWith("airun:")).slice(-1)[0] : "";
+  return `<div class="card"><p class="eyebrow">GAME MANAGEMENT</p>
+    <p class="small">An AI run-through plays its own save of the newest CONTENT build on the computer THE HANDS run on, thought
+      by a local mind (the Tiiny) -- never the paid one. Its window opens there; its screen shows here.${awake ? "" : ` <span class="warm">THE HANDS are away: a start waits until they wake.</span>`}</p>
+    ${tail ? `<p class="small mono">${esc(tail.replace(/^airun: /, ""))}</p>` : ""}
+    <div class="row" style="margin-top:6px">
+      ${ai ? `<span class="small">One is going -- END it above.</span><button class="btn quiet" data-act="aijob" data-name="ai-stop">STOP IT ON THE COMPUTER</button>`
+        : going ? `<span class="small">${last.name === "ai-start" ? "Starting…" : "Stopping…"}</span>`
+        : `<button class="btn" data-act="aijob" data-name="ai-start">START AN AI RUN-THROUGH</button>`}</div></div>`;
+}
+ACTS.aijob = async (d) => { await api("/api/engine/jobs", { name: d.name }); said(d.name === "ai-start" ? "Asked THE HANDS to start one -- it shows here when it begins (about half a minute)." : "Asked THE HANDS to stop it."); };
 async function drawInPlay() {
-  const v = await api("/api/games"), now = Date.now();
+  const v = await api("/api/games"), now = Date.now(), manage = await manageCard(v);
   const pick = ui.game && [...v.playing, ...v.lately].find((g) => g.id === ui.game);
   const open = pick ?? (v.playing.length === 1 ? v.playing[0] : null);
   const urls = new Map(await Promise.all((open ? [open] : v.playing).map(async (g) => [g.id, await frameUrl(g)])));
@@ -772,6 +792,7 @@ async function drawInPlay() {
   $page.innerHTML = `<h1>IN PLAY</h1>
     <p class="lede">${v.playing.length ? `${v.playing.length} game${v.playing.length === 1 ? "" : "s"} being played` : "No game is being played right now"} in the app, the site, the playground, an AI run-through or a handheld that reports to this hub. A cartridge, or an emulator outside ours, is not known here.</p>
     ${open ? one(open) : v.playing.length ? `<div class="grid">${v.playing.map(tile).join("")}</div>` : ""}
+    ${manage}
     ${v.lately.length && !open ? `<div class="card"><p class="eyebrow">PLAYED LATELY</p><div class="list">${v.lately.map((g) =>
       `<div class="item" data-act="game" data-id="${esc(g.id)}"><span class="t">${esc(g.summary?.name ?? g.user)} · ${whereSaid(v, g)}</span><span class="small">${ago(g.heard, now)}</span></div>`).join("")}</div></div>` : ""}
     ${note()}`;

@@ -27,6 +27,13 @@ export const JOBS: Record<string, JobKind> = {
   "commons-refuse":  { group: "THE COMMONS", said: "Let a home out", arg: { pattern: "^[A-Za-z0-9_-]{1,40}$", said: "the home's id" }, danger: true,
                        run: SH(`ssh "$COMMONS" "cd ~/Projects/daemons-companion && zsh hub/commons.sh refuse $ARG"`) },
   "commons-update":  { group: "THE COMMONS", said: "Bring THE COMMONS up to date with main, and restart it", run: SH(`ssh "$COMMONS" 'cd ~/Projects/daemons-companion && zsh hub/commons.sh update'`) },
+  // C-496 (the user, 2026-11-23, by multiple choice: its own save; mGBA 0.11; this Mac for now -- C-497 asks about
+  // roverbyteseer): AN AI RUN-THROUGH, from IN PLAY's GAME MANAGEMENT. DAEMONS' ai/airun.sh plays a copy of the newest
+  // CONTENT build with its own save, on a local mind only, in an mGBA of its own (the player's is never closed), and
+  // reports to IN PLAY; END there stops it, as ai-stop does.
+  "ai-start": { group: "IN PLAY", said: "Start an AI run-through on this computer: its own save, a local mind",
+                run: SH(`"$HOME/Projects/DAEMONS/ai/airun.sh" start`) },
+  "ai-stop":  { group: "IN PLAY", said: "Stop the AI run-through on this computer", run: SH(`"$HOME/Projects/DAEMONS/ai/airun.sh" stop`) },
   // C-406 (the user, 2026-11-22: "sure, start it"): the boards on the computer's cable, each found by its USB serial (an
   // ESP32-S3's MAC), never by its port; hub/boards.py refuses NEVER_FLASH (.hub) and a build that is not the board's own.
   // DEVICES' ON THE CABLE card drives them; THE HANDS run them with PlatformIO's own Python (it has pyserial).

@@ -7,6 +7,7 @@ import { addSource, answerWords, ask, decideFinding, expertSystem, keepFinding, 
 import { keepEntry, newJournal } from "../src/lifemanagement/journal.js";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
 import { newVoiceNote, noteHeard } from "../src/lifemanagement/voicenotes.js";
+import { keepItem, makeSpace, mineView, saveForm } from "../src/lifemanagement/myforms.js";
 import { pdfText, sourceText } from "../src/shared/sourcetext.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);
@@ -105,6 +106,27 @@ describe("C-454: RESEARCH", () => {
     expect(w.user).toMatch(/Rain fell upward/);
     expect(w.user).toMatch(/pier at dawn/);
     expect(w.user).toMatch(/walk felt easier/);
+  });
+
+  it("draws in one of the player's own spaces (MINE) when it alone is ticked, its items with their fields", () => {
+    const { store } = fresh();
+    const f = saveForm(store, { title: "Sleep log", kinds: [{ title: "Night", fields: [{ title: "Hours", type: "number" }], arete: 0, cap: 0 }] });
+    if (typeof f === "string") throw new Error(f);
+    makeSpace(store, { form: f.id, title: "My nights" });
+    makeSpace(store, { form: f.id, title: "Other" });
+    const [mine, other] = mineView(store).spaces;
+    keepItem(store, { space: mine.id, kind: "k_night", title: "Monday", fields: { f_hours: 7.5 } });
+    keepItem(store, { space: other.id, kind: "k_night", title: "Not this one", fields: { f_hours: 3 } });
+    const s = study(keepStudy(store, { title: "S", hypothesis: "H" }));
+    expect(s.spaces.map((x) => x.title).sort()).toEqual(["My nights", "Other"]);
+    keepStudy(store, { id: s.id, draws: [`space:${mine.id}`, "space:../x"] });
+    expect(studyView(store, s.id)!.draws).toEqual([`space:${mine.id}`]);
+    const a = ask(store, { study: s.id, text: "?" });
+    if (typeof a === "string") throw new Error(a);
+    const w = answerWords(store, s.id, a.answering)!;
+    expect(w.read).toEqual(['SPACE "My nights"']);
+    expect(w.user).toMatch(/- Monday -- Hours: 7\.5/);
+    expect(w.user).not.toMatch(/Not this one/);
   });
 
   it("reads FINDING lines out of an answer, at most three", () => {

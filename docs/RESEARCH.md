@@ -56,7 +56,9 @@ pages exist (E-1).
   as a blob), the talk answered in the background by the house's mind (a RESEARCH task, home minds only), findings
   proposed and kept, and two draws: the JOURNAL and GOALS.
 - **Second slice**: two more draws -- **DREAMS** (the dream journals' dreams and the daemon's own nights, the ten newest)
-  and **CONVERSATIONS** (meetings written up and voice notes heard, the eight newest). Other PRAXIS spaces follow.
+  and **CONVERSATIONS** (meetings written up and voice notes heard, the eight newest).
+- **Third slice**: **the player's own spaces** (MINE), each ticked on its own -- its items, their fields and whether done.
+  With it every draw the design names is built; EUDAIMONIA's view waits on the site's PRAXIS pages (E-1).
 
 ## OPEN
 

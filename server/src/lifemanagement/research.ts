@@ -16,6 +16,7 @@ import { dayVirtue, ensureSpace, midnight } from "./practice.js";
 import { journalOf, journalsOf } from "./journal.js";
 import { meetingsOf } from "./meetings.js";
 import { voiceNotesOf } from "./voicenotes.js";
+import { mineView, spaceView } from "./myforms.js";
 import { dreamsOf } from "../damagotchi/dreams.js";
 
 const TEXT = { type: "text" as const }, LONG = { type: "long" as const }, NUM = { type: "number" as const };
@@ -40,7 +41,7 @@ export const RESEARCH: Form = {
 
 export const STATES = ["open", "supported", "not-supported", "set-aside"] as const;
 export const DRAWS = ["journal", "dreams", "talks", "goals"] as const;   // C-454 (2): DREAMS and CONVERSATIONS; other spaces follow
-export type Draw = (typeof DRAWS)[number];
+export type Draw = (typeof DRAWS)[number] | `space:${string}`;   // C-454 (3): one of the player's own spaces (MINE), each ticked on its own
 export const MOST = { title: 80, field: 80, hypothesis: 600, system: 4000, ask: 2000, source: 60000, name: 120, finding: 600,
                       context: 24000, findingPay: 2, findingCap: 6 };
 export const STALE_MIN = 30;
@@ -52,7 +53,7 @@ export type Ask = { id: number; ask: string; answer: string; read: string[]; at:
 export type Finding = { id: number; text: string; from: number | null; at: string; kept: boolean; proposal: string | null };
 export type StudyRow = { id: number; title: string; field: string; hypothesis: string; state: string; created: string;
                          sources: number; asks: number; findings: number; proposed: number; last: string };
-export type StudyView = StudyRow & { system: string; draws: Draw[]; sourcesList: Source[]; talk: Ask[]; kept: Finding[];
+export type StudyView = StudyRow & { system: string; draws: Draw[]; spaces: { id: string; title: string }[]; sourcesList: Source[]; talk: Ask[]; kept: Finding[];
                                      waiting: Finding[]; limits: typeof MOST };
 // What writes an answer: a system prompt and the words, and at most so many tokens -- null if nobody can (api.ts' house.write)
 export type Writer = (system: string, user: string, maxTokens: number) => Promise<string | null>;
@@ -68,7 +69,8 @@ function space(store: Store): string {
 const str = (v: unknown): string => (v == null ? "" : typeof v === "object" && typeof (v as { text?: unknown }).text === "string" ? (v as { text: string }).text : String(v));   // a long field in a proposal is {text, base}
 const clean = (v: unknown, most: number) => str(v).replace(/\s+/g, " ").trim().slice(0, most);
 const block = (v: unknown, most: number) => str(v).replace(/\r\n?/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, most);
-const drawsOf = (v: unknown): Draw[] => str(v).split(",").map((s) => s.trim()).filter((s): s is Draw => (DRAWS as readonly string[]).includes(s));
+const drawsOf = (v: unknown): Draw[] => str(v).split(",").map((s) => s.trim())
+  .filter((s): s is Draw => (DRAWS as readonly string[]).includes(s) || /^space:[\w-]{1,64}$/.test(s));
 const studyOf = (store: Store, id: number) => { const it = store.life.px.numbered(space(store), id, "study"); return it && !it.archived ? it : null; };
 const kids = (store: Store, study: Item, kind: string) => store.life.px.items(study.space, { kind, parent: study.id, archived: false })
   .sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
@@ -133,6 +135,7 @@ export function studyView(store: Store, id: number, now = store.now()): StudyVie
   if (!it) return null;
   const findings = kids(store, it, "finding");
   return { ...rowOf(store, it), system: str(it.fields.system), draws: drawsOf(it.fields.draws),
+           spaces: mineView(store).spaces.map((x) => ({ id: x.id, title: x.title })),
            sourcesList: kids(store, it, "source").map(asSource), talk: kids(store, it, "ask").map((a) => asAsk(a, now)),
            kept: findings.filter((f) => f.phase === "done").map((f) => asFinding(f)).reverse(), waiting: proposed(store, it), limits: MOST };
 }
@@ -258,6 +261,16 @@ export function gather(store: Store, study: Item): Piece[] {
       text: [m.summary, ...m.takeaways.map((t) => `- ${t}`), ...m.actions.map((a) => `- to do: ${a}`)].filter(Boolean).join("\n") }));
     const said = voiceNotesOf(store).filter((v) => v.state === "done" && v.text).map((v) => ({ at: v.at, label: `VOICE NOTE, ${v.at.slice(0, 10)}`, text: v.text }));
     for (const c of [...met, ...said].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8)) take(c.label, c.text, 1500);
+  }
+  for (const d of draws.filter((x) => x.startsWith("space:"))) {    // C-454 (3): a space of the player's own, its items and their fields
+    const v = spaceView(store, d.slice(6));
+    if (!v) continue;
+    const kinds = Object.fromEntries(v.kinds.map((k) => [k.key, k]));
+    take(`SPACE "${v.title}"`, v.items.slice(0, 30).map((i) => {
+      const k = kinds[i.kind], fs = Object.entries(i.fields ?? {}).filter(([, x]) => x !== "" && x != null)
+        .map(([f, x]) => `${k?.fields.find((y) => y.key === f)?.title ?? f}: ${str(x).replace(/\s+/g, " ").slice(0, 200)}`);
+      return `- ${i.title}${i.done ? " (done)" : ""}${fs.length ? ` -- ${fs.join("; ")}` : ""}`;
+    }).join("\n"), 3000);
   }
   if (draws.includes("goals")) {
     const goals = store.goals().slice(-8);

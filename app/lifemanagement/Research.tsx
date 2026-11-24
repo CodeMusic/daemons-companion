@@ -18,11 +18,11 @@ type Source = { id: number; sort: "text" | "note" | "link" | "file"; name: strin
                 blob: string | null; chars: number; preview: string; at: string };
 type Ask = { id: number; ask: string; answer: string; read: string[]; at: string; by: string; state: "writing" | "answered" | "failed"; error: string | null };
 type Finding = { id: number; text: string; from: number | null; at: string; kept: boolean; proposal: string | null };
-type Study = Row & { system: string; draws: Draw[]; sourcesList: Source[]; talk: Ask[]; kept: Finding[]; waiting: Finding[] };
+type Study = Row & { system: string; draws: Draw[]; spaces: { id: string; title: string }[]; sourcesList: Source[]; talk: Ask[]; kept: Finding[]; waiting: Finding[] };
 type View = { studies: Row[]; study?: Study | null; read?: { chars: number; how: string } };
 
 const STATE_SAID: Record<string, string> = { open: "OPEN", supported: "SUPPORTED", "not-supported": "NOT SUPPORTED", "set-aside": "SET ASIDE" };   // DRAFT
-type Draw = "journal" | "dreams" | "talks" | "goals";
+type Draw = "journal" | "dreams" | "talks" | "goals" | `space:${string}`;
 const DRAWS: [Draw, string][] = [["journal", "THE JOURNAL"], ["dreams", "DREAMS"], ["talks", "CONVERSATIONS"], ["goals", "GOALS"]];   // DRAFT
 const paper = { fontSize: 15, color: "#1d2029", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: "#fbfaf6" } as const;
 const when = (iso: string) => (iso ? new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" }) : "");
@@ -95,7 +95,7 @@ function Expert({ s, ink, onView }: { s: Study; ink: string; onView: (v: View) =
       <Eyebrow>IT MAY READ</Eyebrow>
       <Small color="$color10">Nothing of yours until you tick it. Each answer says what it read.</Small>
       <XStack gap={8} flexWrap="wrap">
-        {DRAWS.map(([d, label]) => (
+        {[...DRAWS, ...s.spaces.map((x) => [`space:${x.id}` as Draw, x.title.toUpperCase()] as [Draw, string])].map(([d, label]) => (
           <XStack key={d} gap={6} alignItems="center" cursor="pointer" role="checkbox" aria-checked={s.draws.includes(d)} onPress={() => tick(d)}
                   borderWidth={1} borderColor={s.draws.includes(d) ? "$color9" : "$color6"} borderRadius={6} paddingHorizontal={10} paddingVertical={6}>
             <Text fontSize={13} color={s.draws.includes(d) ? "$color9" : "$color10"}>{`${s.draws.includes(d) ? "☑" : "☐"}  ${label}`}</Text>

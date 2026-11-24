@@ -293,3 +293,32 @@ The review turned all three proposed regions into `none`: each failed the earned
 **Found on the way**: the playtester's voice path (`/speak` -> `daemon/voice` -> the voice) never respells DAEMON as
 DAY-mon (DAEMONS T-618). **Left for night 3**: `tools/ai_models.py` (it writes the LiteLLM table: `none`) and
 `bindDaemons.sh --ai` (a launcher), with `engineAi`.
+
+## 8. Night 3 (2026-11-24): the playtester, reviewed cold, GO WITH CHANGES
+
+engineAi 663afbf (27 files) and DAEMONS b544403e (`tools/ai_models.py`). The lines that earn a region:
+
+| file | BRAIN line |
+|---|---|
+| `server/src/ai/mind.js` | `thalamus (relay, gate)` -- which mind plays, first well; paid never automatic |
+| `server/src/ai/promptBuilder.js` | `cortex.prefrontal (hold)` -- the context built fresh each turn |
+| `server/src/ai/tools.js` | `basal_ganglia (repertoire, act, stop)` -- the actions; a just-failed move refused (inhibition) |
+| `server/src/ai/localPath.js` | `hippocampus (navigate)` -- a route over the remembered map |
+| `firered_bridge/fog_of_war.py` | `hippocampus (encode)` -- the tiles seen, kept per map: a map built from experience |
+| `server/src/core/gameLoop.js` | `pathway` -- the perception-action cycle |
+
+**`none`**: `chatBridge.js` and `openaiClient.js` (adapters), `historyProcessor.js` (context hygiene, not decay),
+`salvageToolCall.js` (a parser), `trajectory.js` (a digest that never judges), `playtest.js` (a ledger), `backchannel.js`,
+`progress.js`, `progressTracker.js`, `socketHub.js`, `pythonService.js`, `screenshotService.js` (a codec),
+`stateManager.js`, `markdownFormatter.js`, the accounting, `server/index.js`, `firered_bridge/__init__.py`,
+`firered_mgba_bridge.py`, the Lua socket, `tools/ai_models.py`. **No line**: `feelings.js` and `dream.js` (MIND: the
+dream is a mood, not consolidation), configuration and constants, `bindDaemons.sh`.
+
+**The review changed six rows**: dream.js, trajectory.js, playtest.js, historyProcessor.js and openaiClient.js away
+from regions, and `stop` added to tools.js. **Verbs**: `navigate` added (localPath.js earns it); `monitor` waits for a
+file that computes conflict or error; no interoception verb. **Found on the way**: nothing sets `OPENAI_MAX_RETRIES`
+though a comment says `--ai` does (DAEMONS T-619); `mind.js` counts a 502 as a mind that is up (T-620).
+
+**Every AI harness in the three repositories now carries its line.** What is left is the architecture and plan review
+(BRAIN.md 10): the `split` files, the renames, the region folders -- for the user to check off.
+

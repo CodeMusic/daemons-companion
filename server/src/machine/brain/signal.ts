@@ -29,7 +29,8 @@ export const REGIONS = {
   "cortex.auditory":  ["hear"],
   "cortex.visual":    ["see", "imagine"],
   "cortex.motor":     ["voice"],                                     // motor speech
-  hippocampus:        ["encode", "recall", "consolidate"],
+  hippocampus:        ["encode", "recall", "consolidate", "navigate"],   // navigate: a route over the learned map (place
+                                                                     // cells, O'Keefe & Nadel 1978; Pfeiffer & Foster 2013)
   basal_ganglia:      ["repertoire", "select", "act", "stop"],      // THE HANDS
   cerebellum:         ["predict", "learn", "tempo"],
 } as const satisfies Record<string, readonly string[]>;

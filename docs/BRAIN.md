@@ -218,6 +218,8 @@ the machinery under them.
 - `recall` (cognition) -- a cue -> the nearest episodes (the Tiiny's embeddings over the month and the shelf)
 - `consolidate` (cognition) -- the night: replay the day, write the month, the shelf and the dream; asked by the
   hypothalamus's clock, waits if the cortex is away
+- `navigate` (cognition) -- a route over the map learnt from experience: place cells (O'Keefe & Nadel 1978), routes
+  planned toward a goal (Pfeiffer & Foster 2013). The playtester's `fog_of_war.py` encodes the map, `localPath.js` walks it
 
 Episodes are PRAXIS events, so a device away from home encodes offline and the hub takes them in when it is back.
 **Hosts**: the hub (the store), the Tiiny (the night and the embeddings), every Pi and the Kit (a day's episodes
@@ -383,6 +385,10 @@ and these corrections from the research and its review. `songs.ts` and `sleeptra
 **Night 2, approved and run 2026-11-24**: DAEMONS' `ai/` (DAEMONS cc738796). Its launcher, its presence beat and
 LiteLLM's config are `none` (the config has no fallback, so it is a proxy, not a relay); the n8n README names each
 workflow's region. The review also found the playtester's voice unrespelled (DAEMONS T-618).
+
+**Night 3, approved and run 2026-11-24**: the playtester (engineAi 663afbf, 27 files; DAEMONS b544403e, `ai_models.py`).
+`navigate` joins the hippocampus. **`monitor` waits**: `trajectory.js` counts and never judges, so no file earns it yet.
+**No interoception verb**: the brain's load is `vitals.load`. The review found two playtester bugs (DAEMONS T-619, T-620).
 
 **How the user answers**: each night's plan is put as a question on its ticket (`tickets.py ask`, *Approve* or
 *Defer*), which EUDAIMONIA's dashboard draws as buttons. A pass runs only on an *Approve* given for that night.

@@ -4,7 +4,7 @@
 // battery -- kept in the store, so a restart does not forget them. Which daemon each carries comes next, once the user
 // has answered DEVICES.md's questions.
 import { randomBytes, timingSafeEqual } from "node:crypto";
-import type { Store } from "./shared/db.js";
+import type { Store } from "../shared/db.js";
 import { validDeviceId, kindOf } from "./deviceid.js";
 export { validDeviceId, kindOf };
 import type { Via } from "./device.js";

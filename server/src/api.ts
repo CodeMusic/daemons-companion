@@ -32,8 +32,8 @@
 //                                /api/goal/milestone {title}, /api/goal/remove {step | milestone}; /api/steps/:id/undo
 //   POST /api/device/interact    C-13: {kind, detail?} -- the device was used (a ROUTINE run); kept as tending the daemon
 //   GET/POST /api/settings       C-29: the save path (this machine only, like everything but the device's endpoints)
-import { parseLoraRadio, loraApart } from "./lorabands.js";
-import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./cards.js";
+import { parseLoraRadio, loraApart } from "./devices/lorabands.js";
+import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./devices/cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
 import { copyFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
@@ -52,18 +52,18 @@ import { sha1 } from "./game/hash.js";
 import { deviceArt, headOf, repaint, streakColours } from "./art.js";
 import { prunable } from "./backups.js";
 import { createConnection } from "node:net";
-import { aim, DeviceHub, type Via } from "./device.js";
-import { Devices, validDeviceId } from "./devices.js";
+import { aim, DeviceHub, type Via } from "./devices/device.js";
+import { Devices, validDeviceId } from "./devices/devices.js";
 import { assign, carryView, setYours, yoursOf } from "./damagotchi/carry.js";
-import { SharedNetworks } from "./networks.js";
-import { SharedRemotes } from "./remotes.js";
+import { SharedNetworks } from "./devices/networks.js";
+import { SharedRemotes } from "./devices/remotes.js";
 import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site.js";
 import { LINK_PAGE, linkHost, linkRoute, seatOk, seatSave, takeSave } from "./game/linkcable.js";   // C-221: THE LINK CABLE
 import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
 import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
 import { siteNow, siteUpdate, siteView } from "./sitefetch.js";
-import { deviceName } from "./devicenames.js";                           // C-405: a device by its name           // C-342: the site, built on every push
+import { deviceName } from "./devices/devicenames.js";                           // C-405: a device by its name           // C-342: the site, built on every push
 import { PRIORITY, TalkJobs } from "./machine/talkjobs.js";
 import { keepSave, listSaves } from "./game/saves.js";   // C-215
 import { recordSave, savedBytes, trail } from "./game/savehistory.js";   // C-364
@@ -94,7 +94,7 @@ import { captionOf, readSong, singAsk, SING_SYSTEM, type SingMode } from "./psyc
 import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type Creation } from "./commons/creations.js";   // C-358; C-362
 import { BookRecordings } from "./library/bookrecordings.js";   // C-331 (1)
 import { GameMusic } from "./gamemusic.js";   // C-332
-import { FirmwareImages } from "./firmwareimages.js";   // C-335
+import { FirmwareImages } from "./devices/firmwareimages.js";   // C-335
 import { dayOf as dayBefore, dreamAsk, dreamById, dreamerSaid, dreamsOf, dreamTwice, keepDreamSigns, keepLenses, rewriteDream, titleOf, type Dreamer } from "./damagotchi/dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./machine/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
@@ -121,17 +121,17 @@ import { gameDream, mindNow } from "./damagotchi/mind.js";   // C-254: the mind 
 import { isLineKind, writtenLine, type LineKind, saying } from "./damagotchi/lines.js";
 import { appNight, handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
 import { WAKES as WAKING_KINDS } from "./damagotchi/life.js";   // C-293
-import { show as glassShow } from "./glass.js";   // C-262
+import { show as glassShow } from "./devices/glass.js";   // C-262
 import { noteClose, outlookLoop } from "./psyche/intuition.js";   // C-203
 import { EXPRESSIONS, SHADED, faceOf, shade, shadePalette, type Face } from "./damagotchi/expressions.js";
 import { SPIRIT_DAYS, spiritTotals, spiritsPortal, spiritsSaid, toneOf, toneShade } from "./damagotchi/spirits.js";   // C-296: the four totals and the tone
 import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./damagotchi/face.js";
 import { den as denOf } from "./damagotchi/dens.js";
-import { Home } from "./home.js";
-import { Tvs, lanHost, tvsForDevice } from "./tv.js";
+import { Home } from "./devices/home.js";
+import { Tvs, lanHost, tvsForDevice } from "./devices/tv.js";
 import { createSocket } from "node:dgram";
 import { DEFAULT_MODEL, OLLAMA_VERSION, QUIET, chatReply, heard, modelOf, ollamaKey, pick, show, tags, type AgentDaemon } from "./machine/ollama.js";
-import { kindOf } from "./deviceid.js";
+import { kindOf } from "./devices/deviceid.js";
 import { casinoAdmin, casinoForCable, houseTake } from "./game/casino.js";          // C-158, C-167
 import { weatherNow, weatherToday } from "./psyche/context.js";
 import { consolidate, dayMaterial, gameDay, gameNow, memoryDue, readGame, readKept, RETRY_MIN, type GameNow } from "./psyche/memory.js";   // C-253

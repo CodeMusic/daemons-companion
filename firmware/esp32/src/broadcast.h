@@ -2,7 +2,7 @@
 // Each goes every way this board has: LoRa (lora.cpp, far and with no network), Bluetooth (meet.cpp, to boards nearby)
 // and the companion (net.cpp, every linked device); it is shown once however many ways it arrives, by its id -- the
 // sender's hourly tag and its own number. Every daemon that receives an act answers it once; an answer is never
-// answered. The server's half is server/src/broadcast.ts; the acts are firmware/common/acts.h.
+// answered. The server's half is server/src/devices/broadcast.ts; the acts are firmware/common/acts.h.
 #pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>

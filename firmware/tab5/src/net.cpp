@@ -196,7 +196,7 @@ void netWatch(const String &path) {
 }
 String netWatched() { xSemaphoreTake(watchLock, portMAX_DELAY); String b = watchBody; xSemaphoreGive(watchLock); return b; }
 
-// ---- C-139: HOME -- Home Assistant, through the companion (server/src/home.ts) ----------------------------------------
+// ---- C-139: HOME -- Home Assistant, through the companion (server/src/devices/home.ts) ----------------------------------------
 // A tap waits in RAM for this task, which sends it before anything else -- between any two downloads -- and NEVER keeps it
 // for later: the outbox (C-87) is for the companion's own records, and a light switched or a kettle started hours late is
 // wrong. One that cannot go, or has waited too long behind a download, puts the thing back as it was shown and says so on it.

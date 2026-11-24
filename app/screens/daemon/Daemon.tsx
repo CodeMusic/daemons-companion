@@ -35,7 +35,7 @@ import { GIVEN, phraseMs, PROVISIONS, type Serving } from "./Provision";   // C-
 import { evolves, SongCard, songLine, type Singing } from "./OwnSong";    // C-418: TRAIN sings; C-419: ITS SONG
 import { lesson as lessonOf } from "../../../server/src/damagotchi/ownsong";
 import { ownSongUri } from "../../sound/ownSong";
-// C-327: the household space, as /api/device/state carries it (server/src/household.ts)
+// C-327: the household space, as /api/device/state carries it (server/src/devices/household.ts)
 type TogetherState = { device: string; side: "left" | "right"; since: string; until: string;
                        daemon: { slot: number; species: number; name: string; nickname: string; level: number; art: string; artKey: string } | null;
                        care: { kind: string; by: string; at: string; mine: boolean } | null };

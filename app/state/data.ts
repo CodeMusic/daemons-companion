@@ -89,7 +89,7 @@ export function pitch(n: string) {                                   // "C#5" ->
 // C-91: which build this is -- the commit it was made from and when -- and, asked of the companion, whether the app has
 // changed since. On the site, the companion's own commit (the site is always the newest).
 export const BUILD = process.env.EXPO_PUBLIC_BUILD ?? "";
-export { KIND_NAMES } from "../../server/src/kindnames";   // C-405: one table, the app's and the hub's
+export { KIND_NAMES } from "../../server/src/devices/kindnames";   // C-405: one table, the app's and the hub's
 
 // A lesson (a MARK's or a ROOT's STREAM show) as the pages read it: its boxes re-flowed, its own name dropped from the first
 // (the heading says it), empty ones gone -- the first leads, the rest are points (C-140; one copy, the review, 2026-10-18)

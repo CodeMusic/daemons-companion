@@ -204,7 +204,7 @@ GIVE AN ITEM offers up to 99 of an item from the bag's ITEMS or BALLS pockets, o
 
 *The user, 2026-11-11: "many of them should work not just to another account but within the house-hold".* Between one
 home's own devices (the phone is one, by its widget's id) nothing goes through the exchange and nothing is written to
-the save -- `server/src/household.ts`, answered by the hub and by a phone alone (`routes.ts`):
+the save -- `server/src/devices/household.ts`, answered by the hub and by a phone alone (`routes.ts`):
 
 | | Request | What it does |
 |---|---|---|

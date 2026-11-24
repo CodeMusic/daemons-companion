@@ -68,7 +68,7 @@ static void keep(const Cast &c) {
   recent[recentN++] = c;
 }
 
-// In words, as the companion says it (server/src/broadcast.ts castLine): "STARR bows", "ARCHIVER bows in return".
+// In words, as the companion says it (server/src/devices/broadcast.ts castLine): "STARR bows", "ARCHIVER bows in return".
 static String line(const Cast &c) {
   if (c.kind == CAST_SAY) return c.name + ": " + c.body;
   const Act *a = actOf(c.body);

@@ -5,7 +5,7 @@
 // when the app is left, and goes the moment anything else is sent. A care is a MOMENT over whatever is shown (its
 // reaction for a few seconds), not a screen of its own, so a note shown stays shown (DRAFT: the user may turn it).
 // Nothing here imports Node: it runs on a phone that hosts on its own too (routes.ts).
-import type { Store } from "./shared/store.js";
+import type { Store } from "../shared/store.js";
 
 export type GlassShow = "home" | "note" | "daemon" | "dark";
 export interface Note { id: number; text: string; updated: string }

@@ -24,7 +24,7 @@ import { readAway } from "./save/reader.js";
 import { levelFromExp } from "./save/growth.js";
 import { carrying } from "../damagotchi/carry.js";
 import { pendingExp } from "../core.js";
-import { validDeviceId } from "../deviceid.js";
+import { validDeviceId } from "../devices/deviceid.js";
 import speciesJson from "../../data/species.json" with { type: "json" };
 
 const SPECIES = speciesJson as unknown as Record<string, { growth?: number }>;

@@ -71,7 +71,7 @@ question below -- the save.
 *The user, 2026-10-09: "saved networks should be available to all connected devices -- like if i save it on one they
 all get it."*
 
-- **The server keeps the list** (`server/src/networks.ts`): every network's name and password, the newest eight (a
+- **The server keeps the list** (`server/src/devices/networks.ts`): every network's name and password, the newest eight (a
   board's MAX_NETS). Learned anywhere -- on a board (UPLINK, TEACH A NETWORK), on the Tab5, or added on the site or the
   app -- it is learned by every device the next time each is in touch. Forgotten anywhere, it is forgotten by all.
 - **A forget is remembered** by name, so a board that has not heard yet cannot bring the network back by reporting it;
@@ -110,5 +110,5 @@ function away from home."*
 4. **The relay for boards**: is it all right for a board to talk to the public relay with its own key, or should boards
    away from home always go through the phone?
 
-*Sources: the code (server/src/device.ts, server/src/game/save/writer.ts, firmware/esp32/src/net.cpp) and the game's party
+*Sources: the code (server/src/devices/device.ts, server/src/game/save/writer.ts, firmware/esp32/src/net.cpp) and the game's party
 menu (T-358).*

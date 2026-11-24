@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
-import { SharedRemotes } from "../src/remotes.js";
+import { SharedRemotes } from "../src/devices/remotes.js";
 
 const TV = [{ p: "NEC", v: "20df10ef", b: 32, r: 0 }, { p: "NEC", v: "20df40bf", b: 32, r: 0 }, { p: "NEC", v: "20dfc03f", b: 32, r: 0 }];
 

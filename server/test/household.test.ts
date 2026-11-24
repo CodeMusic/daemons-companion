@@ -5,7 +5,7 @@ import * as core from "../src/core.js";
 import { carriedFor } from "../src/damagotchi/carry.js";
 import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
-import { SPACE_MS } from "../src/household.js";
+import { SPACE_MS } from "../src/devices/household.js";
 import { buildSave } from "./build_save.js";
 
 const PIP = { personality: 0x12345678, otId: 0x00ab1234, species: 1, nickname: "PIP", level: 12, away: true };

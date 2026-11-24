@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { KIND_NAMES } from "./kindnames.js";
 
 type Look = { maker: string; name: string };
-const DATA = JSON.parse(readFileSync(new URL("../data/devices.json", import.meta.url), "utf8")) as
+const DATA = JSON.parse(readFileSync(new URL("../../data/devices.json", import.meta.url), "utf8")) as
   { aliases: Record<string, string>; devices: Record<string, Look> };
 
 export function lookFor(kind: string): Look | undefined {

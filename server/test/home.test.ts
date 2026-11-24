@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Home, thingOf, type Fetch } from "../src/home.js";
+import { Home, thingOf, type Fetch } from "../src/devices/home.js";
 
 // A Home Assistant that answers from a table, and keeps what it was asked
 function fakeHa(states: any[], opts: { rooms?: any; token?: string } = {}) {

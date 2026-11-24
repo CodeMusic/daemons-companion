@@ -23,7 +23,7 @@ describe("the game's music on the watch (C-332)", () => {
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { FirmwareImages, imageOk } from "../src/firmwareimages.js";
+import { FirmwareImages, imageOk } from "../src/devices/firmwareimages.js";
 describe("the watch updated from its card (C-335)", () => {
   it("keeps one image a board, checked as an ESP32 image, and opens only the asking to a board", () => {
     const f = new FirmwareImages(mkdtempSync(join(tmpdir(), "fw-")));

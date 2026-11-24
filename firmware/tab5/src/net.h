@@ -53,7 +53,7 @@ enum Voice { V_QUIET, V_MAKING, V_SPEAKING };
 extern std::atomic<int> netVoice;    // what the voice is doing
 void netSpeak(int species);          // make it and play it; a second call, or netHush(), stops it
 void netHush();
-// C-139: HOME -- Home Assistant through the companion (server/src/home.ts; its address and token are set on the computer it
+// C-139: HOME -- Home Assistant through the companion (server/src/devices/home.ts; its address and token are set on the computer it
 // runs on, never here). Kept as "home", downloaded while the page is open and every 30 s while it stays open. A tap is sent
 // NOW and never kept for later (an old "turn on the kettle" sent hours afterwards is wrong): it goes, or the page says it
 // did not. `before` is the thing as it was shown, put back if the tap does not go.

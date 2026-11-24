@@ -46,7 +46,7 @@ export type Ask = { method: string; path: string; body: any; deviceId: string; q
 export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
-import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
+import { ACTS, castsSince, sendCast, takeCast, type Via } from "./devices/broadcast.js";   // C-134
 import { centreOf, checkNight, dayOfDream, dreamAuthors, dreamBooks, dreamsOf, keepNight, rested, titleOf, type Dream } from "./damagotchi/dreams.js";   // C-200; C-308: titleOf; T-531: dayOfDream; C-412: centreOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd, evolvedOf } from "./damagotchi/evolve.js";
@@ -56,9 +56,9 @@ import { faceOf, openMouthOf } from "./damagotchi/expressions.js";   // C-303: a
 import { thriveOf } from "./damagotchi/thrive.js";   // C-207
 import { again, askSigns, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./lifemanagement/journal.js";   // C-298
 import { writtenLine, type LineKind, saying } from "./damagotchi/lines.js";   // C-196
-import { validDeviceId } from "./deviceid.js";
+import { validDeviceId } from "./devices/deviceid.js";
 import { carryView } from "./damagotchi/carry.js";
-import { apart, partnerIn, spaceOf, spaces as householdSpaces, swap, together } from "./household.js";   // C-327
+import { apart, partnerIn, spaceOf, spaces as householdSpaces, swap, together } from "./devices/household.js";   // C-327
 import * as Dialogue from "./damagotchi/dialogue.js";   // C-329: two daemons of the household in dialogue
 import { dayFacts, speciesFacts } from "./psyche/personaof.js";   // C-329
 import { carriedFor } from "./damagotchi/carry.js";   // C-329
@@ -69,7 +69,7 @@ import { readOrigin } from "./library/originbook.js";   // DAEMONS T-533: THE OR
 import { readShadow } from "./library/shadowbook.js";   // C-474: THE SPELL LEFT RUNNING (DAEMONS T-606)
 import { dawnEarned, dawnsKept, DAWNS_TO_EARN, keepDawn } from "./psyche/dawns.js";   // C-314: the dawn half, earned at dawn
 import { costumeOf, halloweenOn, treatsOf } from "./psyche/halloween.js";   // C-240
-import { glassView, moment, removeNote, saveNote, show } from "./glass.js";   // C-262: the T-Glass
+import { glassView, moment, removeNote, saveNote, show } from "./devices/glass.js";   // C-262: the T-Glass
 import { BOOK as MENTIONS_BOOK, markRead, mentionsOf, newestUnread } from "./psyche/mentions.js";   // C-455
 const GETS = ["/api/household", "/api/dawns", "/api/broadcasts", "/api/broadcast/acts", "/api/today", "/api/goals", "/api/walk", "/api/goal", "/api/arete", "/api/balance", "/api/rewards", "/api/recipes", "/api/mine", "/api/mine/space", "/api/learning", "/api/learning/lesson", "/api/learning/review", "/api/learning/quiz", "/api/goal/weathering", "/api/profile", "/api/accents", "/api/notebook", "/api/guide", "/api/marks", "/api/regions", "/api/groves", "/api/school", "/api/progress", "/api/play", "/api/subtle", "/api/index", "/api/party", "/api/daemon/life", "/api/daemon/song", "/api/soundings", "/api/planner", "/api/planner/wild", "/api/dreams", "/api/dreambooks", "/api/mentions", "/api/where", "/api/reads", "/api/books", "/api/book", "/api/index/list", "/api/index/entry", "/api/subtle/today", "/api/subtle/journal", "/api/subtle/tending", "/api/arcana/today", "/api/arcana/draw", "/api/arcana/spread", "/api/hermetic", "/api/eudaimon", "/api/unity", "/api/origin", "/api/shadow", "/api/hermetic/first", "/api/halloween", "/api/glass", "/api/journals", "/api/journal"];
 const POSTS = ["/api/mine/form", "/api/mine/form/remove", "/api/mine/space", "/api/mine/item", "/api/mine/item/done", "/api/mine/item/state", "/api/mine/item/remove", "/api/learning/quiz", "/api/learning/quiz/answer", "/api/learning/add", "/api/learning/rename", "/api/learning/remove", "/api/learning/decide", "/api/learning/lesson/done", "/api/learning/review", "/api/recipes", "/api/recipes/remove", "/api/recipes/cooked", "/api/recipes/uncooked", "/api/rewards", "/api/rewards/edit", "/api/rewards/remove", "/api/rewards/spend", "/api/rewards/undo", "/api/household/swap", "/api/play/summoned", "/api/household/together", "/api/household/apart", "/api/household/converse", "/api/household/talks", "/api/household/talk", "/api/household/integrate", "/api/dawn/kept", "/api/broadcast", "/api/device/broadcast", "/api/sync", "/api/walk", "/api/goal", "/api/goal/step", "/api/goal/milestone", "/api/goal/remove", "/api/where/find", "/api/subtle/ask", "/api/subtle/today", "/api/subtle/tending", "/api/reads/seen", "/api/hermetic/ack", "/api/glass/note", "/api/glass/note/remove", "/api/glass/show", "/api/glass/care", "/api/journal", "/api/journal/rename", "/api/journal/remove", "/api/journal/entry", "/api/journal/entry/remove", "/api/journal/summarize", "/api/journal/again", "/api/journal/plain", "/api/journal/signs", "/api/mentions/read"];

@@ -28,7 +28,7 @@ static void tapCare(lv_event_t *e) {
   netSend("POST", String("/api/daemon/") + CARE_KIND[k], "{}");
 }
 
-// ---- NEARBY (C-134, broadcasts; the hub is server/src/broadcast.ts): what the daemons have said or done -- typed, or an
+// ---- NEARBY (C-134, broadcasts; the hub is server/src/devices/broadcast.ts): what the daemons have said or done -- typed, or an
 // interaction from the shared list -- by LoRa, Bluetooth or the companion, each once; an act from another daemon can be
 // answered, once. Sent through netSend, so it is kept until the companion answers. Words from the hub's own lines.
 static String castLine(JsonObject c, JsonDocument &acts) {

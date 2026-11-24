@@ -1,6 +1,6 @@
 // C-405: THE ENGINE ROOM names a device as the app does (app/art/deviceSprites.tsx lookFor, Places.tsx nameOf)
 import { describe, expect, it } from "vitest";
-import { deviceName, kindOfId } from "../src/devicenames.js";
+import { deviceName, kindOfId } from "../src/devices/devicenames.js";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import type { AddressInfo } from "node:net";

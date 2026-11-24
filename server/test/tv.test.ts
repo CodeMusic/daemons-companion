@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Home, type Fetch } from "../src/home.js";
-import { Tvs, lanHost } from "../src/tv.js";
+import { Home, type Fetch } from "../src/devices/home.js";
+import { Tvs, lanHost } from "../src/devices/tv.js";
 
 // C-256: a Roku and a Home Assistant that answer from a table, and keep what they were asked
 function world(opts: { rokuStatus?: number } = {}) {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseLoraRadio, loraApart } from "../src/lorabands.js";
+import { parseLoraRadio, loraApart } from "../src/devices/lorabands.js";
 
 describe("C-175: every LoRa chip and band", () => {
   it("reads a board's chip and band, and nothing else", () => {

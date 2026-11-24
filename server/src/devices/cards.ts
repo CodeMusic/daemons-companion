@@ -5,8 +5,8 @@
 // daemon's name and species and this companion's id (firmware: the card's pages), so any reader can say whose it is --
 // a stranger's card means the two daemons meet (C-15), and nothing changes hands. The T-Deck writes a NOTE onto a card
 // too, through a reader: the companion keeps it until a reader has written it to the next card held.
-import type { Store } from "./shared/store.js";
-import { assign, carriedFor, carrying, hostNone } from "./damagotchi/carry.js";
+import type { Store } from "../shared/store.js";
+import { assign, carriedFor, carrying, hostNone } from "../damagotchi/carry.js";
 
 type Away = { personality: number };
 export type CardOp = "read" | "put" | "take" | "swap";

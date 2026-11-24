@@ -37,7 +37,7 @@ or for an answer the answered FROM(4) ID(2) and the code.
 
 **The phone** sends and hears through the companion, and over its own Bluetooth too (C-141): while MEET OTHERS NEARBY is
 on, app/platform/beacon.ts sends a broadcast as the same pieces, each a 128-bit service UUID (the one thing iOS lets an app
-advertise), rotated every 200 ms for 12 s, and gathers the pieces it hears (server/src/blecast.ts, Node-free).
+advertise), rotated every 200 ms for 12 s, and gathers the pieces it hears (server/src/devices/blecast.ts, Node-free).
 
 ## On a board: CHORUS
 
@@ -56,7 +56,7 @@ companion, and showed it once ([BN]). LoRa between two boards is not yet checked
 
 ## The companion's half
 
-`server/src/broadcast.ts` (no Node, so a phone hosting alone answers too): `GET /api/broadcasts?since=`,
+`server/src/devices/broadcast.ts` (no Node, so a phone hosting alone answers too): `GET /api/broadcasts?since=`,
 `GET /api/broadcast/acts`, `POST /api/broadcast {kind, text|act, as?}`, `POST /api/device/broadcast` (a board's, sent or
 heard). The last sixty are kept. The app, the site and the Tab5 show them on the DAEMON tab as NEARBY (the controller
 session's half).

@@ -5,7 +5,7 @@
 // own board (it notes that our companions heard each other: the proof the radios work). iOS hears another iPhone's beacon only while that iPhone has the app open; a board, always.
 import type { BleManager } from "react-native-ble-plx";
 import Beacon from "../modules/daemons-beacon";
-import { Gatherer, toPieces, type BleCast } from "../../server/src/blecast";
+import { Gatherer, toPieces, type BleCast } from "../../server/src/devices/blecast";
 
 const PREFIX = "dae0beac-0015-4d45-";
 const ROTATE_MS = 3600000, LISTEN_EVERY_MS = 180000, LISTEN_MS = 5000;
@@ -22,7 +22,7 @@ class Meeting {
   private ours = new Set<string>();
   private heard = new Map<string, number>();                     // tag -> when, for once an hour
   private timer: ReturnType<typeof setInterval> | null = null;
-  // C-141: broadcasts by Bluetooth, as the boards carry them (server/src/blecast.ts) -- heard while NEARBY is open,
+  // C-141: broadcasts by Bluetooth, as the boards carry them (server/src/devices/blecast.ts) -- heard while NEARBY is open,
   // sent as a twelve-second burst of pieces after a send; only while MEET OTHERS NEARBY is on (the beacon's own consent)
   private gatherer = new Gatherer();
   private casting = false;                                       // NEARBY is open: listen the whole time

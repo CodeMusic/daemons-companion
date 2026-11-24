@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import { Store } from "../src/shared/db.js";
-import { SharedNetworks } from "../src/networks.js";
+import { SharedNetworks } from "../src/devices/networks.js";
 
 describe("one list of networks for every device (C-93)", () => {
   it("learns a network once, and a new password replaces the old", () => {

@@ -1,6 +1,6 @@
 // C-141: the phone's Bluetooth pieces are the boards' (broadcast.cpp): the same bytes out, the same broadcast back.
 import { describe, expect, it } from "vitest";
-import { bytesOf, Gatherer, toPieces } from "../src/blecast.js";
+import { bytesOf, Gatherer, toPieces } from "../src/devices/blecast.js";
 
 describe("a broadcast as Bluetooth pieces", () => {
   it("lays out a piece as the boards do: DA E1, kind|count|part, FROM, ID, seven bytes", () => {

@@ -55,7 +55,7 @@ export type Message = { at: string; dir: "in" | "out"; kind: "wave" | "say"; spe
 
 export type Listen = { at: string; started: boolean; devices: number; beacons: number } | null;
 
-// C-134, the app's side (the hub is server/src/broadcast.ts): NEARBY -- what the daemons have said or done, typed or an
+// C-134, the app's side (the hub is server/src/devices/broadcast.ts): NEARBY -- what the daemons have said or done, typed or an
 // interaction from the shared list (acts.json, bundled, so it is offered offline too), by LoRa, Bluetooth or the companion,
 // each once. Another daemon's act can be answered, once. Asked again every ten seconds while the DAEMON tab is open.
 export type Cast = { id: string; name: string; kind: "say" | "act" | "reply"; text?: string; act?: string; replyTo?: string; at: string;
@@ -189,7 +189,7 @@ export type DeviceSettings = { home: "daemon" | "today"; sleepAfter: number; sou
                         palette: "checkpoint" | "rainbow" };
 
 // ---- C-139: HOME -- the house by hand (the user, 2026-10-16: "a new entry in the tab5/app/site where you can also
-// control your homeassistant"). The companion talks to Home Assistant (server/src/home.ts) and keeps its token; this
+// control your homeassistant"). The companion talks to Home Assistant (server/src/devices/home.ts) and keeps its token; this
 // screen sees rooms, names and states, and asks for an action by name. It asks live every time and never shows what the
 // phone kept -- a light shown on that is off is worse than a moment's wait -- and a tap is never kept to be sent later:
 // a light switched hours afterwards is not what was asked. ----

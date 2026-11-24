@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { makeServer } from "../src/api.js";
-import { DeviceHub } from "../src/device.js";
+import { DeviceHub } from "../src/devices/device.js";
 import { DEFAULTS } from "../src/shared/config.js";
 
 const hub = new DeviceHub();

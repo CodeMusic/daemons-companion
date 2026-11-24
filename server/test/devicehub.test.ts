@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aim, DeviceHub } from "../src/device.js";
+import { aim, DeviceHub } from "../src/devices/device.js";
 
 // C-168 Phase 3: several boards on the hub's cables (and more on Wi-Fi) share one hub -- a command aimed at one board is
 // taken by that board alone; one aimed at none goes to the first that asks, as it always did.

@@ -7,7 +7,7 @@
 // IR library names it -- its protocol, value, bits and repeat. A button the library could not name (kept as raw timings)
 // stays on the board that heard it. A remove is remembered by name, so a board that has not heard yet cannot bring the
 // remote back by reporting it; only a board that taught it again itself (`fresh`) can.
-import type { Store } from "./shared/store.js";
+import type { Store } from "../shared/store.js";
 
 const KEY = "remotes.shared";
 export type Button = { p: string; v: string; b: number; r: number } | null;   // protocol, value (hex), bits, repeat

@@ -1,4 +1,4 @@
-// C-262: the T-Glass -- one screen in front of one eye, chosen in the app's GLASSES (server/src/glass.ts). The board
+// C-262: the T-Glass -- one screen in front of one eye, chosen in the app's GLASSES (server/src/devices/glass.ts). The board
 // draws what its state's `glass` says: HOME (the time, the daemon, the next step), a NOTE a page at a time, the DAEMON,
 // or DARK; a care's reaction (`moment`) lies over it for its few seconds, and the morning's dream (night.cpp) over all of
 // it, a page a tap, with HOME saying when one is waiting. Black is the prism's clear, so everything is

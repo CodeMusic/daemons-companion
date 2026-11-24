@@ -285,7 +285,7 @@ static void drawDevices(lv_obj_t *p) {
   }
 }
 
-// ---- HOME (C-139): Home Assistant, through the companion (server/src/home.ts) -- the home's name, each room a heading as
+// ---- HOME (C-139): Home Assistant, through the companion (server/src/devices/home.ts) -- the home's name, each room a heading as
 // DEVICES heads each maker, and each thing a card: its name, how it is, and what can be done to it (the server says which;
 // a lock is shown, never opened). A tap answers at once (C-121): the kept view takes what it will most likely do and is
 // drawn again, the thing marked "..." until the companion answers -- then it is sent NOW, never kept for later

@@ -4,7 +4,7 @@
 #include <vector>
 #include "game/hash.h"
 
-struct Reply { long status = 0; Bytes body; std::string error; bool ok() const { return status >= 200 && status < 300; } };
+struct Reply { long status = 0; Bytes body; std::string error; std::string cookie; bool ok() const { return status >= 200 && status < 300; } };   // cookie: the last Set-Cookie's name=value (C-511)
 
 // connectMs: how long to wait for the other end to answer at all (0: the lesser of timeoutMs and five seconds)
 Reply httpGet(const std::string &url, const std::vector<std::string> &headers = {}, long timeoutMs = 8000, long connectMs = 0);

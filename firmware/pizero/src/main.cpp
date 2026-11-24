@@ -11,7 +11,7 @@
 //   daemons-zero --games               say every game kept here and every original found, and stop
 //   daemons-zero --saved               as if the game had just saved: HOME SYNCs as it is entered (C-397; for checks)
 //   daemons-zero --rom FILE.gba        play any ROM as it is (a DEBUG build: testing)
-//   daemons-zero --app engine          open as one of its apps (C-509: daemons, engine, caps, talk, kit)
+//   daemons-zero --app engine          open as one of its apps (C-509: daemons, engine, dashboard, caps, talk, kit)
 //   daemons-zero --apps [--desktop DIR]  say every app, and with --desktop write a launcher entry for each into DIR; stop
 //   daemons-zero --page care           start on a page (home, play, games, link, care, step, party, say)
 //   daemons-zero --headless --frames N [--press 300:ENTER,420:L] [--shot out.bmp] [--every 100]
@@ -68,6 +68,7 @@ Page *capsPage();
 Page *talkPage();
 Page *kitPage();
 Page *enginePage();
+Page *dashboardPage();
 
 Emu emu;
 bool held[(size_t)Key::Count];
@@ -90,6 +91,7 @@ Page *pageFor(PageId id) {
     case PageId::Talk: return talkPage();
     case PageId::Kit: return kitPage();
     case PageId::Engine: return enginePage();
+    case PageId::Dashboard: return dashboardPage();
     default: return homePage();
   }
 }
@@ -375,7 +377,7 @@ int main(int argc, char **argv) {
   caps::find();   // C-444: once at start; a cap is never fitted while the Zero is on
   const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "games", PageId::Make }, { "link", PageId::Pair },
                                            { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say },
-                                           { "caps", PageId::Caps }, { "talk", PageId::Talk }, { "kit", PageId::Kit }, { "engine", PageId::Engine } };
+                                           { "caps", PageId::Caps }, { "talk", PageId::Talk }, { "kit", PageId::Kit }, { "engine", PageId::Engine }, { "dashboard", PageId::Dashboard } };
   go(pages.count(start) ? pages.at(start) : app().home);   // C-509: --page, else the app's own first page
 
   auto lastDraw = std::chrono::steady_clock::now();

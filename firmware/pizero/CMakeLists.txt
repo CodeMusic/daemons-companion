@@ -114,6 +114,8 @@ set(SRC
   src/pages/talk.cpp
   src/pages/kit.cpp
   src/pages/engine.cpp
+  src/pages/dashboard.cpp
+  src/sites/eudaimonia.cpp
   src/apps.cpp
   src/kit/stackflow.cpp
   src/kit/kit.cpp

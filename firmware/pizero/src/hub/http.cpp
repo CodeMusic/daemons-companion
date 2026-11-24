@@ -3,9 +3,20 @@
 
 #include <curl/curl.h>
 #include <mutex>
+#include <strings.h>
 
 static size_t take(char *p, size_t size, size_t n, void *to) {
   ((Bytes *)to)->insert(((Bytes *)to)->end(), (uint8_t *)p, (uint8_t *)p + size * n);
+  return size * n;
+}
+
+// C-511: a Set-Cookie's "name=value" kept (a site's sign-in answers with its session that way)
+static size_t headerLine(char *p, size_t size, size_t n, void *to) {
+  std::string line(p, size * n);
+  if (line.size() > 11 && strncasecmp(line.c_str(), "set-cookie:", 11) == 0) {
+    size_t a = line.find_first_not_of(' ', 11), b = line.find_first_of(";\r\n", a);
+    if (a != std::string::npos) *(std::string *)to = line.substr(a, b == std::string::npos ? std::string::npos : b - a);
+  }
   return size * n;
 }
 
@@ -27,6 +38,8 @@ static Reply call(const std::string &url, const std::string *post, const std::ve
   curl_easy_setopt(c, CURLOPT_USERAGENT, "daemons-zero");
   curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, take);
   curl_easy_setopt(c, CURLOPT_WRITEDATA, &r.body);
+  curl_easy_setopt(c, CURLOPT_HEADERFUNCTION, headerLine);
+  curl_easy_setopt(c, CURLOPT_HEADERDATA, &r.cookie);
   if (post) {
     curl_easy_setopt(c, CURLOPT_POSTFIELDS, post->data());
     curl_easy_setopt(c, CURLOPT_POSTFIELDSIZE, (long)post->size());

@@ -17,7 +17,9 @@ C-469 and C-432 closed, so the second loop's last goal, C-454, is unblocked. C-4
 2. ~~**C-472 a household daemon's own life**~~ -- in a household talk, a daemon that is not the one carried speaks with
    its own mood, care and last dream when it has them. ***Done*** *(a381ade1, hub deployed: core.ownLife, from the cares
    kept under its personality and its own dream of two days).*
-3. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-23: "not yet again").
+3. ~~**C-454 RESEARCH, second slice**~~ -- DREAMS and CONVERSATIONS among what a study may draw in. ***Done*** *(b12cbe9f,
+   hub deployed: a dream journal's dreams and the daemon's own nights; meetings written up and voice notes heard).*
+4. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-23: "not yet again").
 
 ## Today's goals -- 2026-11-22, WORKING MEMORY
 

@@ -10,6 +10,7 @@ import { keep, mine, type Creation } from "../platform/creations";   // C-358: w
 import { CreationsScreen, RecordCover } from "./Creations";   // C-358
 import { driftOf, LONG_FALL, LONG_FALL_INFO, type DriftFile, type DriftInfo } from "../sound/binaural";
 import { phoneDriftFile, phoneDriftList } from "../sound/phoneDrifts";   // C-551: the phone's own three of each kind
+import { kindName, ReverieDoor, type Kind, type Side } from "./ReverieDoor";   // C-550: REVERIE's door
 import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../sound/sleepSession";
 import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../shared/ui/ui";
 
@@ -34,6 +35,15 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
   const [drifts, setDrifts] = useState<DriftInfo[]>([LONG_FALL_INFO, ...phoneDriftList()]);
   const [chosen, setChosen] = useState<string>(LONG_FALL);
   const [picking, setPicking] = useState(false);
+  // C-550: the door -- you or a daemon, then a kind; the drifts listed are that kind's
+  const [side, setSide] = useState<Side | null>(null), [kind, setKind] = useState<Kind | null>(null);
+  const [choice, setChoice] = useState<"REASON" | "INSTINCT">("REASON");
+  const [party, setParty] = useState<{ slot: number }[]>([]);
+  useEffect(() => {
+    api<{ choice?: "REASON" | "INSTINCT" }>("/api/profile").then((p) => { if (p.choice) setChoice(p.choice); }).catch(() => {});
+    api<{ party: { slot: number }[] }>("/api/party").then((r) => setParty(r.party ?? [])).catch(() => {});
+  }, []);
+  const pickKind = (k: Kind | null) => { setKind(k); if (k) setPicking(true); };
   const [tonight, setTonight] = useState<Creation | null>(null);                 // C-358: tonight's piece as a creation (its cover)
   const load = () => api<Sleep>("/api/sleep").then(setSleep).catch((e) => setError(e.message));
   useEffect(() => { load(); return onSleep(setNow); }, []);
@@ -85,7 +95,7 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
   const cur = sleep.current, older = sleep.tracks.filter((t) => t.state === "ready" && t.id !== cur?.id);
   return (
     <Card>
-      <Eyebrow>{"SLEEP SOUNDS · DRAFT"}</Eyebrow>
+      <Eyebrow>{kind && side ? `REVERIE · ${kindName(side, kind)} · DRAFT` : "REVERIE · SLEEP SOUNDS · DRAFT"}</Eyebrow>
       <Small>{"Music made for your daemon as it is tonight, to fall asleep to together. It plays for thirty minutes and fades away over the last ten."}</Small>
       {sleep.tonight ? <Small color="$color10">{sleep.tonight.said}</Small> : <Small>{"Carry a daemon to have sleep sounds made for it."}</Small>}
       {tonight ? <XStack alignSelf="center" marginVertical={4}><RecordCover c={tonight} size={180} /></XStack> : null}
@@ -117,6 +127,7 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
       <XStack marginTop={8}>
         <CareKey label={drift ? "DRIFT DOWN · ON" : "DRIFT DOWN"} ink={ink ?? "#fbfaf6"} lit={drift} onPress={toggleDrift} />
       </XStack>
+      <ReverieDoor side={side} kind={kind} choice={choice} party={party} onSide={setSide} onKind={pickKind} />
       {(() => {   // C-506: which drift, and what it does
         const d = drifts.find((x) => x.id === chosen) ?? LONG_FALL_INFO;
         return (
@@ -127,7 +138,7 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
               ? `With headphones: a slow beat between your ears under the music, easing from ${driftOf().map((x) => `${x.word.toLowerCase()} ${x.beat} Hz`).join(" to ")} as you fall asleep. Headphones only; on a speaker it waits.`
               : `${d.description} The beat between your ears needs headphones; its noise bed plays either way.`}</Small>
             {now.playing && picking ? <Small color="$color8">{"A drift chosen now plays from the next PLAY."}</Small> : null}
-            {picking ? <DriftList drifts={drifts} chosen={chosen} onChoose={choose} /> : null}
+            {picking ? <DriftList drifts={kind ? drifts.filter((x) => x.kind === kind) : drifts} chosen={chosen} onChoose={choose} /> : null}
           </YStack>
         );
       })()}

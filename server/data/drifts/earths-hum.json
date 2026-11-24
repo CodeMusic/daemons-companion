@@ -1,0 +1,95 @@
+{
+ "formatVersion": 2,
+ "id": "earths-hum",
+ "kind": "meditation",
+ "meta": {
+  "name": "EARTH'S HUM",
+  "description": "The planet's own slow ring and its overtones, climbed one rung at a time and back down to the root.",
+  "category": "MEDITATION",
+  "strength": 1,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-552",
+  "note": "Schumann resonances ~7.83 Hz and harmonics; links to human EEG are speculative. Isochronic layer to follow (C-553)."
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 10
+   },
+   {
+    "atSec": 120,
+    "beatHz": 7.83
+   },
+   {
+    "atSec": 420,
+    "beatHz": 7.83
+   },
+   {
+    "atSec": 480,
+    "beatHz": 14.3
+   },
+   {
+    "atSec": 660,
+    "beatHz": 14.3
+   },
+   {
+    "atSec": 720,
+    "beatHz": 20.8
+   },
+   {
+    "atSec": 870,
+    "beatHz": 20.8
+   },
+   {
+    "atSec": 930,
+    "beatHz": 27.3
+   },
+   {
+    "atSec": 1050,
+    "beatHz": 27.3
+   },
+   {
+    "atSec": 1110,
+    "beatHz": 33.8
+   },
+   {
+    "atSec": 1200,
+    "beatHz": 33.8
+   },
+   {
+    "atSec": 1260,
+    "beatHz": 20.8
+   },
+   {
+    "atSec": 1380,
+    "beatHz": 14.3
+   },
+   {
+    "atSec": 1500,
+    "beatHz": 7.83
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 7.83
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 200
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.12
+   }
+  ]
+ }
+}

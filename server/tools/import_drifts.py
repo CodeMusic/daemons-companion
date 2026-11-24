@@ -23,6 +23,33 @@ OUT = os.path.normpath(os.path.join(HERE, "..", "data", "drifts"))
 # PulseEntrain's folders -> REVERIE's kinds (docs/REVERIE.md): sleep, meditation, nature, tinctures
 
 
+# C-551: the research tweaks the user chose (2026-11-24, by multiple choice), applied to the drift by its id each import --
+# so a re-import keeps them. Each says what moved and why. (THE QUIET POCKET's move to MEDITATION was chosen on a wrong
+# reading of mine -- it does fall to deep delta after four minutes -- so it stays in SLEEP.) DRAFT.
+def _end_in_delta(d):          # it ended in theta (5 Hz); ~3 Hz delta was reported to deepen sleep (Jirakittayakorn & Wongsawat 2018)
+    sc = d["entrainment"]["scenes"]
+    dur = d["meta"].get("durationSec") or sc[-1]["atSec"]
+    sc[:] = [x for x in sc if x["atSec"] < dur - 300] + [{"atSec": dur - 300, "beatHz": 5.0}, {"atSec": dur, "beatHz": 2.5}]
+def _gamma_40(d):              # its top was 35 Hz; 40 Hz is the gamma studied (Iaccarino et al. 2016; Chan et al. 2022)
+    sc = d["entrainment"]["scenes"]
+    dur = d["meta"].get("durationSec") or sc[-1]["atSec"]
+    sc[:] = [x for x in sc if x["atSec"] < dur - 420] + [{"atSec": dur - 420, "beatHz": 35.0}, {"atSec": dur - 360, "beatHz": 40.0}, {"atSec": dur, "beatHz": 40.0}]
+def _line(text):
+    def f(d): d["meta"]["description"] = text
+    return f
+def _kind(kind):
+    def f(d): d["kind"] = kind; d["meta"]["category"] = kind.upper()
+    return f
+TWEAKS = {
+    "the-opened-hand": _end_in_delta,
+    "all-strings-at-rest": _line("Harmony first, then all the way down: its beat settles into deep delta, so play it when you mean to rest."),
+    "the-binding-hum": _gamma_40,
+    "below-the-tide": _line("Slower than half a hertz -- heard as the sound slowly moving, not as a beat, and nothing is known of what it does. A curiosity."),
+    "the-waking-gear": _kind("tinctures"),
+    # THE VAULT KEY: its strength (7, the only one above 6) is shown where drifts are chosen (app/damagotchi/SleepSounds.tsx)
+}
+
+
 def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
@@ -78,6 +105,8 @@ def main():
             for k in ("nova", "pulsetto"):
                 if k in d:
                     out[k] = d[k]
+            if did in TWEAKS:
+                TWEAKS[did](out)
             if did in drifts:
                 problems.append(f"{group}/{name}: id {did} twice")
             drifts[did] = out

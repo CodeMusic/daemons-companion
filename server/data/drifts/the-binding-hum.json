@@ -58,14 +58,16 @@
     "carrierHz": 199.97
    },
    {
-    "atSec": 1381.22,
-    "beatHz": 35.02,
-    "carrierHz": 400.02
+    "atSec": 1380,
+    "beatHz": 35.0
    },
    {
-    "atSec": 1800.01,
-    "beatHz": 34.99,
-    "carrierHz": 400.01
+    "atSec": 1440,
+    "beatHz": 40.0
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 40.0
    }
   ]
  },

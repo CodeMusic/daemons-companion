@@ -152,7 +152,7 @@ function DriftList({ drifts, chosen, onChoose }: { drifts: DriftInfo[]; chosen: 
           {drifts.filter((d) => d.kind === k).map((d) => (
             <YStack key={d.id} cursor="pointer" role="button" onPress={() => onChoose(d.id)} paddingVertical={2}>
               <Text fontFamily="$mono" fontSize={13} fontWeight={d.id === chosen ? "700" : "400"} color="$color12">
-                {`${d.id === chosen ? "● " : ""}${d.name}${d.durationSec ? ` · ${Math.round(d.durationSec / 60)} min` : ""}`}</Text>
+                {`${d.id === chosen ? "● " : ""}${d.name}${d.durationSec ? ` · ${Math.round(d.durationSec / 60)} min` : ""}${(d.strength ?? 0) >= 5 ? ` · STRENGTH ${d.strength}` : ""}`}{/* C-551: the strong ones say so (THE VAULT KEY is 7) */}</Text>
               {d.description ? <Small>{d.description.length > 140 ? `${d.description.slice(0, 137).replace(/\s+\S*$/, "")}…` : d.description}</Small> : null}
             </YStack>
           ))}

@@ -1,0 +1,71 @@
+{
+ "formatVersion": 2,
+ "id": "the-twilight-gate",
+ "kind": "sleep",
+ "meta": {
+  "name": "THE TWILIGHT GATE",
+  "description": "For night visions: down two and back one, again and again, to the gate at seven; then low to four, back to the gate, and home.",
+  "category": "SLEEP",
+  "strength": 1,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-552",
+  "note": "A ratchet into theta and back: the hypnagogic border, where images come."
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 10
+   },
+   {
+    "atSec": 90,
+    "beatHz": 8
+   },
+   {
+    "atSec": 180,
+    "beatHz": 9
+   },
+   {
+    "atSec": 270,
+    "beatHz": 7
+   },
+   {
+    "atSec": 750,
+    "beatHz": 4
+   },
+   {
+    "atSec": 990,
+    "beatHz": 7
+   },
+   {
+    "atSec": 1230,
+    "beatHz": 7
+   },
+   {
+    "atSec": 1470,
+    "beatHz": 10
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 10
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 180
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.1
+   }
+  ]
+ }
+}

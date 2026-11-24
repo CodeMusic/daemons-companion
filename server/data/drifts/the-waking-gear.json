@@ -1,11 +1,11 @@
 {
  "formatVersion": 2,
  "id": "the-waking-gear",
- "kind": "meditation",
+ "kind": "tinctures",
  "meta": {
   "name": "THE WAKING GEAR",
   "description": "Thirteen to thirty: the everyday working mind, climbing to sharp attention.",
-  "category": "MEDITATION",
+  "category": "TINCTURES",
   "strength": 1,
   "strengthLabel": "Moderate",
   "durationSec": 1800

@@ -1,0 +1,99 @@
+{
+ "formatVersion": 2,
+ "id": "the-bright-climb",
+ "kind": "meditation",
+ "meta": {
+  "name": "THE BRIGHT CLIMB",
+  "description": "Settled first, then lifted: alpha's calm, a quick step into beta, a pause, and a fast rise into a calm, shimmering gamma.",
+  "category": "MEDITATION",
+  "strength": 3,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-552",
+  "note": "40 Hz is the gamma studied (Iaccarino 2016; Chan 2022); binaural beats above ~35 Hz are faint, so the isochronic layer (C-553) matters most here."
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 15
+   },
+   {
+    "atSec": 180,
+    "beatHz": 15
+   },
+   {
+    "atSec": 420,
+    "beatHz": 10
+   },
+   {
+    "atSec": 660,
+    "beatHz": 10
+   },
+   {
+    "atSec": 720,
+    "beatHz": 20
+   },
+   {
+    "atSec": 900,
+    "beatHz": 20
+   },
+   {
+    "atSec": 960,
+    "beatHz": 40
+   },
+   {
+    "atSec": 1320,
+    "beatHz": 40
+   },
+   {
+    "atSec": 1380,
+    "beatHz": 44
+   },
+   {
+    "atSec": 1440,
+    "beatHz": 40
+   },
+   {
+    "atSec": 1500,
+    "beatHz": 44
+   },
+   {
+    "atSec": 1560,
+    "beatHz": 40
+   },
+   {
+    "atSec": 1620,
+    "beatHz": 44
+   },
+   {
+    "atSec": 1680,
+    "beatHz": 40
+   },
+   {
+    "atSec": 1740,
+    "beatHz": 44
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 42
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 220
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.1
+   }
+  ]
+ }
+}

@@ -20,6 +20,16 @@
   "phone": false
  },
  {
+  "id": "earths-hum",
+  "name": "EARTH'S HUM",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "The planet's own slow ring and its overtones, climbed one rung at a time and back down to the root.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
+ },
+ {
   "id": "fog-burning-off",
   "name": "FOG BURNING OFF",
   "kind": "meditation",
@@ -170,6 +180,16 @@
   "phone": false
  },
  {
+  "id": "the-bright-climb",
+  "name": "THE BRIGHT CLIMB",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Settled first, then lifted: alpha's calm, a quick step into beta, a pause, and a fast rise into a calm, shimmering gamma.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
   "id": "the-vault-key",
   "name": "THE VAULT KEY",
   "kind": "meditation",
@@ -177,16 +197,6 @@
   "description": "The one held back: the slowest bands, for the stillest kind of awe. Strong; not a first one.",
   "durationSec": 1800,
   "strength": 7,
-  "phone": false
- },
- {
-  "id": "the-waking-gear",
-  "name": "THE WAKING GEAR",
-  "kind": "meditation",
-  "group": "MEDITATION",
-  "description": "Thirteen to thirty: the everyday working mind, climbing to sharp attention.",
-  "durationSec": 1800,
-  "strength": 1,
   "phone": false
  },
  {
@@ -244,7 +254,7 @@
   "name": "ALL STRINGS AT REST",
   "kind": "sleep",
   "group": "SLEEP",
-  "description": "Not quite sleep -- harmony: every part of you tuned down to one quiet chord.",
+  "description": "Harmony first, then all the way down: its beat settles into deep delta, so play it when you mean to rest.",
   "durationSec": 1800,
   "strength": 1,
   "phone": false
@@ -254,7 +264,7 @@
   "name": "BELOW THE TIDE",
   "kind": "sleep",
   "group": "SLEEP",
-  "description": "Slower than half a hertz -- slower than the brain usually goes. Total stillness; a curiosity more than a cure.",
+  "description": "Slower than half a hertz -- heard as the sound slowly moving, not as a beat, and nothing is known of what it does. A curiosity.",
   "durationSec": 2220,
   "strength": 2,
   "phone": false
@@ -335,6 +345,16 @@
   "kind": "sleep",
   "group": "SLEEP",
   "description": "A pocket of peace in a busy day: the chatter hushed, steady alpha all the way through.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "the-twilight-gate",
+  "name": "THE TWILIGHT GATE",
+  "kind": "sleep",
+  "group": "SLEEP",
+  "description": "For night visions: down two and back one, again and again, to the gate at seven; then low to four, back to the gate, and home.",
   "durationSec": 1800,
   "strength": 1,
   "phone": false
@@ -877,6 +897,16 @@
   "description": "Falling in love, in the body: the heart swooping, a warmth spreading.",
   "durationSec": 1800,
   "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "the-waking-gear",
+  "name": "THE WAKING GEAR",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Thirteen to thirty: the everyday working mind, climbing to sharp attention.",
+  "durationSec": 1800,
+  "strength": 1,
   "phone": false
  },
  {

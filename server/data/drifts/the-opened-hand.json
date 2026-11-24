@@ -30,8 +30,12 @@
     "beatHz": 5.05
    },
    {
-    "atSec": 1200.01,
-    "beatHz": 5.02
+    "atSec": 900,
+    "beatHz": 5.0
+   },
+   {
+    "atSec": 1200,
+    "beatHz": 2.5
    }
   ]
  },

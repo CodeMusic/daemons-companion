@@ -183,6 +183,21 @@ export async function homeRoute(store: Store, keys: X.Keys, p: X.Player, name: s
     }
     case "battle/answer": case "battle/choose": case "battle/leave": case "battle/award": case "battle/seen":
       return isC(b.id) ? marked(await there(name, { ...b, id: strip(b.id) })) : here(name, b);
+    // C-471 (C-329's remainder; the user, 2026-11-11: "either across accounts or within the household"): DAEMONS IN
+    // DIALOGUE with a friend's home -- a talk with a daemon out on the commons ("c:" before its id) is begun there and held
+    // there, written by the commons' own mind (commons_main.ts), both homes seeing it; this daemon's card goes with it as
+    // it goes across accounts (cardOf: goal titles, nothing its person said), and every line passes the filter. The talks
+    // are listed beside the home's own, the commons' marked "c:"; one talk and its INTEGRATE are asked where it lives.
+    case "converse":
+      return isC(b.with) ? marked(await there("converse", { ...b, with: strip(b.with) })) : here("converse", b);
+    case "talks": {
+      const home = here("talks", b), far: any = await soon(there("talks", {}));
+      if (!far || far.error || !Array.isArray(far.dialogues) || !home || home.error) return home;
+      return { ...home, dialogues: [...(home.dialogues ?? []), ...far.dialogues.map(marked)]
+                 .sort((x: any, y: any) => String(y.at).localeCompare(String(x.at))) };
+    }
+    case "talk": case "integrate":
+      return isC(b.id) ? marked(await there(name, { ...b, id: strip(b.id) })) : here(name, b);
     case "written": {
       const ids: string[] = Array.isArray(b.ids) ? b.ids.map(String) : [];
       here("written", { ids: ids.filter((i) => !isC(i)) });

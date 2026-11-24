@@ -9,7 +9,8 @@ import { makeCommons } from "./commons_api.js";
 import { accountsConfigFromEnv, eraseIdle } from "./accounts_api.js";
 import { Store } from "../shared/db.js";
 import { reach } from "./commons.js";
-import { llmTalker } from "../machine/llmtalker.js";
+import { llmThinker, llmTalker } from "../machine/llmtalker.js";
+import { recover as recoverDialogues, setDialogueThinker } from "../damagotchi/dialogue.js";
 import { meetOnTheirOwn, setMeetTalker } from "../together.js";
 
 const db = process.env.COMMONS_DB || fileURLToPath(new URL("../../commons.sqlite", import.meta.url));
@@ -20,6 +21,10 @@ const port = Number(process.env.COMMONS_PORT || 4750), host = process.env.COMMON
 const store = new Store(db);
 const llm = process.env.COMMONS_LLM_URL, model = process.env.COMMONS_LLM_MODEL;
 if (llm && model) setMeetTalker(llmTalker(llm, model, process.env.COMMONS_LLM_KEY ?? ""));
+// C-471: DAEMONS IN DIALOGUE between friends' homes, held here -- each line and INTEGRATE's write-up from the same
+// endpoint; unset, a talk begun here stops at once and says no mind is answering. Talks a restart cut short, settled.
+recoverDialogues(store, "the commons restarted");                                  // DRAFT
+if (llm && model) setDialogueThinker(llmThinker(llm, model, process.env.COMMONS_LLM_KEY ?? ""));
 setInterval(() => { meetOnTheirOwn(store, reach(store)).catch(() => {}); }, 15 * 60 * 1000).unref();
 // C-226: ACCOUNTS beside it -- ACCOUNTS_APPLE_AUD / ACCOUNTS_GOOGLE_AUD (the app's ids with each provider, comma lists),
 // ACCOUNTS_RP_ID and ACCOUNTS_ORIGINS (the passkeys' site and pages); unset, sign-in and passkeys say they are not set up

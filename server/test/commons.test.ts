@@ -14,6 +14,7 @@ import { Store } from "../src/shared/db.js";
 import { readAway, readBoxes } from "../src/game/save/reader.js";
 import { expFor } from "../src/game/save/growth.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
+import { setDialogueThinker } from "../src/damagotchi/dialogue.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 const mon = (personality: number, otId: number, species: number, level: number, away = false): DaemonSpec =>
@@ -85,6 +86,27 @@ describe("THE COMMONS (C-222)", () => {
     expect(after.met[0]).toMatchObject({ commons: true, a: { player: "ROVER · ROVER HOUSE" }, b: { player: "KIT · KIT HOUSE" } });
     expect(after.met[0].lines.map((l: any) => l.by)).toEqual(["written", "written", "written", "written"]);   // no model on this commons
     expect((await get(`${hubB}/api/trade`)).out.met.some((m: any) => m.commons && !m.trade)).toBe(true);
+
+    // C-471: DAEMONS IN DIALOGUE across homes -- begun on the commons, held there, both homes listing it as "c:"
+    const asked: string[] = [];
+    setDialogueThinker(async (system) => { asked.push(system); return { text: asked.length % 2 ? "The light moves slowly here." : "It does, and I like it.", by: "commons:test" }; },
+                       async () => ({ text: "TITLE: Slow light\n\nThey agreed about the light.", by: "commons:test" }));
+    const talk = await post(`${hubA}/api/trade/converse`, { with: others[0].id, prompt: "talk about the light today", turns: 2 });
+    expect(talk.error).toBeUndefined();
+    expect(talk.id).toMatch(/^c:/);
+    await new Promise((r) => setTimeout(r, 200));
+    const seenA = await post(`${hubA}/api/trade/talks`, {}), seenB = await post(`${hubB}/api/trade/talks`, {});
+    expect(seenA.dialogues).toMatchObject([{ id: talk.id, commons: true }]);
+    expect(seenB.dialogues).toMatchObject([{ id: talk.id, commons: true }]);
+    const one = await post(`${hubB}/api/trade/talk`, { id: talk.id });
+    expect(one).toMatchObject({ id: talk.id, status: "done", a: { player: "ROVER · ROVER HOUSE" }, b: { player: "KIT · KIT HOUSE" } });
+    expect(one.lines.length).toBe(4);                                        // two turns each
+    expect(one.lines.every((l: any) => l.by === "commons:test")).toBe(true);    // written by the commons' own mind
+    expect(asked.every((x) => /^You are /.test(x))).toBe(true);                 // each daemon spoke as its persona
+    expect((await post(`${hubA}/api/trade/integrate`, { id: talk.id })).integrating).toBe(true);
+    await new Promise((r) => setTimeout(r, 100));
+    expect((await post(`${hubA}/api/trade/talk`, { id: talk.id })).written).toMatchObject({ title: "Slow light" });
+    setDialogueThinker(null);
   });
 
   it("the keeper's list and approval answer only on the commons' own machine; a home needs its key", async () => {

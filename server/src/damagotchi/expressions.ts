@@ -14,9 +14,9 @@
 // Which one shows: asleep or drowsy first (C-114), then the strongest feeling past its threshold (C-120), else awake.
 // The names are the code's -- a screen never says them (feelings.ts).
 import type { Life } from "./life.js";
-import type { Axis, Feelings } from "./psyche/feelings.js";
-import facesJson from "../data/faces.json" with { type: "json" };
-import mouthsFoundJson from "../data/mouths.found.json" with { type: "json" };   // C-303
+import type { Axis, Feelings } from "../psyche/feelings.js";
+import facesJson from "../../data/faces.json" with { type: "json" };
+import mouthsFoundJson from "../../data/mouths.found.json" with { type: "json" };   // C-303
 
 export type Shade = { sat: number; val: number; tint: [number, number, number]; mix: number };
 export type Pose = { dy: number; squash: number; bob: number; still: boolean; shake: boolean; girth?: number };   // C-266: girth, its width about its middle (care.ts)

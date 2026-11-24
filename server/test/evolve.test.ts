@@ -3,7 +3,7 @@ import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/game/save/growth.js";
 import { syncSave } from "../src/game/save/writer.js";
 import { readSave, readBoxes, readAway, blocks, ORDERS } from "../src/game/save/reader.js";
-import { evolveTarget, judgeEvolution, evolvedOf, bondAdd, bondOf, bondScore, bondSeen, AT_HOME } from "../src/evolve.js";
+import { evolveTarget, judgeEvolution, evolvedOf, bondAdd, bondOf, bondScore, bondSeen, AT_HOME } from "../src/damagotchi/evolve.js";
 import { Store } from "../src/shared/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 
@@ -76,7 +76,7 @@ describe("a bond built while carried (C-185)", () => {
 
 describe("the HANDSHAKE the companion gives (C-185)", () => {
   it("is offered once a save, and never to a save that holds the line", async () => {
-    const { offerGift, giftOf } = await import("../src/gift.js");
+    const { offerGift, giftOf } = await import("../src/damagotchi/gift.js");
     const store = new Store(":memory:");
     expect(offerGift(store, [262])).toBeNull();
     expect(offerGift(store, [1], new Date(), () => 7)).toMatchObject({ state: "offered", personality: 7 * 0x10000 + 7 });

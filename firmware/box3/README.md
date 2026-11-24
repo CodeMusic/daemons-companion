@@ -18,7 +18,7 @@ over it.
 
 A tap on the screen asks without the wake word.
 
-**The pictures are drawn by the companion** (`server/src/face.ts`), as every host's expressions are: the box asks
+**The pictures are drawn by the companion** (`server/src/damagotchi/face.ts`), as every host's expressions are: the box asks
 `GET /api/device/face` every 20 s for its face's revision, and fetches the fourteen pictures (`/art/face/<phase>-<0|1>.png`)
 again only when the daemon, its expression or its den changed. Until the companion answers, or while no daemon is
 carried, each phase shows ESPHome's own illustration instead -- the box is never less than the voice assistant it was.

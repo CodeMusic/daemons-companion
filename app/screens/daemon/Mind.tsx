@@ -3,8 +3,8 @@
 // what it feels and the weather in its room; a tap on a feeling shows the words a model is given ("very GLAD") and the
 // event behind the strongest. DREAMS sets the companion's last dream beside the one the save carries home (T-462).
 // VOICE is the recipe it speaks in, with a line to hear; SELF the sentences a model reads, exactly. REMEMBERED waits on
-// the night's memory (C-253). C-469: NOW also lists what it has IN MIND, its WORKING MEMORY (server/src/workingmemory.ts),
-// let go each night once the memory is made. GET /api/mind/portal (server/src/mind.ts). Every word DRAFT.
+// the night's memory (C-253). C-469: NOW also lists what it has IN MIND, its WORKING MEMORY (server/src/damagotchi/workingmemory.ts),
+// let go each night once the memory is made. GET /api/mind/portal (server/src/damagotchi/mind.ts). Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";

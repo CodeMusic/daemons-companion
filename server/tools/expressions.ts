@@ -7,7 +7,7 @@
 // the eye patches, the mark above the head at the back, and the pose's rest (dy, squash) -- not the motion.
 import { readFileSync, writeFileSync } from "node:fs";
 import { decodeIndexedPng } from "../src/art.js";
-import { EXPRESSIONS, eyePatch, faceOf, SHADED, shade } from "../src/expressions.js";
+import { EXPRESSIONS, eyePatch, faceOf, SHADED, shade } from "../src/damagotchi/expressions.js";
 import { canvas, png } from "./png.js";
 
 const argv = process.argv.slice(2), only = argv[0] === "--only" ? argv.splice(0, 2)[1].split(",") : null;

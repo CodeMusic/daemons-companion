@@ -57,7 +57,7 @@ static void tapOrient(lv_event_t *e) {
 }
 
 // ---- C-144 (the user, 2026-10-16): LIGHT, DARK or AUTO. The Tab5 has no light or dark of its own to follow, so AUTO --
-// the default -- is dark through the daemon's night, 8pm to 6am where the companion is (server/src/life.ts NIGHT_FROM
+// the default -- is dark through the daemon's night, 8pm to 6am where the companion is (server/src/damagotchi/life.ts NIGHT_FROM
 // and MORNING), by the clock its state carries; light until it has said the time. Kept on the Tab5, as the way up is.
 enum Look { L_AUTO, L_LIGHT, L_DARK };
 static int look = L_AUTO;

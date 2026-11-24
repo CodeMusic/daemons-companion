@@ -15,10 +15,10 @@ import { Store, type Db } from "../../server/src/shared/store";
 import { handles, route, takeFix, takeNight, takeSubtle, type Reply } from "../../server/src/routes";
 import { show as glassShow } from "../../server/src/glass";   // C-262
 import { awayNow, deviceSettings, deviceState, type Edition, type Host, type SaveFile } from "../../server/src/core";
-import { assign, carryView, setYours, yoursOf } from "../../server/src/carry";
+import { assign, carryView, setYours, yoursOf } from "../../server/src/damagotchi/carry";
 import { kindOf, validDeviceId } from "../../server/src/deviceid";
 import { repaint, streakColours } from "../../server/src/paint";
-import { EXPRESSIONS, SHADED, shadePalette, type Expression } from "../../server/src/expressions";
+import { EXPRESSIONS, SHADED, shadePalette, type Expression } from "../../server/src/damagotchi/expressions";
 import { readSave } from "../../server/src/game/save/reader";
 import { afterSync, beforeSync, remoteLink, setHub, TRADE_PATHS, tradeRoute } from "../../server/src/game/tradelink";   // C-219
 import { BATTLE_PATHS, battleRoute } from "../../server/src/game/battleroute";   // C-328

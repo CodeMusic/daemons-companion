@@ -9,7 +9,7 @@
 // MIND: it is handed its writer (a Writer); it never calls a model itself. Every word DRAFT.
 import type { Store } from "../shared/store.js";
 import { DAY_WORDS } from "./memory.js";
-import { dreamsOf } from "../dreams.js";
+import { dreamsOf } from "../damagotchi/dreams.js";
 import { entriesBetween, type Writer } from "../lifemanagement/journal.js";
 
 export type Span = "day" | "month" | "season" | "year";

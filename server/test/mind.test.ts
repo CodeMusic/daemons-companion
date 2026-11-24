@@ -3,9 +3,9 @@
 import { describe, expect, it } from "vitest";
 import { sync, type Host } from "../src/core.js";
 import { Store } from "../src/shared/db.js";
-import { checkNight, DREAM_TITLES, dreamImage, keepNight, type Night } from "../src/dreams.js";
+import { checkNight, DREAM_TITLES, dreamImage, keepNight, type Night } from "../src/damagotchi/dreams.js";
 import type { Feelings } from "../src/psyche/feelings.js";
-import { FELT, gameDream, mindNow, ORDINARY } from "../src/mind.js";
+import { FELT, gameDream, mindNow, ORDINARY } from "../src/damagotchi/mind.js";
 import { buildSave } from "./build_save.js";
 
 const f = (o: Partial<Feelings>): Feelings => ({ glad: 0, mad: 0, sad: 0, calm: 0, restless: 0, strongest: null, ...o });

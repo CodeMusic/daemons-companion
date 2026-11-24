@@ -62,7 +62,7 @@ function render(tune: [number, number][], root: number, pcm: Int16Array, ins: In
 }
 
 // C-418: notes that may sound together -- a daemon's own song, where a note not yet learned is STATIC, a cloud of
-// candidate notes at once over a hiss (server/src/ownsong.ts) -- each at its own start, mixed, then the hiss laid in
+// candidate notes at once over a hiss (server/src/damagotchi/ownsong.ts) -- each at its own start, mixed, then the hiss laid in
 export interface Voicing { midi: number; at: number; ms: number; vel: number }
 export interface Hiss { at: number; ms: number; level: number }
 export function mixWav(notes: Voicing[], hiss: Hiss[], pcm: Int16Array, ins: Instrument, level = 1): Uint8Array {

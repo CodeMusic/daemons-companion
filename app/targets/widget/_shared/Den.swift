@@ -1,4 +1,4 @@
-// C-113: the den the daemon is drawn in -- its type's place (server/src/dens.ts says which colours and which motif).
+// C-113: the den the daemon is drawn in -- its type's place (server/src/damagotchi/dens.ts says which colours and which motif).
 // Drawn here, never sent as a picture: the wall over its deep, the floor it stands on, the motif faint across it, and a
 // light behind wherever the daemon is. No words.
 import SwiftUI

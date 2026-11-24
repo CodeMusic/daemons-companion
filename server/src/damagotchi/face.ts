@@ -9,8 +9,8 @@
 // screen, the daemon standing in its den (C-113), drawn here.
 import { createHash } from "node:crypto";
 import { deflateSync } from "node:zlib";
-import { decodeIndexedPng } from "./art.js";
-import { crc32 } from "./paint.js";
+import { decodeIndexedPng } from "../art.js";
+import { crc32 } from "../paint.js";
 import { EXPRESSIONS, SHADED, eyePatch, mouthPatch, shade, type Expression, type Eyes, type Face, type Mark } from "./expressions.js";
 import { carePatch, type Worn } from "./care.js";   // C-266
 

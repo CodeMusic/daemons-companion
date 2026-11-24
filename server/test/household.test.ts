@@ -2,7 +2,7 @@
 // care given on either seen on both. On synthetic saves built as the game builds them; never the user's own.
 import { describe, expect, it } from "vitest";
 import * as core from "../src/core.js";
-import { carriedFor } from "../src/carry.js";
+import { carriedFor } from "../src/damagotchi/carry.js";
 import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
 import { SPACE_MS } from "../src/household.js";

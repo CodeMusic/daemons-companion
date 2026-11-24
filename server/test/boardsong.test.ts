@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/game/save/growth.js";
-import { boardSong, lesson, noteColours, songOf } from "../src/ownsong.js";
+import { boardSong, lesson, noteColours, songOf } from "../src/damagotchi/ownsong.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 const curve = SPECIES["1"].growth;                         // ROVERCUB

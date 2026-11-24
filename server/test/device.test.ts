@@ -106,7 +106,7 @@ describe("a step finished grows the daemon you carry (C-44, C-45)", () => {
 });
 
 // C-113: a daemon's den is its type's place -- the type's colour and motif, the second type in the floor
-import { den } from "../src/dens.js";
+import { den } from "../src/damagotchi/dens.js";
 describe("den", () => {
   it("is drawn from the first type, with the second in the floor", () => {
     const flow = den(["FLOW"]), both = den(["FLOW", "ENTROPY"]);

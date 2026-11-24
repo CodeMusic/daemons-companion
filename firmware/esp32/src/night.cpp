@@ -4,7 +4,7 @@
 // counted from when the stillness began) -- and it ends with the daemon woken (CARE, WAKE) or three minutes on the move
 // (or after sixteen hours, whatever happens). In between every stir is counted. A night of an hour or more is told to
 // the companion as an interaction -- "night <from> <to> <stirs> <tucked>" -- and the dream is shown at once, written here
-// from the night's shape (the companion's own words, server/src/dreams.ts, a smaller handful of them); when the hub's
+// from the night's shape (the companion's own words, server/src/damagotchi/dreams.ts, a smaller handful of them); when the hub's
 // modules write their own telling, the next state brings it and it is shown once too. Kept in flash, so a restart in the
 // night does not lose it. Every word DRAFT.
 #include "app.h"
@@ -42,7 +42,7 @@ static const char *IMAGES[] = {
 };
 static const char *WAKES[] = { "bright", "rested", "humming", "glad of you" };
 static String dreamOf(float hours, int stirs) {
-  // C-293: the daemon telling it -- "I dreamt ..." (server/src/dreams.ts dreamWords)
+  // C-293: the daemon telling it -- "I dreamt ..." (server/src/damagotchi/dreams.ts dreamWords)
   uint32_t s = (uint32_t)(from / 3600) * 2654435761u;
   const char *a = IMAGES[s % 8], *b = IMAGES[(s / 8 + 3) % 8];
   if (hours < 4 || stirs > max(4.0f, hours * 1.2f)) return String("I dreamt in pieces: ") + a + "... then " + b + ".";
@@ -63,7 +63,7 @@ bool dreamAgain() { if (!dreamText.length()) return false; dreamUntil = millis()
 
 // C-206: the last night, for the face's heads-up -- its hours and quality, kept in flash with when it ended
 static const char *qualityOf(float hours, int stirs) {
-  if (hours < 4 || stirs > max(4.0f, hours * 1.2f)) return "BROKEN";          // server/src/dreams.ts quality()
+  if (hours < 4 || stirs > max(4.0f, hours * 1.2f)) return "BROKEN";          // server/src/damagotchi/dreams.ts quality()
   if (hours >= 6.5f && stirs <= max(2.0f, hours / 3)) return "VIVID";
   return "QUIET";
 }
@@ -170,7 +170,7 @@ void nightLoop(uint32_t now) {
   else if (t - from > 16L * 3600) end(t);
 }
 
-// the state's dream (server/src/dreams.ts freshDream): the module's telling, shown once
+// the state's dream (server/src/damagotchi/dreams.ts freshDream): the module's telling, shown once
 void nightFromState(JsonVariantConst d) {
   if (d.isNull()) return;
   int id = d["id"] | 0; String by = d["by"] | ""; String text = d["text"] | "";

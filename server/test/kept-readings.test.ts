@@ -5,7 +5,7 @@ import { Store } from "../src/shared/db.js";
 import { daemonFeelings, daemonLife, indexOf } from "../src/core.js";
 import { readIndex } from "../src/game/save/index.js";
 import { casinoPending, casinoResults } from "../src/game/casino.js";
-import { bondOf, bondSeen } from "../src/evolve.js";
+import { bondOf, bondSeen } from "../src/damagotchi/evolve.js";
 import { buildSave } from "./build_save.js";
 
 describe("kept readings", () => {

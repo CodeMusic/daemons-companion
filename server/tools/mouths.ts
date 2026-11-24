@@ -12,7 +12,7 @@
 // is there is body.
 import { readFileSync, writeFileSync } from "node:fs";
 import { decodeIndexedPng } from "../src/art.js";
-import { EXPRESSIONS, type Face } from "../src/expressions.js";
+import { EXPRESSIONS, type Face } from "../src/damagotchi/expressions.js";
 import facesJson from "../data/faces.json" with { type: "json" };
 import { canvas, png } from "./png.js";
 

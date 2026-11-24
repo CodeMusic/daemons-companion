@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { drowsyFrom, thrived, thriveOf } from "../src/thrive.js";
-import { keepNight, checkNight } from "../src/dreams.js";
-import { EXPRESSIONS } from "../src/expressions.js";
+import { drowsyFrom, thrived, thriveOf } from "../src/damagotchi/thrive.js";
+import { keepNight, checkNight } from "../src/damagotchi/dreams.js";
+import { EXPRESSIONS } from "../src/damagotchi/expressions.js";
 import { Store } from "../src/shared/db.js";
 
 const who = { nickname: "SPARKY", species: 25, personality: 1234, device: "t-watch-ultra-f351d4" };

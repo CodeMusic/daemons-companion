@@ -9,10 +9,10 @@
 // Tone, never hue (vision 4.40, invariant 5): in good spirits a daemon's body lightens, in low spirits it darkens, and
 // it keeps its type's colour. The stronger the lean towards the edge, the stronger the tone; as it is, no tone at all.
 // This file runs on the phone too (C-111): no node:*. Every word DRAFT.
-import { clockDerived, wokenOf } from "./psyche/feelings.js";
+import { clockDerived, wokenOf } from "../psyche/feelings.js";
 import type { Interaction } from "./life.js";
 import type { Shade } from "./expressions.js";
-import type { Spirits, SpiritsClass } from "./game/save/reader.js";
+import type { Spirits, SpiritsClass } from "../game/save/reader.js";
 
 export type SpiritAxis = "kept" | "bond" | "work" | "portion";
 export type SpiritTotals = Record<SpiritAxis, number>;

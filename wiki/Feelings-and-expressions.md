@@ -8,7 +8,7 @@ from the game.
 ## The den (C-113)
 
 A daemon lives somewhere, and the place looks like its type.
-[`server/src/dens.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/dens.ts) describes one den a
+[`server/src/damagotchi/dens.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/damagotchi/dens.ts) describes one den a
 type: the type's colour, as the game colours its sprites, and a motif for what the type is -- FLOW waves, STRATUM
 layers, LEGACY a cairn, OPAQUE a box you cannot see into -- with a second type tinting the floor. No words: a den is
 only somewhere to be. Every host is sent the description and draws it itself, the daemon walking it and facing its way;
@@ -39,7 +39,7 @@ over from the AI harness that plays the game:
 
 ## The expressions (C-119)
 
-[`server/src/expressions.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/expressions.ts):
+[`server/src/damagotchi/expressions.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/damagotchi/expressions.ts):
 asleep and drowsy come first, then the feeling furthest past its threshold, else awake.
 
 | expression | the body's colours | pose | mark | eyes |
@@ -60,7 +60,7 @@ hosting alone -- decides which shows and sends every host a finished description
 ## How it has been cared for (C-266)
 
 The feelings answer the last day; **care** answers the last two weeks
-([`server/src/care.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/care.ts)). Like the
+([`server/src/damagotchi/care.ts`](https://github.com/CodeMusic/daemons-companion/blob/main/server/src/damagotchi/care.ts)). Like the
 feelings, it is read, never stored -- worked out from what you have done together and the clock -- so nothing runs down
 on its own, and tending it puts it right again, a day at a time.
 

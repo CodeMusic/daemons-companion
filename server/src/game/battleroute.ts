@@ -22,7 +22,7 @@ import { battleCard, cardOfRecord } from "./save/battler.js";
 import { tradeRecord, toB64, fromB64 } from "./save/trade.js";
 import { readAway } from "./save/reader.js";
 import { levelFromExp } from "./save/growth.js";
-import { carrying } from "../carry.js";
+import { carrying } from "../damagotchi/carry.js";
 import { pendingExp } from "../core.js";
 import { validDeviceId } from "../deviceid.js";
 import speciesJson from "../../data/species.json" with { type: "json" };

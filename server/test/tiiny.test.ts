@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { lastHearing, pickQuick, pickThinker, tiinyChat, tiinyIn, tiinyModels, tiinySpeak, tiinyUrl, TIINY_SAY_MOST, TIINY_VOICE_PLAIN, lastAnswer, noteAnswer, sameModel, standIn, STAND_IN_MS, tiinyHear, tiinyWhy, unloaded, tiinyEnhance } from "../src/machine/tiiny.js";
 import { voicePieces, PIECE_MOST, TIINY_PIECE_MOST } from "../src/machine/voice.js";
-import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/self.js";
+import { bandOf, bondTrend, feelingsSaid, keepBondDay, selfOf, shortSelf } from "../src/damagotchi/self.js";
 
 const settings = (o: Record<string, string>) => (k: string) => o[k] ?? null;
 const at = tiinyIn(settings({ "tiiny.url": "http://tiiny.test/openai/v1", "tiiny.key": "k", "tiiny.tts": "qwen3-tts", "tiiny.asr": "qwen3-asr" }))!;

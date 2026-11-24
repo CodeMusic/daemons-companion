@@ -6,7 +6,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
-import { assign, carriedFor, carryView, carrying, setYours, yoursOf } from "../src/carry.js";
+import { assign, carriedFor, carryView, carrying, setYours, yoursOf } from "../src/damagotchi/carry.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import { Store } from "../src/shared/db.js";
 import { buildSave } from "./build_save.js";

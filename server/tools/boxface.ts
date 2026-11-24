@@ -7,9 +7,9 @@
 // It draws with the server's own renderFace, so what it shows is what the board is sent.
 import { readFileSync, writeFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
-import { den } from "../src/dens.js";
-import { EXPRESSIONS, faceOf, type Face } from "../src/expressions.js";
-import { FRAMES, PHASES, SCREEN, renderFace } from "../src/face.js";
+import { den } from "../src/damagotchi/dens.js";
+import { EXPRESSIONS, faceOf, type Face } from "../src/damagotchi/expressions.js";
+import { FRAMES, PHASES, SCREEN, renderFace } from "../src/damagotchi/face.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { canvas, png } from "./png.js";
 

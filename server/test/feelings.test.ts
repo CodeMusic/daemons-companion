@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { feelings, derived, HALF_LIFE_MS } from "../src/psyche/feelings.js";
-import type { Interaction } from "../src/life.js";
+import type { Interaction } from "../src/damagotchi/life.js";
 
 const at = (d: number, h: number, m: number, kind: string): Interaction => ({ at: new Date(2026, 9, d, h, m).toISOString(), kind });
 const when = (d: number, h: number, m = 0) => new Date(2026, 9, d, h, m);

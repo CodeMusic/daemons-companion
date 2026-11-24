@@ -1,5 +1,5 @@
 // C-113: the daemon's den on a board -- its type's place, as the widget draws it (app/targets/widget/Den.swift) from
-// the same description (server/src/dens.ts, `daemon.den` in the state): the wall over its deep, the motif faint across
+// the same description (server/src/damagotchi/dens.ts, `daemon.den` in the state): the wall over its deep, the motif faint across
 // it, the floor it stands on. Drawn into the canvas each frame with the board's own primitives; no words.
 #include "app.h"
 #include "display.h"

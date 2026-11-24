@@ -25,7 +25,7 @@
 // Every word DRAFT. No node: imports (it runs on the phone, hosting alone).
 import type { Store } from "../shared/store.js";
 import type { Feelings } from "./feelings.js";
-import { dreamsOf } from "../dreams.js";
+import { dreamsOf } from "../damagotchi/dreams.js";
 import { fixesOf, type Fix } from "../where.js";
 import { weatherPlace } from "../weather.js";
 import { weatherNow } from "./context.js";

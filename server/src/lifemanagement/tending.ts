@@ -8,7 +8,7 @@
 import type { Store } from "../shared/store.js";
 import { hlcIso, Praxis, type Form } from "@daemons/praxis";
 import { dayVirtue, ensureSpace, localDate } from "./practice.js";
-import { dreamsOf } from "../dreams.js";
+import { dreamsOf } from "../damagotchi/dreams.js";
 import subtleJson from "../../data/subtle.json" with { type: "json" };
 import weekJson from "../../data/week.json" with { type: "json" };
 

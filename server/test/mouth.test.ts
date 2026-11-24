@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EXPRESSIONS, expressionFor, faceOf, mouthPatch } from "../src/expressions.js";
+import { EXPRESSIONS, expressionFor, faceOf, mouthPatch } from "../src/damagotchi/expressions.js";
 
 describe("C-213: the mouth, open while it speaks", () => {
   it("is known where a person found it, and nothing elsewhere", () => {

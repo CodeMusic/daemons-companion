@@ -265,7 +265,7 @@ bool takeState(const char *json) {
     st.daemon.tired = lf["tired"] | "awake";
     takeExpression(doc["daemon"]["expression"]);         // C-119: how it looks now, decided on the server
     takeThrive(doc["daemon"]["thrive"]);                 // C-207: and how the week has gone
-    JsonVariant dn = doc["daemon"]["den"];                // C-113: its den (server/src/dens.ts); CONTENT's if none
+    JsonVariant dn = doc["daemon"]["den"];                // C-113: its den (server/src/damagotchi/dens.ts); CONTENT's if none
     st.daemon.den = Den();
     if (!dn.isNull()) {
       st.daemon.den.motif = dn["motif"] | "nest"; st.daemon.den.wall = dn["wall"] | "#67625a"; st.daemon.den.deep = dn["deep"] | "#3b3832";

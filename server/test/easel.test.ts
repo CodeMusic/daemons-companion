@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { imagePromptOf, moodOfPaint, ownTouch, paintStyle, readPainting, TOUCHES, TYPE_STYLE } from "../src/psyche/easel.js";
 import { comfyPaint, kleinGraph } from "../src/machine/comfy.js";   // C-387
 import { buildPersona, lastWake, nextWake, personaFresh, personaText, signatureOf, todayOf, withToday, type DayPersonaFacts } from "../src/psyche/persona.js";
-import { selfOf } from "../src/self.js";
+import { selfOf } from "../src/damagotchi/self.js";
 import { dayFacts, speciesFacts } from "../src/psyche/personaof.js";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";

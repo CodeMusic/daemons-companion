@@ -6,7 +6,7 @@ import { expFor, levelFromExp } from "../src/game/save/growth.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 import facesJson from "../data/faces.json" with { type: "json" };
 import foundJson from "../data/mouths.found.json" with { type: "json" };
-import { openMouthOf } from "../src/expressions.js";
+import { openMouthOf } from "../src/damagotchi/expressions.js";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { existsSync } from "node:fs";
 

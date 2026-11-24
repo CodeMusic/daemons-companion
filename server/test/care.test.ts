@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { care, careworn, carePatch, girthOf, withCare } from "../src/care.js";
-import { EXPRESSIONS, type Face } from "../src/expressions.js";
-import type { Interaction } from "../src/life.js";
+import { care, careworn, carePatch, girthOf, withCare } from "../src/damagotchi/care.js";
+import { EXPRESSIONS, type Face } from "../src/damagotchi/expressions.js";
+import type { Interaction } from "../src/damagotchi/life.js";
 
 const at = (d: number, h: number, kind: string): Interaction => ({ at: new Date(2026, 9, d, h, 0).toISOString(), kind });
 const noon = (d: number) => new Date(2026, 9, d, 12, 30);

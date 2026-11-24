@@ -54,7 +54,7 @@ import { prunable } from "./backups.js";
 import { createConnection } from "node:net";
 import { aim, DeviceHub, type Via } from "./device.js";
 import { Devices, validDeviceId } from "./devices.js";
-import { assign, carryView, setYours, yoursOf } from "./carry.js";
+import { assign, carryView, setYours, yoursOf } from "./damagotchi/carry.js";
 import { SharedNetworks } from "./networks.js";
 import { SharedRemotes } from "./remotes.js";
 import { hostname, networkInterfaces } from "node:os";
@@ -73,11 +73,11 @@ import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tii
 import { ENTRY_VOICE, INDEX_VOICE, voiceGeneration, voiceRecipe } from "./psyche/voices.js";   // C-251; C-303: the voices' generation; C-387: the INDEX's and the entry's too
 import { speakerNamed, voiceOf } from "./psyche/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
 import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./psyche/personaof.js";   // C-329: a persona from what is known of a daemon
-import { recover as recoverDialogues, setDialogueThinker } from "./dialogue.js";   // C-329: DAEMONS IN DIALOGUE
+import { recover as recoverDialogues, setDialogueThinker } from "./damagotchi/dialogue.js";   // C-329: DAEMONS IN DIALOGUE
 import { playerContextOf } from "./psyche/playervoice.js";        // C-323: the player's, from their save
 import { preferTiiny } from "./machine/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
 import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./machine/endpoints.js";   // C-280 (1)
-import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./self.js";   // C-252
+import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./damagotchi/self.js";   // C-252
 import { readProfile } from "./game/save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, SLEEP_SYSTEM, type SleepContext } from "./psyche/sleepsound.js";   // C-334
 import { journalThreads, museKey, museOf, paintPalette } from "./psyche/muse.js";   // C-386
@@ -95,7 +95,7 @@ import { beatsSaid, paintingCreation, sleepCreation, songCreation, uidOf, type C
 import { BookRecordings } from "./library/bookrecordings.js";   // C-331 (1)
 import { GameMusic } from "./gamemusic.js";   // C-332
 import { FirmwareImages } from "./firmwareimages.js";   // C-335
-import { dayOf as dayBefore, dreamAsk, dreamById, dreamerSaid, dreamsOf, dreamTwice, keepDreamSigns, keepLenses, rewriteDream, titleOf, type Dreamer } from "./dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
+import { dayOf as dayBefore, dreamAsk, dreamById, dreamerSaid, dreamsOf, dreamTwice, keepDreamSigns, keepLenses, rewriteDream, titleOf, type Dreamer } from "./damagotchi/dreams.js";   // C-200; C-283: the day, the journal; C-293: the dreamer
 import { checkModules, House, modulesIn, setModules, type TalkAsk } from "./machine/house.js";
 import { MEET_SETUP, meetOnTheirOwn, meetQuestion, setMeetTalker } from "./together.js";
 import { checkCommand, COMMAND_SETUP, commandPatch, commandQuestion, commandSaid, commandWords, ruleCommand } from "./commands.js";   // C-244   // C-220
@@ -116,17 +116,17 @@ import { accountsRelay } from "./commons/accountslink.js";   // C-226
 import { BATTLE_PATHS, battleRoute } from "./game/battleroute.js";   // C-328
 import { fileURLToPath } from "node:url";
 import * as core from "./core.js";
-import { boardSong } from "./ownsong.js";   // C-479: a board's TRAIN, sung on the board
-import { gameDream, mindNow } from "./mind.js";   // C-254: the mind portal
-import { isLineKind, writtenLine, type LineKind, saying } from "./lines.js";
+import { boardSong } from "./damagotchi/ownsong.js";   // C-479: a board's TRAIN, sung on the board
+import { gameDream, mindNow } from "./damagotchi/mind.js";   // C-254: the mind portal
+import { isLineKind, writtenLine, type LineKind, saying } from "./damagotchi/lines.js";
 import { appNight, handles, route, takeFix, takeNight, takeSubtle, type Reply } from "./routes.js";
-import { WAKES as WAKING_KINDS } from "./life.js";   // C-293
+import { WAKES as WAKING_KINDS } from "./damagotchi/life.js";   // C-293
 import { show as glassShow } from "./glass.js";   // C-262
 import { noteClose, outlookLoop } from "./psyche/intuition.js";   // C-203
-import { EXPRESSIONS, SHADED, faceOf, shade, shadePalette, type Face } from "./expressions.js";
-import { SPIRIT_DAYS, spiritTotals, spiritsPortal, spiritsSaid, toneOf, toneShade } from "./spirits.js";   // C-296: the four totals and the tone
-import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./face.js";
-import { den as denOf } from "./dens.js";
+import { EXPRESSIONS, SHADED, faceOf, shade, shadePalette, type Face } from "./damagotchi/expressions.js";
+import { SPIRIT_DAYS, spiritTotals, spiritsPortal, spiritsSaid, toneOf, toneShade } from "./damagotchi/spirits.js";   // C-296: the four totals and the tone
+import { FRAMES, PHASES, faceRev, mouthPng, renderFace, type Phase } from "./damagotchi/face.js";
+import { den as denOf } from "./damagotchi/dens.js";
 import { Home } from "./home.js";
 import { Tvs, lanHost, tvsForDevice } from "./tv.js";
 import { createSocket } from "node:dgram";
@@ -143,7 +143,7 @@ import { guidePages, guidePassages, keptToPage } from "./library/guideask.js";  
 import { answerOf, dayOf, groundedIn, guideAside, keepAnswer, subtleLine, subtlePages, todaysQuestion } from "./library/subtleask.js";   // C-229, C-230
 import { ackSpellcraft, readHermetic } from "./library/hermetic.js";   // C-238
 import { trickOrTreat } from "./psyche/halloween.js";   // C-240
-import { bondAdd } from "./evolve.js";   // C-176: a meeting by touch, the bond's
+import { bondAdd } from "./damagotchi/evolve.js";   // C-176: a meeting by touch, the bond's
 import { forgetVoiceNote, newVoiceNote, noteHeard, voiceNotesOf } from "./lifemanagement/voicenotes.js";   // C-199 (5)
 import { journalOf, writeChapter, writeSigns } from "./lifemanagement/journal.js";   // C-298; C-356 the signs
 import { inventoryList, readDreamSigns, signsOfDream, symbolAgain } from "./psyche/dreamsigns.js";   // C-484

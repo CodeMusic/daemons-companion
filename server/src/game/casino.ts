@@ -8,7 +8,7 @@
 // again when an answer is lost) is counted once, and the board can tell from `seen` which of its reports are in the
 // balance it is sent and which it must still add itself.
 import type { Store } from "../shared/store.js";
-import { carrying } from "../carry.js";
+import { carrying } from "../damagotchi/carry.js";
 import { BETS, PAYS, catReason } from "./slots.js";
 import type { Reason } from "../psyche/context.js";
 

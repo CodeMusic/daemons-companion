@@ -1,4 +1,4 @@
-// C-119: the daemon's expression on a board -- drawn from the description the server sends (server/src/expressions.ts):
+// C-119: the daemon's expression on a board -- drawn from the description the server sends (server/src/damagotchi/expressions.ts):
 // the body's colours in a shade, the eyes patched, the pose's rest, a mark above the head. No rule of its own: what to
 // show is decided once, on the server (or a phone hosting alone), for every host.
 #pragma once
@@ -16,7 +16,7 @@ struct Expression {
 };
 extern Expression expression;
 extern volatile bool mouthOpen;                        // C-213: open on the beat while its voice plays (talk.cpp)
-// C-207 (server/src/thrive.ts): how the week has gone -- a glow behind it (0..100), a star a goal finished this week, a
+// C-207 (server/src/damagotchi/thrive.ts): how the week has gone -- a glow behind it (0..100), a star a goal finished this week, a
 // moon the morning after a vivid night. Drawn as told, like the expression.
 struct Thrive { int glow = 0, stars = 0; bool moon = false; };
 extern Thrive thrive;

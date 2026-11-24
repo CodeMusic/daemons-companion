@@ -4,7 +4,7 @@ import { Store } from "../src/shared/db.js";
 import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, lastDue, nextDue, PLANS, plans, type Plan } from "../src/machine/schedule.js";
 import { lastOf, markRead, mentionsAsk, mentionsOf, newestUnread, plainLetter, spanSaid, statLines, statsOf, windowOf, writeMention } from "../src/psyche/mentions.js";
 import { keepEntry, newJournal } from "../src/lifemanagement/journal.js";
-import { keepNight } from "../src/dreams.js";
+import { keepNight } from "../src/damagotchi/dreams.js";
 import { route } from "../src/routes.js";
 
 const mem = () => { const m = new Map<string, string>(); return { get: (k: string) => m.get(k) ?? null, set: (k: string, v: string | null) => { if (v === null) m.delete(k); else m.set(k, v); } }; };

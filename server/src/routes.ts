@@ -28,7 +28,7 @@ import { cooked, keepRecipe, recipesView, removeRecipe, uncooked } from "./lifem
 import { itemDone, itemState, keepItem, makeSpace, mineView, removeForm, removeItem, saveForm, spaceView } from "./lifemanagement/myforms.js";   // C-433
 import { addTo, decide, dueCards, learningView, lessonDone, lessonOf, markQuiz, quizOf, quizView, removeFrom, rename, review } from "./lifemanagement/learning.js";   // C-433   // C-357 (3)
 import { weatheringOf } from "./psyche/weathering.js";   // C-357 (4)
-import { VESSEL_UNDER, vesselOf } from "./vessel.js";   // C-357 (5)
+import { VESSEL_UNDER, vesselOf } from "./damagotchi/vessel.js";   // C-357 (5)
 import { cardOfDay, daySpread, draw, futureAgain, isHalloween, thirteenOfDay, type Deck } from "./psyche/arcana.js";   // C-232; C-357
 import marksJson from "../data/marks.json" with { type: "json" };
 const MARKS = marksJson;
@@ -47,21 +47,21 @@ export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
-import { centreOf, checkNight, dayOfDream, dreamAuthors, dreamBooks, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf; T-531: dayOfDream; C-412: centreOf
+import { centreOf, checkNight, dayOfDream, dreamAuthors, dreamBooks, dreamsOf, keepNight, rested, titleOf, type Dream } from "./damagotchi/dreams.js";   // C-200; C-308: titleOf; T-531: dayOfDream; C-412: centreOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
-import { bondAdd, evolvedOf } from "./evolve.js";
-import { songOf, SONGS, summonsFor } from "./ownsong.js";   // C-418; C-419 (3): summonsFor
-import { WAKES, wakesBy } from "./life.js";   // C-293: the cares that wake it, one list
-import { faceOf, openMouthOf } from "./expressions.js";   // C-303: a species' open mouth, as patches; C-357: its eyes, for THE MASK
-import { thriveOf } from "./thrive.js";   // C-207
+import { bondAdd, evolvedOf } from "./damagotchi/evolve.js";
+import { songOf, SONGS, summonsFor } from "./damagotchi/ownsong.js";   // C-418; C-419 (3): summonsFor
+import { WAKES, wakesBy } from "./damagotchi/life.js";   // C-293: the cares that wake it, one list
+import { faceOf, openMouthOf } from "./damagotchi/expressions.js";   // C-303: a species' open mouth, as patches; C-357: its eyes, for THE MASK
+import { thriveOf } from "./damagotchi/thrive.js";   // C-207
 import { again, askSigns, chapterWords, finishChapter, journalOf as aJournal, journalsOf, keepEntry, newJournal, plainPage, removeEntry, removeJournal, renameJournal, summarize } from "./lifemanagement/journal.js";   // C-298
-import { writtenLine, type LineKind, saying } from "./lines.js";   // C-196
+import { writtenLine, type LineKind, saying } from "./damagotchi/lines.js";   // C-196
 import { validDeviceId } from "./deviceid.js";
-import { carryView } from "./carry.js";
+import { carryView } from "./damagotchi/carry.js";
 import { apart, partnerIn, spaceOf, spaces as householdSpaces, swap, together } from "./household.js";   // C-327
-import * as Dialogue from "./dialogue.js";   // C-329: two daemons of the household in dialogue
+import * as Dialogue from "./damagotchi/dialogue.js";   // C-329: two daemons of the household in dialogue
 import { dayFacts, speciesFacts } from "./psyche/personaof.js";   // C-329
-import { carriedFor } from "./carry.js";   // C-329
+import { carriedFor } from "./damagotchi/carry.js";   // C-329
 import { ackSpellcraft, FIRST_SIGHT, firstSight, readHermetic } from "./library/hermetic.js";   // C-238
 import { readEudaimon } from "./library/eudaimon.js";   // C-297: THE EUDAIMON LAYER, the dawn half
 import { readUnity } from "./library/unity.js";

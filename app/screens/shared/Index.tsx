@@ -9,7 +9,7 @@ import { Index, Reading, Spoken } from "../../state/types";
 import { Art, Card, Eyebrow, Small } from "../../ui/ui";
 import { useApi } from "../../platform/useApi";
 import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "./OwnVoice";   // C-303: the daemon tells of itself
-import { songOf } from "../../../server/src/ownsong";
+import { songOf } from "../../../server/src/damagotchi/ownsong";
 import { SongStaves, useSinging } from "../../ui/staff";   // C-419: SONG for CRY -- the INDEX sings
 export function useIndexReader() {
   const player = useAudioPlayer(null);

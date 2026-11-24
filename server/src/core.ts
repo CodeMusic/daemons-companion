@@ -2,9 +2,9 @@
 // C-111: the companion's own logic, wherever it runs. Everything here reads and writes through a Store and a SaveFile, so
 // the server (api.ts, over Node's SQLite and the save on disk) and a phone hosting on its own (app/platform/local.ts, over
 // expo-sqlite and the save Delta shared through Files) run the same rules. Nothing here may import Node.
-import { DREAM_VARS, dreamVars, freshDream } from "./dreams.js";
+import { DREAM_VARS, dreamVars, freshDream } from "./damagotchi/dreams.js";
 import { findAsked } from "./where.js";
-import { den } from "./dens.js";
+import { den } from "./damagotchi/dens.js";
 import weekJson from "../data/week.json" with { type: "json" };
 import speciesJson from "../data/species.json" with { type: "json" };
 import type { Store } from "./shared/store.js";
@@ -19,16 +19,16 @@ import { season } from "./psyche/seasons.js";
 import { gameRoutines } from "./paint.js";
 import { deviceDay, PALETTES, type Palette } from "./psyche/days.js";
 import { castsForDevice } from "./broadcast.js";   // C-134
-import { life, type Life } from "./life.js";
+import { life, type Life } from "./damagotchi/life.js";
 import { feelings } from "./psyche/feelings.js";
-import { drawnAs, expressionFor, faceOf } from "./expressions.js";
+import { drawnAs, expressionFor, faceOf } from "./damagotchi/expressions.js";
 import { companionId, noteFor } from "./cards.js";
 import { expFor, levelFromExp } from "./game/save/growth.js";
 import { tradeLocks, tradesToWrite, tradesWritten } from "./game/tradelink.js";   // C-219
-import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./gift.js";
-import { bondAdd, bondOf, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution, AT_HOME } from "./evolve.js";
-import { lesson, shareOf, shinyOf, songOf, TRAINS_A_DAY, type Lesson } from "./ownsong.js";   // C-418; C-482: shinyOf
-import { carriedFor } from "./carry.js";
+import { giftOf, giftToWrite, giftWritten, HANDSHAKE, offerGift } from "./damagotchi/gift.js";
+import { bondAdd, bondOf, bondScore, bondSeen, evolvedOf, evolutionWritten, judgeEvolution, AT_HOME } from "./damagotchi/evolve.js";
+import { lesson, shareOf, shinyOf, songOf, TRAINS_A_DAY, type Lesson } from "./damagotchi/ownsong.js";   // C-418; C-482: shinyOf
+import { carriedFor } from "./damagotchi/carry.js";
 import { validDeviceId } from "./deviceid.js";
 import { shareCare, togetherView } from "./household.js";
 import { askedOf } from "./game/battles.js";   // C-328   // C-327
@@ -40,10 +40,10 @@ import { readIndex } from "./game/save/index.js";
 import { readPlay } from "./game/save/play.js";            // T-426: the instrument, on the boards with keys
 import { readSubtle } from "./game/save/subtle.js";
 import { maskOf, senseFor, virtueHeldToday, type Sense } from "./psyche/intuition.js";   // C-203: THE SUBTLE LAYER on the boards; C-357: THE MASK
-import { drowsyFrom, thrived, thriveOf } from "./thrive.js";   // C-207: the daemon looks how the week has gone
-import { careworn, withCare } from "./care.js";   // C-266: the care group -- its girth, its eyes, its sadness
+import { drowsyFrom, thrived, thriveOf } from "./damagotchi/thrive.js";   // C-207: the daemon looks how the week has gone
+import { careworn, withCare } from "./damagotchi/care.js";   // C-266: the care group -- its girth, its eyes, its sadness
 import { glassForDevice, isGlass } from "./glass.js";   // C-262: what a T-Glass shows
-import { toneOf } from "./spirits.js";   // C-296: the tone is part of what a picture is
+import { toneOf } from "./damagotchi/spirits.js";   // C-296: the tone is part of what a picture is
 import type { Spirits } from "./game/save/reader.js";
 import { genderOf } from "./psyche/gender.js";   // C-359
 import { SHORT } from "@daemons/praxis";   // C-430: an entry is an item's short title

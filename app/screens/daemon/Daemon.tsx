@@ -28,12 +28,12 @@ import { meshTalk, trailSaid } from "../../platform/mesh";   // C-307
 import { useApi, useFresh } from "../../platform/useApi";
 import { heardSync } from "../../ui/received";              // C-261
 import type { Arrival } from "../../../server/src/core";
-import type { Care } from "../../../server/src/care";   // C-266
+import type { Care } from "../../../server/src/damagotchi/care";   // C-266
 import { pretendLife, useDev } from "../../state/dev";
 import { onLifeHeard } from "../../state/lifeHeard";   // C-300
 import { GIVEN, phraseMs, PROVISIONS, type Serving } from "./Provision";   // C-302
 import { evolves, SongCard, songLine, type Singing } from "./OwnSong";    // C-418: TRAIN sings; C-419: ITS SONG
-import { lesson as lessonOf } from "../../../server/src/ownsong";
+import { lesson as lessonOf } from "../../../server/src/damagotchi/ownsong";
 import { ownSongUri } from "../../sound/ownSong";
 // C-327: the household space, as /api/device/state carries it (server/src/household.ts)
 type TogetherState = { device: string; side: "left" | "right"; since: string; until: string;
@@ -119,7 +119,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
     if (what === "feed" || what === "water") setServing({ provision: PROVISIONS[GIVEN[what]], at: Date.now(), ms: phraseMs(what) });   // C-302
     setL((was) => was && presumed(was, what));            // C-122: the happy path, drawn before the companion answers
     // C-418: TRAIN sings the part it is learning and the error comes back -- the lesson worked out here, at once, as the
-    // companion will (server/src/ownsong.ts); its answer corrects the line under the den
+    // companion will (server/src/damagotchi/ownsong.ts); its answer corrects the line under the den
     const s = what === "train" ? l.song : null;
     const sung = s ? lessonOf(s.species, s.total, s.growth, s.trainsToday, evolves(s.species)) : null;
     if (s && sung?.part) setSinging({ lesson: sung, at: Date.now(), species: s.species });

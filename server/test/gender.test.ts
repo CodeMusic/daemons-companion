@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import species from "../data/species.json" with { type: "json" };
 import { genderOf, pronounLine } from "../src/psyche/gender.js";
 import { personaOf, speciesFacts } from "../src/psyche/personaof.js";
-import { shortSelf, selfOf } from "../src/self.js";
+import { shortSelf, selfOf } from "../src/damagotchi/self.js";
 
 const S = species as unknown as Record<string, { name: string; gender: number }>;
 const first = (ratio: number) => Number(Object.keys(S).find((k) => S[k].gender === ratio));

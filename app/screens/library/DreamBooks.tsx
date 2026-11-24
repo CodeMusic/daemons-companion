@@ -1,7 +1,7 @@
 // C-456 (the user, 2026-11-21: "a dream made as more than text and audio -- the text set as a graphic or over a painted
 // background -- gathered into a Dream-Book on the library's shelf, with cover art featuring the daemon, and the daemon who
 // dreamt it as its author"; by multiple choice: a volume a month, the painting drawn here from the dream's day, centre and
-// quality, every dream kept for good): the DREAM-BOOKS shelf's volumes (/api/dreambooks, server/src/dreams.ts
+// quality, every dream kept for good): the DREAM-BOOKS shelf's volumes (/api/dreambooks, server/src/damagotchi/dreams.ts
 // dreamBooks), each cover its daemon over its month's first wash, and the book read a page at a time -- a title page, then
 // each dream set over its painting. The painting is the day's colour alone (a centre is never given a colour of its own,
 // tending.ts's rule): its light sits at the centre's height, root at the foot and crown at the top; a vivid night paints in
@@ -26,7 +26,7 @@ export type BookDream = { id: number; from: string; to: string; at: string; hour
 export type BookSigns = { signs: { sign: string; seen: string; reading: string; books: string[]; glyph: string; ink?: string }[];
                           thread: string; books: string[]; by: "thinker" | "lexicon" };
 export type DreamVolume = { id: string; who: string; nickname: string; species: number; month: string; title: string; dreams: BookDream[] };
-// C-483: a daemon's own book, every dream it dreamt (server/src/dreams.ts dreamAuthors)
+// C-483: a daemon's own book, every dream it dreamt (server/src/damagotchi/dreams.ts dreamAuthors)
 export type DreamAuthor = { id: string; who: string; nickname: string; species: number; title: string; count: number; last: string; dreams: BookDream[] };
 
 // ---- the painting ----

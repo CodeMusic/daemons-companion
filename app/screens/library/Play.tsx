@@ -21,7 +21,7 @@ import { previewQuery } from "../../state/preview";
 import { soundOf } from "../../sound/tuneSound";
 import { noteVoices, type NoteVoices } from "../../sound/noteVoices";
 import { Action, Art, Card, Eyebrow, PIXELATED, Small } from "../../ui/ui";
-import { SONGS, summonHeard, summonsFor, type Summon } from "../../../server/src/ownsong";
+import { SONGS, summonHeard, summonsFor, type Summon } from "../../../server/src/damagotchi/ownsong";
 import { ownSongUri, partMs } from "../../sound/ownSong";
 import { api } from "../../platform/net";
 import { useApi } from "../../platform/useApi";

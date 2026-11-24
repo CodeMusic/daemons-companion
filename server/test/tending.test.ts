@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
 import { CENTRES, tend, tendedOf, tendingOf, tendingView } from "../src/lifemanagement/tending.js";
-import { checkNight, keepNight } from "../src/dreams.js";
+import { checkNight, keepNight } from "../src/damagotchi/dreams.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);      // November 2026: the 8th a Sunday, the 12th a Thursday
 

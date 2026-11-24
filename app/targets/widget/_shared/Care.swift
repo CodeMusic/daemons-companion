@@ -105,7 +105,7 @@ enum CareSound {
     let peak = mix.reduce(0) { max($0, abs($1)) }, g = peak > 0 ? 0.7 / max(peak, 0.7) : 0   // never louder than the sample
     return wavData(mix.map { Int16(max(-1, min(1, $0 * g)) * 32767) }, rate: rate)
   }
-  // C-418: the part it is learning as it knows it (server/src/ownsong.ts, app/sound/ownSong.ts: the same sound) -- a note
+  // C-418: the part it is learning as it knows it (server/src/damagotchi/ownsong.ts, app/sound/ownSong.ts: the same sound) -- a note
   // learned sung clear; a note not yet learned its candidates in the key at once, the true one louder the surer it is,
   // over a hiss that fades as it closes; the part's bass under it, softly. Notes may sound together, so each is mixed in
   // at its own start.

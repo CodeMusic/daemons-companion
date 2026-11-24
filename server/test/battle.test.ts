@@ -12,8 +12,8 @@ import { battleRoute, type BoardSeen } from "../src/game/battleroute.js";
 import * as X from "../src/commons/exchange.js";
 import { exchangeRoute, localLink, remoteLink, type Link } from "../src/game/tradelink.js";
 import { pendingExp } from "../src/core.js";
-import { learnedOf } from "../src/ownsong.js";
-import { assign } from "../src/carry.js";
+import { learnedOf } from "../src/damagotchi/ownsong.js";
+import { assign } from "../src/damagotchi/carry.js";
 import { Store } from "../src/shared/db.js";
 import { buildSave, type DaemonSpec } from "./build_save.js";
 

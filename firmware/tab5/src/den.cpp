@@ -1,5 +1,5 @@
 // C-113: the daemon's den on the Tab5 -- its type's place, as the widget (app/targets/widget/Den.swift) and the boards
-// (firmware/esp32/src/den.cpp) draw it from the same description (server/src/dens.ts, `daemon.den` in the state).
+// (firmware/esp32/src/den.cpp) draw it from the same description (server/src/damagotchi/dens.ts, `daemon.den` in the state).
 // LVGL 9.2 cannot mirror an image, and the daemon faces the way it walks, so the den and the daemon are drawn here into
 // a picture of our own: the den once, then a frame every tick with the sprite (decoded by LVGL's lodepng) walking it.
 #include <Arduino.h>
@@ -18,7 +18,7 @@ struct Stage {
   uint16_t *bg = nullptr, *frame = nullptr;     // the den alone, and the den with the daemon in it
   uint8_t *sprite = nullptr; unsigned sw = 0, sh = 0;   // RGBA, as lodepng gives it
   bool asleep = false;
-  // C-119: its expression (server/src/expressions.ts) -- the picture comes already shaded; the pose, the eyes and the mark
+  // C-119: its expression (server/src/damagotchi/expressions.ts) -- the picture comes already shaded; the pose, the eyes and the mark
   // are drawn here. top/bottom/right: the sprite's own extent, for the squash and for where the mark goes.
   bool still = false, shake = false; float bob = 1, squash = 1, girth = 1; int dy = 0;   // C-266: girth, as it has been cared for
   struct Patch { int x, y, w, h; uint16_t c; } patch[16]; int patches = 0;

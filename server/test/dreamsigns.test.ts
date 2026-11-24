@@ -1,7 +1,7 @@
 // C-484: a dream's SIGNS & SYMBOLS, and THE SYMBOLS' INVENTORY (server/src/psyche/dreamsigns.ts)
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
-import { dreamById, keepDreamSigns, keepNight } from "../src/dreams.js";
+import { dreamById, keepDreamSigns, keepNight } from "../src/damagotchi/dreams.js";
 import { GLYPHS, inventoryOf, lexiconSigns, readDreamSigns, signsOfDream, symbolAgain } from "../src/psyche/dreamsigns.js";
 import { LEXICON } from "../src/psyche/signs.js";
 

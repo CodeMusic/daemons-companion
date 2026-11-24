@@ -2,9 +2,9 @@
 // (the harp for CONTENT, the flute for CONTEXT, tuneSound.ts). A note it has learned is sung clear; one it has not is
 // STATIC -- the user: "a lot of agreeing potential notes are the static and gradually the noise is removed until just
 // the daemon's song note is revealed" -- its candidates in the key at once, the true one louder the surer it is, over a
-// hiss that fades as it closes (server/src/ownsong.ts says which; DAEMONS tools/gensongs.py renders its previews the same
+// hiss that fades as it closes (server/src/damagotchi/ownsong.ts says which; DAEMONS tools/gensongs.py renders its previews the same
 // way). Under it, softly, the part's bass: the CONTEXT it is heard over. Every sound DRAFT.
-import { heardAt, SONGS, type SongPart } from "../../server/src/ownsong";
+import { heardAt, SONGS, type SongPart } from "../../server/src/damagotchi/ownsong";
 import { mixWav, type Hiss, type Voicing } from "./instrument";
 import { asUri, voiceNow } from "./tuneSound";
 

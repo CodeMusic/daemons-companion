@@ -11,7 +11,7 @@ import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from "expo-au
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
 import { YStack } from "tamagui";
-import type { Drawn, Patch } from "../../../server/src/expressions";
+import type { Drawn, Patch } from "../../../server/src/damagotchi/expressions";
 import { apiLater, ON_PHONE } from "../../platform/net";
 import { readingVoice, voiceExt } from "../../platform/voiceFile";
 import { followVoice, setSpeaking, useMouth } from "../../sound/speaking";

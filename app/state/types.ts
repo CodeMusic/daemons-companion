@@ -31,12 +31,12 @@ export type Life = { vesselUnder?: string | null;   // C-357 (5): CONTAINER, onc
                      mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
               trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
               level: number | null; grown: { exp: number; level: number } | null;
-              expression?: import("../../server/src/expressions").Drawn;
-              thrive?: import("../../server/src/thrive").Thrive;   // C-207
-              care?: import("../../server/src/care").Care;
+              expression?: import("../../server/src/damagotchi/expressions").Drawn;
+              thrive?: import("../../server/src/damagotchi/thrive").Thrive;   // C-207
+              care?: import("../../server/src/damagotchi/care").Care;
               sleptAt?: string;     // C-284: put to bed and not woken since
               song?: import("../../server/src/core").SongNow | null;   // C-418: its own song, as it knows it
-              lesson?: import("../../server/src/ownsong").Lesson & { species: number } };   // C-418: what a TRAIN taught       // C-266: rest, hunger, thirst, weight, companionship
+              lesson?: import("../../server/src/damagotchi/ownsong").Lesson & { species: number } };   // C-418: what a TRAIN taught       // C-266: rest, hunger, thirst, weight, companionship
 
 // C-66, C-65: the daemon's voice on the phone. Its answer (and an INDEX entry read aloud) comes back as mp3 in base64 --
 // through the relay too, which carries only JSON -- so it is written to the cache and played from there.

@@ -169,7 +169,7 @@ void drawLean(int y) {
 }
 
 // ---- words under words (C-204) ----------------------------------------------------------------------------------------------
-// The user chose four of the daemon's own lines (server/src/lines.ts); once the save holds the book the server sends the
+// The user chose four of the daemon's own lines (server/src/damagotchi/lines.ts); once the save holds the book the server sends the
 // words under them, and they come where the line was, as it goes: dark, edged in the hue, the words lit. Never a feeling.
 static String underText; static uint32_t underFrom = 0, underUntil = 0;
 void intuitionUnder(const String &words, uint32_t after) {

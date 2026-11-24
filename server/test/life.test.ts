@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { life, type Interaction } from "../src/life.js";
-import { moodCost } from "../src/care.js";
+import { life, type Interaction } from "../src/damagotchi/life.js";
+import { moodCost } from "../src/damagotchi/care.js";
 
 const at = (d: number, h: number, kind: string): Interaction => ({ at: new Date(2026, 9, d, h, 0).toISOString(), kind });
 const noon = (d: number) => new Date(2026, 9, d, 12, 30);

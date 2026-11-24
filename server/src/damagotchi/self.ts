@@ -7,8 +7,8 @@
 // The feelings are named TO the model, never by it: the instructions say to let them show (feelings.ts, NEVER NAMED).
 // The trainer's name and the box come from this machine's settings, never from code -- this repository is public.
 // Every word here is the companion's own to the model, never shown in the game: DRAFT.
-import type { Feelings } from "./psyche/feelings.js";
-import { pronounLine, type Gender } from "./psyche/gender.js";   // C-359
+import type { Feelings } from "../psyche/feelings.js";
+import { pronounLine, type Gender } from "../psyche/gender.js";   // C-359
 
 export type SelfLength = "short" | "day" | "full";
 export type SelfFacts = {

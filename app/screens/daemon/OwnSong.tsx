@@ -12,13 +12,13 @@
 // One clock drives every note (useNativeDriver), so a part of thirty notes costs one animation. Every word DRAFT.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, Text, View } from "react-native";
-import { BINARY, heardAt, songOf, type Heard, type Lesson } from "../../../server/src/ownsong";
+import { BINARY, heardAt, songOf, type Heard, type Lesson } from "../../../server/src/damagotchi/ownsong";
 import { Text as Words, XStack, YStack } from "tamagui";
 import { Head, SongStaves, useSinging } from "../../ui/staff";
 import { Card, Eyebrow, Small } from "../../ui/ui";
 import { ListenControl } from "../shared/Index";
 import type { SongNow } from "../../../server/src/core";
-import { openMouthOf } from "../../../server/src/expressions";
+import { openMouthOf } from "../../../server/src/damagotchi/expressions";
 import speciesJson from "../../../server/data/species.json";
 
 const SPECIES = speciesJson as unknown as Record<string, { art?: { front?: string }; evolutions?: unknown[] }>;

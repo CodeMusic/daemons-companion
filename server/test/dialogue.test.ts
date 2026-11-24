@@ -3,12 +3,12 @@
 // accounts; kept for both; INTEGRATE gives a titled write-up; the history's stamps and weeks.
 import { describe, expect, it } from "vitest";
 import * as X from "../src/commons/exchange.js";
-import * as D from "../src/dialogue.js";
+import * as D from "../src/damagotchi/dialogue.js";
 import { cardOf, dayFacts, factsFrom, personaOf, speciesFacts } from "../src/psyche/personaof.js";
 import { exchangeRoute } from "../src/game/tradelink.js";
 import { Store } from "../src/shared/db.js";
 import * as core from "../src/core.js";
-import { carriedFor } from "../src/carry.js";
+import { carriedFor } from "../src/damagotchi/carry.js";
 import { route } from "../src/routes.js";
 import { buildSave } from "./build_save.js";
 

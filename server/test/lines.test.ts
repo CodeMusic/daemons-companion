@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bandOf, LINE_KINDS, saying, UNDER_LINES, writtenLine } from "../src/lines.js";
+import { bandOf, LINE_KINDS, saying, UNDER_LINES, writtenLine } from "../src/damagotchi/lines.js";
 
 describe("written lines (C-180)", () => {
   it("every line fits the smallest board", () => {

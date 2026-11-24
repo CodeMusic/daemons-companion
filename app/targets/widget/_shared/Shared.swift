@@ -7,7 +7,7 @@ import WidgetKit
 let GROUP = "group.com.codemusic.daemonscompanion"
 let KIND = "DaemonWidget"
 
-// C-119: how it looks now, as the server describes it (server/src/expressions.ts). The picture comes already in its shade
+// C-119: how it looks now, as the server describes it (server/src/damagotchi/expressions.ts). The picture comes already in its shade
 // (/api/art?expression=); the widget draws the eye patches and the mark over it, and takes the pose's rest.
 struct Expr: Codable {
   struct Pose: Codable { let dy: Double; let squash: Double; let still: Bool; let girth: Double? }   // C-266: girth, as it has been fed and trained
@@ -31,7 +31,7 @@ struct Snapshot: Codable {
   var artKey: String? = nil
   var said: String? = nil           // the last button's answer ("Eaten.") -- shown until the next refresh
   var did: String? = nil            // C-113: which button that was (feed, water, train, or kept), for the daemon to answer
-  var den: Den? = nil               // C-113: where it is drawn (server/src/dens.ts)
+  var den: Den? = nil               // C-113: where it is drawn (server/src/damagotchi/dens.ts)
   var expr: Expr? = nil             // C-119: its expression
   var at: Date = Date()
   var sound: Bool? = nil            // C-160: this phone's own SOUND (PLACES, ITS SETTINGS): false is silent
@@ -47,7 +47,7 @@ struct Snapshot: Codable {
 // learned, READY when that part is whole and it has a form to become, AT HOME when its bond would let it evolve here),
 // the part it is learning ([MIDI, beats, the share it is learned at] a note), and how STATIC is made: a note not learned
 // is its candidates in the key (steps along it from the note, the first kept longest), closing over `window` of the way.
-// The same rule as server/src/ownsong.ts heardAt; change the two together.
+// The same rule as server/src/damagotchi/ownsong.ts heardAt; change the two together.
 struct SongSnap: Codable {
   struct Part: Codable { let name: String; let bpm: Double; let tonic: Int; let minor: Bool; let notes: [[Double]]; let bass: [[Double]] }
   let species: Int; var share: Double; var ready: Bool; let atHome: Bool; var trainsToday: Int; let trainsADay: Int
@@ -130,7 +130,7 @@ enum Aurora {
   }
 }
 
-// C-301: the watches of the day the care key turns on -- server/src/life.ts DUSK and DAWN (context.ts watchOf)
+// C-301: the watches of the day the care key turns on -- server/src/damagotchi/life.ts DUSK and DAWN (context.ts watchOf)
 let DUSK_HOUR = 18, DAWN_HOUR = 5
 func isNight(_ d: Date) -> Bool { let h = Calendar.current.component(.hour, from: d); return h >= DUSK_HOUR || h < DAWN_HOUR }
 // the next dusk or dawn after this moment -- when the care key would change by itself
@@ -146,7 +146,7 @@ func isoDate(_ s: String?) -> Date? {
   return f.date(from: s) ?? ISO8601DateFormatter().date(from: s)
 }
 
-// The day's life, as GET /api/daemon/life and POST /api/daemon/<care> answer (server/src/life.ts)
+// The day's life, as GET /api/daemon/life and POST /api/daemon/<care> answer (server/src/damagotchi/life.ts)
 struct Life: Decodable {
   struct Count: Decodable { let today: Int; let due: Int }
   let word: String; let fed: Count; let watered: Count; let trained: Bool; let tired: String; let cue: String?

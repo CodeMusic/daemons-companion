@@ -6,9 +6,9 @@ import { join } from "node:path";
 import { inflateSync } from "node:zlib";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
-import { den } from "../src/dens.js";
-import { EXPRESSIONS, faceOf } from "../src/expressions.js";
-import { FRAMES, PHASES, SCREEN, faceRev, lookFor, renderFace } from "../src/face.js";
+import { den } from "../src/damagotchi/dens.js";
+import { EXPRESSIONS, faceOf } from "../src/damagotchi/expressions.js";
+import { FRAMES, PHASES, SCREEN, faceRev, lookFor, renderFace } from "../src/damagotchi/face.js";
 import { buildSave } from "./build_save.js";
 
 // renderFace's PNG back to its RGB rows (it writes them unfiltered)

@@ -1,16 +1,16 @@
 // C-113: the daemon in its den, on TODAY -- its type's place, as the widget (targets/widget/Den.swift), the boards and
-// the Tab5 draw it, from the same description (server/src/dens.ts). No SVG here: the wall is bands, the motif small
+// the Tab5 draw it, from the same description (server/src/damagotchi/dens.ts). No SVG here: the wall is bands, the motif small
 // views (a line is a thin rotated bar), so it needs nothing native and draws the same on the site. The daemon walks it
 // side to side and faces the way it goes; asleep, it stays put with a z; `hop` changes when it is tended.
-import type { Thrive } from "../../../server/src/thrive";
+import type { Thrive } from "../../../server/src/damagotchi/thrive";
 import { AuroraSky, DawnLight, DawnRim, HourPie, WitchShimmer } from "../shared/Witching";   // C-305 the aurora
 import { SingNotes, singingMs, type Singing } from "./OwnSong";   // C-418: TRAIN sings
 import { Served, type Serving } from "./Provision";   // C-302   // C-236, C-237; T-519 the creator's hour
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, View } from "react-native";
 import speciesJson from "../../../server/data/species.json";
-import { den as denOf } from "../../../server/src/dens";
-import type { Drawn } from "../../../server/src/expressions";
+import { den as denOf } from "../../../server/src/damagotchi/dens";
+import type { Drawn } from "../../../server/src/damagotchi/expressions";
 
 const SPECIES = speciesJson as unknown as Record<string, { types?: string[] }>;
 const PIXELATED = Platform.OS === "web" ? ({ imageRendering: "pixelated" } as object) : {};

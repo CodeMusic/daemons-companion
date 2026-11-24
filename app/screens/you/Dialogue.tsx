@@ -4,12 +4,12 @@
 // as message bubbles, the thinking dots on the side whose line the hub's mind is making, each line heard in its daemon's
 // own voice (C-323) as it comes and again with the play mark beside it, the two daemons facing above, the one speaking
 // moving. Every talk is kept: the history by week, a dot in its weekday's colour, the title once INTEGRATE has written
-// one (the time until then, dd/MMM/yyyy hh:mm TT). The server's rules: server/src/dialogue.ts. Every word DRAFT.
+// one (the time until then, dd/MMM/yyyy hh:mm TT). The server's rules: server/src/damagotchi/dialogue.ts. Every word DRAFT.
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { byWeek, dayColour, dayName, stampOf, MAX_TURNS, MIN_TURNS, PROMPT_MOST } from "../../../server/src/dialogue";
+import { byWeek, dayColour, dayName, stampOf, MAX_TURNS, MIN_TURNS, PROMPT_MOST } from "../../../server/src/damagotchi/dialogue";
 import { apiLater, apiLive, ON_PHONE } from "../../platform/net";
 import { readingVoice, voiceExt } from "../../platform/voiceFile";
 import { followVoice, setSpeaking } from "../../sound/speaking";

@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
 import { consolidate, dayMaterial, gameDay, gameNow, keepMoments, memoryDue, readGame, readKept, readYesterday, KEPT_MOST, MONTH_ASK, YESTERDAY_ASK } from "../src/psyche/memory.js";
-import { selfOf } from "../src/self.js";
+import { selfOf } from "../src/damagotchi/self.js";
 
 describe("C-253: memory made at night", () => {
   it("is due once a day, for the day that ended at this morning's wake", () => {

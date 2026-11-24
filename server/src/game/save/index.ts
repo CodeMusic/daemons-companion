@@ -13,7 +13,7 @@ import cardsJson from "../../../data/index_cards.json" with { type: "json" };
 import { blocks, readBoxes, readSave, LAYOUT, type Layout } from "./reader.js";
 import { readProfile } from "./profile.js";
 import { levelFromExp } from "./growth.js";
-import { openMouthOf, type Patch } from "../../expressions.js";   // C-303
+import { openMouthOf, type Patch } from "../../damagotchi/expressions.js";   // C-303
 import { season as seasonOf, type Season } from "../../psyche/seasons.js";   // C-310
 
 const P = profileJson;

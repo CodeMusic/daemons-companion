@@ -7,7 +7,7 @@
 # player, mute. What changed, and why:
 #
 #   - THE SCREEN IS THE DAEMON THIS BOX CARRIES (DEVICES, C-80). Each voice phase -- idle, listening, thinking,
-#     replying, error, muted, timer -- is a picture the companion draws (server/src/face.ts): the daemon standing in its
+#     replying, error, muted, timer -- is a picture the companion draws (server/src/damagotchi/face.ts): the daemon standing in its
 #     den, in its own expression (C-119), with the phase over its eyes or mouth or above its head. Two frames a phase,
 #     alternated here: a blink when idle, the mouth when it speaks. The board holds no rule: it asks the companion for
 #     its face's revision every 20 s (GET /api/device/face) and fetches the fourteen pictures again only when it changes.

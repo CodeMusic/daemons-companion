@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { Directory, File, Paths } from "expo-file-system";
-import { BLOODSHOT_BELOW, girthOf, SHADOWS_BELOW } from "../../server/src/care";   // C-269: no node: imports there
+import { BLOODSHOT_BELOW, girthOf, SHADOWS_BELOW } from "../../server/src/damagotchi/care";   // C-269: no node: imports there
 
 type Kept = { on: boolean; width: number | null };
 let kept: Kept | null = null;

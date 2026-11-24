@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
 import { appNight, route } from "../src/routes.js";
 import type { Host } from "../src/core.js";
-import { asDreamt, dayOf, dreamAsk, dreamerSaid, dreamsOf, keepNight } from "../src/dreams.js";
+import { asDreamt, dayOf, dreamAsk, dreamerSaid, dreamsOf, keepNight } from "../src/damagotchi/dreams.js";
 
 const h: Host = { edition: "CONTENT", save: { read: () => null, write: () => null } };
 const at = (iso: string) => new Date(iso);

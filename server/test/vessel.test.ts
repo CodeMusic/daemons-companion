@@ -1,7 +1,7 @@
 // C-357 (5): CONTAINER -- the companion remembers the carried daemon's form, and a change of it is kept for a week.
 import { describe, expect, it } from "vitest";
 import { Store } from "../src/shared/db.js";
-import { VESSEL_DAYS, vesselOf } from "../src/vessel.js";
+import { VESSEL_DAYS, vesselOf } from "../src/damagotchi/vessel.js";
 
 const T0 = new Date("2026-11-12T12:00:00Z");
 const later = (days: number) => new Date(T0.getTime() + days * 86400000);

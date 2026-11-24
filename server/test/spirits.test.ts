@@ -1,10 +1,10 @@
 // C-296: the four running totals the companion keeps on its side (KEPT, BOND, WORK, PORTION), the line the brief reads,
 // and the tone a daemon's pictures take from the class the save holds -- lighter in good spirits, darker in low, the hue kept.
 import { describe, expect, it } from "vitest";
-import { shade } from "../src/expressions.js";
+import { shade } from "../src/damagotchi/expressions.js";
 import type { Spirits } from "../src/game/save/reader.js";
-import { selfOf } from "../src/self.js";
-import { spiritsPortal, spiritsSaid, spiritTotals, toneOf, toneShade } from "../src/spirits.js";
+import { selfOf } from "../src/damagotchi/self.js";
+import { spiritsPortal, spiritsSaid, spiritTotals, toneOf, toneShade } from "../src/damagotchi/spirits.js";
 
 const now = new Date("2026-11-11T15:00:00");
 const ago = (days: number, hour = 12) => { const d = new Date(now); d.setDate(d.getDate() - days); d.setHours(hour, 0, 0, 0); return d.toISOString(); };

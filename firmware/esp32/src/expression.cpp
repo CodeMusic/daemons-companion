@@ -1,4 +1,4 @@
-// C-119: see expression.h. The same sums as server/src/expressions.ts's shade(); what is drawn is held to the reference
+// C-119: see expression.h. The same sums as server/src/damagotchi/expressions.ts's shade(); what is drawn is held to the reference
 // tools/expressions.ts draws from the same description.
 #include "app.h"
 #include "expression.h"

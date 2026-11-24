@@ -15,9 +15,9 @@
 //   that is perfect learns no more here -- it is time to take it home and SING (C-418: it evolves in the game, unless it
 //   is AT HOME here too, evolve.ts).
 // Every word DRAFT.
-import songsJson from "../data/songs.json" with { type: "json" };
-import { expFor } from "./game/save/growth.js";
-export { shinyOf } from "./game/save/reader.js";        // C-482: a shiny sings its own song
+import songsJson from "../../data/songs.json" with { type: "json" };
+import { expFor } from "../game/save/growth.js";
+export { shinyOf } from "../game/save/reader.js";        // C-482: a shiny sings its own song
 
 export type SongNote = [number, number, number];          // MIDI note, beats, the share of its part it is learned at
 export interface SongPart {

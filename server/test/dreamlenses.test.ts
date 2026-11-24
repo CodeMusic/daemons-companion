@@ -1,6 +1,6 @@
 // C-308: a dream told twice at once (in order; all at once) and made whole, with its title
 import { describe, expect, it } from "vitest";
-import { checkNight, dreamAsk, dreamTwice, dreamsOf, keepLenses, keepNight, mergeAsk, readMerged, titleOf, DREAM_TITLES, type Night } from "../src/dreams.js";
+import { checkNight, dreamAsk, dreamTwice, dreamsOf, keepLenses, keepNight, mergeAsk, readMerged, titleOf, DREAM_TITLES, type Night } from "../src/damagotchi/dreams.js";
 import { Store } from "../src/shared/db.js";
 
 const to = new Date("2026-11-08T07:00:00Z");

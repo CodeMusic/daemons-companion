@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { checkNight, dreamWords, dreamsOf, freshDream, keepNight, quality, rested, rewriteDream } from "../src/dreams.js";
-import { bondAdd, bondOf, bondScore } from "../src/evolve.js";
+import { checkNight, dreamWords, dreamsOf, freshDream, keepNight, quality, rested, rewriteDream } from "../src/damagotchi/dreams.js";
+import { bondAdd, bondOf, bondScore } from "../src/damagotchi/evolve.js";
 import { Store } from "../src/shared/db.js";
 
 const night = (hours: number, stirs: number, tucked = false) => {
@@ -50,7 +50,7 @@ describe("C-200: a night and its dream", () => {
 });
 
 // C-456: DREAM-BOOKS -- every dream kept for good, bound a volume a month for each daemon
-import { boundOf, dreamAuthors, dreamBooks } from "../src/dreams.js";
+import { boundOf, dreamAuthors, dreamBooks } from "../src/damagotchi/dreams.js";
 describe("DREAM-BOOKS (C-456)", () => {
   it("binds dreams past the journal's ninety and gathers a volume a month for each daemon", () => {
     const store = new Store(":memory:");

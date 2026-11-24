@@ -3,12 +3,12 @@
 // colours, and its notes in their pitch's colours (SYNESTHESIA: C red, D orange, E yellow, F green, G blue, A indigo,
 // B violet; a black key split between the two either side), spaced by their time, in bars of four. A note not yet
 // learned is STATIC: its candidates faint on their own lines and spaces, the true one surer as it closes
-// (server/src/ownsong.ts heardAt, staffOf). The INDEX and the daemon's page draw it; T-600's book will. Every word DRAFT.
+// (server/src/damagotchi/ownsong.ts heardAt, staffOf). The INDEX and the daemon's page draw it; T-600's book will. Every word DRAFT.
 import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Text as RNText, View } from "react-native";
 import { Text, YStack } from "tamagui";
-import { BOTTOM, heardAt, noteColours, spell, staffOf, type Heard, type SongPart } from "../../server/src/ownsong";
+import { BOTTOM, heardAt, noteColours, spell, staffOf, type Heard, type SongPart } from "../../server/src/damagotchi/ownsong";
 import { ON_PHONE } from "../platform/net";
 import { songTimes, songUri } from "../sound/ownSong";
 

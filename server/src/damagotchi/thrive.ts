@@ -11,7 +11,7 @@
 //   small marks  a star for each goal finished this week (five at most), a moon the morning after a vivid night
 //
 // No node: imports (a phone hosting alone works it out too).
-import type { Store } from "./shared/store.js";
+import type { Store } from "../shared/store.js";
 import { dreamsOf } from "./dreams.js";
 import type { Drawn } from "./expressions.js";
 

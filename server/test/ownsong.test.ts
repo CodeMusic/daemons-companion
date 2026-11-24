@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import speciesJson from "../data/species.json" with { type: "json" };
 import { expFor } from "../src/game/save/growth.js";
-import { heardAt, learnedOf, lesson, noteColours, shareOf, songOf, SONGS, trainGain, TRAINS_A_DAY, TRAIN_DAYS } from "../src/ownsong.js";
+import { heardAt, learnedOf, lesson, noteColours, shareOf, songOf, SONGS, trainGain, TRAINS_A_DAY, TRAIN_DAYS } from "../src/damagotchi/ownsong.js";
 
 const SPECIES = speciesJson as unknown as Record<string, any>;
 const curve = SPECIES["1"].growth;                         // ROVERCUB (1) -> ROVERSEER (2) -> ROVERBYTE (3)
@@ -73,10 +73,10 @@ describe("a daemon's own song (C-418, DAEMONS T-594)", () => {
 
 // C-418 through the companion's own routes, on a synthetic save built as the game builds them -- never the user's own
 import * as core from "../src/core.js";
-import { carriedFor } from "../src/carry.js";
+import { carriedFor } from "../src/damagotchi/carry.js";
 import { Store } from "../src/shared/db.js";
 import { route } from "../src/routes.js";
-import { evolvedOf } from "../src/evolve.js";
+import { evolvedOf } from "../src/damagotchi/evolve.js";
 import { buildSave } from "./build_save.js";
 
 describe("TRAIN sings, through the routes (C-418)", () => {
@@ -134,7 +134,7 @@ describe("the widget's song (C-418)", () => {
 
 // C-419: the song on a staff, and the INDEX singing it
 import profileJson from "../data/profile_layout.json" with { type: "json" };
-import { BOTTOM, fifthsOf, keySignature, ledgersAt, signatureSteps, spell, staffOf } from "../src/ownsong.js";
+import { BOTTOM, fifthsOf, keySignature, ledgersAt, signatureSteps, spell, staffOf } from "../src/damagotchi/ownsong.js";
 
 describe("a part on a staff (C-419, DAEMONS T-600's staff)", () => {
   it("reads every type's key signature from its key's name", () => {
@@ -226,7 +226,7 @@ describe("the INDEX sings (C-419, DAEMONS T-595)", () => {
 // C-482 (DAEMONS T-602): a shiny sings its kind's song with the few notes its shiny palette moved
 describe("a shiny's song (C-482, DAEMONS T-602)", () => {
   it("is told from personality and OT ID as the game tells it", async () => {
-    const { shinyOf } = await import("../src/ownsong.js");
+    const { shinyOf } = await import("../src/damagotchi/ownsong.js");
     expect(shinyOf(0x00000000, 0x00000000)).toBe(true);    // shiny value 0
     expect(shinyOf(0x00070000, 0x00000000)).toBe(true);    // 7: the last of the eight
     expect(shinyOf(0x00080000, 0x00000000)).toBe(false);   // 8: not

@@ -5,10 +5,10 @@
 // and the words a model is given (self.ts). This file runs on the phone too (C-111): no node:*.
 // C-387: the daemon's own mind (MIND) -- not THE MIND (C-307), which is the machines it thinks on (app/platform/mesh.ts).
 // Every word DRAFT.
-import eventsJson from "../data/events.json" with { type: "json" };
+import eventsJson from "../../data/events.json" with { type: "json" };
 import { DREAM_TITLES, DREAM_VARS, type Quality } from "./dreams.js";
-import type { Feelings } from "./psyche/feelings.js";
-import { blocks, LAYOUT, type Layout } from "./game/save/reader.js";
+import type { Feelings } from "../psyche/feelings.js";
+import { blocks, LAYOUT, type Layout } from "../game/save/reader.js";
 import { feelingWord } from "./self.js";
 
 // each feeling as the room shows it: its colour, and the weather it makes in the den when it is the strongest

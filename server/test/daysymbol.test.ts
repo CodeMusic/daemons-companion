@@ -2,7 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { DAY_KEYS, dayOfDream } from "../src/dreams.js";
+import { DAY_KEYS, dayOfDream } from "../src/damagotchi/dreams.js";
 
 const ART = join(import.meta.dirname, "..", "data", "art", "daysymbol");
 const week = JSON.parse(readFileSync(join(import.meta.dirname, "..", "data", "week.json"), "utf8")).days as { day: string }[];
@@ -28,7 +28,7 @@ describe("T-531: the dream's day symbol", () => {
   });
 });
 
-import { CENTRES, centreNamed, centreOf, mergeAsk, readMerged } from "../src/dreams.js";
+import { CENTRES, centreNamed, centreOf, mergeAsk, readMerged } from "../src/damagotchi/dreams.js";
 describe("C-412: the stage the dream took place at -- its centre", () => {
   it("asks the writer for one of the seven, and reads it however it is said", () => {
     expect(mergeAsk("I dreamt a.", "I dreamt b.")).toMatch(/"centre"/);

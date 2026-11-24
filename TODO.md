@@ -4,6 +4,18 @@ Work that has been **decided and not done**, kept the way DAEMONS keeps its own 
 permanent, a closed ticket is struck through with its commit, never deleted. Questions live in `docs/PLAN.md` as
 **OPEN** until the user answers them; a ticket waits on one by naming it.
 
+## Today's goals -- 2026-11-23, RESEARCH
+
+*The user, 2026-11-23: "keep going on the goal loop while I'm out".* The 2026-11-22 loops are done but for what waits:
+C-469 and C-432 closed, so the second loop's last goal, C-454, is unblocked. C-406 still waits on the user's word
+("not yet again", 2026-11-23). Worked top down: build, test, deploy the hub, commit by path, push, note it in Redmine.
+
+1. ~~**C-454 RESEARCH, first slice**~~ -- a study with field, hypothesis, an editable expert, text and PDF sources, the
+   talk, findings proposed and kept, and two draws, the JOURNAL and GOALS (docs/RESEARCH.md). ***Built*** *(fa8d7d7d,
+   DRAFT; seen on a scratch site with a synthetic save -- a PDF read, an ask failing cleanly with no mind, a finding kept.
+   Not yet answered by a real mind, nor seen on the phone).*
+2. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-23: "not yet again").
+
 ## Today's goals -- 2026-11-22, WORKING MEMORY
 
 *The user, 2026-11-22: "Run the goal loop".* The app lane's newest Ready ticket, filed this morning: C-469, the daemon's

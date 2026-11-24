@@ -98,7 +98,7 @@ describe("C-488: the day's SPELL CHECK beside TODAY's word", () => {
     const c = spellCheckOf(saveWith(true), monday);
     expect(c).toMatchObject({ held: true, day: "MONDAY", picture: "overflow" });
     if (!c.held) throw new Error("held");
-    expect(c.check).toMatch(/^before any second helping/);
+    expect(c.check).toMatch(/^Before any second helping/);   // the book's "Spell check: before ...", standing alone
     expect(c.broom).toMatch(/OVERFLOW/);
     expect(B.sections[c.s].entries[c.j]).toMatchObject({ picture: "overflow" });
   });
@@ -106,7 +106,7 @@ describe("C-488: the day's SPELL CHECK beside TODAY's word", () => {
     for (let d = 0; d < 7; d++) {
       const c = spellCheckOf(null, new Date(2026, 10, 22 + d, 12), true);
       expect(c.held, `day ${d}`).toBe(true);
-      if (c.held) expect(c.check.length).toBeGreaterThan(20);
+      if (c.held) { expect(c.check.length).toBeGreaterThan(20); expect(c.check, `day ${d}`).toMatch(/^[A-Z]/); }
     }
   });
 });

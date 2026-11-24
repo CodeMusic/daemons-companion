@@ -37,7 +37,8 @@ export function spellCheckOf(save: Uint8Array | null, now = new Date(), preview 
     const e = B.sections[s].entries[j];
     const line = e.paragraphs.map((p) => p.text).find((t) => /^Spell check:/i.test(t));
     if (!line) break;
-    return { held: true, day: want, title: e.title, broom: e.caption, check: line.replace(/^Spell check:\s*/i, ""), picture: e.picture, frames: e.frames ?? 1, s, j };
+    const rest = line.replace(/^Spell check:\s*/i, "");      // the book's "Spell check: before ..." stands alone on the card: a capital
+    return { held: true, day: want, title: e.title, broom: e.caption, check: rest.charAt(0).toUpperCase() + rest.slice(1), picture: e.picture, frames: e.frames ?? 1, s, j };
   }
   return { held: false };
 }

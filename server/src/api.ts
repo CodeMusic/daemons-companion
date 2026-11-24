@@ -158,6 +158,8 @@ import { SPAN, SPANS, writeMention, type Span } from "./psyche/mentions.js";   /
 import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
 import { readSubtle } from "./game/save/subtle.js";   // C-204
 import { sayable } from "./machine/say.js";   // C-270
+import { studyView as studyViewOf, writeAnswer as writeResearchAnswer } from "./lifemanagement/research.js";   // C-454
+import { sourceText } from "./shared/sourcetext.js";   // C-454: a source file's text
 import { DEVICE_SETTINGS, type DeviceSettings, deviceSettings, checkSettings, ownSettings, setOwnSettings, OWN_KEYS, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife, ownBeacons, type Host, type SaveFile } from "./core.js";
 
 export { DEVICE_SETTINGS, deviceSettings, WALK_GOAL, EXP_PER_WALK, ENTRY_LIMIT, EXP_PER_STEP, daemonLife };
@@ -922,7 +924,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
   // The work is given `write` (house.write, counted) and says how it ended with `end`.
   const RUNNING = new Map<string, AbortController>();
-  const PRIVATE_KINDS = new Set(["journal", "meeting", "memory", "dream"]);   // C-480: the person's own words, or their daemon's nights
+  const PRIVATE_KINDS = new Set(["journal", "meeting", "memory", "dream", "research"]);   // C-454: a study is the person's own too
+    // C-480: the person's own words, or their daemon's nights
   const ledgered = (o: { kind: TaskKind; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string;
                          quick?: boolean }) => {   // C-338: quick -- someone stands waiting: the quick thinker, thinking off
     const ctl = new AbortController();
@@ -1445,6 +1448,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       .then(() => w.end("done"), (e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }))
       .finally(() => signing.delete(id));
   };
+  // C-454: a study's expert answering an ask -- the house's mind, long-context first (the Tiiny, then the player's endpoint);
+  // with no mind at home, failed at once, to be asked again. One at a time per ask.
+  const answeringResearch = new Set<string>();
+  const answerResearch = (study: number, ask: number) => {
+    const key = `${study}:${ask}`;
+    if (answeringResearch.has(key)) return;
+    answeringResearch.add(key);
+    if (!house.any) { writeResearchAnswer(store, study, ask, null).catch(() => {}).finally(() => answeringResearch.delete(key)); return; }
+    const w = ledgered({ kind: "research", title: "a study's expert answering" });   // DRAFT
+    writeResearchAnswer(store, study, ask, w.write, writerNow() ?? "the house's mind")
+      .then(() => w.end("done"), (e) => w.end("failed", { error: (e as Error)?.message?.slice(0, 120) }))
+      .finally(() => answeringResearch.delete(key));
+  };
   // C-484: a dream's SIGNS & SYMBOLS read by the house's mind, once, kept on the dream (its new symbols in the inventory).
   // Asked by the DREAM-BOOK when a page shows the lexicon's reading; one at a time per dream.
   const dreamSigning = new Set<number>();
@@ -1948,6 +1964,20 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         w?.end(typeof r === "string" ? "failed" : "done", typeof r === "string" ? { error: r.slice(0, 120) } : {});
         return typeof r === "string" ? send(res, 404, { error: r }) : send(res, 200, { symbol: r, symbols: inventoryList(store) });
       }
+      // C-454: a file kept as a study's source -- its bytes as a PRAXIS blob (by their SHA-256), its text read here beside it
+      if (req.method === "POST" && path === "/api/research/source/file") {   // the hub only: a phone alone keeps typed sources
+        const b = await body(req, 24 * 1024 * 1024);
+        const bytes = new Uint8Array(Buffer.from(String(b.data ?? ""), "base64"));
+        if (!bytes.length) return send(res, 400, { error: "the file came through empty" });   // DRAFT
+        if (bytes.length > 20 * 1024 * 1024) return send(res, 413, { error: "a source file is at most 20 MB" });   // DRAFT
+        const hash = sha256hex(bytes);
+        blobs.put(hash, bytes);
+        const name = String(b.name ?? "").slice(0, 120), mime = String(b.mime ?? "").slice(0, 80);
+        const read = await sourceText(bytes, mime, name);
+        const r = route(hostOf(ecfg), store, { method: "POST", path: "/api/research/source", deviceId, query: {},
+          body: { study: b.study, sort: "file", name, mime, size: bytes.length, blob: hash, text: read.text } });
+        return reply(res, r.status === 200 ? { ...r, body: { ...(r.body as object), read: { chars: read.text.length, how: read.how } } } : r);
+      }
       // C-111: what a phone hosting on its own answers too -- the same answers, from routes.ts
       if (handles(req.method ?? "", path) && path !== "/api/subtle/ask"   // C-229: answered below, with the module and the voice
           && !(path === "/api/learning/quiz/answer" && house.any)) {   // C-433: and a quiz, marked below by THE TUTOR
@@ -1956,6 +1986,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const night = (r.body as { dream?: { id: number } } | null)?.dream;   // C-283: woken after a SLEEP -- its dream, told
         const kept = night ? dreamsOf(store).find((x) => x.id === night.id) : undefined;
         if (kept) tellDream(ecfg, kept, deviceId);
+        const answering = (r.body as { answering?: number; study?: { id: number } | null } | null);   // C-454: an ask -- its answer, by the house's mind
+        if (answering?.answering && answering.study) {
+          answerResearch(answering.study.id, answering.answering);
+          if (!house.any) return reply(res, { status: r.status, body: { ...(r.body as object), study: studyViewOf(store, answering.study.id) } });
+        }
         const writing = (r.body as { writing?: number } | null)?.writing;   // C-298: a chapter closed -- its page, by the background thinker
         const signs = (r.body as { signing?: number } | null)?.signing;     // C-356: and its signs (a dream chapter's after its page)
         if (signs && !writing) readJournalSigns(signs);

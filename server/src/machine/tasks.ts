@@ -23,6 +23,7 @@ export const TASK_KINDS = {
   processing: { colour: "#8fa3bf", said: "PROCESSING" }, song: { colour: "#5fd3b3", said: "SONGS" },
   dialogue: { colour: "#c7a2c9", said: "DIALOGUE" }, mentions: { colour: "#c2b280", said: "MENTIONS" },
   tutor: { colour: "#6fae7f", said: "THE TUTOR" },   // C-433: LEARNING's syllabus, lessons and cards
+  research: { colour: "#9a8fc4", said: "RESEARCH" },   // C-454: a study's expert answering
   work: { colour: "#7a7f8a", said: "WORK" },   // C-455: MENTIONS
 } as const satisfies Record<string, { colour: string; said: string }>;
 export type TaskKind = keyof typeof TASK_KINDS;

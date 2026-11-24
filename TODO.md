@@ -21,7 +21,10 @@ C-469 and C-432 closed, so the second loop's last goal, C-454, is unblocked. C-4
    hub deployed: a dream journal's dreams and the daemon's own nights; meetings written up and voice notes heard).*
 4. ~~**C-454 RESEARCH, third slice**~~ -- the player's own spaces (MINE), each ticked on its own. ***Done*** *(512be4f4, hub
    deployed). Every draw the design names is built; left: a real mind's answer, the phone, EUDAIMONIA's view (E-1).*
-5. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-23: "not yet again").
+5. ~~**C-471 in dialogue between friends' homes**~~ -- a talk with a friend's daemon on THE COMMONS, held there, both homes
+   seeing it. ***Done*** *(e68948a2; hub deployed, the commons updated). The commons speaks only once its commons.env
+   names a mind (the user's to write); until then such a talk stops and says no mind is answering.*
+6. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-23: "not yet again").
 
 ## Today's goals -- 2026-11-22, WORKING MEMORY
 

@@ -163,8 +163,9 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
       const page = ({ left: _l, right: _r, ...d }: Dream) => ({
         ...d, title: titleOf(d), day: dayOfDream(d), centre: centreOf(d), dayColour: weekJson.days[new Date(d.from || d.at).getDay()].colour,
         signs: signsOfDream(store, d, now) });   // C-484: SIGNS & SYMBOLS, the house's reading or the lexicon's
-      return ok({ volumes: dreamBooks(store).map((v) => ({ ...v, dreams: v.dreams.map(page) })),
-                  authors: dreamAuthors(store).map((a) => ({ ...a, dreams: a.dreams.map(page) })) });   // C-483: DAEMON DREAMS, a book a daemon
+      const authors = dreamAuthors(store).map((a) => ({ ...a, dreams: a.dreams.map(page) }));   // C-483: DAEMON DREAMS, a book a daemon
+      if (a.query?.only === "authors") return ok({ authors });   // C-137: the Tab5 keeps only DAEMON DREAMS -- each dream once, not twice
+      return ok({ volumes: dreamBooks(store).map((v) => ({ ...v, dreams: v.dreams.map(page) })), authors });
     }
     if (path === "/api/dreams") return ok({ dreams: dreamsOf(store).map((d) => ({ ...d, title: titleOf(d), day: dayOfDream(d), centre: centreOf(d), dayColour: weekJson.days[new Date(d.from || d.at).getDay()].colour })) });   // C-200: the dream journal, the newest first; C-308: each titled
     if (path === "/api/where") {                          // C-174: the newest first; walked since the asker's midnight

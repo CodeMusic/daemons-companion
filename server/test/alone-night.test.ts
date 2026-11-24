@@ -18,6 +18,11 @@ describe("a watch's night and its fixes, on the shared rules", () => {
     if (typeof r === "string") throw new Error(r);
     expect(r).toMatchObject({ carried: false, dream: { quality: "vivid", by: "words", tucked: true } });
     expect((ask(store, "GET", "/api/dreams").body as any).dreams.map((d: any) => d.id)).toEqual([r.dream.id]);
+    // C-137: the Tab5 asks for DAEMON DREAMS alone, each dream once
+    const whole = ask(store, "GET", "/api/dreambooks").body as any, only = ask(store, "GET", "/api/dreambooks", {}, { only: "authors" }).body as any;
+    expect(Object.keys(whole).sort()).toEqual(["authors", "volumes"]);
+    expect(Object.keys(only)).toEqual(["authors"]);
+    expect(only.authors.map((a: any) => [a.who, a.dreams.map((d: any) => d.id)])).toEqual(whole.authors.map((a: any) => [a.who, a.dreams.map((d: any) => d.id)]));
   });
   it("keeps a fix, lists it for its device, and FIND rides that device alone", () => {
     const store = new Store(":memory:");

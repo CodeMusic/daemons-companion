@@ -4,7 +4,8 @@ SLEEP SOUNDS (C-334) grows into REVERIE: one place to make a piece to sink into,
 under it that is no longer one fixed ramp. Every word a player sees here is DRAFT.
 
 Tickets: **C-505** REVERIE in the app, **C-506** drifts as files and the starter library, **C-507** the site,
-**C-508** the hub's bytes.
+**C-508** the hub's bytes; then **C-550** the door, **C-551** the library renamed, **C-552** new drifts, **C-553** a
+daemon's sound, **C-554** making one (with its AI), **C-555** the spiralling eyes.
 
 ## The user's choices (2026-11-24, by multiple choice)
 
@@ -33,11 +34,52 @@ and ignored here. The player picks a premade drift or one made on the site; the 
 Spirituality, Sex and Intimacy and Experimental as they are, and the 36 of Pharmacy renamed as TINCTURES by how they
 feel. PulseEntrain is the user's own; it is carried over, not re-derived.
 
+## The door: you, or a daemon (C-550; the user, 2026-11-24)
+
+REVERIE opens on a question with no words: your own sprite (the monkey) above, a few daemons' sprites, chosen at random,
+overlaid below. The choice has no labels; hovering (a long press on the phone) shows a phrase that says what it is.
+
+| yours | a daemon's | |
+|---|---|---|
+| SLEEP | **SUSPEND** | falling asleep; for a daemon, its state held while it rests |
+| MEDITATION | **DEFRAG** | stillness; for a daemon, its fragments gathered quietly back into order |
+| NATURE | **SANDBOX** | immersion in the world; for a daemon, an open world safe to wander |
+| TINCTURES | **DEV CONSOLE** | a state taken on for a while; for a daemon, its own settings changed by hand |
+
+A daemon's drifts sound like a machine (C-553, low priority): square-wave tones, modulated and glitching; isochronic
+glitch pulses at a rate; and the binaural beat wavering -- the beat, the carrier or both -- by a set amount (at most the
+beat) over a set period.
+
+## The library, sorted and renamed (C-551; the user, 2026-11-24, by multiple choice)
+
+PulseEntrain's 93 are the reference library -- "training data from an alpha project" -- and every one is renamed:
+
+- **SLEEP**: Dream Chill, and Pure's delta and theta.
+- **MEDITATION**: the rest of Pure, Spirituality and Emotions (the Emotions set was made by a local AI: renamed, and its
+  artwork generated).
+- **TINCTURES**: Pharmacy, Focus and Energy, Sex and Intimacy and Experimental.
+- **NATURE**: none yet; C-552 makes its first.
+
+Every name trademark-safe and none a drug's name or near one. A TINCTURE is still a physical thing, so it is named for
+its effect, with a very subtle nod to what it was -- and otherwise with some fun. Each is checked against what is known of
+its bands and tweaked where that helps. All of it is reviewed on a private picking page. **The phone carries 3 of each
+kind; the hub keeps the whole library.** C-552 then makes four new drifts for each kind, yours and a daemon's.
+
 ## Making one, in the app
 
 REVERIE (where SLEEP SOUNDS is now): choose a kind, then a drift (premade, the site's, or the kind's default), then the
 music -- a piece already on the hub, one made now from the daemon's context (sleep sounds' recipe, widened per kind), or
 none. Play it; keep it. The watch plays a reverie's render from its card, as it plays sleep sounds now.
+
+**Making one** (C-554), as SING does: yours or a daemon's, the daemon it is made by, an optional prompt for the sound and
+one for the style. Its AI (the user: "u can choose as many or few options"; chosen, DRAFT): THE MIND writes a drift
+from the sound prompt (a `.imed` v2 file, checked before it is kept); the music from the style prompt and the daemon's
+context, on ACE-Step; its name and hover line in the chosen daemon's voice; its cover by THE EASEL. Each falls back
+when no mind answers.
+
+**While it plays** (C-555): the daemon chosen for it is on screen, a spiral turning in each eye, outlined in black and
+filled in its kind's colour -- counterclockwise while the beat falls (winding down), clockwise while it rises, as fast
+as the beat.
 
 ## The site: downdrift.daemons.codemusic.ca
 

@@ -127,3 +127,9 @@ a.link { color: var(--gold); cursor: pointer; text-decoration: underline; text-u
 .party .mon { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 6px 4px;
               border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
 .party .mon b { font: 700 12px var(--mono); }
+
+/* C-484: SYMBOLS -- each sign's glyph large beside its name and meaning */
+.sym { display: flex; gap: 12px; align-items: center; padding: 10px 0; }
+.sym .glyph { width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 26px;
+              border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--gold); }
+.sym .grow { flex: 1; min-width: 0; }

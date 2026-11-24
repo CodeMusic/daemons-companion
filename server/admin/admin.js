@@ -11,6 +11,7 @@
 //   CREATIONS    what the daemons made that the hub keeps -- sleep sounds, paintings -- each let go, or many (C-361)
 //   SAVES        the trail of every save that moved, going back to one, and whose copy goes on (C-364, C-365)
 //   IN PLAY      every game being played in the ecosystem -- its screen, where it was saved, its party; ending an AI run (C-478)
+//   SYMBOLS      every symbol a dream has called up, its glyph and meaning, and any one drawn AGAIN (C-484)
 // The page holds nothing of the user's: it asks the hub's API, with a paired key kept in this browser (on the hub's own
 // machine none is needed). Every word DRAFT.
 const KEY = "engine-room.key";
@@ -64,6 +65,7 @@ const PAGES = [
   { id: "creations", glyph: "❖", label: "CREATIONS", short: "MADE", draw: drawCreations },     // C-361
   { id: "saves", glyph: "⟲", label: "SAVES", short: "SAVES", draw: drawSaves },               // C-364
   { id: "play", glyph: "◐", label: "IN PLAY", short: "PLAY", draw: drawInPlay, every: 3000 },    // C-478
+  { id: "symbols", glyph: "✦", label: "SYMBOLS", short: "SIGNS", draw: drawSymbols },             // C-484
 ];
 let timer = null, ui = {}, drawing = null;          // ui: what a page keeps between its redraws (a filter, a task picked, a note)
 // a page asked for before another was opened, answering after it: it writes nothing
@@ -187,6 +189,7 @@ async function drawHub() {
       <button class="btn quiet" data-act="unpair">FORGET THIS BROWSER'S KEY</button></div>`;
 }
 const BLURB = {
+  symbols: "Every symbol a dream has called up: its glyph, what it means, where it came from; draw any one again.",
   play: "Every game being played that reports to the hub: its screen, where it was saved, its party; end an AI run-through.",
   mind: "Every mind's work, for everyone: stop, try again, forget; and LATER, the hub's plans.",
   house: "The casino's odds today and why, who is at the reels, what the house keeps.",
@@ -776,6 +779,46 @@ async function drawInPlay() {
 const LIVEGAME = (v, g) => v.playing.some((x) => x.id === g.id);
 ACTS.game = (d) => { ui.game = d.id || null; };
 ACTS.gameend = async (d) => { await api(`/api/games/${encodeURIComponent(d.id)}/end`, {}); said("Asked to end. It stops at its next heartbeat."); };
+
+// ---- SYMBOLS (C-484): every symbol a dream has called up, and any one drawn again ----
+// THE SYMBOLS' INVENTORY (server/src/psyche/dreamsigns.ts): each sign's glyph and what it means, from the lexicon, from
+// a mind, or from the pool. AGAIN asks a house mind for a new glyph and meaning (with none, the pool's next glyph); the
+// dream books show the new one at once. DRAFT.
+const BY = { lexicon: "THE LEXICON", mind: "A MIND", pool: "THE POOL" };   // DRAFT
+async function drawSymbols() {
+  const v = await api("/api/symbols"), now = Date.now(), by = ui.by ?? "all", q = (ui.q ?? "").toLowerCase();
+  const all = v.symbols ?? [];
+  const shown = all.filter((s) => by === "all" || s.by === by);
+  const textOf = (s) => `${s.sign} ${s.means} ${s.book}`.toLowerCase();
+  if (stale()) return;
+  const counts = Object.fromEntries(Object.keys(BY).map((k) => [k, all.filter((s) => s.by === k).length]));
+  $page.innerHTML = `<h1>SYMBOLS</h1>
+    <p class="lede">${all.length ? `${all.length} symbol${all.length === 1 ? "" : "s"} the dreams have called up` : "No dream has called up a symbol yet"}. A glyph that is not what you wanted can be drawn AGAIN: a house mind gives it a new glyph and meaning (with none, the pool's next glyph), and the dream books show it at once.</p>
+    ${all.length ? `<div class="row" style="margin-bottom:12px">
+      ${["all", ...Object.keys(BY)].map((k) => `<button class="pill ${by === k ? "on" : ""}" data-act="symby" data-by="${k}">${k === "all" ? `EVERY ONE (${all.length})` : `${BY[k]} (${counts[k]})`}</button>`).join("")}
+      <input class="text" id="symq" placeholder="a sign, a meaning, a book" value="${esc(ui.q ?? "")}" style="max-width:260px"></div>` : ""}
+    <div class="card"><div class="list">${shown.map((s) => `<div class="sym" data-said="${esc(textOf(s))}"${q && !textOf(s).includes(q) ? ' style="display:none"' : ""}>
+        <span class="glyph" aria-hidden="true">${esc(s.glyph)}</span>
+        <div class="grow"><div><b>${esc(s.sign)}</b> <span class="small">· ${BY[s.by] ?? esc(s.by)}${s.book ? ` · ${esc(s.book)}` : ""} · ${ago(s.made, now)}</span></div>
+          <div class="small">${esc(s.means) || "<i>no meaning given</i>"}</div></div>
+        <button class="btn quiet" data-act="symagain" data-sign="${esc(s.sign)}" ${ui.again === s.sign ? "disabled" : ""}>${ui.again === s.sign ? "DRAWING…" : "AGAIN"}</button>
+      </div>`).join("") || `<p class="small">${all.length ? "None like that." : "They appear here as dreams are read."}</p>`}</div></div>
+    ${note()}`;
+  const input = document.getElementById("symq");
+  // the search narrows the rows where they are -- the page does not redraw while something is typed into it
+  if (input) input.oninput = () => {
+    ui.q = input.value; const w = ui.q.toLowerCase();
+    for (const r of $page.querySelectorAll(".sym")) r.style.display = !w || r.dataset.said.includes(w) ? "" : "none";
+  };
+}
+ACTS.symby = (d) => { ui.by = d.by; };
+ACTS.symagain = async (d) => {
+  ui.again = d.sign;
+  try {
+    const r = await api("/api/symbols/again", { sign: d.sign });
+    said(r.symbol ? `${r.symbol.sign} is drawn ${r.symbol.glyph} now${r.symbol.by === "pool" ? " (from the pool: no house mind answered)" : ""}.` : "Drawn again.");
+  } finally { ui.again = null; }
+};
 
 // ---- JOBS (C-342): the site, THE HANDS, and the command line's jobs ----
 const LIVE_JOB = (j) => j.state === "waiting" || j.state === "running";

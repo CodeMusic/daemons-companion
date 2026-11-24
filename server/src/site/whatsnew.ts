@@ -6,7 +6,7 @@
 // written from history by server/tools/whatsnew.py), a span of them, and the SPANS the hub's mind has told: a few
 // paragraphs on what changed across them, in the house's words. Each span asked is a task in THE MIND's ledger
 // (ai/tasks.ts). Every word the hub writes here is DRAFT.
-import notesJson from "../data/whatsnew.json" with { type: "json" };
+import notesJson from "../../data/whatsnew.json" with { type: "json" };
 
 // C-339: a section that needs setting up carries its steps (server/data/whatsnew_setup.json, copied in by whatsnew.py)
 export type Setup = { title: string; steps: string[]; needs?: string[]; where?: string; wiki?: string; book?: string; draft?: boolean };

@@ -8,7 +8,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { fileURLToPath } from "node:url";
 import { serveSite } from "./site.js";
 
-export const ADMIN_DIR = fileURLToPath(new URL("../admin/", import.meta.url));
+export const ADMIN_DIR = fileURLToPath(new URL("../../admin/", import.meta.url));
 
 export const isAdminPath = (method: string, path: string) =>
   (method === "GET" || method === "HEAD") && (path === "/admin" || path.startsWith("/admin/"));

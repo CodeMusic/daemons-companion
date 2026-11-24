@@ -1,5 +1,5 @@
 #!/bin/zsh
-# C-342: THE HANDS -- THE ENGINE ROOM's helper on this computer (server/src/hands_main.ts), run as a LaunchAgent. It asks
+# C-342: THE HANDS -- THE ENGINE ROOM's helper on this computer (server/src/site/hands_main.ts), run as a LaunchAgent. It asks
 # the hub for the jobs asked for in THE ENGINE ROOM (the save, art, DEBUG patches, backups, deploy, the commons' keeper)
 # and runs them from this checkout. It dials out: nothing new listens here.
 #   hub/hands.sh install     pair it with the hub (a code by ssh, from .hub's HUB), write the LaunchAgent, start it
@@ -25,7 +25,7 @@ case "${1:-}" in
     [[ -f "$ENV" ]] || { echo "hands: not installed -- hub/hands.sh install" >&2; exit 2; }
     set -a; source "$ENV"; set +a
     cd "$HERE/server"
-    HANDS_ROOT="$HERE" exec node --import tsx src/hands_main.ts ;;
+    HANDS_ROOT="$HERE" exec node --import tsx src/site/hands_main.ts ;;
   install)
     [[ -n "${HUB:-}" ]] || { echo "hands: .hub names no HUB (see .hub.example)" >&2; exit 1; }
     [[ -d "$HERE/server/node_modules" ]] || (cd "$HERE/server" && npm ci --no-audit --no-fund)

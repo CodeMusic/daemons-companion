@@ -1,7 +1,7 @@
 // C-339: WHAT'S NEW's SET UP -- each ticket's steps (data/whatsnew_setup.json) carried on the sections that name it
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { NOTES, stepText, wikiUrl, type Setup } from "../src/whatsnew.js";
+import { NOTES, stepText, wikiUrl, type Setup } from "../src/site/whatsnew.js";
 
 const here = new URL(".", import.meta.url);
 const SETUP = JSON.parse(readFileSync(new URL("../data/whatsnew_setup.json", here), "utf8")).setup as Record<string, Setup>;

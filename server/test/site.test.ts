@@ -7,7 +7,7 @@ import { networkInterfaces, tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
-import { siteFile } from "../src/site.js";
+import { siteFile } from "../src/site/site.js";
 
 const dir = mkdtempSync(join(tmpdir(), "site-"));
 const siteDir = join(dir, "site"), artDir = join(dir, "art");

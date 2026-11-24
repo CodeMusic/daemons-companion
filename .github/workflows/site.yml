@@ -1,5 +1,5 @@
 # C-342: the companion's site, built at every push to main and put on the `site` release (site.tar.gz, site-commit.txt),
-# which the hub fetches by itself (server/src/sitefetch.ts) -- so nobody runs ./syncCompanion.sh site any more.
+# which the hub fetches by itself (server/src/site/sitefetch.ts) -- so nobody runs ./syncCompanion.sh site any more.
 name: site
 on:
   push:

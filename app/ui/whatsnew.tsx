@@ -10,7 +10,7 @@
 //     as tags above it; a bead tapped shows that build
 //   - with an older build shown, ✦ TELL ME asks the hub's mind for the span from it to now; ⟷ ANY SPAN picks both ends
 //   - while it thinks, the daemons' signs dance and the house mutters; the dialog may be closed, and the tag lands anyway
-// Notes from server/data/whatsnew.json (server/tools/whatsnew.py); spans from the hub (server/src/whatsnew.ts), each a
+// Notes from server/data/whatsnew.json (server/tools/whatsnew.py); spans from the hub (server/src/site/whatsnew.ts), each a
 // task in THE MIND AT WORK. Every word DRAFT.
 // C-339 (the user, 2026-11-11: "in the whats new, if there are instructions to any parts added in the whats new, you
 // should be able to select that to see the specific setup instructions"): a section that needs setting up shows
@@ -19,7 +19,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Linking, ScrollView } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { NOTES, stepText, wikiUrl, type BuildNotes, type Digest, type Section } from "../../server/src/whatsnew";
+import { NOTES, stepText, wikiUrl, type BuildNotes, type Digest, type Section } from "../../server/src/site/whatsnew";
 import { api, SERVER } from "../platform/net";
 import type { Which } from "../state/manual";
 import { deviceName, whoAmI } from "../state/me";   // C-319

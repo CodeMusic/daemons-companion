@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""C-406: the boards on this computer's USB, for THE ENGINE ROOM (run by THE HANDS, server/src/jobs.ts).
+"""C-406: the boards on this computer's USB, for THE ENGINE ROOM (run by THE HANDS, server/src/site/jobs.ts).
 
     hub/boards.py look                   every board on USB, by its USB serial (an ESP32-S3's is its MAC) -- no port opened
     hub/boards.py flash SERIAL[@ENV]     the newest firmware onto the board with that serial (./updateCompanion.sh)

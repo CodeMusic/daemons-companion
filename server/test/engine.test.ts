@@ -9,8 +9,8 @@ import { join } from "node:path";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import { Store } from "../src/shared/db.js";
-import * as JOBS from "../src/jobs.js";
-import { siteNow, siteUpdate } from "../src/sitefetch.js";
+import * as JOBS from "../src/site/jobs.js";
+import { siteNow, siteUpdate } from "../src/site/sitefetch.js";
 
 describe("JOBS (C-342)", () => {
   const store = () => new Store(":memory:");

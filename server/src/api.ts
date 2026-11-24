@@ -58,11 +58,11 @@ import { assign, carryView, setYours, yoursOf } from "./damagotchi/carry.js";
 import { SharedNetworks } from "./devices/networks.js";
 import { SharedRemotes } from "./devices/remotes.js";
 import { hostname, networkInterfaces } from "node:os";
-import { isSitePath, serveSite } from "./site.js";
+import { isSitePath, serveSite } from "./site/site.js";
 import { LINK_PAGE, linkHost, linkRoute, seatOk, seatSave, takeSave } from "./game/linkcable.js";   // C-221: THE LINK CABLE
-import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./admin.js";   // C-330: THE ENGINE ROOM
-import * as JOBS from "./jobs.js";                                       // C-342: its JOBS, for THE HANDS
-import { siteNow, siteUpdate, siteView } from "./sitefetch.js";
+import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./site/admin.js";   // C-330: THE ENGINE ROOM
+import * as JOBS from "./site/jobs.js";                                       // C-342: its JOBS, for THE HANDS
+import { siteNow, siteUpdate, siteView } from "./site/sitefetch.js";
 import { deviceName } from "./devices/devicenames.js";                           // C-405: a device by its name           // C-342: the site, built on every push
 import { PRIORITY, TalkJobs } from "./machine/talkjobs.js";
 import { keepSave, listSaves } from "./game/saves.js";   // C-215
@@ -155,7 +155,7 @@ import { readGuide } from "./game/save/guide.js";
 import { Tasks, tasksView, usersOf, TASK_KINDS, type TaskKind } from "./machine/tasks.js";   // C-319; C-400: the kinds
 import { cadenceOk, cadenceSaid, fallsOn, isDue, keepPlan, nextDue, plans, planTask, weekSpan } from "./machine/schedule.js";   // C-319 later; C-455: cadence
 import { SPAN, SPANS, writeMention, type Span } from "./psyche/mentions.js";   // C-455: MENTIONS FROM YOUR DAEMON
-import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./whatsnew.js";   // C-318
+import { DIGEST_SYSTEM, NOTES, digestAsk, digests, forgetDigest, keepDigest, readDigest, spanOf, type Digest } from "./site/whatsnew.js";   // C-318
 import { readSubtle } from "./game/save/subtle.js";   // C-204
 import { sayable } from "./machine/say.js";   // C-270
 import { studyView as studyViewOf, writeAnswer as writeResearchAnswer } from "./lifemanagement/research.js";   // C-454

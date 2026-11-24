@@ -304,6 +304,147 @@ static void showManual() {
   manualLink(nav, "NEXT >", manualAt + 1, manualAt < total - 1);
 }
 
+// ---- C-137 (the app's C-483, C-484): DAEMON DREAMS -- a book a daemon, its dreams in the week's order (Sunday first, as
+// week.json is), each with its SIGNS & SYMBOLS: the word, what in the dream led to it, the reading, the books it was read
+// through. Kept as "dreams" (GET /api/dreambooks?only=authors). A dream the house has not yet read closely is asked for
+// once a session (POST /api/dreams/signs, as the app does); its reading comes with the next download. The glyphs are not
+// drawn: the Tab5's type has none of them. Every word DRAFT.
+static const char *WEEK_DAYS[] = { "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY" };
+static const char *WEEK_KEYS[] = { "sun", "mon", "tue", "wed", "thu", "fri", "sat" };
+static const char *WEEK_CUES[] = { "Chastity over Lust", "Temperance over Gluttony", "Charity over Greed", "Diligence over Sloth",
+                                   "Forgiveness over Wrath", "Kindness over Envy", "Humility over Pride" };   // week.json's cues
+static int dayKey(const char *k) { for (int i = 0; i < 7; i++) if (k && !strcmp(k, WEEK_KEYS[i])) return i; return 0; }
+static bool dreamsRecent = false;                  // MOST DREAMS, or MOST RECENT
+static String dreamWho;                            // the daemon whose book is open ("" the shelf)
+static int dreamAt = -1;                           // the dream open, in the book's order; -1 its CONTENTS
+static std::set<long> dreamsAsked;                 // signs asked of the house, once a session each
+static void showDreams();
+static void tapDreamsSort(lv_event_t *e) { dreamsRecent = (bool)(long)lv_event_get_user_data(e); showDreams(); }
+static void tapDreamAt(lv_event_t *e) { dreamAt = (int)(long)lv_event_get_user_data(e); showDreams(); }
+static void tapDreamShelf(lv_event_t *) { dreamWho = ""; dreamAt = -1; showDreams(); }
+static std::vector<String> dreamWhos;              // the shelf's order, for its buttons
+static void tapDreamBook(lv_event_t *e) { dreamWho = dreamWhos[(int)(long)lv_event_get_user_data(e)]; dreamAt = -1; showDreams(); }
+static void openDreams(lv_event_t *) { dreamWho = ""; dreamAt = -1; showDreams(); }
+static lv_color_t hexColour(const char *h, lv_color_t or_) { return h && strlen(h) == 7 && h[0] == '#' ? lv_color_hex(strtol(h + 1, nullptr, 16)) : or_; }
+static void showDreams() {
+  JsonDocument d = newDoc();
+  if (!kept("dreams", d)) return;
+  JsonArray authors = d["authors"].as<JsonArray>();
+  lv_obj_t *o = openOverlay();
+  lv_obj_t *top = row(o);
+  button(top, "CLOSE", closeOverlay, nullptr, false);
+  if (!dreamWho.length()) {                        // the shelf: a book a daemon
+    label(o, "DAEMON DREAMS", &lv_font_montserrat_40, INK, LV_PCT(100));
+    lv_obj_t *sort = row(o);
+    button(sort, "MOST DREAMS", tapDreamsSort, (void *)0L, !dreamsRecent);
+    button(sort, "MOST RECENT", tapDreamsSort, (void *)1L, dreamsRecent);
+    std::vector<JsonObject> bs; for (JsonObject a : authors) bs.push_back(a);
+    std::stable_sort(bs.begin(), bs.end(), [](JsonObject a, JsonObject b) {
+      int ca = a["count"] | 0, cb = b["count"] | 0; String la = a["last"] | "", lb = b["last"] | "";
+      return dreamsRecent ? (la != lb ? la > lb : ca > cb) : (ca != cb ? ca > cb : la > lb); });
+    dreamWhos.clear();
+    for (JsonObject a : bs) {
+      lv_obj_t *c = card(o), *r = row(c);
+      int sp = a["species"] | 0;
+      if (sp > 0 && hasArt("s" + String(sp))) picture(r, "s" + String(sp), 256 * 2);
+      lv_obj_t *t = column(r, 440);
+      label(t, a["title"] | "", &lv_font_montserrat_28, INK, 440);
+      int n = a["count"] | 0;
+      label(t, String(n) + (n == 1 ? " dream" : " dreams") + ", the last " + String((const char *)(a["last"] | "")).substring(0, 10), &lv_font_montserrat_20, QUIET);
+      button(t, "READ", tapDreamBook, (void *)(long)dreamWhos.size());
+      dreamWhos.push_back(a["who"] | "");
+    }
+    if (!bs.size()) label(o, "No dreams written yet. A daemon dreams on a night it is tucked in.", &lv_font_montserrat_28, QUIET, LV_PCT(100));
+    return;
+  }
+  JsonObject a;
+  for (JsonObject x : authors) if (dreamWho == (const char *)(x["who"] | "")) a = x;
+  if (a.isNull()) { dreamWho = ""; showDreams(); return; }
+  std::vector<JsonObject> ds; for (JsonObject x : a["dreams"].as<JsonArray>()) ds.push_back(x);
+  std::stable_sort(ds.begin(), ds.end(), [](JsonObject x, JsonObject y) { return dayKey(x["day"]) < dayKey(y["day"]); });
+  button(top, "< DAEMON DREAMS", tapDreamShelf, nullptr, false);
+  if (dreamAt >= (int)ds.size()) dreamAt = -1;
+  if (dreamAt < 0) {                               // its title and CONTENTS, by the day each was dreamt
+    lv_obj_t *r = row(o);
+    int sp = a["species"] | 0;
+    if (sp > 0 && hasArt("s" + String(sp))) picture(r, "s" + String(sp), 256 * 3);
+    lv_obj_t *t = column(r, 420);
+    label(t, a["title"] | "", &lv_font_montserrat_40, INK, 420);
+    label(t, "Dreamt, and written down, by " + String((const char *)(a["nickname"] | "")) + ".", &lv_font_montserrat_20, QUIET, 420);
+    label(o, "CONTENTS", &lv_font_montserrat_20, DAY);
+    int day = -1;
+    for (int i = 0; i < (int)ds.size(); i++) {
+      int k = dayKey(ds[i]["day"]);
+      if (k != day) { day = k; label(o, String(WEEK_DAYS[k]) + "  -  " + WEEK_CUES[k], &lv_font_montserrat_20, hexColour(ds[i]["dayColour"], DAY)); }
+      lv_obj_t *b = button(o, String((const char *)(ds[i]["from"] | ds[i]["at"] | "")).substring(0, 10) + "    " + (const char *)(ds[i]["title"] | ""), tapDreamAt, (void *)(long)i, false);
+      lv_obj_set_width(b, LV_PCT(100));
+    }
+    return;
+  }
+  JsonObject dr = ds[dreamAt];
+  int k = dayKey(dr["day"]);
+  lv_color_t ink = hexColour(dr["dayColour"], DAY);
+  label(o, String(WEEK_DAYS[k]) + "  " + String((const char *)(dr["from"] | dr["at"] | "")).substring(0, 10) + "   " + String(dreamAt + 1) + " / " + String(ds.size()),
+        &lv_font_montserrat_16, QUIET);
+  label(o, dr["title"] | "", &lv_font_montserrat_40, ink, LV_PCT(100));
+  lv_obj_t *c = card(o);
+  lv_obj_set_style_border_color(c, ink, 0);
+  label(c, dr["text"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
+  label(c, String((const char *)(dr["nickname"] | "")) + ", woke " + String((const char *)(dr["to"] | "")).substring(0, 10), &lv_font_montserrat_16, QUIET);
+  JsonObject sg = dr["signs"];
+  long id = dr["id"] | 0L;
+  if ((sg.isNull() || String((const char *)(sg["by"] | "")) != "thinker") && !dreamsAsked.count(id)) {
+    dreamsAsked.insert(id);
+    netSendQuiet("POST", "/api/dreams/signs", "{\"id\":" + String(id) + "}");
+  }
+  if (!sg.isNull() && sg["signs"].size()) {
+    lv_obj_t *s = card(o);
+    String books;
+    for (JsonVariant b : sg["books"].as<JsonArray>()) books += String(books.length() ? ", " : "") + b.as<String>();
+    label(s, "SIGNS & SYMBOLS" + (books.length() ? "  -  read through " + books : String("")), &lv_font_montserrat_16, QUIET, LV_PCT(100));
+    for (JsonObject g : sg["signs"].as<JsonArray>()) {
+      label(s, g["sign"] | "", &lv_font_montserrat_28, hexColour(g["ink"], DAY));
+      if (strlen(g["seen"] | "")) label(s, "\"" + String((const char *)g["seen"]) + "\"", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+      label(s, g["reading"] | "", &lv_font_montserrat_20, INK, LV_PCT(100));
+    }
+    if (strlen(sg["thread"] | "")) label(s, sg["thread"] | "", &lv_font_montserrat_20, QUIET, LV_PCT(100));
+    label(s, String((const char *)(sg["by"] | "")) == "lexicon" ? "From the books' own words." : "Read by the house.", &lv_font_montserrat_16, QUIET);
+  }
+  lv_obj_t *nav = row(o);
+  button(nav, "< BACK", tapDreamAt, (void *)(long)(dreamAt - 1), false);
+  button(nav, "CONTENTS", tapDreamAt, (void *)-1L, false);
+  if (dreamAt < (int)ds.size() - 1) button(nav, "NEXT >", tapDreamAt, (void *)(long)(dreamAt + 1), false);
+}
+
+// ---- C-137 (the app's C-455): MENTIONS FROM YOUR DAEMON, the book its letters are kept in, a page a letter, newest first
+// (kept as "mentions", which TODAY's card reads too). Every word DRAFT.
+static int letterAt = 0;
+static void showLetters();
+static void tapLetterAt(lv_event_t *e) { letterAt = (int)(long)lv_event_get_user_data(e); showLetters(); }
+static void showLetters() {
+  JsonDocument m = newDoc();
+  if (!kept("mentions", m)) return;
+  JsonArray all = m["mentions"].as<JsonArray>();
+  if (letterAt >= (int)all.size()) letterAt = 0;
+  lv_obj_t *o = openOverlay();
+  button(o, "CLOSE", closeOverlay, nullptr, false);
+  label(o, m["book"] | "MENTIONS", &lv_font_montserrat_40, INK, LV_PCT(100));
+  if (!all.size()) { label(o, "No letters yet. Your daemon writes one when its time comes.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }
+  JsonObject u = all[letterAt];
+  lv_obj_t *c = card(o), *r = row(c);
+  int species = u["species"] | 0;
+  if (species > 0 && hasArt("s" + String(species))) picture(r, "s" + String(species), 256 * 2);
+  lv_obj_t *t = column(r, 440);
+  label(t, u["title"] | "", &lv_font_montserrat_20, QUIET, 440);
+  label(t, String((const char *)(u["said"] | "")) + "  -  from " + (const char *)(u["nickname"] | ""), &lv_font_montserrat_20, QUIET, 440);
+  label(c, u["body"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
+  label(c, "Written " + String((const char *)(u["at"] | "")).substring(0, 10), &lv_font_montserrat_16, QUIET);
+  lv_obj_t *nav = row(o);
+  if (letterAt > 0) button(nav, "< NEWER", tapLetterAt, (void *)(long)(letterAt - 1), false);
+  label(nav, String(letterAt + 1) + " / " + String(all.size()), &lv_font_montserrat_20, QUIET);
+  if (letterAt < (int)all.size() - 1) button(nav, "OLDER >", tapLetterAt, (void *)(long)(letterAt + 1), false);
+}
+
 static void drawLibrary(lv_obj_t *p) {
   JsonDocument md = newDoc();                       // C-233: THE PLAYER'S MANUAL, first on the shelf, for everyone
   if (kept("manual", md) && md["chapters"].size()) {
@@ -322,6 +463,23 @@ static void drawLibrary(lv_obj_t *p) {
     label(t, "THE GUIDE", &lv_font_montserrat_20, QUIET);
     label(t, gd["title"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
     button(t, "READ", tapGuideAt, (void *)(long)-1);
+  }
+  JsonDocument dd = newDoc();                       // C-137: DAEMON DREAMS (C-483), once a daemon has written one
+  if (kept("dreams", dd) && dd["authors"].size()) {
+    int n = 0; for (JsonObject a : dd["authors"].as<JsonArray>()) n += a["count"] | 0;
+    lv_obj_t *c = card(p);
+    label(c, "DAEMON DREAMS", &lv_font_montserrat_20, QUIET);
+    label(c, String(n) + (n == 1 ? " dream" : " dreams") + " in " + String(dd["authors"].size()) + (dd["authors"].size() == 1 ? " book" : " books") +
+             ", a book a daemon, each dream with its signs.", &lv_font_montserrat_28, INK, LV_PCT(100));   // DRAFT
+    button(c, "READ", openDreams);
+  }
+  JsonDocument ld = newDoc();                       // C-137: the daemon's letters (C-455), once one is written
+  if (kept("mentions", ld) && ld["mentions"].size()) {
+    lv_obj_t *c = card(p);
+    label(c, ld["book"] | "MENTIONS", &lv_font_montserrat_20, QUIET);
+    int n = ld["mentions"].size();
+    label(c, String(n) + (n == 1 ? " letter" : " letters") + " from your daemon, newest first.", &lv_font_montserrat_28, INK, LV_PCT(100));   // DRAFT
+    button(c, "READ", tapLetterAt, (void *)0L);
   }
   JsonDocument sd = newDoc();                       // T-423: THE SUBTLE LAYER, once found
   if (kept("subtle", sd) && (sd["held"] | false)) {

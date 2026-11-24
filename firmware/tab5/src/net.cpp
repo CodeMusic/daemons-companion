@@ -33,7 +33,7 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
       !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide") || !strcmp(name, "subtle") ||
-      !strcmp(name, "hermetic") || !strcmp(name, "manual")) return K_PROFILE;
+      !strcmp(name, "hermetic") || !strcmp(name, "manual") || !strcmp(name, "dreams")) return K_PROFILE;
   if (!strcmp(name, "spell") || !strcmp(name, "tending") || !strcmp(name, "balance") || !strcmp(name, "mentions")) return K_TODAY;   // C-137   // C-145: the LIBRARY's GUIDE; T-423: THE SUBTLE LAYER; C-238, C-233
   if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;
   if (!strcmp(name, "home")) return K_HOME;                                    // C-139: the HOME page's own   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
@@ -532,6 +532,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/guide", "guide");                 // C-145: the GUIDE, once the save holds it
     fetchKeep(netPreview() ? "/api/subtle?preview=1" : "/api/subtle", "subtle");         // T-423: THE SUBTLE LAYER, once the save holds it
     fetchKeep(netPreview() ? "/api/hermetic?preview=1" : "/api/hermetic", "hermetic");   // C-238: THE HERMETIC LAYER, once found (or a PREVIEW)
+    fetchKeep("/api/dreambooks?only=authors", "dreams");   // C-137: DAEMON DREAMS, a book a daemon (C-483), with signs (C-484)
     fetchKeep("/api/manual", "manual");               // C-233: THE PLAYER'S MANUAL, as words
     fetchKeep("/api/marks", "marks");                 // each MARK's and understanding's words and colours
     fetchKeep("/api/regions", "regions");             // the two regions' maps, lit from the profile's visited (C-127)

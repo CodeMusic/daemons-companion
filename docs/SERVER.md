@@ -196,6 +196,23 @@ the same day:
   and `bin/daemons-server.sh install` to run both at login as LaunchAgents. It refuses to install beside THE MESH's
   own node (`ca.codemusic.daemons.mesh`), which would make one Mac two nodes. The notarised `.pkg`, Linux and Windows
   packaging and signed updates are still to come.
+- **Builds** (C-541): the Pi program's **one recipe** is `firmware/pizero/tools/package.sh` with
+  `tools/build.Dockerfile`, run by GitHub's workflow and by a volunteer alike, and made to give **one SHA-1 for one
+  commit** on any honest machine (its tarball sorted, owned by 0, dated to the commit; the program's `built()` the
+  commit's time). The hub's setting **`builds.pizero.source`** is `github` (the default: devices take GitHub's rolling
+  release) or `volunteers`: then the hub asks GitHub every quarter hour for the newest commit that changed the program
+  and gives THE MESH one **build job** a board -- a job the hub never runs itself, taken only by a node whose caps say
+  `build:pizero`, handed to another able node if one fails, given up after six hours untaken. Each result's SHA-1 is
+  checked against what its builder said, and the boards are published together at **`/api/builds/pizero/`** in
+  GitHub's manifest shape, so a device updates from it with `DAEMONS_UPDATES=http://<hub>:4730/api/builds/pizero`; a
+  board no volunteer built keeps its older entry. On the host, the **Builds** switch needs Docker (arm64): it fetches
+  the commit's two folders, makes the build system from the repository's own Dockerfile, lets CMake fetch what it pins
+  (each by hash) with the network, then builds **with no network** inside the host's caps. A build pays 10 ARETE (DRAFT).
+  **Seen, 2026-11-24**: the hub asked for commit 37f6c690, a DAEMONS Server host on roverbyteseer built all four boards
+  (about a minute each), and the hub's shelf served four SHA-1s **byte for byte GitHub's** for that commit. Two things
+  had to be the same for that: the place it is built (`/daemons`, since the source's path is in the program) and no
+  `.git` in the tree (mGBA's build reads `git describe`). Not yet: comparing two hosts' builds of one board
+  (`checked`), and a device reading its source from its hub.
 
 ## 10. Still to decide
 

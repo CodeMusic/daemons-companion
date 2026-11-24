@@ -55,7 +55,8 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -250,7 +251,8 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -343,7 +345,8 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -437,7 +440,110 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
+ },
+ {
+  "formatVersion": 2,
+  "id": "first-rain",
+  "kind": "nature",
+  "meta": {
+   "name": "FIRST RAIN",
+   "description": "Rain arriving on leaves: a settled alpha easing toward theta as the shower steadies in.",
+   "category": "NATURE",
+   "strength": 1,
+   "durationSec": 1500
+  },
+  "generation": {
+   "source": "designed",
+   "from": "DAEMONS",
+   "ticket": "C-552"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0,
+     "beatHz": 10
+    },
+    {
+     "atSec": 300,
+     "beatHz": 9.5
+    },
+    {
+     "atSec": 900,
+     "beatHz": 8
+    },
+    {
+     "atSec": 1500,
+     "beatHz": 6.5
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 200
+   },
+   "beds": [
+    {
+     "source": "texture",
+     "type": "rain",
+     "level": 0.28
+    }
+   ]
+  },
+  "phone": true
+ },
+ {
+  "formatVersion": 2,
+  "id": "forest-at-dusk",
+  "kind": "nature",
+  "meta": {
+   "name": "FOREST AT DUSK",
+   "description": "Evening under the trees: a stream's hush as alpha fades toward the edge of sleep.",
+   "category": "NATURE",
+   "strength": 1,
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": "designed",
+   "from": "DAEMONS",
+   "ticket": "C-552"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0,
+     "beatHz": 10
+    },
+    {
+     "atSec": 600,
+     "beatHz": 8
+    },
+    {
+     "atSec": 1200,
+     "beatHz": 6
+    },
+    {
+     "atSec": 1800,
+     "beatHz": 4.5
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 220
+   },
+   "beds": [
+    {
+     "source": "texture",
+     "type": "stream",
+     "level": 0.2
+    }
+   ]
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -527,7 +633,8 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -616,7 +723,8 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -686,7 +794,8 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -785,7 +894,8 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
  },
  {
   "formatVersion": 2,
@@ -874,6 +984,122 @@
     1,
     9
    ]
-  }
+  },
+  "phone": true
+ },
+ {
+  "formatVersion": 2,
+  "id": "tide-pool",
+  "kind": "nature",
+  "meta": {
+   "name": "TIDE POOL",
+   "description": "The sea breathing in and out over a rock pool: a theta that swells and ebbs like the tide.",
+   "category": "NATURE",
+   "strength": 1,
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": "designed",
+   "from": "DAEMONS",
+   "ticket": "C-552"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0,
+     "beatHz": 8
+    },
+    {
+     "atSec": 90,
+     "beatHz": 6
+    },
+    {
+     "atSec": 180,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 270,
+     "beatHz": 6
+    },
+    {
+     "atSec": 360,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 450,
+     "beatHz": 6
+    },
+    {
+     "atSec": 540,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 630,
+     "beatHz": 6
+    },
+    {
+     "atSec": 720,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 810,
+     "beatHz": 6
+    },
+    {
+     "atSec": 900,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 990,
+     "beatHz": 6
+    },
+    {
+     "atSec": 1080,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 1170,
+     "beatHz": 6
+    },
+    {
+     "atSec": 1260,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 1350,
+     "beatHz": 6
+    },
+    {
+     "atSec": 1440,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 1530,
+     "beatHz": 6
+    },
+    {
+     "atSec": 1620,
+     "beatHz": 7.5
+    },
+    {
+     "atSec": 1710,
+     "beatHz": 6
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 180
+   },
+   "beds": [
+    {
+     "source": "texture",
+     "type": "surf",
+     "level": 0.3
+    }
+   ]
+  },
+  "phone": true
  }
 ]

@@ -13,7 +13,7 @@ describe("drifts", () => {
     const all = driftList();
     expect(all[0].id).toBe(LONG_FALL);
     expect(all.length).toBeGreaterThan(90);
-    expect(new Set(all.map((d) => d.kind))).toEqual(new Set(["sleep", "meditation", "tinctures"]));
+    expect(new Set(all.map((d) => d.kind))).toEqual(new Set(["sleep", "meditation", "nature", "tinctures"]));
   });
   it("turns every drift into stages on whole quarter-hertz, in time order", () => {
     for (const d of driftList()) {
@@ -43,7 +43,7 @@ describe("drifts", () => {
     const phone = JSON.parse(readFileSync(new URL("../data/drifts/phone.json", import.meta.url), "utf8")) as { id: string; kind: string }[];
     const per: Record<string, number> = {};
     for (const d of phone) per[d.kind] = (per[d.kind] ?? 0) + 1;
-    expect(per).toEqual({ sleep: 3, meditation: 3, tinctures: 3 });
+    expect(per).toEqual({ sleep: 3, meditation: 3, nature: 3, tinctures: 3 });
     const marked = driftList().filter((d) => d.phone).map((d) => d.id).sort();
     expect(marked).toEqual(phone.map((d) => d.id).sort());
     for (const d of phone) expect(stagesOfFile(d as never, 220).length).toBeGreaterThan(0);

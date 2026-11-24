@@ -4,6 +4,7 @@
 carried into server/data/drifts/ for the hub to serve (server/src/machine/drifts.ts).
 
     python3 server/tools/import_drifts.py PULSEENTRAIN/imedsAssets --names PRIVATE.json [--write]
+    python3 server/tools/import_drifts.py --index-only      # after adding a drift of our own (C-552)
 
 Each session keeps its timeline (entrainment), its binaural carrier and beds, its strength and length; its picture
 (meta.image, base64) and any embedded music are left behind -- the hub's own art and music go with a reverie instead.
@@ -33,10 +34,16 @@ def load(path):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("assets")
-    ap.add_argument("--names", required=True)
+    ap.add_argument("assets", nargs="?")
+    ap.add_argument("--names")
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--index-only", action="store_true", help="rebuild index.json and phone.json from the files there (C-552)")
     a = ap.parse_args()
+    if a.index_only:
+        write_index()
+        return
+    if not a.assets or not a.names:
+        ap.error("ASSETS and --names are needed, or --index-only")
     names = {k: v for k, v in load(a.names).items() if not k.startswith("_")}
     pharmacy = set()
     drifts, phone, problems = {}, [], []
@@ -84,33 +91,46 @@ def main():
     if problems:
         print("\n".join(problems), file=sys.stderr)
         sys.exit(1)
-    index = sorted(({"id": i, "name": d["meta"].get("name", i), "kind": d["kind"], "group": d["meta"].get("category"),
-                     "description": d["meta"].get("description", ""), "durationSec": d["meta"].get("durationSec"),
-                     "strength": d["meta"].get("strength"), "phone": i in phone} for i, d in drifts.items()),
-                   key=lambda r: (r["kind"], r["group"] or "", r["name"]))
-    kinds = {}
-    for r in index:
-        kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1
-    print(f"{len(index)} drifts: " + ", ".join(f"{k} {n}" for k, n in sorted(kinds.items())) + f"; on the phone {len(phone)}")
+    for did in phone:
+        drifts[did]["phone"] = True                          # C-552: the mark kept in the file, so --index-only can read it
     if not a.write:
-        print("(report only: --write to write server/data/drifts/)")
+        print(f"{len(drifts)} drifts from PulseEntrain; on the phone {len(phone)} (report only: --write to write {OUT})")
         return
     os.makedirs(OUT, exist_ok=True)
-    for f in os.listdir(OUT):
-        if f.endswith(".json"):
-            os.remove(os.path.join(OUT, f))
+    for f in os.listdir(OUT):                                # PulseEntrain's are replaced; our own (C-552) are kept
+        if f.endswith(".json") and f not in ("index.json", "phone.json"):
+            if ((load(os.path.join(OUT, f)).get("generation") or {}).get("from")) == "PulseEntrain":
+                os.remove(os.path.join(OUT, f))
     for did, d in drifts.items():
         with open(os.path.join(OUT, f"{did}.json"), "w") as f:
             json.dump(d, f, ensure_ascii=False, indent=1)
             f.write("\n")
+    write_index()
+
+
+def write_index():
+    """index.json and phone.json from every drift file in the folder -- PulseEntrain's and our own alike."""
+    drifts = {}
+    for f in sorted(os.listdir(OUT)):
+        if f.endswith(".json") and f not in ("index.json", "phone.json"):
+            d = load(os.path.join(OUT, f))
+            drifts[d["id"]] = d
+    index = sorted(({"id": i, "name": d["meta"].get("name", i), "kind": d["kind"], "group": d["meta"].get("category"),
+                     "description": d["meta"].get("description", ""), "durationSec": d["meta"].get("durationSec"),
+                     "strength": d["meta"].get("strength"), "phone": bool(d.get("phone"))} for i, d in drifts.items()),
+                   key=lambda r: (r["kind"], r["group"] or "", r["name"]))
     with open(os.path.join(OUT, "index.json"), "w") as f:
         json.dump(index, f, ensure_ascii=False, indent=1)
         f.write("\n")
     # the phone's own few, whole, for when no hub answers (app/sound/phoneDrifts.ts)
     with open(os.path.join(OUT, "phone.json"), "w") as f:
-        json.dump([drifts[i] for i in sorted(phone)], f, ensure_ascii=False, indent=1)
+        json.dump([d for i, d in sorted(drifts.items()) if d.get("phone")], f, ensure_ascii=False, indent=1)
         f.write("\n")
-    print(f"wrote {OUT}")
+    kinds = {}
+    for r in index:
+        kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1
+    print(f"{len(index)} drifts: " + ", ".join(f"{k} {n}" for k, n in sorted(kinds.items()))
+          + f"; on the phone {sum(1 for r in index if r['phone'])}; wrote {OUT}")
 
 
 if __name__ == "__main__":

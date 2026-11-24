@@ -200,6 +200,46 @@
   "phone": false
  },
  {
+  "id": "first-rain",
+  "name": "FIRST RAIN",
+  "kind": "nature",
+  "group": "NATURE",
+  "description": "Rain arriving on leaves: a settled alpha easing toward theta as the shower steadies in.",
+  "durationSec": 1500,
+  "strength": 1,
+  "phone": true
+ },
+ {
+  "id": "forest-at-dusk",
+  "name": "FOREST AT DUSK",
+  "kind": "nature",
+  "group": "NATURE",
+  "description": "Evening under the trees: a stream's hush as alpha fades toward the edge of sleep.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": true
+ },
+ {
+  "id": "tide-pool",
+  "name": "TIDE POOL",
+  "kind": "nature",
+  "group": "NATURE",
+  "description": "The sea breathing in and out over a rock pool: a theta that swells and ebbs like the tide.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": true
+ },
+ {
+  "id": "wind-on-the-ridge",
+  "name": "WIND ON THE RIDGE",
+  "kind": "nature",
+  "group": "NATURE",
+  "description": "An open ridge in a long wind: a slow alpha that lifts and falls with each gust.",
+  "durationSec": 1200,
+  "strength": 1,
+  "phone": false
+ },
+ {
   "id": "all-strings-at-rest",
   "name": "ALL STRINGS AT REST",
   "kind": "sleep",

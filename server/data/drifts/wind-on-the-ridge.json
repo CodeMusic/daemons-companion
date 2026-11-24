@@ -1,0 +1,78 @@
+{
+ "formatVersion": 2,
+ "id": "wind-on-the-ridge",
+ "kind": "nature",
+ "meta": {
+  "name": "WIND ON THE RIDGE",
+  "description": "An open ridge in a long wind: a slow alpha that lifts and falls with each gust.",
+  "category": "NATURE",
+  "strength": 1,
+  "durationSec": 1200
+ },
+ "generation": {
+  "source": "designed",
+  "from": "DAEMONS",
+  "ticket": "C-552"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9
+   },
+   {
+    "atSec": 60,
+    "beatHz": 7.5
+   },
+   {
+    "atSec": 180,
+    "beatHz": 9
+   },
+   {
+    "atSec": 300,
+    "beatHz": 7.5
+   },
+   {
+    "atSec": 420,
+    "beatHz": 9
+   },
+   {
+    "atSec": 540,
+    "beatHz": 7.5
+   },
+   {
+    "atSec": 660,
+    "beatHz": 9
+   },
+   {
+    "atSec": 780,
+    "beatHz": 7.5
+   },
+   {
+    "atSec": 900,
+    "beatHz": 9
+   },
+   {
+    "atSec": 1020,
+    "beatHz": 7.5
+   },
+   {
+    "atSec": 1140,
+    "beatHz": 9
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 160
+  },
+  "beds": [
+   {
+    "source": "texture",
+    "type": "wind",
+    "level": 0.24
+   }
+  ]
+ }
+}

@@ -119,6 +119,30 @@ on HOME's row says what is fitted, what it can do, the band and the antenna, and
 cap's 0x43, and LONGWAVE's routines given the CC1101 + NFC cap's pins. The frame, the slots and the limits are one
 header both firmwares share (`firmware/common/`), as the LoRa frame is.
 
+## Built-in radios: the uConsole's AIO board (C-514)
+
+*The user, 2026-11-24.* A board can carry radios of its own rather than a cap on a header. The ClockworkPi uConsole's
+are on HackerGadgets' **AIO** in its expansion slot (the user's board to be confirmed from its photos; v2 below), and CAPS
+lists them under the same ROUTINES names. **The Cardputer's cap is never looked for on another board**: its POWER_EN is
+GPIO26, which is the AIO's LoRa DIO1 (C-514 asks the board layer for that gate).
+
+| Radio | Chip | Wiring (HackerGadgets' guide) | What it offers | The rule |
+|---|---|---|---|---|
+| **SDR** | RTL2832U + R860, 100 kHz-1.74 GHz | USB (found by its USB id, 0bda:2838); v2 power GPIO7 | listening: how loud each band is, nothing decoded (**DRAFT**) | **receive only**, always |
+| **LoRa** | SX1262, 860-960 MHz, up to 22 dBm | `/dev/spidev1.0` (SPI1 CE0, GPIO18), DIO1 GPIO26, BUSY 24, RESET 25, DIO2 the RF switch; v2 power GPIO16 | **MESH** (C-446's frames, the same as every LoRa board; THE MESH, C-360) | 902-928 MHz only, at the boards' 10 dBm; **never 868** |
+| **GPS** | GPS/BeiDou | `/dev/ttyS0`, 9600 baud, PPS GPIO6; v2 power GPIO27 | where the board is (C-174) | receive only |
+| **RTC** | PCF85063A at I2C 0x51 | `i2c-rtc,pcf85063a` | the time, kept with no network | -- |
+| **cellular** | the modem with the SIM (ClockworkPi's 4G board's SIM7600G-H, if that is the one) | USB: AT on `/dev/ttyUSB2` | **a way online** for the companion, as Wi-Fi is | the carrier's network, through the modem's own stack |
+
+**The AIO v2 starts with every module off.** DAEMONS powers a module only while a routine uses it, and lets it go after.
+
+**An antenna loose is no antenna.** The user's longest antenna came unsoldered (2026-11-24). Until it is repaired,
+the radio it belongs to is set to *antenna: none* and transmits nothing (`mayTransmit` is false). Listening with it is
+harmless. The longest is most likely the SDR's, which never transmits anyway; if it is the LoRa's, MESH listens only.
+
+**Nothing decodes anyone else's signals.** The SDR shows how loud the air is, not what it says; MESH hears only frames
+with the DAEMONS mark from a device the hub knows as the user's, as ROLL CALL does.
+
 ## Tickets
 
 | Ticket | What |
@@ -128,6 +152,7 @@ header both firmwares share (`firmware/common/`), as the LoRa frame is.
 | **C-446** | the LoRa-1262 cap on the Zero: MESH (C-382's LoRa) |
 | **C-447** | LONGWAVE ROLL CALL between the user's own devices |
 | **C-448** | the cap layer on the Cardputer ADV |
+| **C-514** | the uConsole as a board, and its AIO's radios in CAPS |
 
 *Sources: github.com/CardputerZero/Cap-CC1101-NFC, Cap-CC1101-SubG-Chat, Cap-LoRa-1262, Cap-LoRa-1262-GPS (MIT,
 2026); github.com/m5stack/m5stack-linux-dtoverlays (`modules/CardputerZero/cardputerzero-v5-overlay.dts`); docs.m5stack.com

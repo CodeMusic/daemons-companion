@@ -35,6 +35,7 @@ the game's, and **SELECT and START held together** go back to HOME. A page's hin
 | **Cardputer Zero** (C-377) | `cardputer-zero` | CM0 (a Zero 2 W's chip) | 320x170 ST7789, `panel-mipi-dbi` | the TCA8418's 56 keys | ES8389, PipeWire | M5Stack's APPLaunch (an entry per app, C-509) |
 | **Game HAT** (Waveshare; C-468) | `gamehat` | a full Pi: 3B, 3B+ or 4 | 3.5-inch 480x320 IPS on the HDMI (sent 640x480) | d-pad, A B X Y, START, SELECT, L, R on GPIO | the HDMI's sound, to its speaker | `daemons@<user>.service` at boot |
 | **GamePi20** (Waveshare) | `gamepi20` | Zero 2 W (a first Zero or Zero W runs the companion; the game at full speed is unlikely) | 2-inch 320x240 ST7789VW on SPI0 | d-pad, A B X Y, START, SELECT, L, R on GPIO | a speaker on PWM (GPIO 18) | `daemons@<user>.service` at boot |
+| **uConsole** (ClockworkPi; C-514) | `uconsole` | CM4 (to confirm) | 5-inch 1280x720 IPS on DSI (a 720x1280 panel, turned; the canvas four times its size) | its own keyboard (a USB HID: keys, a trackball, a joystick), d-pad, A B X Y, SELECT, START | PWM to two speakers and the jack; a microphone through the jack | the desktop, or `daemons@<user>.service` with `boot` |
 
 ### The GamePi20
 
@@ -76,6 +77,31 @@ A HAT for a full-size Pi (3B, 3B+, 4B), from Waveshare's wiki (Game_HAT); `tools
 
 **Setting one up**: Raspberry Pi OS Lite (64-bit) on a microSD with Raspberry Pi Imager (hostname, user, Wi-Fi, SSH),
 then `BOARD=gamehat tools/install.sh codemusic@<its name>`, the two lines it prints, and a reboot.
+
+### The uConsole (C-514)
+
+ClockworkPi's uConsole is a whole computer, keyboard and desktop included, on a Raspberry Pi CM4 (the user's, to be
+confirmed on the device), with HackerGadgets' AIO board in its expansion slot (also to confirm). Its screen, keys, sound
+and cells already work under its desktop, so `tools/boards/uconsole.sh` adds only what DAEMONS needs:
+
+- **The screen**: a 5-inch 720x1280 panel held landscape, so the canvas is turned a quarter (`ZERO_ROTATE`, a drop-in for
+  `daemons@.service`) and drawn four times its size, 1280x680, in the middle. It draws on the framebuffer, so the
+  desktop must not hold the screen: `uconsole.sh <user> boot` starts DAEMONS at boot in the desktop's place
+  (`systemctl set-default graphical.target` brings the desktop back). DAEMONS in a window on the desktop is the other
+  way, once the build can make the window side on the device (to come).
+- **The keys**: one USB HID from the keyboard's own chip -- the keys, the trackball as a mouse, and a joystick. A switch
+  on its back sets A B X Y SELECT START to keys (A `j`, B `k`, X `u`, Y `i`, SELECT space, START enter) or to joystick
+  buttons; the d-pad is always the arrows. **DAEMONS plays in the keys' mode** while the program reads one input device.
+  No shoulder buttons: X and Y are L and R (Q and P too).
+- **The sound**: PWM on GPIO 12 and 13 (`audremap,pins_12_13`, in the uConsole's own config) to its amplifier and the
+  jack; the jack takes a headset's microphone. Nothing is turned on for sound.
+- **The cells**: two 18650s read by the AXP228 (`axp20x-battery`): the percentage shows.
+- **The radios**: the AIO's, in `docs/CAPS.md`. The script adds its lines to config.txt where missing (SPI1, the UART,
+  I2C, the RTC) and takes the serial console off the GPS's UART; it powers nothing on.
+- **Seen on the device: not yet** (DRAFT).
+
+**Setting one up**: put it on Tailscale, then `BOARD=uconsole tools/install.sh <user>@<its name>`, the lines it prints,
+and a reboot. `tools/install.sh <user>@<its name> probe` first, to read what it has.
 
 **What the two handhelds' setups share** is `tools/boards/common.sh`: the buttons as one gpio-keys device from twelve pins
 (`pad_buttons`), our lines in config.txt between two marks (`config_lines`), and DAEMONS at boot (`start_at_boot`). A

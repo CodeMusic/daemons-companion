@@ -28,6 +28,7 @@ export type Settings = { savePath: string | null; dir: string | null; exists: bo
 // C-13: the daemon's life -- how it is, its day, and what you can do for it. Never more than this, never a nag.
 export type Life = { vesselUnder?: string | null;   // C-357 (5): CONTAINER, once the book is held
                      mask?: boolean; maskUnder?: string | null; maskEyes?: [number, number, number, number][] | null;   // C-357, THE MASK: a week unanswered
+                     eyes?: [number, number, number, number][] | null;   // C-555: its eyes, checked (faces.json), for a reverie's spirals
                      mood: number; word: string; fed: { today: number; due: number }; watered: { today: number; due: number };
               trained: boolean; tired: string; rested?: boolean; quietDays: number; cue: string | null;
               level: number | null; grown: { exp: number; level: number } | null;

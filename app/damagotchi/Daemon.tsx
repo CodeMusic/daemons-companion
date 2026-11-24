@@ -7,7 +7,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
 import { ACTS, castLine, playerId } from "../state/data";
-import { DenStage } from "./Den";
+import { DenStage, type Spiral } from "./Den";
+import { onSleep, sleepState, type SleepState } from "../sound/sleepSession";   // C-555: a reverie playing -- spirals in its eyes
 import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../platform/net";
 import { Carried, Cast, Daemon, DeviceRow, IndexEntry, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../state/types";
 import { Action, Art, Card, CareKey, careSound, Choice, Eyebrow, Segments, Small, whenSaid } from "../shared/ui/ui";
@@ -54,6 +55,9 @@ export function presumed(l: Life, what: "feed" | "water" | "train" | "sleep" | "
   }
 }
 
+// C-555: a reverie's colour, by its kind (a daemon's own four take the same, C-550): the spirals in its eyes
+const REVERIE_COLOUR: Record<string, string> = { sleep: "#6a72ff", meditation: "#27b3a0", nature: "#58b04a", tinctures: "#e3a12f" };   // DRAFT
+
 export function LifeCard({ ink, name, daemon }: { ink: string; name: string; daemon: Daemon }) {
   const [l, setL] = useState<Life | null>(null);
   const [said, setSaid] = useState("");
@@ -64,6 +68,8 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
   const [unmasked, setUnmasked] = useState(false);
   const masked = halloween.on && !!halloween.costume && !unmasked;
   const [hop, setHop] = useState(0);                       // C-113: tended, it hops in its den
+  const [reverie, setReverie] = useState<SleepState>(sleepState());   // C-555: a reverie playing
+  useEffect(() => onSleep(setReverie), []);
   const [serving, setServing] = useState<Serving | null>(null);   // C-302: the fruit or the glass, eaten or drunk
   const [singing, setSinging] = useState<Singing | null>(null);   // C-418: TRAIN -- its part sung, the error carried back
   const mouth = useMouth();                                 // C-213: open and shut while its voice plays
@@ -164,7 +170,7 @@ export function LifeCard({ ink, name, daemon }: { ink: string; name: string; dae
       <YStack position="relative">
       <Pressable disabled={!witching && !halloween.on} onPress={() => witching ? setAbove(true) : setUnmasked((u) => !u)}
                  accessibilityLabel={witching ? "as above, so below" : halloween.on ? "the mask" : undefined}>{/* C-237: in the hour, a touch; C-240: the mask */}
-      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} singing={singing} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level} aurora={aurora ? sky.edition : null} both={sky.both} veiled={l.mask && !masked ? (l.maskEyes ?? []) : null}   // C-113, C-119; C-240: Halloween shimmers all day; C-357: THE MASK
+      <DenStage species={daemon.species} asleep={l.tired === "asleep"} hop={hop} serving={serving} singing={singing} expression={masked ? null : shown.expression} thrive={l.thrive} witching={witching || halloween.on} shimmer={witching ? shimmer : 1} dawn={dawn.level} aurora={aurora ? sky.edition : null} both={sky.both} veiled={l.mask && !masked ? (l.maskEyes ?? []) : null} spiral={reverie.playing ? { eyes: l.eyes ?? null, colour: REVERIE_COLOUR[reverie.kind] ?? REVERIE_COLOUR.sleep, trend: reverie.trend, beat: reverie.beat ?? 6 } as Spiral : null}   // C-113, C-119; C-240: Halloween shimmers all day; C-357: THE MASK
                 art={<Art key={`${l.expression?.name ?? "awake"}${mouth ? "-open" : ""}`}   // C-213: the mouth, open on the beat
                           path={masked ? `/art/species/${halloween.costume!.species}.png` : `/art/party/${daemon.slot}.png${artQuery(l.expression?.name, mouth)}`} size={together?.daemon ? 108 : 144} />} height={180}
                 together={together?.daemon ? { mine: together.side, art: <Art key={together.daemon.artKey} path={together.daemon.art} size={108} /> } : null} />

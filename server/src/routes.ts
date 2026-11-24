@@ -531,7 +531,8 @@ function lifeNow(h: Host, store: Store, deviceId: string, now: Date): Reply {
   return ok({ ...lf, expression: daemonExpression(store, now, lf, d?.species ?? null, who), grown: d ? grown(d, store) : null, level: d?.level ?? null,
             thrive: thriveOf(store, now), vesselUnder, mask, maskUnder: mask ? MASK_UNDER : null,
             song: songNow(h, store, deviceId, now),                                     // C-418: its own song, as it knows it
-            maskEyes: mask && form !== null ? faceOf(artName(form))?.eyes ?? null : null });   // C-119; C-207: the week, for the den's glow and marks; C-357: its eyes, checked (faces.json)
+            maskEyes: mask && form !== null ? faceOf(artName(form))?.eyes ?? null : null,
+            eyes: form !== null ? faceOf(artName(form))?.eyes ?? null : null });   // C-555: for a reverie's spirals   // C-119; C-207: the week, for the den's glow and marks; C-357: its eyes, checked (faces.json)
 }
 
 // C-174: a watch's fix -- "where <lat> <lon> <metres>" -- kept for the app's map, never logged as tending. The server's

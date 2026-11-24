@@ -86,13 +86,13 @@ function ShapeView({ s, ink }: { s: Shape; ink: string }) {
 
 // C-119: the expression the server describes -- its pose moves the daemon here (still, a slower breath, a shake, lower and
 // squashed), its eye patches and its mark are drawn over the sprite in the sprite's own pixels; the shade is in `art`.
-export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, singing = null, aurora = null, both = false, together = null, veiled = null }:
+export function DenStage({ species, art, asleep, hop, height = 180, expression, thrive, witching, shimmer = 1, dawn = 0, serving = null, singing = null, aurora = null, both = false, together = null, veiled = null, spiral = null }:
   { species: number; art: React.ReactNode; asleep: boolean; hop: number; height?: number; expression?: Drawn | null; thrive?: Thrive | null;
     witching?: boolean; shimmer?: number; dawn?: number; serving?: Serving | null; singing?: Singing | null; aurora?: string | null; both?: boolean;
-    together?: Together | null; veiled?: [number, number, number, number][] | null }) {   // C-357, THE MASK: a week unanswered, a small mask over its eyes   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
+    together?: Together | null; veiled?: [number, number, number, number][] | null; spiral?: Spiral | null }) {   // C-555: a reverie plays -- spirals in its eyes   // C-357, THE MASK: a week unanswered, a small mask over its eyes   // C-327: another household device's daemon in the same space   // C-305: the edition whose line the sky takes; C-306: both lines   // C-302: what it was just given   // T-519: the shimmer as strong as the hour is now; the creator's hour's light   // C-236, C-237: in the witching hour no shadow; the hour's pie behind it, its shimmer about it
   // C-418: it stands where it is to sing, and the notes stream toward the open side of the den
   const [singOn, setSingOn] = useState(false), [ahead, setAhead] = useState<1 | -1>(-1);
-  const pose = expression?.pose, still = (pose ? pose.still : asleep) || singOn;
+  const pose = expression?.pose, still = (pose ? pose.still : asleep) || singOn || !!spiral;   // C-555: entranced, it stands still
   const [w, setW] = useState(0);
   const d = useMemo(() => denOf(SPECIES[String(species)]?.types ?? []), [species]);
   const shapes = useMemo(() => (w ? motif(d.motif, w, height) : []), [d.motif, w, height]);
@@ -168,6 +168,8 @@ export function DenStage({ species, art, asleep, hop, height = 180, expression, 
                                      height: (p.h * side) / 64 + 0.5, backgroundColor: `rgb(${p.rgb.join(",")})` }} />
             ))}
             {veiled ? <Veil eyes={veiled.length ? veiled : (expression?.patch ?? []).map((p) => [p.x, p.y, p.w, p.h] as [number, number, number, number])} side={side} /> : null}
+            {spiral ? <SpiralEyes spiral={spiral} side={side} mirrored={right}
+                                  eyes={spiral.eyes?.length ? spiral.eyes : (expression?.patch ?? []).map((p) => [p.x, p.y, p.w, p.h] as Box)} /> : null}
           </View>
           {witching ? <WitchShimmer side={side} level={shimmer} /> : null}
           <DawnRim side={side} level={dawn} />
@@ -227,6 +229,48 @@ function Veil({ eyes, side }: { eyes: Box[]; side: number }) {
   row.forEach((e, i) => { parts.push(rect(from, ey0, e[0] - from, ey1 - ey0, `gap${i}`)); from = Math.max(from, e[0] + e[2]); });
   parts.push(rect(from, ey0, x1 - from, ey1 - ey0, "end"));
   return <>{parts}</>;
+}
+
+// C-555 (the user, 2026-11-24: "as it plays u will see sprials in its eyes rotating either clockwise or counterclockwise,
+// and in a specific color (depending on type) with the spiral outlines in black"): a spiral over each eye, in the sprite's
+// own 64 x 64 frame -- a pale disc ringed in black, and on it an arm of pixel dots in the reverie's colour, each dot laid
+// on a larger black one so the arm is outlined. It turns counterclockwise while the beat falls (winding down: SLEEP,
+// SUSPEND), clockwise while it rises, a turn a second at 10 Hz. The eyes are the boxes a person checked (data/faces.json),
+// else the expression's eye patches, else where a face's eyes usually are. DRAFT.
+export type Spiral = { eyes: Box[] | null; colour: string; trend: -1 | 1; beat: number };
+const EYES_USUALLY: Box[] = [[20, 21, 7, 7], [37, 21, 7, 7]];
+const ARM = Array.from({ length: 30 }, (_, i) => i / 29);       // along the arm, from the centre out
+function SpiralEyes({ spiral, eyes, side, mirrored }: { spiral: Spiral; eyes: Box[]; side: number; mirrored: boolean }) {
+  const u = side / 64, turn = useRef(new Animated.Value(0)).current;
+  const rps = Math.max(0.08, Math.min(1.5, spiral.beat / 10));
+  // facing right the sprite is mirrored, which would turn the spiral the other way: turn it back
+  const dir = spiral.trend * (mirrored ? -1 : 1);
+  useEffect(() => {
+    turn.setValue(0);
+    const loop = Animated.loop(Animated.timing(turn, { toValue: 1, duration: 1000 / rps, easing: Easing.linear, useNativeDriver: NATIVE }));
+    loop.start();
+    return () => loop.stop();
+  }, [turn, rps]);
+  const rotate = turn.interpolate({ inputRange: [0, 1], outputRange: ["0deg", dir > 0 ? "360deg" : "-360deg"] });
+  return (
+    <>
+      {(eyes.length ? eyes : EYES_USUALLY).map(([x, y, w, h], i) => {
+        const r = Math.max(w, h) / 2 + 1.5, d = 2 * r * u, dot = Math.max(1.2, 0.9 * u), rim = dot + Math.max(1.2, 0.8 * u);
+        const at = (t: number, s: number) => {
+          const a = t * 2.6 * 2 * Math.PI, rr = t * (r - 0.8) * u;
+          return { position: "absolute" as const, left: d / 2 + rr * Math.cos(a) - s / 2, top: d / 2 + rr * Math.sin(a) - s / 2, width: s, height: s, borderRadius: s / 2 };
+        };
+        return (
+          <Animated.View key={i} style={{ position: "absolute", left: (x + w / 2 - r) * u, top: (y + h / 2 - r) * u, width: d, height: d,
+                                          borderRadius: d / 2, backgroundColor: "#f4f2ea", borderWidth: Math.max(1, 0.7 * u), borderColor: "#0d0d0d",
+                                          transform: [{ rotate }] }}>
+            {ARM.map((t) => <View key={`o${t}`} style={[at(t, rim), { backgroundColor: "#0d0d0d" }]} />)}
+            {ARM.map((t) => <View key={`c${t}`} style={[at(t, dot), { backgroundColor: spiral.colour }]} />)}
+          </Animated.View>
+        );
+      })}
+    </>
+  );
 }
 
 function WeekMarks({ thrive, w, fy, ink }: { thrive: Thrive; w: number; fy: number; ink: string }) {

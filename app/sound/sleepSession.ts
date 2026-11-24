@@ -14,8 +14,10 @@ const BED_LEVEL = 0.6;                       // C-506: a drift's noise bed, at i
 const MODE = { playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: "doNotMix" } as const;
 
 export type SleepState = { playing: boolean; id: string | null; startedAt: number; drift: boolean; stage: string | null;
-                           driftHeld: string | null };   // why DRIFT DOWN is quiet, if it is (no headphones), DRAFT
-let state: SleepState = { playing: false, id: null, startedAt: 0, drift: false, stage: null, driftHeld: null };
+                           driftHeld: string | null;   // why DRIFT DOWN is quiet, if it is (no headphones), DRAFT
+                           // C-555: for the spirals in its eyes -- the beat now, falling (-1) or rising (1), and the drift's kind
+                           beat: number | null; trend: -1 | 1; kind: string };
+let state: SleepState = { playing: false, id: null, startedAt: 0, drift: false, stage: null, driftHeld: null, beat: null, trend: -1, kind: "sleep" };
 const heard = new Set<(s: SleepState) => void>();
 const tell = (patch: Partial<SleepState>) => { state = { ...state, ...patch }; heard.forEach((f) => f(state)); };
 export const sleepState = () => state;
@@ -37,6 +39,11 @@ function step() {
   if (s >= SESSION_S) { stopSleep(); return; }
   const v = levelAt(s);
   music.volume = v;
+  { // C-555: the beat now and the way it is going (a minute on), for the spirals; a drift past its end has stopped falling
+    const now = stageAt(s, stages), later = stageAt(s + 60, stages);
+    const trend: -1 | 1 = later.beat > now.beat ? 1 : later.beat < now.beat ? -1 : state.trend;
+    if (now.beat !== state.beat || trend !== state.trend) tell({ beat: now.beat, trend });
+  }
   if (state.drift) {
     const ears = headphones();
     if (ears === false) { if (drift?.playing) drift.pause(); if (!state.driftHeld) tell({ driftHeld: "Quiet until headphones are in." }); }   // DRAFT
@@ -73,7 +80,7 @@ export async function playSleep(o: { id: string; uri: string; title: string; key
   carrier = carrierOf(o.keyscale); stageUri = ""; bedUri = "";
   stages = o.driftFile ? stagesOfFile(o.driftFile, carrier) : driftOf(new Date());
   if (!stages.length) stages = driftOf(new Date());
-  tell({ playing: true, id: o.id, startedAt: Date.now(), drift: o.drift, stage: null, driftHeld: null });
+  tell({ playing: true, id: o.id, startedAt: Date.now(), drift: o.drift, stage: null, driftHeld: null, beat: null, trend: -1, kind: o.driftFile?.kind ?? "sleep" });
   if (tick) clearInterval(tick);
   tick = setInterval(step, 5000);
   step();
@@ -109,7 +116,7 @@ export function stopSleep() {
   if (tick) { clearInterval(tick); tick = null; }
   music?.pause(); drift?.pause(); bed?.pause(); stageUri = ""; bedUri = "";
   try { music?.clearLockScreenControls(); } catch { /* none set */ }
-  tell({ playing: false, id: null, stage: null, driftHeld: null });
+  tell({ playing: false, id: null, stage: null, driftHeld: null, beat: null });
 }
 
 // a timer may have slept with the app: catch up as it comes back

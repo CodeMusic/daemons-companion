@@ -6,6 +6,7 @@ import { addSource, answerWords, ask, decideFinding, expertSystem, keepFinding, 
          studiesOf, studyState, studyView, writeAnswer, type StudyView } from "../src/lifemanagement/research.js";
 import { keepEntry, newJournal } from "../src/lifemanagement/journal.js";
 import { DAY_VIRTUE } from "../src/lifemanagement/practice.js";
+import { newVoiceNote, noteHeard } from "../src/lifemanagement/voicenotes.js";
 import { pdfText, sourceText } from "../src/shared/sourcetext.js";
 
 const day = (d: number, h = 12) => new Date(2026, 10, d, h);
@@ -81,6 +82,29 @@ describe("C-454: RESEARCH", () => {
     if (typeof a === "string") throw new Error(a);
     await writeAnswer(store, s.id, a.answering, null);
     expect(studyView(store, s.id)!.talk[0]).toMatchObject({ state: "failed" });
+  });
+
+  it("draws in DREAMS (a dream journal's and the daemon's own) and CONVERSATIONS (voice notes heard) only when ticked", () => {
+    const { store } = fresh();
+    const dj = newJournal(store, "Nights", day(21), "dream");
+    if (typeof dj === "string") throw new Error(dj);
+    keepEntry(store, { journal: dj.id, title: "", body: "I was on a pier at dawn." }, day(21));
+    store.setSetting("dreams", JSON.stringify([{ id: 1, at: day(22, 7).toISOString(), text: "Rain fell upward.", title: "RAIN FALLING UP",
+                                                  nickname: "EMBER", species: 4, personality: 1, device: "d" }]));
+    const v = newVoiceNote(store, "phone", null, day(22));
+    noteHeard(store, v.id, "Remember: the walk felt easier today.");
+    const s = study(keepStudy(store, { title: "Dreams", field: "dream research", hypothesis: "Water returns in my dreams." }));
+    const a = ask(store, { study: s.id, text: "What returns?" });
+    if (typeof a === "string") throw new Error(a);
+    expect(answerWords(store, s.id, a.answering)!.read).toEqual([]);
+    keepStudy(store, { id: s.id, draws: ["dreams", "talks"] });
+    const w = answerWords(store, s.id, a.answering)!;
+    expect(w.read).toHaveLength(3);
+    expect(w.read).toEqual(expect.arrayContaining([expect.stringMatching(/^EMBER'S DREAM, .*: RAIN FALLING UP$/),
+                                                   expect.stringMatching(/^DREAM JOURNAL "Nights"/), expect.stringMatching(/^VOICE NOTE, /)]));
+    expect(w.user).toMatch(/Rain fell upward/);
+    expect(w.user).toMatch(/pier at dawn/);
+    expect(w.user).toMatch(/walk felt easier/);
   });
 
   it("reads FINDING lines out of an answer, at most three", () => {

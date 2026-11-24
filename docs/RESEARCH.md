@@ -50,6 +50,14 @@ A study with field, hypothesis, an editable expert, text and PDF sources, the ta
 draws: the journal and GOALS. Dreams, conversations and other spaces follow. EUDAIMONIA shows it once the site's PRAXIS
 pages exist (E-1).
 
+## Built (2026-11-23, DRAFT)
+
+- **First slice** (3058104a): the study, the editable expert, text, link and file sources (a PDF read on the hub, kept
+  as a blob), the talk answered in the background by the house's mind (a RESEARCH task, home minds only), findings
+  proposed and kept, and two draws: the JOURNAL and GOALS.
+- **Second slice**: two more draws -- **DREAMS** (the dream journals' dreams and the daemon's own nights, the ten newest)
+  and **CONVERSATIONS** (meetings written up and voice notes heard, the eight newest). Other PRAXIS spaces follow.
+
 ## OPEN
 
 - Whether a study can have **more than one expert** (a second opinion, REASON and INSTINCT's pair).

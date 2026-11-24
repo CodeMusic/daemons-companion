@@ -5,7 +5,8 @@
 // TALK (each ask and the expert's answer, saying what it read) and its FINDINGS -- kept by the player, or proposed by the
 // expert and kept or declined (PRAXIS's rule: the AI proposes, you decide). A finding kept earns 2 ARETE (at most three
 // a day pay) and the day's virtue if it is the day's first finish. What the expert may draw in is ticked per study, all
-// off until turned on: in this first slice, the JOURNAL and GOALS.
+// off until turned on: the JOURNAL, DREAMS (the dream journals' dreams and the daemon's own), CONVERSATIONS (meetings
+// written up and voice notes heard) and GOALS.
 //
 // MIND (C-387): this file writes the expert's system, gathers what the ticks allow (each piece labelled with where it
 // came from) and reads the answer; it is handed a Writer and never calls a model. Every word the player reads is DRAFT.
@@ -13,6 +14,9 @@ import type { Store } from "../shared/store.js";
 import type { Form, Item } from "@daemons/praxis";
 import { dayVirtue, ensureSpace, midnight } from "./practice.js";
 import { journalOf, journalsOf } from "./journal.js";
+import { meetingsOf } from "./meetings.js";
+import { voiceNotesOf } from "./voicenotes.js";
+import { dreamsOf } from "../damagotchi/dreams.js";
 
 const TEXT = { type: "text" as const }, LONG = { type: "long" as const }, NUM = { type: "number" as const };
 const WORK = [{ name: "writing", phase: "doing" as const }, { name: "answered", phase: "done" as const }, { name: "failed", phase: "aside" as const }];
@@ -35,7 +39,7 @@ export const RESEARCH: Form = {
 };
 
 export const STATES = ["open", "supported", "not-supported", "set-aside"] as const;
-export const DRAWS = ["journal", "goals"] as const;                 // the first slice's; dreams, talks and spaces follow
+export const DRAWS = ["journal", "dreams", "talks", "goals"] as const;   // C-454 (2): DREAMS and CONVERSATIONS; other spaces follow
 export type Draw = (typeof DRAWS)[number];
 export const MOST = { title: 80, field: 80, hypothesis: 600, system: 4000, ask: 2000, source: 60000, name: 120, finding: 600,
                       context: 24000, findingPay: 2, findingCap: 6 };
@@ -241,6 +245,19 @@ export function gather(store: Store, study: Item): Piece[] {
     const entries = journalsOf(store).filter((j) => j.kind === "standard").flatMap((j) => (journalOf(store, j.id)?.entries ?? [])
       .map((e) => ({ journal: j.title, ...e }))).sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12);
     for (const e of entries) take(`JOURNAL "${e.journal}", ${e.at.slice(0, 10)}${e.title ? `: ${e.title}` : ""}`, e.body, 1500);
+  }
+  if (draws.includes("dreams")) {                                    // a dream journal's dreams, and the daemon's own nights
+    const told = journalsOf(store).filter((j) => j.kind === "dream").flatMap((j) => (journalOf(store, j.id)?.entries ?? [])
+      .map((e) => ({ at: e.at, label: `DREAM JOURNAL "${j.title}", ${e.at.slice(0, 10)}${e.title ? `: ${e.title}` : ""}`, text: e.body })));
+    const nights = dreamsOf(store).filter((d) => d.text).map((d) => ({ at: d.at, label: `${d.nickname || "YOUR DAEMON"}'S DREAM, ${d.at.slice(0, 10)}${d.title ? `: ${d.title}` : ""}`, text: d.text }));
+    for (const d of [...told, ...nights].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 10)) take(d.label, d.text, 1200);
+  }
+  if (draws.includes("talks")) {                                     // CONVERSATIONS: meetings written up, voice notes heard
+    const met = meetingsOf(store).filter((m) => m.state === "done" && (m.summary || m.takeaways.length)).map((m) => ({ at: m.startedAt,
+      label: `MEETING, ${m.startedAt.slice(0, 10)}${m.title ? `: ${m.title}` : ""}`,
+      text: [m.summary, ...m.takeaways.map((t) => `- ${t}`), ...m.actions.map((a) => `- to do: ${a}`)].filter(Boolean).join("\n") }));
+    const said = voiceNotesOf(store).filter((v) => v.state === "done" && v.text).map((v) => ({ at: v.at, label: `VOICE NOTE, ${v.at.slice(0, 10)}`, text: v.text }));
+    for (const c of [...met, ...said].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8)) take(c.label, c.text, 1500);
   }
   if (draws.includes("goals")) {
     const goals = store.goals().slice(-8);

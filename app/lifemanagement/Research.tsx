@@ -18,11 +18,12 @@ type Source = { id: number; sort: "text" | "note" | "link" | "file"; name: strin
                 blob: string | null; chars: number; preview: string; at: string };
 type Ask = { id: number; ask: string; answer: string; read: string[]; at: string; by: string; state: "writing" | "answered" | "failed"; error: string | null };
 type Finding = { id: number; text: string; from: number | null; at: string; kept: boolean; proposal: string | null };
-type Study = Row & { system: string; draws: ("journal" | "goals")[]; sourcesList: Source[]; talk: Ask[]; kept: Finding[]; waiting: Finding[] };
+type Study = Row & { system: string; draws: Draw[]; sourcesList: Source[]; talk: Ask[]; kept: Finding[]; waiting: Finding[] };
 type View = { studies: Row[]; study?: Study | null; read?: { chars: number; how: string } };
 
 const STATE_SAID: Record<string, string> = { open: "OPEN", supported: "SUPPORTED", "not-supported": "NOT SUPPORTED", "set-aside": "SET ASIDE" };   // DRAFT
-const DRAWS: [("journal" | "goals"), string][] = [["journal", "THE JOURNAL"], ["goals", "GOALS"]];   // DRAFT
+type Draw = "journal" | "dreams" | "talks" | "goals";
+const DRAWS: [Draw, string][] = [["journal", "THE JOURNAL"], ["dreams", "DREAMS"], ["talks", "CONVERSATIONS"], ["goals", "GOALS"]];   // DRAFT
 const paper = { fontSize: 15, color: "#1d2029", paddingHorizontal: 12, paddingVertical: 10, backgroundColor: "#fbfaf6" } as const;
 const when = (iso: string) => (iso ? new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" }) : "");
 
@@ -76,7 +77,7 @@ function Expert({ s, ink, onView }: { s: Study; ink: string; onView: (v: View) =
     setSaid("");
     try { onView(await api<View>("/api/research", { id: s.id, ...b })); } catch (e) { setSaid((e as Error).message); }
   };
-  const tick = (d: "journal" | "goals") => post({ draws: s.draws.includes(d) ? s.draws.filter((x) => x !== d) : [...s.draws, d] });
+  const tick = (d: Draw) => post({ draws: s.draws.includes(d) ? s.draws.filter((x) => x !== d) : [...s.draws, d] });
   return (
     <Card gap={6}>
       <Eyebrow>THE EXPERT</Eyebrow>
@@ -274,7 +275,7 @@ export function ResearchSection({ ink }: { ink: string }) {
       {making ? <NewStudy ink={ink} onDone={(x) => { setMaking(false); if (x) { setV({ studies: x.studies }); if (x.study) pick(x.study.id); } }} /> : (
         <Card gap={6}>
           <Eyebrow>RESEARCH</Eyebrow>
-          <Small>{v.studies.length ? "Your studies, the latest first." : "A study tests one hypothesis with an expert in its field, from sources you give it -- and, only if you tick them, your journal and GOALS."}</Small>
+          <Small>{v.studies.length ? "Your studies, the latest first." : "A study tests one hypothesis with an expert in its field, from sources you give it -- and, only if you tick them, your journal, dreams, conversations and GOALS."}</Small>
           <Action label="A NEW STUDY" ink={ink} onPress={() => setMaking(true)} />
         </Card>
       )}

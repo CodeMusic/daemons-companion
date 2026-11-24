@@ -1,4 +1,5 @@
 // PLACES -- the devices under their makers, each one's settings, routines and remotes; the handheld's link. (C-157: out of App.tsx.)
+import { InPlayCard } from "../game/InPlay";   // C-493
 import { useEffect, useState } from "react";
 import { Linking } from "react-native";
 import { EngineRoom } from "../../shared/ui/engineRoom";   // C-330
@@ -382,7 +383,7 @@ function grouped(ds: DeviceRow[], order: Order): { maker: string | null; ds: Dev
 
 // C-287: the PLACES tab -- the devices, the glass, the home and the TV, as one page (it was put together in App.tsx)
 export function PlacesScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
-  return <YStack gap={14}><DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={goSettings} /><TvCard ink={ink} goSettings={goSettings} /></YStack>;
+  return <YStack gap={14}><InPlayCard />{/* C-493: the games in play, as the hub knows them */}<DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={goSettings} /><TvCard ink={ink} goSettings={goSettings} /></YStack>;
 }
 
 // C-344: the last link and brands heard, for this run of the app -- PLACES opened again is drawn at once, at its height

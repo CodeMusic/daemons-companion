@@ -18,6 +18,8 @@ import { Text, XStack, YStack } from "tamagui";
 import { freshPatches, heldGame, makeGame, makeTestingBuild, testingBuilds, updateFor, updateGame, type Game, type Step } from "../../game/rom";
 import { GATE } from "../../game/gate";
 import { ALONE, api, LOCAL, TOKEN } from "../../platform/net";
+import { reportInPlay, type Reporting } from "../../game/inplay";   // C-493
+import { Platform } from "react-native";
 import { sha1 } from "../../../server/src/game/hash";
 import { mirrorChoice } from "../../../server/src/game/mirror";
 import { applyPlan, livePlan } from "../../../server/src/game/live";       // C-261
@@ -149,6 +151,13 @@ const writeSave = (s) => { const m = g(), p = m.getSaveFilePath(); let dir = "";
 window.putSave = (s) => { try { writeSave(s); g().restart(); } catch (e) { say({ kind: "error", text: String(e) }); } };
 window.putFlash = (s) => { try { writeSave(s); } catch (e) { say({ kind: "error", text: String(e) }); } };
 // C-261: SYNC into the running game -- the game as mGBA keeps it, out to the app, and back with SYNC's bytes in it
+// C-493: the screen as the emulator draws it, for the hub's IN PLAY -- only while it runs (a paused core never answers)
+window.takeFrame = (id) => { const E = window.EJS_emulator, m = g();
+  if (!E || E.paused || !m || !m.screenshot) return say({ kind: "frame", id, error: "not running" });
+  let done = false; const t = setTimeout(() => { if (!done) { done = true; say({ kind: "frame", id, error: "no screenshot" }); } }, 2000);
+  try { Promise.resolve(m.screenshot()).then((u8) => { if (done) return; done = true; clearTimeout(t); say({ kind: "frame", id, b64: b64(u8), type: "image/png" }); },
+    (e) => { if (!done) { done = true; clearTimeout(t); say({ kind: "frame", id, error: String(e) }); } }); }
+  catch (e) { done = true; clearTimeout(t); say({ kind: "frame", id, error: String(e) }); } };
 window.snapshot = (id) => { try { say({ kind: "state", id, b64: b64(g().getState()) }); } catch (e) { say({ kind: "state", id, error: String(e) }); } };
 window.restore = (id, st, s) => { try { g().loadState(unb64(st)); writeSave(s); say({ kind: "restored", id, ok: true }); }
   catch (e) { say({ kind: "restored", id, ok: false, error: String(e) }); } };
@@ -259,6 +268,8 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
   const [page, setPage] = useState<string | null>(null);
   const web = useRef<WebView>(null);
   const started = useRef(false);
+  const [running, setRunning] = useState(false);          // C-493: the emulator started (started.current, as a state)
+  const inPlay = useRef<{ id: string; r: Reporting | null } | null>(null);
   const given = useRef("");                              // the save as the game last had it (put in, or written out)
   const [update, setUpdate] = useState<ReturnType<typeof updateFor>>(null);
   const [refused, setRefused] = useState<{ b64: string; why: string } | null>(null);   // C-215: the mirror said another game
@@ -302,6 +313,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
       web.current?.injectJavaScript("window.pauseGame(); true;");
     });
     started.current = false; setPace(null); setStartWhy(""); setPlaying(false);
+    setRunning(false); inPlay.current?.r?.stop(true); inPlay.current = null;   // C-493: goodbye to the hub's IN PLAY
   };
 
   useEffect(() => {                                       // a newer release, as published now
@@ -380,6 +392,20 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
     if (!active) { web.current?.injectJavaScript("window.pauseGame(); true;"); return; }
     resume();
   }, [active]);
+  // C-493: reported to the hub while it plays here -- one id for the run (from PLAY to the title), the heartbeat held
+  // while another tab is shown or a book is open, and goodbye on the way back to the title
+  useEffect(() => {
+    if (!game || !running || !active || reading) { inPlay.current?.r?.stop(false); if (inPlay.current) inPlay.current.r = null; return; }
+    if (!inPlay.current) inPlay.current = { id: `${Platform.OS === "web" ? "site" : "app"}-${Date.now().toString(36)}`, r: null };
+    if (inPlay.current.r) return;
+    const run = inPlay.current;
+    run.r = reportInPlay({ id: run.id, source: Platform.OS === "web" ? "site" : "app", edition: game.edition,
+      save: () => given.current,
+      frame: async () => { const m = await ask((id) => `window.takeFrame(${id}); true;`, 3000); return m?.b64 ? { b64: m.b64, type: m.type ?? "image/png" } : null; },
+      onEnd: () => { run.r = null; void toTitle().then(() => setError("GAME MANAGEMENT ended this game on the companion. Its save is kept.  DRAFT")); } });
+    return () => { run.r?.stop(false); run.r = null; };
+  }, [game?.sha1, running, active, reading]);
+  useEffect(() => () => { inPlay.current?.r?.stop(true); }, []);   // the app closing the game: goodbye
   useEffect(() => {                                       // C-189: while it plays, SYNC holds it (game/gate.ts)
     if (!active) return;
     GATE.hold = () => !started.current ? Promise.resolve() : new Promise<void>((done) => {
@@ -419,7 +445,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
     let m: { kind: string; b64?: string; text?: string; why?: string; drawn?: number; ran?: number | null; sound?: string };
     try { m = JSON.parse(data); } catch { return; }
     if (m.kind === "started") {
-      started.current = true;
+      started.current = true; setRunning(true);
       (async () => {
         await mirrorIn();                                 // C-188: what the paired companion wrote while the app was shut
         const f = saveFile();
@@ -446,7 +472,7 @@ export function GameView({ active, ink, onSaved, muted = false }: { active: bool
       (whole ? mirrorOut(m.b64, onRefused) : Promise.resolve(false)).then((mirrored) => {
         if (whole && m.why === "saved" && (ALONE || mirrored)) autoSync();   // C-261
       }).finally(() => { if (m.why === "leave") handed.current?.(); });
-    } else if ((m.kind === "state" || m.kind === "restored") && typeof (m as any).id === "string") {
+    } else if ((m.kind === "state" || m.kind === "restored" || m.kind === "frame") && typeof (m as any).id === "string") {
       asks.current.get((m as any).id)?.(m);                // C-261
     } else if (m.kind === "speed" && typeof m.drawn === "number") {
       const p = { drawn: m.drawn, ran: m.ran ?? null, sound: m.sound ?? "" }; setPace(p); devStats(p);

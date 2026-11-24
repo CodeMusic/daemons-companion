@@ -22,3 +22,22 @@ export function readShadow(save: Uint8Array | null, preview = false, l: Layout =
   if (preview) return book("preview");
   return save && savedShadow(save, l) ? book("game") : { held: false };
 }
+
+// C-488 (C-474's later work): the day's SPELL CHECK beside TODAY's word -- each of the seven brooms ends with one, and the
+// broom is the day's (SUNDAY's PING .. SATURDAY's SUPERVISOR, the book's own order). Only once the save holds the book;
+// ?preview=1 shows it as the book's preview does. Where it stands in the book (s, j) opens that page. Every word DRAFT.
+const DAYS = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"] as const;
+export type SpellCheck = { held: false } | { held: true; day: string; title: string; broom: string; check: string; picture: string; frames: number; s: number; j: number };
+export function spellCheckOf(save: Uint8Array | null, now = new Date(), preview = false, l: Layout = LAYOUT): SpellCheck {
+  if (!preview && !(save && savedShadow(save, l))) return { held: false };
+  const want = DAYS[now.getDay()];
+  for (let s = 0; s < B.sections.length; s++) {
+    const j = B.sections[s].entries.findIndex((e) => e.short.toUpperCase() === want);
+    if (j < 0) continue;
+    const e = B.sections[s].entries[j];
+    const line = e.paragraphs.map((p) => p.text).find((t) => /^Spell check:/i.test(t));
+    if (!line) break;
+    return { held: true, day: want, title: e.title, broom: e.caption, check: line.replace(/^Spell check:\s*/i, ""), picture: e.picture, frames: e.frames ?? 1, s, j };
+  }
+  return { held: false };
+}

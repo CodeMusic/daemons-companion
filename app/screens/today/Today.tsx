@@ -19,6 +19,7 @@ import { CalendarSprite } from "../../ui/calendarSprite";   // C-353
 import { CalendarScreen } from "./Calendar";   // C-354
 import { useMonth } from "../../state/month";   // C-352, C-355
 import { MentionsCard } from "../library/Mentions";   // C-455
+import { SpellCheckCard } from "../library/Shadow";   // C-488
 
 export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload: () => void; ink: string; goTo: (t: (typeof TABS)[number]) => void }) {
   const witching = useWitching();                           // C-237: in the hour the day's line is turned under
@@ -61,6 +62,7 @@ export function TodayScreen({ today, reload, ink, goTo }: { today: Today; reload
       {/* C-349: back to the paper (reset leaves the accent), then the day's own theme */}
       {day.theme ? <Theme reset><Theme name={day.theme as any}>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></Theme></Theme>
         : <>{card}<SingingBowl bowl={bowl} onClose={() => setBowl(null)} /></>}
+      <SpellCheckCard onOpen={() => goTo("library")} />{/* C-488: the day's SPELL CHECK, beside the day's word */}
       <TendingCard />
       <WeekBalanceCard />{/* C-432: THE WEEK'S BALANCE, under the day's centre */}
       <MentionsCard />{/* C-455: the newest letter from your daemon, until it is read */}

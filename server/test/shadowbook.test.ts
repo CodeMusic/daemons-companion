@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import shadow from "../data/shadow.json" with { type: "json" };
 import P from "../data/profile_layout.json" with { type: "json" };
-import { SHADOW_FLAG, readShadow, savedShadow, type Shadow } from "../src/library/shadowbook.js";
+import { SHADOW_FLAG, readShadow, savedShadow, spellCheckOf, type Shadow } from "../src/library/shadowbook.js";
 import { makeServer } from "../src/api.js";
 import { DEFAULTS } from "../src/shared/config.js";
 import { buildSave } from "./build_save.js";
@@ -88,5 +88,25 @@ describe("GET /api/shadow and its plates", () => {
     expect((await fetch(base.held + "/art/shadow/..%2Fsecret_0.png")).status).not.toBe(200);
     const j = await fetch(base.held + "/api/art?shadow=first_spell_0").then((r) => r.json() as Promise<{ png?: string }>);
     expect(j.png?.length).toBeGreaterThan(100);
+  });
+});
+
+describe("C-488: the day's SPELL CHECK beside TODAY's word", () => {
+  it("is nothing until the save holds the book, then the day's broom and its check", () => {
+    const monday = new Date(2026, 10, 23, 9);                   // a Monday
+    expect(spellCheckOf(saveWith(false), monday)).toEqual({ held: false });
+    const c = spellCheckOf(saveWith(true), monday);
+    expect(c).toMatchObject({ held: true, day: "MONDAY", picture: "overflow" });
+    if (!c.held) throw new Error("held");
+    expect(c.check).toMatch(/^before any second helping/);
+    expect(c.broom).toMatch(/OVERFLOW/);
+    expect(B.sections[c.s].entries[c.j]).toMatchObject({ picture: "overflow" });
+  });
+  it("has a check for every day of the week, and the preview shows it without the book", () => {
+    for (let d = 0; d < 7; d++) {
+      const c = spellCheckOf(null, new Date(2026, 10, 22 + d, 12), true);
+      expect(c.held, `day ${d}`).toBe(true);
+      if (c.held) expect(c.check.length).toBeGreaterThan(20);
+    }
   });
 });

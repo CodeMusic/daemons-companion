@@ -239,7 +239,7 @@ function Veil({ eyes, side }: { eyes: Box[]; side: number }) {
 // else the expression's eye patches, else where a face's eyes usually are. DRAFT.
 export type Spiral = { eyes: Box[] | null; colour: string; trend: -1 | 1; beat: number };
 const EYES_USUALLY: Box[] = [[20, 21, 7, 7], [37, 21, 7, 7]];
-const ARM = Array.from({ length: 30 }, (_, i) => i / 29);       // along the arm, from the centre out
+const ARM = Array.from({ length: 44 }, (_, i) => i / 43);       // along the arm, from the centre out (1.75 turns)
 function SpiralEyes({ spiral, eyes, side, mirrored }: { spiral: Spiral; eyes: Box[]; side: number; mirrored: boolean }) {
   const u = side / 64, turn = useRef(new Animated.Value(0)).current;
   const rps = Math.max(0.08, Math.min(1.5, spiral.beat / 10));
@@ -255,14 +255,15 @@ function SpiralEyes({ spiral, eyes, side, mirrored }: { spiral: Spiral; eyes: Bo
   return (
     <>
       {(eyes.length ? eyes : EYES_USUALLY).map(([x, y, w, h], i) => {
-        const r = Math.max(w, h) / 2 + 1.5, d = 2 * r * u, dot = Math.max(1.2, 0.9 * u), rim = dot + Math.max(1.2, 0.8 * u);
+        // at least 4.5 sprite pixels out, so a small eye's spiral still reads (seen on EMERGENCE's 4 x 4 eye)
+        const r = Math.max(Math.max(w, h) / 2 + 2, 4.5), d = 2 * r * u, dot = Math.max(1.2, 0.75 * u), rim = dot + Math.max(1.2, 0.7 * u);
         const at = (t: number, s: number) => {
-          const a = t * 2.6 * 2 * Math.PI, rr = t * (r - 0.8) * u;
+          const a = t * 1.75 * 2 * Math.PI, rr = t * (r - 1.1) * u;
           return { position: "absolute" as const, left: d / 2 + rr * Math.cos(a) - s / 2, top: d / 2 + rr * Math.sin(a) - s / 2, width: s, height: s, borderRadius: s / 2 };
         };
         return (
           <Animated.View key={i} style={{ position: "absolute", left: (x + w / 2 - r) * u, top: (y + h / 2 - r) * u, width: d, height: d,
-                                          borderRadius: d / 2, backgroundColor: "#f4f2ea", borderWidth: Math.max(1, 0.7 * u), borderColor: "#0d0d0d",
+                                          borderRadius: d / 2, backgroundColor: "#f4f2ea", borderWidth: Math.max(1, 0.6 * u), borderColor: "#0d0d0d",
                                           transform: [{ rotate }] }}>
             {ARM.map((t) => <View key={`o${t}`} style={[at(t, rim), { backgroundColor: "#0d0d0d" }]} />)}
             {ARM.map((t) => <View key={`c${t}`} style={[at(t, dot), { backgroundColor: spiral.colour }]} />)}

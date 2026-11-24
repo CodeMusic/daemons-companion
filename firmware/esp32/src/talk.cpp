@@ -198,7 +198,8 @@ bool talkPlayFrom(const String &path, const String &keepName) {
   if (playKept(keepName)) return true;
   if (!online()) return false;
   HTTPClient h;
-  h.setTimeout(120000);                                   // the first time, the hub fetches the reading (or track) and cuts it
+  h.setTimeout(65535);   // the first time, the hub fetches the reading (or track) and cuts it; 65535 is the most HTTPClient
+                         // holds (16 bits): 120000 was 54 s
   h.begin(serverUrl + path);
   h.addHeader("x-device", deviceId());
   if (h.GET() != 200) { h.end(); return false; }

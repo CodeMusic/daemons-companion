@@ -1,3 +1,4 @@
+// BRAIN: host kit (cortex.language, cortex.auditory, cortex.motor) -- driven from the Zero
 // C-453: the Kit, from the Zero's side (kit.h). One thread holds the one link; jobs are done one at a time in the order
 // asked, and a page reads what came of them through view().
 #include "kit/kit.h"

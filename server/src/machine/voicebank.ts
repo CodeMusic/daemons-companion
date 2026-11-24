@@ -1,3 +1,4 @@
+// BRAIN: none -- a cache of fixed lines already voiced
 // The hub's only (it keeps files): never imported by core.ts or routes.ts.
 // C-251 (the user, 2026-10-30: "text-to-speech with various voices for various creatures"; 2026-11-05: "each daemon should
 // have their own voice"): FIXED LINES RENDERED AHEAD. A line the hub reads aloud again and again -- an INDEX entry on a

@@ -1,4 +1,5 @@
 // C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
+// BRAIN: thalamus (relay, gate) -- orders the minds by score, falls through, keeps private work at home
 // C-360, thought (the user, 2026-11-14: "the most available machine/device with most power potential should be leveraged
 // ... if the most powerful machine is busy with tasks, it would be routed to the next most ... a network of iphones to
 // mesh their potential together"; by multiple choice: reliable + free, hedged): the house's minds for a write-up, put in

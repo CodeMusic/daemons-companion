@@ -1,4 +1,5 @@
 // C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
+// BRAIN: none -- THE ENGINE ROOM's ledger of work
 // C-319 (the user, 2026-11-10: "a way of visualizing everything that is happening in this mind mesh network, tasks on
 // various devices, for various users, for various functions ... both a visualization, and also a way to manage mind
 // tasks"): THE MIND's ledger of work -- every piece of thinking the hub does or hears of, as one kind of thing: what it is

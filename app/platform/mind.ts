@@ -1,3 +1,4 @@
+// BRAIN: host phone (cortex.language, cortex.auditory, cortex.motor) -- the on-device model
 // C-280 (2): THIS PHONE's own mind -- Apple's on-device model, its hearing and its voice (app/modules/daemons-mind), one
 // of the minds THE MIND routes across (mesh.ts, C-307). Nothing here sends anything anywhere. What is said aloud goes
 // through sayable() first.

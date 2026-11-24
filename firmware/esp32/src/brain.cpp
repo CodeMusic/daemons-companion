@@ -1,3 +1,4 @@
+// BRAIN: bridge -- StackFlow to the LLM630 (the fallback is chosen in talk.cpp)
 // C-76: StackFlow's protocol, as M5Stack's own code speaks it (docs/LLM630.md, read in code and NOT yet run on an
 // LLM630): one JSON object per message, {request_id, work_id, action, object, data}; `setup` answers with the unit's
 // instance id; `inference` sends data, whole or in pieces ({delta, index, finish}); answers come back the same way.

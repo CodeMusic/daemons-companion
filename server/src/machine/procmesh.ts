@@ -1,3 +1,4 @@
+// BRAIN: thalamus (relay) -- thoughts routed by score to the best node; its ffmpeg half is load balancing
 // The hub's only (it runs ffmpeg and keeps files): never imported by core.ts or routes.ts.
 // C-360 (the user, 2026-11-14: "a generalized way for any request to get the best routing for that time (e.g. if the
 // most powerful machine is busy with tasks, it would be routed to the next most) ... think of it as a mind/processor

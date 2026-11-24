@@ -1,3 +1,4 @@
+// BRAIN: thalamus (relay, gate) -- heard, thought and said routed by ring, hedged
 // C-307 (the user, 2026-11-08: "like an octopus mind, where multiple different brains coalesce ... a mesh-network of
 // processing potential"): THE MIND -- one mind made of every mind this phone can reach. The minds are its arms:
 //   THIS PHONE   Apple's on-device model, hearing and voice (mind.ts) -- no network, no key

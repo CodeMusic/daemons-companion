@@ -1,4 +1,5 @@
 // C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
+// BRAIN: cortex.prefrontal (plan) -- work given a time: prospective memory
 // C-319 later (the user, 2026-11-10: "maybe even to visualize not just present task but past (or future if we ever add
 // it)"; built 2026-11-11 on "Yes, build later"): THE MIND's LATER -- work given a time. A plan says what the hub does and
 // when (each week on a day and hour, or each day at an hour, the hub's own clock); the hub runs it when it falls due and

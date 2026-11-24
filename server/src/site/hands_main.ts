@@ -1,3 +1,4 @@
+// BRAIN: basal_ganglia (act) -- runs the job asked for (act: a simplification, BRAIN.md 5.7)
 // C-342: THE HANDS (DRAFT) -- THE ENGINE ROOM's helper on the computer that holds the save, DAEMONS' art and the releases.
 // It dials out to the hub (nothing new listens here), takes the next job asked for in THE ENGINE ROOM, runs it from this
 // checkout -- only the commands jobs.ts names, never anything the hub sends -- and sends back what it printed as it goes.

@@ -1,3 +1,4 @@
+// BRAIN: hypothalamus (drives) -- may the Kit wake, by the charges: an energy budget
 // C-459: the charge rule (policy.h).
 #include "kit/policy.h"
 

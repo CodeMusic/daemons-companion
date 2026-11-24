@@ -1,3 +1,4 @@
+// BRAIN: interface -- THE BRAIN's signal, regions and verbs (docs/BRAIN.md)
 // THE BRAIN (docs/BRAIN.md; the user, 2026-11-24: "any AI harnesses or AI we write for ANY of these ... THEY ALL SHOULD be
 // in neuroscience psychology code ... architected like the architecture of the human brain"). The proof of its interface,
 // and nothing more: one SIGNAL, the same on every host, its regions and their verbs, the ring it may travel (the

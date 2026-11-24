@@ -62,8 +62,10 @@ module still never imports an anatomical one: it is *handed* a region, as it is 
 ```
 
 **The two roads are LeDoux's** (the amygdala's quick, crude route from the thalamus, and the slow, detailed one through
-the cortex), and they are the same idea as **Kahneman's System One and System Two**, which is what the Jev research
-(`docs/research/JEV.md`) is about. The thalamus sends a stimulus down both at once when someone is waiting: the low
+the cortex), and they are **an analogy, not an identity**, for **System One and System Two** (Stanovich & West's terms,
+made famous by Kahneman), which is what the Jev research (`docs/research/JEV.md`) is about. The low road itself is
+contested (Pessoa & Adolphs 2010), and LeDoux since 2015 calls these survival circuits rather than feelings -- one more
+reason the daemon's feelings stay psychology. The thalamus sends a stimulus down both at once when someone is waiting: the low
 road answers typed questions in milliseconds (*is this a care action? does it need the cortex? is the person upset?*)
 and can act on its own -- a reflex, a canned line, a named action -- or tell the high road how much to think (which
 length of self, `self.ts`: short, day or full). The high road writes the words. That is what `thoughtroute.ts`'s hedge
@@ -104,6 +106,9 @@ leaves the house", made one field.
 regions it serves, each with its verbs, its POWER and its ring. THE MESH's nodes (C-360, `procmesh.ts`) already say
 their CAPS, cores, speed and load: a connectome entry is that, named by region. The hub's thalamus keeps them all.
 
+*Proprioception* is RoverByte's word for the body's own state (its cell, its heat); neuroscience would call that
+interoception. The word is kept, as the user's.
+
 ## 4. Hemispheres and the corpus callosum
 
 **A host is a hemisphere.** Regions on one host call each other directly; **across hosts, only through the CORPUS
@@ -128,9 +133,11 @@ no model.
 - `vitals` (proprioception) -> `{ cell, charging, heat, load, memFreeMb, awake, link }`
 - `reflex` (expression) -> a response wired in, under 10 ms, **never routed off the device** (ring `body`): a button's
   sound, the face blinking, the daemon's flinch at a fall
-- `sleep` / `wake` -- for a part of the body: the Kit's units (C-459's `mayWake`)
+- `sleep` / `wake` -- for a part of the body: the Kit's units exit or start. *Whether* they may is the hypothalamus's
+  (5.2); the brainstem does it. Keeping a model loaded is `wake` too: the reticular activating system keeping the
+  cortex awake (Moruzzi & Magoun 1949; `tiinykeep.ts`)
 
-**Today**: the Kit's agent `kitd.py` (cell, heat, hotspot), `kit/policy.h`'s wake rule, every board's battery read.
+**Today**: the Kit's agent `kitd.py` (cell, heat, hotspot), `tiinykeep.ts`, every board's battery read.
 **Hosts**: every one, ESP32 included. It is the only region every host must have.
 
 ### 5.2 HYPOTHALAMUS: drives and the clock
@@ -140,10 +147,15 @@ needs (fed, watered, trained, rested), RESTLESS -- and **the circadian clock**: 
 when the hippocampus may consolidate. The drives' *meaning* stays psychology (`life.ts`, `care.ts`, `feelings.ts`); the
 hypothalamus only says the numbers and the time.
 
-- `drives` (proprioception) -> the needs, 0-100
+- `drives` (proprioception) -> the needs, 0-100, and the energy budget
 - `clock` (proprioception) -> `{ phase: "day" | "dusk" | "night" | "wake", nextWake }`
 
-**Today**: `persona.ts`'s WAKE, `machine/schedule.ts`, the watch's stillness at night (C-201). **Hosts**: the hub (the
+**The sleep-wake decision is the hypothalamus's**, not the brainstem's: the switch is a hypothalamic flip-flop (Saper,
+Chou & Scammell 2001), and orexin ties arousal to the body's energy (Yamanaka et al. 2003; Sakurai 2007). So whether the
+Kit may wake, by the charges, is `drives` (`kit/policy.h`, C-459); the brainstem does the waking. *(Moved here from 5.1
+by the research, BRAIN-MAPPING.md.)*
+
+**Today**: `persona.ts`'s WAKE, `kit/policy.h`, the watch's stillness at night (C-201). **Hosts**: the hub (the
 truth), every device (a copy, for offline).
 
 ### 5.3 THALAMUS: relay, gate, attend, route
@@ -186,7 +198,7 @@ The neocortex: slow, detailed, words. Its areas here:
 
 | area | in the brain | here | verbs | hosts |
 |---|---|---|---|---|
-| **prefrontal** | deliberation, planning, working memory | the slow mind with thinking on; a plan; the playtester's next move; WORKING MEMORY's seven things (`workingmemory.ts`) live here, as Baddeley put them | `think`, `plan`, `hold` | the Tiiny (35B, 120B), roverbyteseer's LiteLLM, the cloud (paid, never automatic) |
+| **prefrontal** | deliberation, planning, working memory | the slow mind with thinking on; a plan; the playtester's next move; WORKING MEMORY's few things (`workingmemory.ts`) live here -- Baddeley gave it its parts; about seven is Miller (1956), nearer four Cowan (2001); work given a time (`machine/schedule.ts`) is prospective memory | `think`, `plan`, `hold` | the Tiiny (35B, 120B), roverbyteseer's LiteLLM, the cloud (paid, never automatic) |
 | **language** | Broca writes, Wernicke understands | the daemon's words: a talk, a dream, a write-up | `speak` (body `{ self, said, length, most }`), `comprehend` | the Tiiny, the Kit and the hub's Module LLM (0.5-1.5B, the short self), a phone's model, an endpoint (C-280) |
 | **auditory** | Heschl's gyrus, the belt | hearing: speech to text | `hear` (a 16 kHz WAV) -> text | the Tiiny (Qwen3-ASR), the AX630C (whisper), roverbyteseer (Whisper) |
 | **visual** | V1 to the fusiform | sight: YOLO's list, a VLM's description, a box, the INDEX from life (C-463) | `see` (an image and a question) | the Kit (SC850SL, yolo, vlm), the Tiiny (OCR, image models), roverbyteseer (ComfyUI, for the reverse: `imagine`) |
@@ -220,7 +232,8 @@ hyperdirect stops everything at once; dopamine teaches which actions paid off. H
 - `select` (cognition) -> from the cortex's or the low road's intent, `{ action, args, gate: "go" | "ask" | "nogo" }`:
   **harmless goes**, **anything that spends, sends, deletes or moves asks** on the device's own screen (ZEROKIT.md 5,
   chosen), anything not in the manifest is no-go
-- `act` (expression) -- runs it; every call, allowed or refused, is logged
+- `act` (expression) -- runs it; every call, allowed or refused, is logged. *A simplification*: in the brain the basal
+  ganglia select and the motor cortex and spinal cord carry it out
 - `stop` -- the hyperdirect pathway: everything on this body stops (a RoverByte walking toward the stairs)
 
 **Today**: THE HANDS on the Mac (`hands_main.ts`, only the commands `jobs.ts` names), C-462's HANDS on every Pi, the
@@ -304,6 +317,21 @@ asks hosts best first and falls through on a failure. Five checks: a verb that i
 signal never reaches a `world` host, a low-road `appraise` and a high-road `speak` each reach the best host that
 answers, a host expected to miss the deadline goes last, and a signal no host may take says so.
 
+**The header line** (C-518, night 1). Every AI file says where it sits in one line of its header, at most 120
+characters: `// BRAIN: <head> [(<verbs or regions>)] -- <reason>` (`#` in Python and shell), after a `// C-290:` line, a
+shebang or `#pragma once`, otherwise first. The head is exactly one of `signal.ts`'s REGIONS keys, or:
+
+| head | for |
+|---|---|
+| `host <name>` | a file that *is* a host's door: its regions listed, not verbs (`host tiiny (cortex.prefrontal, ...)`) |
+| `bridge` | a protocol to a host's models (StackFlow) |
+| `pathway` | a file that only chains regions -- hear, think, say -- as a white-matter tract joins areas. No tract is named unless the route really is that tract |
+| `connectome` | the registry of hosts |
+| `interface` | `signal.ts` itself |
+| `none` | a codec, a cache, an export, a proxy, a ledger: machinery that does no region's work. The metaphor is earned, never worn |
+
+Verbs must be that region's in `signal.ts`. A verb added there is a code change, and its own line on a night's plan.
+
 ## 9. Decided (the user, 2026-11-24, by multiple choice)
 
 1. **Neuroscience for the machine, psychology for the mind.** Every AI harness's machinery takes the brain's regions;
@@ -346,6 +374,11 @@ and psychology and gives a final recommendation for that night pass."*
 3. **The nightly passes.** Each night the plan for that night (from the checked list, at most the amount allowed) goes
    to the user before it runs. **Approved, it runs; deferred, it waits; no answer, that night's pass is paused** --
    never run on silence. The user tests the result the next day.
+
+**Night 1, approved and run 2026-11-24**: the header line in fifty of the companion's files (BRAIN-MAPPING.md 6),
+and these corrections from the research and its review. `songs.ts` and `sleeptracks.ts` wait for a `cortex.auditory`
+`imagine` verb. Night 2 is DAEMONS' `ai/`, night 3 the playtester (`engineAi`), with `monitor`, interoception and
+`navigate`.
 
 **How the user answers**: each night's plan is put as a question on its ticket (`tickets.py ask`, *Approve* or
 *Defer*), which EUDAIMONIA's dashboard draws as buttons. A pass runs only on an *Approve* given for that night.

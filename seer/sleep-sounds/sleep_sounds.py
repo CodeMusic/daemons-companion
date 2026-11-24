@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# BRAIN: none -- a keyed door to ACE-Step
 """Sleep sounds made for a daemon -- companion C-334 (the user, 2026-11-11: "if it is possible to use the tiiny or
 roverbyteseer to make sleep sound tracks ... we could build output that is DAEMON-ified (using again context to steer
 the output)"). Part of the local cloud: seer/bindSeer.sh installs it (seer/sleep-sounds/install.sh) when sleep sounds are

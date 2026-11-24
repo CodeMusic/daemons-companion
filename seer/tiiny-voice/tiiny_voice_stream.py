@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# BRAIN: none -- a keyed proxy to the Tiiny's voice and models
 """The Tiiny's voice, streamed -- C-317 (the user, 2026-11-10: "set up the LiteLLM pass-through").
 
 LiteLLM hands a voice on only once it is whole (measured: the first byte at 13 s for 20 s of speech), while the Tiiny,

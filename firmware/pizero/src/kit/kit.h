@@ -1,4 +1,5 @@
 #pragma once
+// BRAIN: host kit (cortex.language, cortex.auditory, cortex.motor) -- driven from the Zero
 // C-453 (docs/ZEROKIT.md): the LLM630 Compute Kit on the Zero's back -- its link (C-458), its power by demand (C-459),
 // and the daemon's offline voice on it (C-461): whisper hears, the LLM answers as the carried daemon, melotts speaks.
 // The Kit is reached at ~/.config/daemons/kit ("10.77.0.2:10001", the cable's network; DAEMONS_KIT overrides; "off" is

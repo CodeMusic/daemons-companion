@@ -1,4 +1,5 @@
 #pragma once
+// BRAIN: hypothalamus (drives) -- may the Kit wake, by the charges: an energy budget
 // C-459 (docs/ZEROKIT.md 2): may the Kit be woken? Kept apart so the checks can ask it with no Kit (test/tests.cpp).
 namespace kit {
 // ---- C-459: may the Kit be woken? -------------------------------------------------------------------------------------

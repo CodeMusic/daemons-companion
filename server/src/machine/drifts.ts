@@ -1,3 +1,4 @@
+// BRAIN: none -- a library of files
 // The hub's only (it reads files): never imported by core.ts or routes.ts.
 // C-506 (the user, 2026-11-24): REVERIE's library of drifts -- PulseEntrain's programs carried into server/data/drifts/
 // by server/tools/import_drifts.py (the PHARMACY renamed as TINCTURES, by how each feels), and THE LONG FALL, DRIFT DOWN

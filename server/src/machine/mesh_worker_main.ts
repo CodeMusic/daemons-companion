@@ -1,3 +1,4 @@
+// BRAIN: none -- a MESH node that runs only ffmpeg
 // C-360: a node of THE MESH (procmesh.ts) -- run on roverbyteseer and THE HANDS' Mac by hub/mesh.sh as a LaunchAgent.
 // It dials out to the hub (nothing new listens here), says what it can do, how much (cores x its measured speed) and how
 // busy it is now, takes the jobs the hub gives it, runs them -- only ffmpeg, only with the job's own files, in a folder

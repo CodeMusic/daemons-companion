@@ -1,3 +1,4 @@
+// BRAIN: none -- a voice converted for a handheld and kept on a shelf
 // C-66, C-65: the daemon's voice, for a handheld. The voice server speaks mp3, which a small board cannot decode; the
 // handheld's speaker takes 16 kHz, 16-bit mono, the rate its tunes are played at. So the server converts each answer
 // once (ffmpeg, else macOS's own afconvert) and keeps it a few minutes on a shelf, and the board streams it from

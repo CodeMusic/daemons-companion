@@ -1,3 +1,4 @@
+// BRAIN: basal_ganglia (repertoire) -- only the named jobs run, each argument checked
 // C-342 (the user, 2026-11-11: "commands like (./syncCompanion.sh site) ... we should have abilities to run that from the
 // engine room -- basically that site should handle anything we might have had to do with the commandline before"):
 // THE ENGINE ROOM's JOBS (DRAFT). A job is asked for on the hub; THE HANDS -- a helper on the computer that holds the save,

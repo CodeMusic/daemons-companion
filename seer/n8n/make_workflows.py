@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# BRAIN: pathway -- the n8n workflows that chain hear, think and say
 """The companion's n8n workflows, written from one place (2026-10-07; companion C-64, C-66, C-83; moved here from DAEMONS
 ai/n8n with the local-cloud package, 2026-11-11).
 

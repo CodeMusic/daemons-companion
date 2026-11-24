@@ -1,3 +1,4 @@
+// BRAIN: none -- delivery of a voice made elsewhere
 // 2026-11-07 (the user: "I'd love to see some indicator in the app so u can tell if the dream voice had been rendered yet
 // or not ... all of these renderings should be async so if the user is not able to wait, when they come back it play
 // right away"): a voice for a whole piece -- a dream, a journal's chapter -- made on the hub in the background and kept

@@ -1,3 +1,4 @@
+// BRAIN: basal_ganglia (select) -- rules first, then the model; checked against a list, nothing else runs
 // C-244 (the user, 2026-10-29: "if I talk to the daemon and start with the word INDEX (it knows it is a command mode), so
 // you say INDEX turn on low power mode -- the AI returns a JSON command that the watch actions"): a talk whose words begin
 // INDEX is a command, not a word to the daemon. What follows is read by plain rules first (quick, and never wrong about

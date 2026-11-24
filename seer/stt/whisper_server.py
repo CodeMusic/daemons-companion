@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# BRAIN: cortex.auditory (hear) -- speech to text on roverbyteseer
 """Speech to text for the companion, on roverbyteseer (companion C-83, 2026-10-07).
 
 An OpenAI-compatible transcription server on MLX Whisper, so it runs on the Mac's own GPU and nothing leaves the

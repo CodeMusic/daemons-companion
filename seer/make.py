@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# BRAIN: thalamus (relay) -- writes LiteLLM's model names and their fallbacks
 """The local cloud's configuration, written from one file (seer/.seer) so every part agrees with every other.
 
     python3 seer/make.py            # writes seer/out/: litellm.yaml, n8n.env, services.env, the n8n workflows, hub.txt

@@ -1,3 +1,4 @@
+// BRAIN: thalamus (relay, gate) -- the Tiiny first, then endpoints, phones and boards; holds what fits none
 // C-249 (the user, 2026-11-03: "if someone has tiiny set up, that generally will be used for all the local-cloud ai
 // options"): the house's AI work goes to the Tiiny first whenever one is set up and answering -- every talk, every
 // write-up, every hearing and every voice the House does (the INDEX read aloud, the GUIDE, meetings, dreams, commands)

@@ -1,4 +1,5 @@
 // C-290: this file runs on the phone too (C-111) -- keep it free of Node-only APIs (node:*, fs).
+// BRAIN: cortex.auditory (hear) -- what an ear heard, corrected toward the lexicon
 // C-369 (the user, 2026-11-15; the Tiiny's update of 2026-11-11): THE EAR HEARS THE LEXICON. Every ear we have -- the
 // Tiiny's Qwen3-ASR, the board's, roverbyteseer's Whisper -- writes the game's words as the nearest English: "little
 // Damon" for a daemon, "river cub" for ROVERCUB (heard 2026-11-15), and Qwen3-ASR takes no word list. So what any ear

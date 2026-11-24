@@ -1,4 +1,5 @@
 // C-290: this file runs on the phone too (C-111) -- the app imports it, directly or through another file -- so keep it free of Node-only APIs (node:*, fs).
+// BRAIN: cortex.motor (voice) -- words respelled for the voice: phonological encoding
 // C-270 (the user, 2026-11-01: "the TTS returns the pronouciation of daemon as (DEE-MON) ... anything on the hub that
 // goes into tts has a replace for daemons to (daymons) so it pronounes right"): the words a voice is handed, never the
 // words shown or kept -- DAEMON respelled the way it is said, DAY-mon. In capitals it comes out Daymon, not DAYMON, which

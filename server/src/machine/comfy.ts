@@ -1,3 +1,4 @@
+// BRAIN: cortex.visual (imagine) -- a picture made from words
 // C-338, C-387: THE EASEL's machine -- the image door. FLUX.2 klein 4B through roverbyteseer's ComfyUI (the graph
 // tools/spriteforge.py drives), a prompt in and PNG bytes out. MACHINE: what is painted, and in whose style, is the
 // painter's (ai/easel.ts, MIND); this only renders it. No node: imports (fetch only), so it runs wherever the hub does.

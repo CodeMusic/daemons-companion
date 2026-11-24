@@ -1,4 +1,5 @@
 #pragma once
+// BRAIN: bridge -- StackFlow over the cable
 // C-461 (docs/ZEROKIT.md, docs/LLM630.md): StackFlow, the LLM630 Compute Kit's front door -- one JSON object at a time
 // over TCP 10001 (the cable's network, C-458), found by its braces, no delimiter. A request names the unit (work_id), the
 // action and the object (the data's format, read word by word: "stream" in pieces, "base64" encoded). Every reply carries

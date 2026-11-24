@@ -1,3 +1,4 @@
+// BRAIN: cortex.language (speak) -- one meeting turn from any endpoint
 // C-220: a meeting's talker on THE COMMONS -- any OpenAI-compatible endpoint (roverbyteseer's LiteLLM, and the Tiiny AI
 // behind it when it comes), asked for one turn with the meeting's own short setup and question (together.ts). Its line
 // still passes the filter (meetsafe.ts) before anyone reads it. No node: imports.

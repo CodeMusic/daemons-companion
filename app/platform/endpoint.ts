@@ -1,3 +1,4 @@
+// BRAIN: connectome -- an endpoint called from this phone; at home or not
 // C-280 (3), C-307: AN ENDPOINT -- any OpenAI-compatible base (`…/v1`), called from this phone itself, so a player with
 // no hub can still talk with their daemon. The address, model and name are kept in the Keychain beside the key, and the
 // key is never sent to the hub or shown again. Whether it is "at home" (a private, local or tailnet address) decides

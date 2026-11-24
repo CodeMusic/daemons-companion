@@ -1,3 +1,4 @@
+// BRAIN: host house-ax630c (cortex.language, cortex.auditory, cortex.motor) -- one talk a module
 // C-180 (HUB.md Phase 5): the modules in the house -- the hub's Module LLM on its own link, a standalone AX630 board on
 // the network, any more found later -- each one more worker for the daemons' talk. Thinking, voice and hearing all on
 // the module, so a talk never leaves the house. Which modules there are is the store's `ai.modules` (written by whatever

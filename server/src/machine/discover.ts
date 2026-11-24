@@ -1,3 +1,4 @@
+// BRAIN: connectome -- the AX630C hosts known, kept while they answer
 // C-180 (HUB.md Phase 5): finding the modules in the house. Nothing is scanned: a module is either on the hub's own
 // link to its Module LLM (eth1, the hub at 192.168.50.1 and the module at .2 -- hub/ sets it up), or at an address the
 // user gave (`ai.moduleAddresses`, comma-separated: the standalone AX630 board on Wi-Fi, any more later). Every round

@@ -1,4 +1,5 @@
 #pragma once
+// BRAIN: bridge -- StackFlow to the LLM630 (the fallback is chosen in talk.cpp)
 // C-76: the LLM630 as the handheld's offline brain (docs/LLM630.md). When no server answers, a talk turn goes to it
 // instead: its whisper hears the recording, its small model answers as the daemon, its melotts says the answer back as
 // 16 kHz samples. StackFlow's JSON, over TCP (port 10001) or the CC1101's back UART header (IO44/43) -- which link is the

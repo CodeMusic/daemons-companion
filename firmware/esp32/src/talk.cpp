@@ -1,3 +1,4 @@
+// BRAIN: pathway -- a talk turn; its route (home, phone, cable, LLM630) is the board's thalamus
 #include <memory>
 #include <HTTPClient.h>
 #include "expression.h"

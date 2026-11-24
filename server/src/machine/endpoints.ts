@@ -1,3 +1,4 @@
+// BRAIN: connectome -- each endpoint a host; atHome is the ring (docs/BRAIN.md 3)
 // C-280 (1) (the user, 2026-11-03: "you should be able to enter any openai compatible endpoint and model for it to use"):
 // ENDPOINTS on the hub -- any OpenAI-compatible base (`…/v1`), a key and a model, named by the player, several kept, each
 // one more mind in the hub's chain. The Tiiny is the first of them (its own settings, tiiny.*, since it also hears and

@@ -1,3 +1,4 @@
+// BRAIN: host ax630c-module (cortex.language, cortex.auditory, cortex.motor) -- its OpenAI door
 // C-180: the hub's Module LLM (M5Stack, AX630C), through StackFlow's OpenAI-format API (`apt install llm-openai-api`,
 // port 8000, /v1 -- https://docs.m5stack.com/zh_CN/stackflow/openai_api/models). Everything runs on the module; the
 // names are OpenAI's only. Written to the OpenAI shapes, so anything that speaks them (a computer's own server, say) can

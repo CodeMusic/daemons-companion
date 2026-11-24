@@ -1,3 +1,4 @@
+// BRAIN: host phone -- this phone's thinking lent to THE MESH
 // C-360, the phone (the user, 2026-11-14: "in theory this would allow a network of iphones to mesh their potential
 // together"; by multiple choice, its SETTINGS: "default to what u recommended but also have options for whenever the app
 // is open/background, and an option to opt out and never do others work only self work, and an option to never use the

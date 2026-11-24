@@ -1,3 +1,4 @@
+// BRAIN: bridge -- StackFlow, the AX630C's own protocol
 // C-180: the Module LLM's thinking through StackFlow itself (TCP 10001, docs/LLM630.md), not M5's OpenAI plugin. Measured
 // on the hub's module (the hardware lane, 2026-10-28): through the plugin a user message over ~70 characters answers
 // "", and a system message sticks to the first pooled client -- so a daemon's persona cannot reach the model there. Here

@@ -1,3 +1,4 @@
+// BRAIN: none -- an Ollama-API door for Home Assistant
 // C-142 (the user, 2026-10-16: "the idea is that the daemon can be your home assistant"): the daemon as Home Assistant's
 // conversation agent. The BOX-3 already shows the daemon (C-138); with this it answers as the daemon too.
 //

@@ -1,3 +1,4 @@
+// BRAIN: pathway -- hear, think, say; its route choice (kit::via, mayWake) is the Zero's thalamus
 // C-461 (docs/ZEROKIT.md 4): TALK -- words to the carried daemon and its answer. Typed on the keys (ENTER), or held TAB
 // to speak and let go. It goes by the way chosen on the KIT page (kit::via): BEST asks the hub's mind when the hub
 // answers (THE MIND picks the best model in the house, C-360) and the Kit on the Zero's back when it does not; KIT asks

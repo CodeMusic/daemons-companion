@@ -1,3 +1,4 @@
+// BRAIN: cerebellum (learn, predict) -- each talk's timing kept; speeds() predicts who is slow
 // C-307 (the user, 2026-11-10: "grow THE MIND ... something that I could run test"): THE MIND remembers how it thought --
 // each talk's trace (who heard, thought and said it, and how long each took, whether the phone covered), the last few
 // kept on the hub so every phone and the site see the same mesh, and each mind's recent speed, so a mind that has been

@@ -1,4 +1,5 @@
 // C-290: this file runs on the phone too (C-111) -- keep it free of Node-only APIs (node:*, fs).
+// BRAIN: brainstem (wake) -- reloads the Tiiny's models when a call finds them gone: arousal
 // C-375 (2026-11-15; the Tiiny's API reference, dev.tiiny.ai): THE HUB KEEPS THE TIINY'S MODELS LOADED. A TiinyOS update
 // or restart leaves every model unloaded, and the hub then heard a stand-in or "is not loaded" until someone ticked them
 // again (C-373, C-374). seer's gate (seer/tiiny-voice, the Tiiny's voice stream's address: /tiiny/models, /tiiny/models/

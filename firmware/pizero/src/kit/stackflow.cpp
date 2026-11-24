@@ -1,3 +1,4 @@
+// BRAIN: bridge -- StackFlow over the cable
 // C-461: StackFlow over TCP, by plain POSIX sockets (nothing to install on either side).
 #include "kit/stackflow.h"
 

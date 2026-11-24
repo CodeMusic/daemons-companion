@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# BRAIN: brainstem (vitals) -- the Kit's cell, heat and hotspot
 """C-453 (docs/ZEROKIT.md): kitd, the LLM630 Compute Kit's own agent -- what StackFlow does not say about the board.
 
 It answers the Zero over the cable only (10.77.0.2, and 127.0.0.1), on StackFlow's port plus one, 10002:

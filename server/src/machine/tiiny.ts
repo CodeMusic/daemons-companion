@@ -1,3 +1,4 @@
+// BRAIN: host tiiny (cortex.prefrontal, cortex.language, cortex.auditory, cortex.motor)
 // C-249 (the user, 2026-10-30: "I plug it in to ROVERBYTESEER ... and once set up the hub can talk to it"): the Tiiny
 // Pocket as one more thinker for the daemons' talk, reached over the house network -- through roverbyteseer's LiteLLM
 // (http://roverbyteseer:4000/v1, the default) or straight at the device (http://<its address>/openai/v1). Both speak

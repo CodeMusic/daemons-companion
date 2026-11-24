@@ -1,3 +1,4 @@
+// BRAIN: none -- an export (ffmpeg)
 // The hub's only (it runs ffmpeg and reads files): never imported by core.ts or routes.ts.
 // C-358 (the user, 2026-11-14: "export the track (either regular mp3 <with or without down drift depending on your
 // selection>, and you can also export right in the PulseEntrain format such that I could import it into that app"):

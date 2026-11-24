@@ -1,3 +1,4 @@
+// BRAIN: thalamus (attend) -- one queue, the device in the hand first: priority as limited attention
 // C-180 (the user, 2026-10-22: "many boards connect to this device and we need it to be as quick as possible for replies
 // to not lag the device ui"): a talk is answered at once with an id, and the answer fetched when it is ready -- so no
 // device holds a request open while a model thinks (the phone gave up after 8 s; the Tab5's network task waited on it).

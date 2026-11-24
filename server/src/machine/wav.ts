@@ -1,3 +1,4 @@
+// BRAIN: none -- a codec
 // C-180 (HUB.md Phase 5 item 5): a WAV as the boards play it -- 16 kHz, 16-bit, mono -- in plain TypeScript, so the
 // module's voice reaches a board without ffmpeg (5.5 s a call on the hub, the slowest thing there). Reads PCM 8/16/24/32
 // bit and 32-bit float, any channels (mixed down) and any rate (linear resampling: speech, not music). null for anything

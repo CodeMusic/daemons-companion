@@ -380,6 +380,10 @@ and these corrections from the research and its review. `songs.ts` and `sleeptra
 `imagine` verb. Night 2 is DAEMONS' `ai/`, night 3 the playtester (`engineAi`), with `monitor`, interoception and
 `navigate`.
 
+**Night 2, approved and run 2026-11-24**: DAEMONS' `ai/` (DAEMONS cc738796). Its launcher, its presence beat and
+LiteLLM's config are `none` (the config has no fallback, so it is a proxy, not a relay); the n8n README names each
+workflow's region. The review also found the playtester's voice unrespelled (DAEMONS T-618).
+
 **How the user answers**: each night's plan is put as a question on its ticket (`tickets.py ask`, *Approve* or
 *Defer*), which EUDAIMONIA's dashboard draws as buttons. A pass runs only on an *Approve* given for that night.
 

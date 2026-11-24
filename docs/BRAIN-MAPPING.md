@@ -277,3 +277,19 @@ added to `signal.ts` is a code change and its own line on a night's plan, never 
 
 **After the edit, before the commit**: the server's tests, the app's typecheck, the Pi build's checks, the ESP32's
 compile, and a grep that every listed file has exactly one `BRAIN:` line.
+
+## 7. Night 2 (2026-11-24): DAEMONS' `ai/`, reviewed cold, GO WITH CHANGES
+
+The review turned all three proposed regions into `none`: each failed the earned-metaphor test night 1 set.
+
+| file | BRAIN line | why |
+|---|---|---|
+| `ai/inplay_beat.py` | `none` -- a presence beat to the hub | it reads none of the body's state (what earned `kitd.py` its vitals); it sends the save and the screen when they change: an export |
+| `ai/airun.sh` | `none` -- a launcher | starts and stops the run's processes; no signal passes through it. The playtester's `host` line belongs on night 3, in `engineAi` |
+| `ai/litellm/config.yaml` | `none` -- LiteLLM's proxy | its fallbacks are off by design (a second LM Studio slot evicts the first), so it is a name table and a protocol translation, not a relay. `seer/make.py` keeps `thalamus (relay)`: it writes real failover chains |
+| `ai/litellm/install.sh`, `ai/n8n/push.py` | dropped | an installer, a deploy tool |
+| `ai/n8n/README.md` | a BRAIN column | health `brainstem (vitals)` (it only probes the model servers), look `cortex.visual (see)`, sprite `cortex.visual (imagine)`, voice `cortex.motor (voice)` (it shapes the line and the prosody), chat `none` (a pass-through shim), talk moved to the companion (`pathway`); the public relays `none` |
+
+**Found on the way**: the playtester's voice path (`/speak` -> `daemon/voice` -> the voice) never respells DAEMON as
+DAY-mon (DAEMONS T-618). **Left for night 3**: `tools/ai_models.py` (it writes the LiteLLM table: `none`) and
+`bindDaemons.sh --ai` (a launcher), with `engineAi`.

@@ -173,13 +173,29 @@ One page on `http://127.0.0.1:<port>`, opened from the tray:
 pins daemons-praxis by tag; BRAIN.md 8 says the signal moves to a repository of its own once a second one needs it --
 **daemons-server is that second one**.
 
-## 9. The proof (built 2026-11-24)
+## 9. Built so far
 
-**CodeMusic/daemons-server**, the agent's first slice: a Mac host that pairs with the household's hub, **joins THE
-MESH as a processing node**, works only in the mode its owner chose (idle and plugged in by default), rests under
-memory pressure, and shows a **dashboard on localhost** with NOW, WORK, WHEN, CIRCLES and WHAT IT DID. Builds,
-thinking, memory, THE COMMONS, ARETE, ASK and the tray are switches drawn on the page and marked *not yet*. Its
-README says how to run it.
+**CodeMusic/daemons-server.** The proof (2026-11-24, C-539): a Mac host that pairs with the household's hub, **joins
+THE MESH as a processing node**, works only in the mode its owner chose, and shows a **dashboard on localhost**. Then,
+the same day:
+
+- **WHEN** (C-540): every mode also rests when the machine is hot, short of disk (5 GB kept free), or on battery below
+  the owner's floor (never, by default). The Linux and Windows readings are written and not yet tried on either.
+- **Sandbox** (C-546): each ffmpeg job runs under `sandbox-exec` on a Mac -- no network, writes only in the job's
+  folder, the owner's home unreadable, each refusal tried by hand -- and under `bwrap` on Linux when present.
+  Windows has no sandbox yet.
+- **Thinking** (C-542): a model already on the computer (Ollama, LM Studio, an MLX server, llama.cpp, on their usual
+  ports) is found, timed on one short prompt, and offered to the household as a `think` node -- the job THE MESH
+  already gives a phone that lends its model, so the hub needed no change.
+- **ARETE and ASK** (C-544): each finished job pays ARETE once, by its id (a thought 2, processing by the work it took
+  on a host of power 1); **ASK** puts one short question to the household's mind (the hub's TRY THE AI), from **ten
+  free asks a day, then 1 ARETE each**. Kept on the host in PRAXIS's shape until THE COMMONS opens and it is carried
+  onto the household's ledger. Every rate DRAFT. *This replaces section 6's "a household's own members ask free"
+  for ASK: the app's own talk stays free; the dashboard's ASK is the reward the user asked for.*
+- **The menu bar** (C-547): a dot -- green working or ready, amber resting, grey not running -- with pause and resume,
+  and `bin/daemons-server.sh install` to run both at login as LaunchAgents. It refuses to install beside THE MESH's
+  own node (`ca.codemusic.daemons.mesh`), which would make one Mac two nodes. The notarised `.pkg`, Linux and Windows
+  packaging and signed updates are still to come.
 
 ## 10. Still to decide
 

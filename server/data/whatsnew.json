@@ -1,9 +1,52 @@
 {
- "latest": 996,
+ "latest": 997,
  "builds": [
   {
+   "build": 997,
+   "commit": "010100c0",
+   "date": "2026-11-24",
+   "sections": [
+    {
+     "ticket": "C-518",
+     "title": "THE BRAIN's nightly refactor: research, review, approve, then move",
+     "lines": [
+      "THE BRAIN, night 1 (approved 2026-11-24) — the BRAIN: header line in fifty AI files (comments only: no move, rename or code), each its region, host, bridge, pathway, connectome or none, by BRAIN-MAPPING.md 6; BRAIN.md corrected by the research and its review: the wake decision to the hypothalamus (orexin), arousal under wake, the header grammar and pathway, Baddeley's seven, the two roads an analogy, act a simplification",
+      "THE BRAIN, night 3 recorded — navigate joins the hippocampus in signal.ts (localPath.js walks the map fog_of_war.py encodes); monitor waits, no interoception verb; BRAIN.md 5.6 and 10, BRAIN-MAPPING.md 8 (engineAi 663afbf, DAEMONS b544403e; T-619, T-620 found)"
+     ]
+    },
+    {
+     "ticket": "C-137",
+     "title": "The Tab5 catches up: GAME EVENTS, GROVES, the MARKS' wisdom, and a SCHOOL tab",
+     "lines": [
+      "/api/dreambooks?only=authors — DAEMON DREAMS alone, each dream once, for the Tab5 to keep"
+     ]
+    },
+    {
+     "ticket": "C-551",
+     "title": "The library sorted, renamed and researched: every drift reviewed on a picking page",
+     "lines": [
+      "The library renamed and sorted — every drift a new name and hover line, in SLEEP (10), MEDITATION (20) and TINCTURES (63); the phone carries three of each kind (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.416.1 (DAEMONS T-604 stage 9)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "T-604: stage 10 — fifteen later forms colour in, their art and shiny songs (engine 2635975c3), DRAFT"
+     ]
+    }
+   ]
+  },
+  {
    "build": 996,
-   "commit": "96e469cc",
+   "commit": "96e469c",
    "date": "2026-11-24",
    "sections": [
     {

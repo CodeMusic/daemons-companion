@@ -1,9 +1,281 @@
 {
- "latest": 995,
+ "latest": 996,
  "builds": [
   {
+   "build": 996,
+   "commit": "96e469cc",
+   "date": "2026-11-24",
+   "sections": [
+    {
+     "ticket": "C-433",
+     "title": "PRAXIS 6: forms you make yourself, LEARNING, RECIPES and the REWARD SHELF",
+     "lines": [
+      "LEARNING on JOURNEY, with THE TUTOR (DRAFT) — a course named, and its syllabus asked of the household's mind (the Tiiny first, THE TUTOR in THE MIND AT WORK): modules, lessons and review cards proposed as nested PRAXIS proposals, TAKEN (edited as taken; a card takes its lesson and module with it), TAKEN ALL or NOT; a lesson written by the TUTOR when first opened; DONE 3 ARETE (nine a day pay), a card reviewed 1 (twenty a day) on a simple spaced schedule (again, good, easy), the day's virtue on the day's first finish; without a mind, a course built by hand; lessons and cards reviewed, and meals cooked, light their day in THE WEEK'S BALANCE (GET /api/learning, /api/learning/lesson, /api/learning/review; POST /api/learning/{course,tutor,add,rename,remove,decide,lesson/done,lesson/write,review}; the user, 2026-11-22, by multiple choice). Quizzes are a later slice",
+      "LEARNING's QUIZZES (DRAFT) — a lesson's cards asked as a quiz (POST /api/learning/quiz), answered and marked by THE TUTOR for meaning where the household's mind is (at most 45 s), or by the answer's own words where it is not (a phone alone too); passed at two thirds right, 5 ARETE once (fifteen a day pay) and the day's virtue; a quiz passed lights its day in THE WEEK'S BALANCE; QUIZ on a lesson with cards in the app; the form's version 2 adds the QUIZ kind",
+      "FORMS YOU MAKE YOURSELF, in MINE on JOURNEY (DRAFT) — a form is its kinds, each with the fields you pick (words, a page, a number, a date, 0-5, a choice) and what finishing one pays in ARETE under a daily cap; kept as items in a MY FORMS space; spaces made from a form keep its items, checked by their fields, finished and paid by their kind's rule with the day's virtue; a changed form a new version every space made from it takes; SHARE puts a form's shape alone on THE COMMONS (a COMMUNITY creation of kind form, its form.json) and TAKE IT brings a friend's in as a copy of your own; finishes in your own spaces light THE WEEK'S BALANCE (GET /api/mine, /api/mine/space; POST /api/mine/{form,form/remove,space,item,item/done,item/remove,share,take}; the user, 2026-11-22, by multiple choice: kinds, fields and ARETE first, asked again after testing)"
+     ]
+    },
+    {
+     "ticket": "C-321",
+     "title": "THE COMPANION: a manual for the whole app, rebuilt as the app changes",
+     "lines": [
+      "THE COMPANION's shelf cover reprinted, and the wiki says 84 pages (DAEMONS 57e2a71d)"
+     ]
+    },
+    {
+     "ticket": "C-432",
+     "title": "PRAXIS 5: the JOURNAL, the DREAM JOURNAL, TENDING and MEETINGS onto PRAXIS, and THE WEEK'S BALANCE",
+     "lines": [
+      "+ C-455: THE WEEK'S BALANCE lit in the accent, and a letter's tags singular for one"
+     ]
+    },
+    {
+     "ticket": "C-434",
+     "title": "PRAXIS 7: the site, the Redmine bridge, a cloud replica, its own repository",
+     "lines": [
+      "THE VAULT — every HOME and SHARED space backed up sealed, a recovery code shown once, a new hub from the code alone (DRAFT)",
+      "The vault's address and token set on the site at home (or config.json), kept with the backup once it is on"
+     ]
+    },
+    {
+     "ticket": "C-455",
+     "title": "The daemons' reviews, and how often each scheduled thing happens",
+     "lines": [
+      "+ C-456: the DREAM-BOOK and MENTIONS covers keep their titles on the shelf"
+     ]
+    },
+    {
+     "ticket": "C-479",
+     "title": "TRAIN sings on the watch too (C-418): its part as it knows it in coloured notes, the green binary carried back -- and a board's TRAIN teaches",
+     "lines": [
+      "TRAIN sings on the watch too — its part as it knows it in coloured notes, then the green binary carried back; a board's TRAIN teaches"
+     ]
+    },
+    {
+     "ticket": "C-428",
+     "title": "PRAXIS 1: the companion's folders by domain, the AI kept together",
+     "lines": [
+      "Server/src/lifemanagement/, the first domain moved — GOALS, the journals, TENDING, THE WEEK'S BALANCE and THE DAY'S VIRTUE, MEETINGS, VOICE NOTES, THE REWARD SHELF, RECIPES, LEARNING and the forms you make yourself (git mv, move-only: imports and the paths that name them, LAYOUT.md in the same commit, C-292)",
+      "App/lifemanagement/ — the JOURNEY tab and its sections (GOALS, the JOURNAL, RECIPES, LEARNING, MINE, ARETE and THE REWARD SHELF) with TODAY's TENDING and THE WEEK'S BALANCE, out of screens/journey/ and screens/today/ (git mv, move-only: imports, LAYOUT.md in the same commit)",
+      "Server/src/game/, the GAME domain — the save readers into game/save/, and BATTLES, THE CASINO, trades and the link, the story's planner, the saves known and their history beside the ROM's files (git mv, move-only: imports and the paths that name them in docs, firmware comments and the wiki, LAYOUT.md in the same commit; DAEMONS' gencasino.py reads slots.ts from its new place, DAEMONS 29621273)",
+      "Server/src/library/, the LIBRARY domain — the books, their recordings and keys, THE PLAYER'S MANUAL as words, THE ORIGIN OF A DAEMON, THE HERMETIC, EUDAIMON and UNITY layers, and asking the GUIDE and THE SUBTLE LAYER (git mv, move-only: imports and the paths that name them, LAYOUT.md in the same commit)",
+      "Server/src/commons/, the COMMONS domain",
+      "Server/src/shared/, the SHARED domain",
+      "Server/src/machine/, the MACHINE domain",
+      "Server/src/psyche/, the PSYCHE domain",
+      "Server/src/damagotchi/, the DAMAGOTCHI domain",
+      "Server/src/devices/, the DEVICES domain",
+      "Server/src/site/, the SITE domain",
+      "App/shared/, the app's SHARED domain — ui/ into shared/ui/, screens/shared/ into shared/pages/",
+      "App/damagotchi/, the DAEMON tab out of screens/daemon/"
+     ]
+    },
+    {
+     "ticket": "C-474",
+     "title": "THE SPELL LEFT RUNNING on the LIBRARY shelf",
+     "lines": [
+      "THE SPELL LEFT RUNNING on the LIBRARY shelf (DAEMONS T-606), DRAFT",
+      "THE SPELL LEFT RUNNING's way back to the LIBRARY lit at night, as THE ORIGIN's is (the hat's ink was lost on the dark page)"
+     ]
+    },
+    {
+     "ticket": "C-476",
+     "title": "Forms you make yourself, after testing: what comes next",
+     "lines": [
+      "STATES OF YOUR OWN in MINE (DRAFT) — a kind names its own states (idea, planted, flowering, gone; found, fixing, fixed, won't fix), each one of PRAXIS's four phases; an item starts in the first, shows its state as a chip (tap: the next; open: pick one), is paid its ARETE on reaching a done state and taken back on leaving it; a new version taking out a state moves its items to the first of the same phase. A kind naming none keeps open, then done, and its checkbox. POST /api/mine/item/state"
+     ]
+    },
+    {
+     "ticket": "C-480",
+     "title": "The daemon chooses its mind",
+     "lines": [
+      "The daemon chooses its mind (DRAFT) — with THE MIND's new setting on (off at first), a write-up's minds are chosen, not only scored: a private job (journal, meeting, memory, dream) to minds at home only; a mind whose last three failed rests ten minutes; someone waiting favours the quickest lately, a long write the strongest; a mind that may cost (an endpoint off the home networks) after every free one; with none fit and free the job waits, saying \"LATER: waiting for a fitting mind\" in THE MIND, an hour at most, a stop ending it at once. THE MIND's settings: LET THE DAEMON CHOOSE ITS MIND (USUAL ORDER / IT CHOOSES); /api/talk/settings {chooseMind}"
+     ],
+     "setup": {
+      "title": "THE DAEMON CHOOSES ITS MIND",
+      "where": "THE MIND's settings: LET THE DAEMON CHOOSE ITS MIND",
+      "needs": [
+       "the hub",
+       "more than one mind (the Tiiny, the hub, a phone, an endpoint)"
+      ],
+      "steps": [
+       "It is off at first. In THE MIND's settings, set LET THE DAEMON CHOOSE ITS MIND to IT CHOOSES.",
+       "From then on a private write-up (a journal, a meeting, a memory, a dream) goes to minds at home only, and a mind that may cost is asked only after every free one.",
+       "When no mind fits, the job waits and THE MIND says LATER: waiting for a fitting mind, for an hour at most. STOP ends it at once."
+      ],
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-168",
+     "title": "The CoreMP135 as the home hub",
+     "lines": [
+      "Phase 3: boards linked by cable to the hub itself"
+     ]
+    },
+    {
+     "ticket": "C-478",
+     "title": "THE GAMES IN PLAY: every game being played in the ecosystem (the app's, the site's, the playground's, a local AI run-through) known to the hub; a page that lists them, or opens the one in play, with where the player is, their daemons and icons; screenshots streamed through the hub to the watch and any device, to watch a friend or an AI play; and GAME MANAGEMENT on the dashboard and the app -- start a local AI run-through, end one (replaces T-465)",
+     "lines": [
+      "DRAFT: THE GAMES IN PLAY, the hub's half and THE ENGINE ROOM's page — a game reports a heartbeat (POST /api/games/beat: where it runs, the device, the player, its save when it changed), its screen (POST /api/games/<id>/frame); the hub keeps the newest of each in memory and reads the save as the trainer card does (game/inplay.ts: last saved in, time, MARKS, party); GET /api/games lists the games in play and the lately played; an AI run-through is ended through its next heartbeat. IN PLAY in THE ENGINE ROOM: one game opens by itself, many are a list, its screen kept current, its party with their icons. tools/inplay_report.ts is a reporter any program can copy"
+     ]
+    },
+    {
+     "ticket": "C-482",
+     "title": "Shiny songs in the companion: a shiny daemon sings as a shiny (DAEMONS T-602)",
+     "lines": [
+      "Shiny songs in the companion (DAEMONS T-602; DRAFT) — songs.json carries each form's notes a shiny sings (from DAEMONS tools/genshinysongs.py through gensongs); shinyOf tells a shiny as the game does (personality and OT ID, 8 in 65536); songOf(species, shiny) and lesson(..., shiny) sing a shiny's parts, its kind's rhythm, bass, key and learning kept; ITS SONG (and its eyebrow, ITS SONG ✦ SHINY), TRAIN, /api/daemon/song (the widget and boards), the INDEX's SONG and a battle's songs sing a shiny as a shiny"
+     ]
+    },
+    {
+     "ticket": "C-483",
+     "title": "DAEMON DREAMS: one book, and a shelf of every daemon's dreams inside it",
+     "lines": [
+      "DAEMON DREAMS (DRAFT) — one book on the LIBRARY's DREAM-BOOKS shelf with its own cover (a night sky, a crescent, the dreamers asleep), and inside it a shelf for each type, each daemon's own dream book on it with its count; MOST DREAMS (the first order) or MOST RECENT. A daemon's book holds every dream it dreamt, in order; its way back is to the shelf. /api/dreambooks gains authors (dreams.ts dreamAuthors)."
+     ]
+    },
+    {
+     "ticket": "C-484",
+     "title": "Inside a daemon's dream book: the seven days, and SIGNS & SYMBOLS under each dream",
+     "lines": [
+      "Inside a daemon's dream book (DRAFT) — the seven days' sections and SIGNS & SYMBOLS under every dream. The book is its title page, its CONTENTS (each day's section and its dreams, dated; a dream chosen opens its page), then each day with dreams, Sunday's red first: its opening page (its colour, virtue over vice, centre, note) and its dreams in the order dreamt, each dated. Under each dream, its SIGNS & SYMBOLS without a tap: a glyph, the word, what in the dream called it up, its reading, and the books read through — the house's mind's reading once read (asked when the page is first shown, POST /api/dreams/signs, kept on the dream), the lexicon's until then. THE SYMBOLS' INVENTORY (psyche/dreamsigns.ts): the lexicon's 97 symbols each with a glyph, a symbol the mind names kept the first time with its glyph and meaning, the same one every later dream; GET /api/symbols and POST /api/symbols/again {sign} for THE ENGINE ROOM to make one again. A written dream's closing \"I woke...\" is not read as a sign."
+     ]
+    },
+    {
+     "ticket": "C-488",
+     "title": "THE SPELL LEFT RUNNING: the day's SPELL CHECK beside TODAY's word",
+     "lines": [
+      "The day's SPELL CHECK beside TODAY's word (DRAFT) — once the save holds THE SPELL LEFT RUNNING, TODAY shows the day's broom (SUNDAY's PING .. SATURDAY's SUPERVISOR), its plate, and the small practice its page ends with; OPEN THE BOOK opens the book at that broom. GET /api/shadow/today (shadowbook.ts spellCheckOf; ?preview=1 as the book's).",
+      "TODAY's SPELL CHECK starts with a capital — the book's \"Spell check: before any second helping ...\" stands alone on the card once its \"Spell check: \" is taken off, so its first letter is raised (\"Before any second helping ...\"); the book's own page keeps it as written. The test checks all seven days."
+     ]
+    },
+    {
+     "ticket": "C-454",
+     "title": "RESEARCH beside the journal and the dreams",
+     "lines": [
+      "RESEARCH, first slice (DRAFT): a study on PRAXIS beside the JOURNAL",
+      "RESEARCH draws in DREAMS and CONVERSATIONS, ticked per study (DRAFT)",
+      "RESEARCH draws in the player's own spaces, each ticked on its own (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-472",
+     "title": "A household daemon's own care and dream in its dialogue persona",
+     "lines": [
+      "A household daemon's own care and dream in its dialogue persona"
+     ]
+    },
+    {
+     "ticket": "C-496",
+     "title": "GAME MANAGEMENT starts a local AI run-through",
+     "lines": [
+      "DRAFT: GAME MANAGEMENT in IN PLAY — START AN AI RUN-THROUGH, a job for THE HANDS (ai-start, ai-stop: DAEMONS' ai/airun.sh — its own save, mGBA 0.11, a local mind only), how the last start or stop went, STOP IT ON THE COMPUTER while one is going",
+      "THE HANDS run from a checkout of their own (~/Projects/daemons-companion-hands, hands-node, following main), brought up to main at each start (fast-forward only, never over a change in it); a hands-update job starts them again from THE ENGINE ROOM, so a job added since is known"
+     ],
+     "setup": {
+      "title": "AN AI RUN-THROUGH FROM THE ENGINE ROOM",
+      "where": "THE ENGINE ROOM › IN PLAY › GAME MANAGEMENT",
+      "needs": [
+       "the hub",
+       "THE HANDS running on the computer that has the game (mGBA 0.11)",
+       "a local mind (the Tiiny); never a paid one"
+      ],
+      "steps": [
+       "Open THE ENGINE ROOM and go to IN PLAY.",
+       "Under GAME MANAGEMENT, press START AN AI RUN-THROUGH. THE HANDS start it on the computer, on a save of its own.",
+       "It reports as it plays, and shows how the last start or stop went. Press STOP IT ON THE COMPUTER to end it."
+      ],
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-493",
+     "title": "THE APP and THE SITE report the game in play, and show IN PLAY",
+     "lines": [
+      "The app reports the game in play, and shows IN PLAY (DRAFT) — while the GAME plays, the app tells the hub (game/inplay.ts): a heartbeat every five seconds with the save when it changed (POST /api/games/beat, source app; site where the game view runs on the web), the emulator's own screenshot every ten (POST /api/games/<id>/frame, only while it runs), one id for the run, held while another tab or a book is open, goodbye on the way to the title (.../over); when GAME MANAGEMENT ends it, the game goes back to its title and says so. PLACES has IN PLAY (screens/game/InPlay.tsx), as THE ENGINE ROOM draws it: one game opens by itself, many are a list, the lately played under them; each its screen, where it runs, where it was saved, its MARKS and party; an AI run-through can be ended. The games' paths are never kept for later when away."
+     ]
+    },
+    {
+     "ticket": "C-471",
+     "title": "In dialogue between friends' homes on THE COMMONS",
+     "lines": [
+      "DAEMONS IN DIALOGUE between friends' homes on THE COMMONS"
+     ]
+    },
+    {
+     "ticket": "C-499",
+     "title": "THE ENGINE ROOM reachable from the outside world, behind a password, without Tailscale",
+     "lines": [
+      "DRAFT: THE ENGINE ROOM from the outside world, without Tailscale — its public name (engine.daemons.codemusic.ca; ENGINE_ROOM_PUBLIC_HOSTS) is taken only through a proxy (X-Forwarded-For: the Mac mini's Apache, its password in front, as dashboard.daemons), and from there a paired key opens the API and nothing else does — no board's key, no device door; the page, its pictures and a pairing code open without one; the pairing page says KEYS makes a code away from home"
+     ],
+     "setup": {
+      "title": "THE ENGINE ROOM FROM AWAY",
+      "where": "THE ENGINE ROOM, at its public address",
+      "needs": [
+       "the hub",
+       "the public address and its password, set up by whoever runs the house"
+      ],
+      "steps": [
+       "At home, open THE ENGINE ROOM as before and open KEYS; it makes a pairing code for use away from home.",
+       "Away from home, open THE ENGINE ROOM's public address and give its password.",
+       "Pair once with the code from KEYS. Only a paired key opens it from outside; Tailscale is not needed."
+      ],
+      "wiki": "The-hub-and-its-AI",
+      "draft": true
+     }
+    },
+    {
+     "ticket": "C-506",
+     "title": "Drifts are files: DOWN DRIFT from any PulseEntrain session, the 93 programs the starter library",
+     "lines": [
+      "Drifts are files — DOWN DRIFT from any PulseEntrain session; the 93 programs the starter library (DRAFT)"
+     ]
+    },
+    {
+     "ticket": "C-517",
+     "title": "THE BRAIN: one brain-shaped architecture for every AI harness (parent)",
+     "lines": [
+      "THE BRAIN — one brain-shaped architecture for every AI harness (docs/BRAIN.md): regions with one interface on every host, the low and high roads (System One and Two), the ring as the blood-brain barrier, the hosts each region runs on; the user's nightly refactor process; the proof in the MACHINE domain: server/src/machine/brain/signal.ts (signal, regions, connectome, cerebellum, thalamus relay) and its test"
+     ]
+    },
+    {
+     "ticket": "C-549",
+     "title": "EMBODIED, the design, on the LIBRARY: a DESIGNS shelf",
+     "lines": [
+      "EMBODIED, the design, on the LIBRARY — a DESIGNS shelf (DRAFT)"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "THE GAME",
+     "lines": [
+      "Knows the game's ROM release v11.415.1 (DAEMONS T-604 stages 7-8, T-613)",
+      "and 7 earlier game releases known"
+     ]
+    },
+    {
+     "ticket": null,
+     "title": "ALSO",
+     "lines": [
+      "T-604: stage 1 — the nine later forms' art as the game now draws them (a region in the new part's colours), from DAEMONS companion_export.py —write (engine 9625c272c), DRAFT",
+      "T-604: stage 2 — the twelve later forms' party art follows their new regions (companion_export —write; engine a76bb5d5c), DRAFT",
+      "T-604: stage 3 — the fifteen later forms' party art follows their new regions (companion_export —write; engine 954a6c817), DRAFT",
+      "T-604: stage 4 — fifteen later forms colour in, their art (DAEMONS bdc0d058, engine 39093823d), DRAFT",
+      "Songs.json: what each SHINY sings that its kind does not (DAEMONS T-602 genshinysongs, C-482; DRAFT)",
+      "T-604: stage 5 — fifteen later forms colour in, their art and shiny songs (DAEMONS 24e57f2e, engine ac21d422e), DRAFT",
+      "T-604: stage 6 — fifteen later forms colour in, their art and shiny songs (DAEMONS, engine e2d65ea7d), DRAFT",
+      "T-604: stage 7 — fifteen later forms colour in, their art and shiny songs (engine cedc8d360), DRAFT",
+      "T-613 THE VERSES in the companion (DRAFT; DAEMONS docs/song-verses-draft.md) — songs.json from DAEMONS' verses: each form's part its verse set to its quote a note a syllable (its INDEX entry standing in until T-599), its first seven notes its hook and its summon (seven notes, unique across every form); chorus, a final form's hidden CHORUS between its verses, and ring, how long a note sounds before the breath after it. withChorus puts the chorus between the verses once the last is whole, as the game sings it, so the staves and the sound stay one list (CHORUS on its staff); a note sounds at most its ring",
+      "T-613: songs.json with each INDEX entry cut to a quote's length as its stand-in words (DAEMONS d7c68517, engine 76a84271f)",
+      "T-604: stage 8 — fifteen later forms colour in, their art and shiny songs (engine 0b2411e0f), DRAFT",
+      "T-604: stage 9 — fifteen later forms colour in, their art and shiny songs (engine 7dc39e511), DRAFT"
+     ]
+    }
+   ]
+  },
+  {
    "build": 995,
-   "commit": "6c096ee6",
+   "commit": "8dfb611",
    "date": "2026-11-22",
    "sections": [
     {

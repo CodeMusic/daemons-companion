@@ -261,6 +261,50 @@
    "wiki": "The-hub-and-its-AI",
    "book": "companion",
    "draft": true
+  },
+  "C-480": {
+   "title": "THE DAEMON CHOOSES ITS MIND",
+   "where": "THE MIND's settings: LET THE DAEMON CHOOSE ITS MIND",
+   "needs": [
+    "the hub",
+    "more than one mind (the Tiiny, the hub, a phone, an endpoint)"
+   ],
+   "steps": [
+    "It is off at first. In THE MIND's settings, set LET THE DAEMON CHOOSE ITS MIND to IT CHOOSES.",
+    "From then on a private write-up (a journal, a meeting, a memory, a dream) goes to minds at home only, and a mind that may cost is asked only after every free one.",
+    "When no mind fits, the job waits and THE MIND says LATER: waiting for a fitting mind, for an hour at most. STOP ends it at once."
+   ],
+   "draft": true
+  },
+  "C-496": {
+   "title": "AN AI RUN-THROUGH FROM THE ENGINE ROOM",
+   "where": "THE ENGINE ROOM › IN PLAY › GAME MANAGEMENT",
+   "needs": [
+    "the hub",
+    "THE HANDS running on the computer that has the game (mGBA 0.11)",
+    "a local mind (the Tiiny); never a paid one"
+   ],
+   "steps": [
+    "Open THE ENGINE ROOM and go to IN PLAY.",
+    "Under GAME MANAGEMENT, press START AN AI RUN-THROUGH. THE HANDS start it on the computer, on a save of its own.",
+    "It reports as it plays, and shows how the last start or stop went. Press STOP IT ON THE COMPUTER to end it."
+   ],
+   "draft": true
+  },
+  "C-499": {
+   "title": "THE ENGINE ROOM FROM AWAY",
+   "where": "THE ENGINE ROOM, at its public address",
+   "needs": [
+    "the hub",
+    "the public address and its password, set up by whoever runs the house"
+   ],
+   "steps": [
+    "At home, open THE ENGINE ROOM as before and open KEYS; it makes a pairing code for use away from home.",
+    "Away from home, open THE ENGINE ROOM's public address and give its password.",
+    "Pair once with the code from KEYS. Only a paired key opens it from outside; Tailscale is not needed."
+   ],
+   "wiki": "The-hub-and-its-AI",
+   "draft": true
   }
  }
 }

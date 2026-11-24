@@ -1,0 +1,101 @@
+{
+ "formatVersion": 2,
+ "id": "evening-star-oil",
+ "kind": "tinctures",
+ "meta": {
+  "name": "EVENING-STAR OIL",
+  "description": "From a faint shimmer into the body itself: tingling, warmth, a slow spreading heat.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 3000
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.99
+   },
+   {
+    "atSec": 300.47,
+    "beatHz": 10.06
+   },
+   {
+    "atSec": 422.51,
+    "beatHz": 10.98
+   },
+   {
+    "atSec": 720.1,
+    "beatHz": 10.97
+   },
+   {
+    "atSec": 840.01,
+    "beatHz": 15.09
+   },
+   {
+    "atSec": 1139.82,
+    "beatHz": 15.08
+   },
+   {
+    "atSec": 1260.19,
+    "beatHz": 25.06
+   },
+   {
+    "atSec": 1557.22,
+    "beatHz": 25.06
+   },
+   {
+    "atSec": 1680.1,
+    "beatHz": 7.99
+   },
+   {
+    "atSec": 1980.01,
+    "beatHz": 8.0
+   },
+   {
+    "atSec": 2206.4,
+    "beatHz": 23.5
+   },
+   {
+    "atSec": 2990.2,
+    "beatHz": 24.14
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.122,
+    "_measured": {
+     "slopeDbPerDecade": -15.5,
+     "levelDb": -73.5
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

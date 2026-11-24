@@ -1,0 +1,195 @@
+{
+ "formatVersion": 2,
+ "id": "dark-roast-drops",
+ "kind": "tinctures",
+ "meta": {
+  "name": "DARK ROAST DROPS",
+  "description": "Five minutes, like the first cup before the world's awake: a warm lift of alertness.",
+  "category": "TINCTURES",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 300
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 7.93,
+    "carrierHz": 99.96
+   },
+   {
+    "atSec": 116.01,
+    "beatHz": 7.82,
+    "carrierHz": 100.07
+   },
+   {
+    "atSec": 116.94,
+    "beatHz": 8.32,
+    "carrierHz": 99.94
+   },
+   {
+    "atSec": 117.03,
+    "beatHz": 7.74,
+    "carrierHz": 99.94
+   },
+   {
+    "atSec": 117.59,
+    "beatHz": 8.3,
+    "carrierHz": 100.15
+   },
+   {
+    "atSec": 117.86,
+    "beatHz": 7.71,
+    "carrierHz": 100.21
+   },
+   {
+    "atSec": 118.61,
+    "beatHz": 8.0,
+    "carrierHz": 99.75
+   },
+   {
+    "atSec": 118.7,
+    "beatHz": 7.37,
+    "carrierHz": 99.65
+   },
+   {
+    "atSec": 121.21,
+    "beatHz": 9.97,
+    "carrierHz": 71.92
+   },
+   {
+    "atSec": 121.86,
+    "beatHz": 10.82,
+    "carrierHz": 71.61
+   },
+   {
+    "atSec": 122.51,
+    "beatHz": 9.73,
+    "carrierHz": 100.06
+   },
+   {
+    "atSec": 122.69,
+    "beatHz": 10.61,
+    "carrierHz": 99.95
+   },
+   {
+    "atSec": 122.88,
+    "beatHz": 9.8,
+    "carrierHz": 99.92
+   },
+   {
+    "atSec": 122.97,
+    "beatHz": 10.46,
+    "carrierHz": 99.92
+   },
+   {
+    "atSec": 123.07,
+    "beatHz": 9.8,
+    "carrierHz": 99.91
+   },
+   {
+    "atSec": 172.76,
+    "beatHz": 10.2,
+    "carrierHz": 100.06
+   },
+   {
+    "atSec": 172.94,
+    "beatHz": 9.73,
+    "carrierHz": 99.97
+   },
+   {
+    "atSec": 176.75,
+    "beatHz": 10.22,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 177.21,
+    "beatHz": 9.75,
+    "carrierHz": 99.98
+   },
+   {
+    "atSec": 178.7,
+    "beatHz": 10.63,
+    "carrierHz": 66.9
+   },
+   {
+    "atSec": 181.86,
+    "beatHz": 12.12,
+    "carrierHz": 199.93
+   },
+   {
+    "atSec": 236.1,
+    "beatHz": 11.89,
+    "carrierHz": 200.07
+   },
+   {
+    "atSec": 237.22,
+    "beatHz": 12.39,
+    "carrierHz": 200.0
+   },
+   {
+    "atSec": 238.05,
+    "beatHz": 11.86,
+    "carrierHz": 200.1
+   },
+   {
+    "atSec": 238.61,
+    "beatHz": 13.09,
+    "carrierHz": 199.87
+   },
+   {
+    "atSec": 238.7,
+    "beatHz": 11.44,
+    "carrierHz": 199.87
+   },
+   {
+    "atSec": 241.49,
+    "beatHz": 14.46,
+    "carrierHz": 399.69
+   },
+   {
+    "atSec": 242.51,
+    "beatHz": 13.83,
+    "carrierHz": 400.05
+   },
+   {
+    "atSec": 300.0,
+    "beatHz": 14.02,
+    "carrierHz": 399.99
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 99.97,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.175
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

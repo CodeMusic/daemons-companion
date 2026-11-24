@@ -1,0 +1,59 @@
+{
+ "formatVersion": 2,
+ "id": "below-the-tide",
+ "kind": "sleep",
+ "meta": {
+  "name": "BELOW THE TIDE",
+  "description": "Slower than half a hertz -- slower than the brain usually goes. Total stillness; a curiosity more than a cure.",
+  "category": "SLEEP",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 2220
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 0.05,
+    "carrierHz": 99.99
+   },
+   {
+    "atSec": 2220.03,
+    "beatHz": 0.44,
+    "carrierHz": 399.96
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 249.97,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.184
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

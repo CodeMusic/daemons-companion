@@ -1,0 +1,69 @@
+{
+ "formatVersion": 2,
+ "id": "steady-hand-tonic",
+ "kind": "tinctures",
+ "meta": {
+  "name": "STEADY-HAND TONIC",
+  "description": "For the room full of strangers, the mic, the test: shyness eased, footing found.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.05,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 300.03,
+    "beatHz": 10.07,
+    "carrierHz": 299.98
+   },
+   {
+    "atSec": 360.19,
+    "beatHz": 0.25,
+    "carrierHz": 200.05
+   },
+   {
+    "atSec": 1800.02,
+    "beatHz": 0.18,
+    "carrierHz": 150.02
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 250.02,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.05
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

@@ -1,0 +1,104 @@
+{
+ "formatVersion": 2,
+ "id": "photograph-light",
+ "kind": "meditation",
+ "meta": {
+  "name": "PHOTOGRAPH LIGHT",
+  "description": "A warm ache for somewhere past: theta, the memory band, letting recollection surface.",
+  "category": "MEDITATION",
+  "strength": 3,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 5.5,
+    "carrierHz": 170,
+    "intensity": "=-",
+    "brightness": 0.5
+   },
+   {
+    "atSec": 240,
+    "beatHz": 4.5,
+    "carrierHz": 150,
+    "intensity": "=-",
+    "brightness": 0.6
+   },
+   {
+    "atSec": 540,
+    "beatHz": 6.0,
+    "carrierHz": 175,
+    "intensity": "=",
+    "brightness": 0.7
+   },
+   {
+    "atSec": 840,
+    "beatHz": 4.5,
+    "carrierHz": 150,
+    "intensity": "=-",
+    "brightness": 0.5
+   },
+   {
+    "atSec": 1140,
+    "beatHz": 5.5,
+    "carrierHz": 165,
+    "intensity": "=",
+    "brightness": 0.65
+   },
+   {
+    "atSec": 1440,
+    "beatHz": 4.0,
+    "carrierHz": 145,
+    "intensity": "=-",
+    "brightness": 0.45
+   },
+   {
+    "atSec": 1680,
+    "beatHz": 5.0,
+    "carrierHz": 155,
+    "intensity": "=-",
+    "brightness": 0.5
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 4.5,
+    "carrierHz": 150,
+    "intensity": "=-",
+    "brightness": 0.4
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 155
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.25
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 0.75
+ },
+ "pulsetto": {
+  "enabled": true,
+  "follow": "scenes",
+  "intensity": 4,
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

@@ -1,0 +1,77 @@
+{
+ "formatVersion": 2,
+ "id": "heavy-water",
+ "kind": "meditation",
+ "meta": {
+  "name": "HEAVY WATER",
+  "description": "Down into the low place on purpose, felt all the way through, then up into light.",
+  "category": "MEDITATION",
+  "strength": 5,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 4.0,
+    "carrierHz": 120
+   },
+   {
+    "atSec": 300,
+    "beatHz": 3.0,
+    "carrierHz": 105
+   },
+   {
+    "atSec": 600,
+    "beatHz": 2.5,
+    "carrierHz": 100
+   },
+   {
+    "atSec": 660,
+    "beatHz": 2.5,
+    "carrierHz": 100
+   },
+   {
+    "atSec": 720,
+    "beatHz": 5.0,
+    "carrierHz": 140
+   },
+   {
+    "atSec": 1080,
+    "beatHz": 7.0,
+    "carrierHz": 200
+   },
+   {
+    "atSec": 1440,
+    "beatHz": 9.0,
+    "carrierHz": 260
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 10.0,
+    "carrierHz": 280
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 120
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.28
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "maxHz": 60
+ }
+}

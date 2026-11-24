@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "open-window",
+ "kind": "meditation",
+ "meta": {
+  "name": "OPEN WINDOW",
+  "description": "Eight to thirteen hertz: awake and present, attention turned inward. The gentlest way in.",
+  "category": "MEDITATION",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 7.93,
+    "carrierHz": 99.96
+   },
+   {
+    "atSec": 300.09,
+    "beatHz": 7.98,
+    "carrierHz": 99.97
+   },
+   {
+    "atSec": 369.75,
+    "beatHz": 10.01,
+    "carrierHz": 100.01
+   },
+   {
+    "atSec": 778.15,
+    "beatHz": 9.93,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 839.63,
+    "beatHz": 12.06,
+    "carrierHz": 199.27
+   },
+   {
+    "atSec": 1310.26,
+    "beatHz": 11.93,
+    "carrierHz": 200.01
+   },
+   {
+    "atSec": 1379.45,
+    "beatHz": 13.01,
+    "carrierHz": 397.95
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 12.92,
+    "carrierHz": 400.01
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 149.65,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.18
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

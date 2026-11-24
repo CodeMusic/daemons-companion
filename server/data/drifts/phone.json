@@ -1,0 +1,879 @@
+[
+ {
+  "formatVersion": 2,
+  "id": "blue-sky-bitters",
+  "kind": "tinctures",
+  "meta": {
+   "name": "BLUE-SKY BITTERS",
+   "description": "Bitters for the morning after: low, gentle tones to ease the head and settle the stomach.",
+   "category": "TINCTURES",
+   "strength": 2,
+   "strengthLabel": "Strong",
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": "binaural_decompose",
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0.0,
+     "beatHz": 10.05
+    },
+    {
+     "atSec": 1800.01,
+     "beatHz": 10.04
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 300.0,
+    "follow": "beat"
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.05
+    }
+   ],
+   "masterVolume": 1.0,
+   "transitionFade": "medium"
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": false,
+   "follow": "scenes",
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "dark-roast-drops",
+  "kind": "tinctures",
+  "meta": {
+   "name": "DARK ROAST DROPS",
+   "description": "Five minutes, like the first cup before the world's awake: a warm lift of alertness.",
+   "category": "TINCTURES",
+   "strength": 1,
+   "strengthLabel": "Moderate",
+   "durationSec": 300
+  },
+  "generation": {
+   "source": "binaural_decompose",
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0.0,
+     "beatHz": 7.93,
+     "carrierHz": 99.96
+    },
+    {
+     "atSec": 116.01,
+     "beatHz": 7.82,
+     "carrierHz": 100.07
+    },
+    {
+     "atSec": 116.94,
+     "beatHz": 8.32,
+     "carrierHz": 99.94
+    },
+    {
+     "atSec": 117.03,
+     "beatHz": 7.74,
+     "carrierHz": 99.94
+    },
+    {
+     "atSec": 117.59,
+     "beatHz": 8.3,
+     "carrierHz": 100.15
+    },
+    {
+     "atSec": 117.86,
+     "beatHz": 7.71,
+     "carrierHz": 100.21
+    },
+    {
+     "atSec": 118.61,
+     "beatHz": 8.0,
+     "carrierHz": 99.75
+    },
+    {
+     "atSec": 118.7,
+     "beatHz": 7.37,
+     "carrierHz": 99.65
+    },
+    {
+     "atSec": 121.21,
+     "beatHz": 9.97,
+     "carrierHz": 71.92
+    },
+    {
+     "atSec": 121.86,
+     "beatHz": 10.82,
+     "carrierHz": 71.61
+    },
+    {
+     "atSec": 122.51,
+     "beatHz": 9.73,
+     "carrierHz": 100.06
+    },
+    {
+     "atSec": 122.69,
+     "beatHz": 10.61,
+     "carrierHz": 99.95
+    },
+    {
+     "atSec": 122.88,
+     "beatHz": 9.8,
+     "carrierHz": 99.92
+    },
+    {
+     "atSec": 122.97,
+     "beatHz": 10.46,
+     "carrierHz": 99.92
+    },
+    {
+     "atSec": 123.07,
+     "beatHz": 9.8,
+     "carrierHz": 99.91
+    },
+    {
+     "atSec": 172.76,
+     "beatHz": 10.2,
+     "carrierHz": 100.06
+    },
+    {
+     "atSec": 172.94,
+     "beatHz": 9.73,
+     "carrierHz": 99.97
+    },
+    {
+     "atSec": 176.75,
+     "beatHz": 10.22,
+     "carrierHz": 100.02
+    },
+    {
+     "atSec": 177.21,
+     "beatHz": 9.75,
+     "carrierHz": 99.98
+    },
+    {
+     "atSec": 178.7,
+     "beatHz": 10.63,
+     "carrierHz": 66.9
+    },
+    {
+     "atSec": 181.86,
+     "beatHz": 12.12,
+     "carrierHz": 199.93
+    },
+    {
+     "atSec": 236.1,
+     "beatHz": 11.89,
+     "carrierHz": 200.07
+    },
+    {
+     "atSec": 237.22,
+     "beatHz": 12.39,
+     "carrierHz": 200.0
+    },
+    {
+     "atSec": 238.05,
+     "beatHz": 11.86,
+     "carrierHz": 200.1
+    },
+    {
+     "atSec": 238.61,
+     "beatHz": 13.09,
+     "carrierHz": 199.87
+    },
+    {
+     "atSec": 238.7,
+     "beatHz": 11.44,
+     "carrierHz": 199.87
+    },
+    {
+     "atSec": 241.49,
+     "beatHz": 14.46,
+     "carrierHz": 399.69
+    },
+    {
+     "atSec": 242.51,
+     "beatHz": 13.83,
+     "carrierHz": 400.05
+    },
+    {
+     "atSec": 300.0,
+     "beatHz": 14.02,
+     "carrierHz": 399.99
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 99.97,
+    "follow": "beat"
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.175
+    }
+   ],
+   "masterVolume": 1.0,
+   "transitionFade": "medium"
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": false,
+   "follow": "scenes",
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "down-feather",
+  "kind": "sleep",
+  "meta": {
+   "name": "DOWN FEATHER",
+   "description": "A weightless drift toward sleep, cradled and watched over: alpha to theta, then delta.",
+   "category": "SLEEP",
+   "strength": 1,
+   "strengthLabel": "Moderate",
+   "durationSec": 1500
+  },
+  "generation": {
+   "source": "binaural_decompose",
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0.0,
+     "beatHz": 9.42,
+     "carrierHz": 300.0
+    },
+    {
+     "atSec": 0.19,
+     "beatHz": 10.03,
+     "carrierHz": 300.0
+    },
+    {
+     "atSec": 7.62,
+     "beatHz": 10.18,
+     "carrierHz": 299.98
+    },
+    {
+     "atSec": 296.75,
+     "beatHz": 10.16,
+     "carrierHz": 300.0
+    },
+    {
+     "atSec": 418.52,
+     "beatHz": 5.98,
+     "carrierHz": 151.94
+    },
+    {
+     "atSec": 720.28,
+     "beatHz": 6.02,
+     "carrierHz": 149.96
+    },
+    {
+     "atSec": 840.38,
+     "beatHz": 1.98,
+     "carrierHz": 150.03
+    },
+    {
+     "atSec": 1500.01,
+     "beatHz": 1.98,
+     "carrierHz": 150.02
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 225.96,
+    "follow": "beat"
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.104,
+     "_measured": {
+      "slopeDbPerDecade": -12.2,
+      "levelDb": -75.1
+     }
+    }
+   ],
+   "masterVolume": 1.0
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": false,
+   "follow": "scenes",
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "even-keel",
+  "kind": "tinctures",
+  "meta": {
+   "name": "EVEN KEEL",
+   "description": "Peaks and valleys smoothed into a steadier line: less weather, more ground.",
+   "category": "TINCTURES",
+   "strength": 3,
+   "strengthLabel": "Very Strong",
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": "binaural_decompose",
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0.0,
+     "beatHz": 7.93,
+     "carrierHz": 99.96
+    },
+    {
+     "atSec": 300.09,
+     "beatHz": 7.98,
+     "carrierHz": 99.97
+    },
+    {
+     "atSec": 369.75,
+     "beatHz": 10.01,
+     "carrierHz": 100.01
+    },
+    {
+     "atSec": 778.15,
+     "beatHz": 9.93,
+     "carrierHz": 100.02
+    },
+    {
+     "atSec": 839.63,
+     "beatHz": 12.06,
+     "carrierHz": 199.27
+    },
+    {
+     "atSec": 1310.26,
+     "beatHz": 11.93,
+     "carrierHz": 200.01
+    },
+    {
+     "atSec": 1379.45,
+     "beatHz": 13.01,
+     "carrierHz": 397.95
+    },
+    {
+     "atSec": 1800.01,
+     "beatHz": 12.92,
+     "carrierHz": 400.01
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 149.65,
+    "follow": "beat"
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.18,
+     "_measured": {
+      "slopeDbPerDecade": -14.3,
+      "levelDb": -68.2
+     }
+    }
+   ],
+   "masterVolume": 1.0,
+   "transitionFade": "medium"
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": false,
+   "follow": "scenes",
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "full-chest",
+  "kind": "meditation",
+  "meta": {
+   "name": "FULL CHEST",
+   "description": "The warmth of being thankful, dwelt in: relaxed alpha that slowly swells.",
+   "category": "MEDITATION",
+   "strength": 3,
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": null,
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "scenes": [
+    {
+     "atSec": 0,
+     "beatHz": 9.0,
+     "carrierHz": 200,
+     "intensity": "=-",
+     "brightness": 0.6
+    },
+    {
+     "atSec": 360,
+     "beatHz": 10.0,
+     "carrierHz": 230,
+     "intensity": "=",
+     "brightness": 0.75
+    },
+    {
+     "atSec": 720,
+     "beatHz": 11.0,
+     "carrierHz": 260,
+     "intensity": "=+",
+     "brightness": 0.95
+    },
+    {
+     "atSec": 1080,
+     "beatHz": 10.5,
+     "carrierHz": 250,
+     "intensity": "=+",
+     "brightness": 1.0
+    },
+    {
+     "atSec": 1440,
+     "beatHz": 10.0,
+     "carrierHz": 230,
+     "intensity": "=",
+     "brightness": 0.8
+    },
+    {
+     "atSec": 1800,
+     "beatHz": 9.0,
+     "carrierHz": 210,
+     "intensity": "=-",
+     "brightness": 0.65
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 230
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.25
+    }
+   ],
+   "transitionFade": "medium",
+   "masterVolume": 1
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": true,
+   "follow": "scenes",
+   "intensity": 4,
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "open-window",
+  "kind": "meditation",
+  "meta": {
+   "name": "OPEN WINDOW",
+   "description": "Eight to thirteen hertz: awake and present, attention turned inward. The gentlest way in.",
+   "category": "MEDITATION",
+   "strength": 1,
+   "strengthLabel": "Moderate",
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": "binaural_decompose",
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0.0,
+     "beatHz": 7.93,
+     "carrierHz": 99.96
+    },
+    {
+     "atSec": 300.09,
+     "beatHz": 7.98,
+     "carrierHz": 99.97
+    },
+    {
+     "atSec": 369.75,
+     "beatHz": 10.01,
+     "carrierHz": 100.01
+    },
+    {
+     "atSec": 778.15,
+     "beatHz": 9.93,
+     "carrierHz": 100.02
+    },
+    {
+     "atSec": 839.63,
+     "beatHz": 12.06,
+     "carrierHz": 199.27
+    },
+    {
+     "atSec": 1310.26,
+     "beatHz": 11.93,
+     "carrierHz": 200.01
+    },
+    {
+     "atSec": 1379.45,
+     "beatHz": 13.01,
+     "carrierHz": 397.95
+    },
+    {
+     "atSec": 1800.01,
+     "beatHz": 12.92,
+     "carrierHz": 400.01
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 149.65,
+    "follow": "beat"
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.18
+    }
+   ],
+   "masterVolume": 1.0
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": false,
+   "follow": "scenes",
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "soft-gravity",
+  "kind": "sleep",
+  "meta": {
+   "name": "SOFT GRAVITY",
+   "description": "From high to low in twenty minutes: stress melting downward into delta.",
+   "category": "SLEEP",
+   "strength": 1,
+   "strengthLabel": "Moderate",
+   "durationSec": 1200
+  },
+  "generation": {
+   "source": "binaural_decompose",
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0.0,
+     "beatHz": 9.99
+    },
+    {
+     "atSec": 300.0,
+     "beatHz": 10.09
+    },
+    {
+     "atSec": 600.1,
+     "beatHz": 1.42
+    },
+    {
+     "atSec": 1200.01,
+     "beatHz": 1.43
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 300.0,
+    "follow": "beat"
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.144,
+     "_measured": {
+      "slopeDbPerDecade": -10.9,
+      "levelDb": -71.5
+     }
+    }
+   ],
+   "masterVolume": 1.0,
+   "transitionFade": "medium"
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": false,
+   "follow": "scenes",
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "still-pond",
+  "kind": "meditation",
+  "meta": {
+   "name": "STILL POND",
+   "description": "A slow descent into stillness, and then nothing asked of you.",
+   "category": "MEDITATION",
+   "strength": 2,
+   "strengthLabel": "Gentle",
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": null,
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "scenes": [
+    {
+     "atSec": 0,
+     "beatHz": 9.0,
+     "carrierHz": 200,
+     "intensity": "=-",
+     "brightness": 0.5
+    },
+    {
+     "atSec": 360,
+     "beatHz": 7.0,
+     "carrierHz": 190,
+     "intensity": "=-",
+     "brightness": 0.4
+    },
+    {
+     "atSec": 780,
+     "beatHz": 6.0,
+     "carrierHz": 180,
+     "intensity": "=-",
+     "brightness": 0.35
+    },
+    {
+     "atSec": 1200,
+     "beatHz": 5.5,
+     "carrierHz": 185,
+     "intensity": "=-",
+     "brightness": 0.3
+    },
+    {
+     "atSec": 1500,
+     "beatHz": 6.0,
+     "carrierHz": 190,
+     "intensity": "=-",
+     "brightness": 0.35
+    },
+    {
+     "atSec": 1800,
+     "beatHz": 6.0,
+     "carrierHz": 190,
+     "intensity": "=-",
+     "brightness": 0.3
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 190
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "pink",
+     "level": 0.18
+    },
+    {
+     "source": "texture",
+     "type": "rain",
+     "level": 0.3,
+     "params": {
+      "density": 0.5
+     }
+    }
+   ],
+   "transitionFade": "medium",
+   "masterVolume": 1
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 0.6
+  },
+  "pulsetto": {
+   "enabled": true,
+   "follow": "scenes",
+   "intensity": 3,
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ },
+ {
+  "formatVersion": 2,
+  "id": "the-deep-floor",
+  "kind": "sleep",
+  "meta": {
+   "name": "THE DEEP FLOOR",
+   "description": "The slowest band of ordinary sleep: half a hertz to four, dreamless and deep.",
+   "category": "SLEEP",
+   "strength": 1,
+   "strengthLabel": "Moderate",
+   "durationSec": 1800
+  },
+  "generation": {
+   "source": "binaural_decompose",
+   "from": "PulseEntrain"
+  },
+  "entrainment": {
+   "ramp": "linear",
+   "scenes": [
+    {
+     "atSec": 0.0,
+     "beatHz": 0.39,
+     "carrierHz": 100.02
+    },
+    {
+     "atSec": 299.54,
+     "beatHz": 0.53,
+     "carrierHz": 100.03
+    },
+    {
+     "atSec": 368.55,
+     "beatHz": 1.06,
+     "carrierHz": 100.02
+    },
+    {
+     "atSec": 780.75,
+     "beatHz": 0.94,
+     "carrierHz": 101.12
+    },
+    {
+     "atSec": 839.54,
+     "beatHz": 2.05,
+     "carrierHz": 199.11
+    },
+    {
+     "atSec": 1318.71,
+     "beatHz": 1.96,
+     "carrierHz": 199.97
+    },
+    {
+     "atSec": 1381.96,
+     "beatHz": 4.08,
+     "carrierHz": 400.0
+    },
+    {
+     "atSec": 1800.01,
+     "beatHz": 4.04,
+     "carrierHz": 399.99
+    }
+   ]
+  },
+  "audio": {
+   "binaural": {
+    "carrierHz": 150.12,
+    "follow": "beat"
+   },
+   "beds": [
+    {
+     "source": "noise",
+     "type": "brown",
+     "level": 0.124
+    }
+   ],
+   "masterVolume": 1.0
+  },
+  "nova": {
+   "mode": "follow",
+   "maxHz": 60,
+   "brightness": 1.0
+  },
+  "pulsetto": {
+   "enabled": false,
+   "follow": "scenes",
+   "intensityClamp": [
+    1,
+    9
+   ]
+  }
+ }
+]

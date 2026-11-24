@@ -1,0 +1,93 @@
+{
+ "formatVersion": 2,
+ "id": "slipped-mooring",
+ "kind": "meditation",
+ "meta": {
+  "name": "SLIPPED MOORING",
+  "description": "A guided descent to the threshold where the self slips loose from the body.",
+  "category": "MEDITATION",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.05,
+    "carrierHz": 300.0
+   },
+   {
+    "atSec": 300.0,
+    "beatHz": 10.08,
+    "carrierHz": 300.0
+   },
+   {
+    "atSec": 419.45,
+    "beatHz": 3.95,
+    "carrierHz": 150.78
+   },
+   {
+    "atSec": 720.1,
+    "beatHz": 4.02,
+    "carrierHz": 150.0
+   },
+   {
+    "atSec": 840.19,
+    "beatHz": 5.0,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 1439.17,
+    "beatHz": 5.0,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 1500.1,
+    "beatHz": 3.01,
+    "carrierHz": 150.04
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 3.0,
+    "carrierHz": 150.03
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 150.03,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.05,
+    "_measured": {
+     "slopeDbPerDecade": -16.4,
+     "levelDb": -87.8
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

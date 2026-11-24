@@ -1,0 +1,90 @@
+{
+ "formatVersion": 2,
+ "id": "the-loosened-line",
+ "kind": "tinctures",
+ "meta": {
+  "name": "THE LOOSENED LINE",
+  "description": "Theta's border, where habits loosen: for shifting an attitude, or a behaviour.",
+  "category": "TINCTURES",
+  "strength": 6,
+  "strengthLabel": "Experimental",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.0
+   },
+   {
+    "atSec": 119.91,
+    "beatHz": 10.09
+   },
+   {
+    "atSec": 240.0,
+    "beatHz": 4.07
+   },
+   {
+    "atSec": 250.87,
+    "beatHz": 4.05
+   },
+   {
+    "atSec": 538.7,
+    "beatHz": 4.07
+   },
+   {
+    "atSec": 600.28,
+    "beatHz": 5.94
+   },
+   {
+    "atSec": 839.91,
+    "beatHz": 5.93
+   },
+   {
+    "atSec": 900.38,
+    "beatHz": 8.02
+   },
+   {
+    "atSec": 1799.92,
+    "beatHz": 7.99
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.091,
+    "_measured": {
+     "slopeDbPerDecade": -12.2,
+     "levelDb": -76.3
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

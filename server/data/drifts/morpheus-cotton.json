@@ -1,0 +1,78 @@
+{
+ "formatVersion": 2,
+ "id": "morpheus-cotton",
+ "kind": "tinctures",
+ "meta": {
+  "name": "MORPHEUS COTTON",
+  "description": "Sinking into slowness, wrapped in numb, padded comfort.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.83
+   },
+   {
+    "atSec": 300.0,
+    "beatHz": 10.01
+   },
+   {
+    "atSec": 420.28,
+    "beatHz": 2.49
+   },
+   {
+    "atSec": 1197.13,
+    "beatHz": 2.5
+   },
+   {
+    "atSec": 1320.47,
+    "beatHz": 0.88
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 0.87
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 199.99,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.103,
+    "_measured": {
+     "slopeDbPerDecade": -11.2,
+     "levelDb": -75.2
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

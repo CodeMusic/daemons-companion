@@ -1,0 +1,335 @@
+{
+ "formatVersion": 2,
+ "id": "reboot-salts",
+ "kind": "tinctures",
+ "meta": {
+  "name": "REBOOT SALTS",
+  "description": "Ten minutes of stuttering pulses and surges: the signal scrambled, then rebooted clean.",
+  "category": "TINCTURES",
+  "strength": 4,
+  "strengthLabel": "Extreme",
+  "durationSec": 600
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.45,
+    "carrierHz": 100.15
+   },
+   {
+    "atSec": 0.6,
+    "beatHz": 10.07,
+    "carrierHz": 100.0
+   },
+   {
+    "atSec": 119.13,
+    "beatHz": 10.08,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 121.0,
+    "beatHz": 9.62,
+    "carrierHz": 115.61
+   },
+   {
+    "atSec": 132.1,
+    "beatHz": 3.59,
+    "carrierHz": 299.77
+   },
+   {
+    "atSec": 138.07,
+    "beatHz": 10.04,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 156.07,
+    "beatHz": 10.97,
+    "carrierHz": 200.22
+   },
+   {
+    "atSec": 162.05,
+    "beatHz": 2.55,
+    "carrierHz": 200.12
+   },
+   {
+    "atSec": 179.97,
+    "beatHz": 2.5,
+    "carrierHz": 397.91
+   },
+   {
+    "atSec": 186.03,
+    "beatHz": 11.9,
+    "carrierHz": 202.12
+   },
+   {
+    "atSec": 192.09,
+    "beatHz": 9.62,
+    "carrierHz": 299.71
+   },
+   {
+    "atSec": 197.97,
+    "beatHz": 23.73,
+    "carrierHz": 300.03
+   },
+   {
+    "atSec": 204.03,
+    "beatHz": 6.14,
+    "carrierHz": 300.03
+   },
+   {
+    "atSec": 216.06,
+    "beatHz": 23.71,
+    "carrierHz": 300.03
+   },
+   {
+    "atSec": 222.12,
+    "beatHz": 4.48,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 228.18,
+    "beatHz": 23.6,
+    "carrierHz": 300.03
+   },
+   {
+    "atSec": 234.15,
+    "beatHz": 3.0,
+    "carrierHz": 298.56
+   },
+   {
+    "atSec": 240.04,
+    "beatHz": 3.01,
+    "carrierHz": 201.23
+   },
+   {
+    "atSec": 252.16,
+    "beatHz": 9.56,
+    "carrierHz": 299.97
+   },
+   {
+    "atSec": 287.83,
+    "beatHz": 13.92,
+    "carrierHz": 299.98
+   },
+   {
+    "atSec": 294.06,
+    "beatHz": 4.16,
+    "carrierHz": 250.08
+   },
+   {
+    "atSec": 300.2,
+    "beatHz": 11.81,
+    "carrierHz": 200.05
+   },
+   {
+    "atSec": 306.01,
+    "beatHz": 3.36,
+    "carrierHz": 200.04
+   },
+   {
+    "atSec": 324.35,
+    "beatHz": 5.79,
+    "carrierHz": 304.72
+   },
+   {
+    "atSec": 330.24,
+    "beatHz": 2.51,
+    "carrierHz": 398.57
+   },
+   {
+    "atSec": 342.53,
+    "beatHz": 4.1,
+    "carrierHz": 301.91
+   },
+   {
+    "atSec": 365.99,
+    "beatHz": 13.92,
+    "carrierHz": 399.3
+   },
+   {
+    "atSec": 378.28,
+    "beatHz": 24.0,
+    "carrierHz": 298.52
+   },
+   {
+    "atSec": 379.56,
+    "beatHz": 24.09,
+    "carrierHz": 250.22
+   },
+   {
+    "atSec": 380.84,
+    "beatHz": 24.02,
+    "carrierHz": 213.41
+   },
+   {
+    "atSec": 382.81,
+    "beatHz": 24.04,
+    "carrierHz": 142.03
+   },
+   {
+    "atSec": 385.37,
+    "beatHz": 24.02,
+    "carrierHz": 143.06
+   },
+   {
+    "atSec": 387.33,
+    "beatHz": 23.99,
+    "carrierHz": 214.35
+   },
+   {
+    "atSec": 388.61,
+    "beatHz": 24.02,
+    "carrierHz": 251.3
+   },
+   {
+    "atSec": 389.89,
+    "beatHz": 24.06,
+    "carrierHz": 299.16
+   },
+   {
+    "atSec": 402.01,
+    "beatHz": 0.96,
+    "carrierHz": 200.57
+   },
+   {
+    "atSec": 413.95,
+    "beatHz": 3.93,
+    "carrierHz": 249.5
+   },
+   {
+    "atSec": 420.1,
+    "beatHz": 29.9,
+    "carrierHz": 299.96
+   },
+   {
+    "atSec": 456.11,
+    "beatHz": 23.96,
+    "carrierHz": 300.02
+   },
+   {
+    "atSec": 474.03,
+    "beatHz": 23.96,
+    "carrierHz": 300.02
+   },
+   {
+    "atSec": 480.26,
+    "beatHz": 24.92,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 539.99,
+    "beatHz": 23.96,
+    "carrierHz": 300.04
+   },
+   {
+    "atSec": 545.96,
+    "beatHz": 14.47,
+    "carrierHz": 398.19
+   },
+   {
+    "atSec": 557.99,
+    "beatHz": 32.71,
+    "carrierHz": 299.91
+   },
+   {
+    "atSec": 559.45,
+    "beatHz": 28.63,
+    "carrierHz": 254.16
+   },
+   {
+    "atSec": 560.64,
+    "beatHz": 27.64,
+    "carrierHz": 220.11
+   },
+   {
+    "atSec": 562.77,
+    "beatHz": 25.33,
+    "carrierHz": 143.07
+   },
+   {
+    "atSec": 564.05,
+    "beatHz": 24.0,
+    "carrierHz": 103.31
+   },
+   {
+    "atSec": 565.25,
+    "beatHz": 24.11,
+    "carrierHz": 139.18
+   },
+   {
+    "atSec": 567.55,
+    "beatHz": 24.02,
+    "carrierHz": 221.84
+   },
+   {
+    "atSec": 568.49,
+    "beatHz": 24.08,
+    "carrierHz": 247.33
+   },
+   {
+    "atSec": 569.86,
+    "beatHz": 24.01,
+    "carrierHz": 298.54
+   },
+   {
+    "atSec": 576.09,
+    "beatHz": 24.86,
+    "carrierHz": 299.44
+   },
+   {
+    "atSec": 581.97,
+    "beatHz": 1.3,
+    "carrierHz": 201.61
+   },
+   {
+    "atSec": 588.03,
+    "beatHz": 13.93,
+    "carrierHz": 299.19
+   },
+   {
+    "atSec": 594.01,
+    "beatHz": 23.85,
+    "carrierHz": 300.03
+   },
+   {
+    "atSec": 599.98,
+    "beatHz": 23.96,
+    "carrierHz": 300.01
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.01,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.236
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

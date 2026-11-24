@@ -1,525 +1,363 @@
 [
  {
-  "id": "emotions-awe",
-  "name": "Awe",
+  "id": "bedrock",
+  "name": "BEDROCK",
   "kind": "meditation",
-  "group": "Emotions",
-  "description": "The feeling of being small in the best possible way. Awe starts you grounded and present, then lifts the ceiling — expanding up and out, brighter and vaster, until it crests at the edge of something too large to name. For a moment the boundaries thin and everything seems to connect. Then it eases you down into the warm afterglow of wonder, the world left a little bigger than you found it.",
+  "group": "MEDITATION",
+  "description": "Not fury -- foundation: grounded alpha building into firm, steady low beta.",
   "durationSec": 1800,
-  "strength": 4
+  "strength": 4,
+  "phone": false
  },
  {
-  "id": "emotions-bliss",
-  "name": "Bliss",
+  "id": "compass-rose",
+  "name": "COMPASS ROSE",
   "kind": "meditation",
-  "group": "Emotions",
-  "description": "Not the sharp spike of euphoria — the long, warm float of it. Bliss settles into a luminous high-alpha glow and drifts gently downward into the dreamy edge of theta, the carrier bright as honey-light, and just holds you there. No build, no crash, no arriving anywhere. A sustained warm plateau where everything is, simply and completely, enough.",
-  "durationSec": 1800,
-  "strength": 4
- },
- {
-  "id": "emotions-catharsis",
-  "name": "Catharsis",
-  "kind": "meditation",
-  "group": "Emotions",
-  "description": "Some feelings have to be felt all the way down before they'll let go. Catharsis walks you into the heavy water on purpose — down into the low, dim, slow place where grief lives — and lets you sit in it without flinching. Then comes the turn: the break, the release, the long rise back toward light and air. You come out the other side lighter than you went in, the weight finally set down.",
-  "durationSec": 1800,
-  "strength": 5
- },
- {
-  "id": "emotions-clarity",
-  "name": "Clarity",
-  "kind": "meditation",
-  "group": "Emotions",
-  "description": "The fog burning off. Clarity opens a touch hazy in soft alpha over a neutral grey bed, then sharpens — the beat quickening up through beta toward a crystalline gamma peak, the carrier turning bright and crisp, the bed clearing to clean white. The light sharpens right alongside the mind. By the end the haze is gone and what's left is cool, cut-glass focus.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "emotions-gratitude",
-  "name": "Gratitude",
-  "kind": "meditation",
-  "group": "Emotions",
-  "description": "The full-chest warmth of being thankful, drawn out and dwelt in. Gratitude rests in open, relaxed alpha and slowly swells — the tone brightening, the pulse rising to fill you, the light blooming like warmth spreading through a room — before settling back into a quiet, contented glow. An emotion you usually only catch in passing, held long enough here to actually soak in.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "emotions-hope",
-  "name": "Hope",
-  "kind": "meditation",
-  "group": "Emotions",
-  "description": "The lift out of the low place. Hope begins down in the heavy dark — slow, dim, the bed a deep brown hush — then climbs: the tone brightening, the beat quickening from theta up toward the forward lean of beta, the bed warming from brown through pink to clear bright blue. All the while the light holds a steady shimmer up ahead of you — the future already lit — and the rest of you rises to meet it. You end somewhere open, awake, and tilted toward what's next.",
-  "durationSec": 1800,
-  "strength": 4
- },
- {
-  "id": "emotions-nostalgia",
-  "name": "Nostalgia",
-  "kind": "meditation",
-  "group": "Emotions",
-  "description": "A warm ache for somewhere you can't quite return to. Nostalgia settles into theta — the brain's own memory-and-imagery band — and lets recollection wash in like tide, swelling and receding, never quite cresting into a flood. The carrier glows low and faintly sepia; the pulse is a soft undertow you feel more than notice. Not sad, not happy. Something tenderer than both, and bittersweet all the way down.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "emotions-strength",
-  "name": "Strength",
-  "kind": "meditation",
-  "group": "Emotions",
-  "description": "Not fury — foundation. Strength builds from grounded alpha up into a firm, steady low-beta and locks there, the carrier kept low and weighted so it feels rooted rather than airy, the brown bed deep as bedrock. The body-pulse swells and holds, an anchor you can feel. Underneath it all the light keeps a slow, immovable beat — the ground that doesn't move while you rise to stand on it.",
-  "durationSec": 1800,
-  "strength": 4
- },
- {
-  "id": "emotions-tranquility",
-  "name": "Tranquility",
-  "kind": "meditation",
-  "group": "Emotions",
-  "description": "A slow, unhurried descent into stillness — and then nothing asked of you. Tranquility eases from open alpha down into low theta and rests there, the tone soft, the pulse barely a whisper, a gentle rain bed laid underneath. No journey, no peak. Just the calm settling deeper and deeper until the noise of the day can't reach you.",
-  "durationSec": 1800,
-  "strength": 2
- },
- {
-  "id": "experimental-apex",
-  "name": "Apex",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "Built for the athlete and the gym warrior, Apex climbs through three frequency tiers to sharpen you for the work ahead. At 3 Hz, reaction time gets razor-quick. At 3.5 Hz, receptivity opens up. At 6.3 Hz, learning shifts into overdrive — a clean, non-chemical lift for training and competition. No needles, no asterisks, just you, tuned up.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "experimental-clear-skies-hangover-cure",
-  "name": "Clear Skies (Hangover Cure)",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "A soothing morning-recovery session built from gentle low-frequency tones that ease a throbbing head and settle a queasy stomach. Soft, warming harmonics roll in like sunrise, washing the fog out of your skull and leaving behind a clear, rehydrated, finally-human-again kind of calm.",
-  "durationSec": 1800,
-  "strength": 2
- },
- {
-  "id": "experimental-critical-mass",
-  "name": "Critical Mass",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "It starts low and patient — a slow tide of feeling that climbs, and climbs, until it crests into something almost too bright to hold. Then? Critical mass. BOOM. The blast flings you clean past the edge of the known, out into the deep black where reality runs out of road and there's nothing left to grip but the frequency itself.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "experimental-eclipse",
-  "name": "Eclipse",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "The anti-stimulant. It takes your brain and gives it a quarter-turn until everything shines with this impossible glow — then it pulls all that light back down, inward, deep into the dark where you actually live. Eclipse drops you into a quiet room with your own soul and lets the two of you hash it out. No words. No noise. Just you, meeting you. Not for casual users.",
-  "durationSec": 2100,
-  "strength": 3
- },
- {
-  "id": "experimental-enough",
-  "name": "Enough",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "A focused session for taming appetite — it hushes the cravings, steadies the will, and settles your mind into a calm, satisfied kind of control. Lean back, let the gentle pulse roll through, and feel the urge to reach for more just… loosen its grip and dissolve.",
-  "durationSec": 1800,
-  "strength": 2
- },
- {
-  "id": "experimental-hard-reset",
-  "name": "Hard Reset",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "A jolting, high-voltage session built from stuttering pulses and sudden surges — designed to scramble the signal and then reboot it clean. A disorienting, electric ride that's strictly for the adventurous. Listeners with steady nerves only.",
-  "durationSec": 600,
-  "strength": 4
- },
- {
-  "id": "experimental-precipice",
-  "name": "Precipice",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "Stand at the lip of a cliff with your eyes shut. Vertigo wraps around you, the world starts to spin, and the air goes thin and crisp — carrying that hazy, drunken altitude-high you'd normally have to climb a mountain to earn. You feel the drop yawning out in front of you without ever once opening your eyes to see it. Lie down for this one. Advanced users only.",
-  "durationSec": 2100,
-  "strength": 3
- },
- {
-  "id": "experimental-quicksilver",
-  "name": "Quicksilver",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "A stimulant rush laced with euphoria and crystalline mental clarity, cracking open into a feeling of pure openness and intellectual expansion. First-timers catch a mild psychedelic shimmer at the edges — but lean on it a few times and those mind-bending fringes burn off, leaving raw physical and mental stimulation in their place. A hybrid designer dose. Experienced users only.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "experimental-shockwave",
-  "name": "Shockwave",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "A tidal surge of well-being and exhilaration rolls in — and riding shotgun is a massive spike of alertness and energy that scrubs every trace of fatigue clean off the map. The rush takes you somewhere bright and high and just… won't quit. No dips, no mercy, no coming down — not until the whole ride decides it's done with you.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "experimental-terra-incognita",
-  "name": "Terra Incognita",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "An unmarked door. No label, no promises, no spoilers. Press play with absolutely no idea what's waiting on the other side, and let an unpredictable wave of frequencies sweep you somewhere you never could've called in advance. No map, no handrail. Strictly for the curious and the brave.",
-  "durationSec": 1800,
-  "strength": 4
- },
- {
-  "id": "experimental-unhooked",
-  "name": "Unhooked",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "Somewhere between 4 Hz and 6 Hz, the brain slips into a state primed for shifts in attitude and behavior. This dose targets 8 Hz to stir the synapses and support breaking the habit's hold — reach for it mid-craving or run it preventatively. Most powerful when it's riding shotgun with your own willpower, not doing the driving for you.",
-  "durationSec": 1800,
-  "strength": 6
- },
- {
-  "id": "experimental-velvet-thorn",
-  "name": "Velvet Thorn",
-  "kind": "meditation",
-  "group": "Experimental",
-  "description": "For those who like their pleasure braided tight with a little pain. It opens in a warm wash of opiate numbness and rolling pleasure-waves, swells up into an intense, near-orgasmic ecstasy — then twists, threading sharp little pings of pain right through the euphoria. Beautiful and brutal in equal measure. Not for the faint of heart, and not meant for everyone.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "focus-and-energy-cloudbreak",
-  "name": "Cloudbreak",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "Cloudbreak lifts the dull gray haze of a flat, foggy day. Bright, clearing tones sweep the clouds straight out of your mind and leave a fresh, colorful lightness where the murk used to sit. The overcast parts. The color comes back.",
-  "durationSec": 1800,
-  "strength": 2
- },
- {
-  "id": "focus-and-energy-confidence",
-  "name": "Confidence",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "For the moments that ask the most of you — the big date, the room full of strangers, the test, the mic, the crowd staring back. Shyness can grab any of us by the collar, and this dose has a real track record for pushing back that rising tide of self-consciousness so you can just… show up as you. Steady. Loose. Yours.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "focus-and-energy-crescendo",
-  "name": "Crescendo",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "A lavish, layered journey of binaural tones that stack wave upon wave into a swelling, full-body rush of bliss. Each pass carries you higher — into warm, radiant euphoria that glows right through you — before easing off and letting you drift gently back down to earth. A slow build worth the climb.",
-  "durationSec": 2527,
-  "strength": 4
- },
- {
-  "id": "focus-and-energy-first-light",
-  "name": "First Light",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "A warm, dark-roasted lift — like that first sacred cup before the world's fully awake. A gentle wave of alertness, clarity, and cozy focus rolls in to burn the fog off, smooth and comforting the whole way. Real energy, zero jitters. Just you, the quiet, and the climb into the day.",
-  "durationSec": 300,
-  "strength": 1
- },
- {
-  "id": "focus-and-energy-neon-heart",
-  "name": "Neon Heart",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "Party till the sun catches you. The lights, the waves of bliss breaking over every inch of you, the euphoria streaming hot through your veins, the music pumping, the dancing that just won't stop. A warm-hearted, wide-open, emotionally-connected state with the senses cranked all the way up. Experienced listeners only.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "focus-and-energy-reverie",
-  "name": "Reverie",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "Tuned to the Theta 3–7 Hz range — the band tied to recall, fantasy, imagery, creativity, and raw inspiration — Reverie throws the floodgates wide for writers, artists, and dreamers. Ideas come loose and start to flow, writer's block dissolves, and the imagination roams without a fence in sight across a full thirty-minute session.",
-  "durationSec": 1800,
-  "strength": 6
- },
- {
-  "id": "focus-and-energy-synthesis",
-  "name": "Synthesis",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "Synthesis is our hybrid recreational smart-dose, built to nudge you up to the next tier. Instead of dulling the senses, it stirs the brainwaves tied to both analytical and imaginative thought — leaving you parked in a place of deep contemplation and crisp, glass-clear clarity as the session quietly unfolds around you.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "focus-and-energy-venus",
-  "name": "Venus",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "Venus eases you up from a faint shimmer of euphoria into the body itself — tingling, warmth, a slow spreading heat — then melts the anxiety clean away and settles you into that Venus state: love, sexuality, sensuality, harmony. Layer by layer it carries mind and body toward a place of warm, willing readiness. Unhurried. Inviting.",
-  "durationSec": 3000,
-  "strength": 3
- },
- {
-  "id": "focus-and-energy-victory",
-  "name": "Victory",
-  "kind": "meditation",
-  "group": "Focus and Energy",
-  "description": "Victory sets your mind into the state of already having won. Before the game, the workout, the speech — any moment that demands a winning edge — it hands you a serious mental head start, so triumph feels like a foregone conclusion before you've taken a single step. You walk in already holding the trophy.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "pure-alpha",
-  "name": "Alpha",
-  "kind": "meditation",
-  "group": "Pure",
-  "description": "8–13 Hz. The band your brain eases into when you're awake and fully present, but with your attention turned inward — eyes closed, or quietly reaching back to recall something. Alpha is where relaxed-but-alert lives: it lends itself to creative problem-solving, quicker learning, a lift in mood, and a drop in stress. The gentlest on-ramp for anyone just starting to meditate.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "pure-beta",
-  "name": "Beta",
-  "kind": "meditation",
-  "group": "Pure",
-  "description": "13–30 Hz. The everyday waking gear. Beta runs when you're awake with your attention aimed outward, engaging the world in front of you — and it spikes when you work a logical problem, like running mental arithmetic in your head. This is alert, task-locked focus: vitality, concentration, the Earth-resonance band. Lean on it for a bump in mental sharpness, attention, alertness, and raw cognitive horsepower.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "pure-delta",
-  "name": "Delta",
-  "kind": "meditation",
-  "group": "Pure",
-  "description": "0.5–4 Hz. The deepest, slowest band of them all — normally only present in dreamless sleep or full unconsciousness. Seasoned deep-trance practitioners, though, can drop into Delta while staying lucid. This is the territory of healing, sacred knowing, personal growth, and the profoundest meditative states — the \"monk-tier\" depth that only serious, high-level practice tends to reach.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "pure-epsilon",
-  "name": "Epsilon",
-  "kind": "meditation",
-  "group": "Pure",
-  "description": "Below 0.5 Hz — rarer and slower than anything else the brain produces. Here the body settles into complete stillness and the mind sinks past the floor of even the deepest sleep. A vast, near-suspended quiet takes hold, carrying you out to the faint outer edge of conscious awareness.",
-  "durationSec": 2220,
-  "strength": 2
- },
- {
-  "id": "pure-gamma",
-  "name": "Gamma",
-  "kind": "meditation",
-  "group": "Pure",
-  "description": "25–35 Hz. Gamma rides up at the top end, tied to dense, information-rich, high-level processing. It's thought to act as a kind of binding signal — lacing together the cortical regions doing the heavy cognitive lifting with the thalamus, and syncing the neurons that handle incoming sensory input. Some call it the brain's operating-system frequency: the clock the rest of the mind runs on.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "pure-you-choose",
-  "name": "Improvisation",
-  "kind": "meditation",
-  "group": "Pure",
-  "description": "An hour-long journey that puts the controls in your hands. It moves through Alpha, Beta, Delta, Gamma, and Theta — and you call the arrival, stepping off the moment the state you came for clicks into place instead of riding all the way to the final bar. No set ending. You resolve it yourself. Advanced users only.",
+  "group": "MEDITATION",
+  "description": "An hour through every band, and you choose where to arrive.",
   "durationSec": 3600,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "pure-reset",
-  "name": "Interlude",
+  "id": "fog-burning-off",
+  "name": "FOG BURNING OFF",
   "kind": "meditation",
-  "group": "Pure",
-  "description": "Interlude eases your brain back to a normal 8 Hz — calm, awake, level. Run it to clear the lingering pull of a previous dose and wipe the slate clean, so you can step from one experience into the next without any bleed-through.",
+  "group": "MEDITATION",
+  "description": "Hazy alpha sharpening up through beta: the fog burns off and the edges return.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "full-chest",
+  "name": "FULL CHEST",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "The warmth of being thankful, dwelt in: relaxed alpha that slowly swells.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": true
+ },
+ {
+  "id": "heavy-water",
+  "name": "HEAVY WATER",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Down into the low place on purpose, felt all the way through, then up into light.",
+  "durationSec": 1800,
+  "strength": 5,
+  "phone": false
+ },
+ {
+  "id": "high-window",
+  "name": "HIGH WINDOW",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Seeing from a point outside yourself: theta widening, attention ranging free.",
+  "durationSec": 1800,
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "level-ground",
+  "name": "LEVEL GROUND",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Back to a calm, awake eight hertz, to clear the pull of the last drift.",
   "durationSec": 1200,
-  "strength": 1
+  "strength": 1,
+  "phone": false
  },
  {
-  "id": "pure-condition",
-  "name": "Overture",
+  "id": "long-warm-float",
+  "name": "LONG WARM FLOAT",
   "kind": "meditation",
-  "group": "Pure",
-  "description": "Play Overture before any other dose in the library and it primes your brain to receive what follows with the doors already open. A gentle bit of conditioning that leaves the mind softer, more receptive — so the experience that comes next lands deeper and plays richer.",
+  "group": "MEDITATION",
+  "description": "Not euphoria's spike but its long float: a luminous alpha glow drifting softly down.",
+  "durationSec": 1800,
+  "strength": 4,
+  "phone": false
+ },
+ {
+  "id": "lucid-keel",
+  "name": "LUCID KEEL",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "For waking inside your dreams: recall sharpened, theta held steady at the helm.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "open-window",
+  "name": "OPEN WINDOW",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Eight to thirteen hertz: awake and present, attention turned inward. The gentlest way in.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": true
+ },
+ {
+  "id": "out-of-the-low-place",
+  "name": "OUT OF THE LOW PLACE",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "From slow, dim theta the beat climbs toward bright beta: the lift itself.",
+  "durationSec": 1800,
+  "strength": 4,
+  "phone": false
+ },
+ {
+  "id": "photograph-light",
+  "name": "PHOTOGRAPH LIGHT",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "A warm ache for somewhere past: theta, the memory band, letting recollection surface.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "seven-lanterns",
+  "name": "SEVEN LANTERNS",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Attention walked up through seven centres, root to crown.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "slipped-mooring",
+  "name": "SLIPPED MOORING",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "A guided descent to the threshold where the self slips loose from the body.",
+  "durationSec": 1800,
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "small-under-stars",
+  "name": "SMALL UNDER STARS",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Small in the best way: grounded, then the ceiling lifts and everything opens.",
+  "durationSec": 1800,
+  "strength": 4,
+  "phone": false
+ },
+ {
+  "id": "still-pond",
+  "name": "STILL POND",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "A slow descent into stillness, and then nothing asked of you.",
+  "durationSec": 1800,
+  "strength": 2,
+  "phone": true
+ },
+ {
+  "id": "the-binding-hum",
+  "name": "THE BINDING HUM",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "The quickest of the brain's rhythms, tied to binding what you sense into one.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "the-vault-key",
+  "name": "THE VAULT KEY",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "The one held back: the slowest bands, for the stillest kind of awe. Strong; not a first one.",
+  "durationSec": 1800,
+  "strength": 7,
+  "phone": false
+ },
+ {
+  "id": "the-waking-gear",
+  "name": "THE WAKING GEAR",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Thirteen to thirty: the everyday working mind, climbing to sharp attention.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "threshold",
+  "name": "THRESHOLD",
+  "kind": "meditation",
+  "group": "MEDITATION",
+  "description": "Play it first: theta into alpha, to open the doors before another drift.",
   "durationSec": 1200,
-  "strength": 1
+  "strength": 1,
+  "phone": false
  },
  {
-  "id": "pure-theta",
-  "name": "Theta",
-  "kind": "meditation",
-  "group": "Pure",
-  "description": "4–8 Hz. The borderland between waking and sleep — home to dreaming and those hazy, hypnagogic flashes that surface as you drift off at night or swim back up in the morning. Theta is where the unconscious and the conscious trade notes: the band of creative insight, deep relaxation, advanced meditation, and rich, vivid mental imagery.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "sex-and-intimacy-afterglow",
-  "name": "Afterglow",
-  "kind": "meditation",
-  "group": "Sex and Intimacy",
-  "description": "The feeling of afterglow — when the heat of lust has burned down and what's left is this contented warmth you get to just lie in. A quiet inner shimmer trailing the fireworks. Lean back, settle into your breathing, and savor the sensations as they drift and change and move slow through you. The fire's out. The warmth stays.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "sex-and-intimacy-cascade",
-  "name": "Cascade",
-  "kind": "meditation",
-  "group": "Sex and Intimacy",
-  "description": "An intensifying journey of sensation that rolls in wave after wave after wave. Your body gets swept up in the beautiful chaos of it — doing the thing that feels good, again, and again, and again — as the glow climbs higher and burns brighter with every single crest. No plateau. Just the next wave, bigger than the last.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "sex-and-intimacy-mirage",
-  "name": "Mirage",
-  "kind": "meditation",
-  "group": "Sex and Intimacy",
-  "description": "This session weaves simulated fantasy together with dream recall, threaded with segments built to hand you lucid levels of control. It guides you down into elaborate, vivid, sensual dreamscapes — while keeping the picture sharp enough to carry back with you when you wake. Dream it, steer it, keep it.",
-  "durationSec": 1920,
-  "strength": 4
- },
- {
-  "id": "sex-and-intimacy-smitten",
-  "name": "Smitten",
-  "kind": "meditation",
-  "group": "Sex and Intimacy",
-  "description": "This session recreates the full emotional and physical glow of falling in love. As you listen, expect the heart to swoop, a gentle warmth to spread, a flicker of arousal, and a wash of well-being — everything around you looking suddenly brighter and more beautiful, the way it does when you're falling. The chemistry of a crush, bottled.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "sex-and-intimacy-sustain",
-  "name": "Sustain",
-  "kind": "meditation",
-  "group": "Sex and Intimacy",
-  "description": "A short, focused session meant as a quick listen before intimate moments. The gentle tones settle the body and stretch out a sense of steady, lasting calm and endurance — so the ease carries all the way through, start to finish. One note, held long.",
-  "durationSec": 1200,
-  "strength": 1
- },
- {
-  "id": "sex-and-intimacy-zenith",
-  "name": "Zenith",
-  "kind": "meditation",
-  "group": "Sex and Intimacy",
-  "description": "Sometimes you just want to make it happen — hard, good, no waiting. Zenith is built to carry you up to the mind-state right on the edge of orgasm and hold you at the summit: our strongest, fastest, most sensual dose. All the tension, all the heat, balanced at the very top of the arc.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "spirituality-chakra",
-  "name": "Chakra",
-  "kind": "meditation",
-  "group": "Spirituality",
-  "description": "A balancing session that walks your attention up through the seven traditional energy centers, root to crown. The frequencies shift gradually to invite alignment, openness, and calm focus — a gentle, grounding experience that slots neatly into meditation or a wind-down. Bottom to top, one center at a time.",
-  "durationSec": 1800,
-  "strength": 1
- },
- {
-  "id": "spirituality-numinous",
-  "name": "Numinous",
-  "kind": "meditation",
-  "group": "Spirituality",
-  "description": "The one we kept in the vault. A lifetime's work, held back from the world on purpose — not out of secrecy, but because some doors shouldn't swing open for just anyone. Numinous is simply too much. Those who've gone through report fluttering eyelids, a clairvoyance that feels less like imagination and more like seeing, rings of light blooming behind closed eyes, and insight that arrives with the weight of revelation.\n\nBut the same door that opens onto the light opens onto everything else. Expect the floor of the self to drop out. Expect fear with no object, the senses scrambling and folding, tears that come from nowhere — weeping, dread, fury, all at once. Insight this raw doesn't ask permission, and it doesn't always leave you the way it found you.\nGo in prepared, go in sober, and go in knowing some things can't be unseen.",
-  "durationSec": 1800,
-  "strength": 7
- },
- {
-  "id": "spirituality-oneironaut",
-  "name": "Oneironaut",
-  "kind": "meditation",
-  "group": "Spirituality",
-  "description": "Oneironaut is for the act of waking up inside your dreams — present, aware, and at the controls. The dose sharpens dream recall and unlocks lucidity by carrying you from high theta down into low, where the dreamscape thickens and sharpens around you. It can hand you the steering wheel faster than years of traditional practice usually take — though fair warning: a first lucid breakthrough can hit hard. The dream becomes yours to walk.",
-  "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "spirituality-untethered",
-  "name": "Untethered",
-  "kind": "meditation",
-  "group": "Spirituality",
-  "description": "A guided descent into the threshold state — the place where the sense of self quietly slips its moorings from the body. The dose eases you down into deep theta, the doorway many tie to astral projection: that feeling of consciousness floating free of physical limits. Best experienced lying down in a quiet, dark space, fully relaxed and undisturbed. The body stays. You don't have to.",
-  "durationSec": 1800,
-  "strength": 2
- },
- {
-  "id": "spirituality-vantage",
-  "name": "Vantage",
-  "kind": "meditation",
-  "group": "Spirituality",
-  "description": "Vantage is the experience of perceiving the world from a point outside the physical body — consciousness slipping its anchor and ranging free. Associated phenomena include remote viewing and the sense of taking in distant places you were never standing in. Around 75% of these experiences happen while deeply relaxed, lying down or seated. Your body holds still. Your point of view goes wandering.",
-  "durationSec": 1800,
-  "strength": 2
- },
- {
-  "id": "dream-chill-consonance",
-  "name": "Consonance",
+  "id": "all-strings-at-rest",
+  "name": "ALL STRINGS AT REST",
   "kind": "sleep",
-  "group": "Dream Chill",
-  "description": "Consonance is a soul-dose with no tiredness, no sleep, no drowsiness anywhere in it. Instead it eases the soul, tunes you into harmony with the earth, with space, with everything that is — melting you gently into the warmth of an invisible glow that simply has to be felt to be understood. Not a state you think your way into. One you fall into tune with.",
+  "group": "SLEEP",
+  "description": "Not quite sleep -- harmony: every part of you tuned down to one quiet chord.",
   "durationSec": 1800,
-  "strength": 1
+  "strength": 1,
+  "phone": false
  },
  {
-  "id": "dream-chill-featherfall",
-  "name": "Featherfall",
+  "id": "below-the-tide",
+  "name": "BELOW THE TIDE",
   "kind": "sleep",
-  "group": "Dream Chill",
-  "description": "A soft, weightless drift toward sleep — as if you're cradled and watched over by something gentle and unhurried. Warm, slow tones loosen every muscle one by one and lower you down, down, into a peaceful, untroubled rest. No effort. Just the falling.",
+  "group": "SLEEP",
+  "description": "Slower than half a hertz -- slower than the brain usually goes. Total stillness; a curiosity more than a cure.",
+  "durationSec": 2220,
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "down-feather",
+  "name": "DOWN FEATHER",
+  "kind": "sleep",
+  "group": "SLEEP",
+  "description": "A weightless drift toward sleep, cradled and watched over: alpha to theta, then delta.",
   "durationSec": 1500,
-  "strength": 1
+  "strength": 1,
+  "phone": true
  },
  {
-  "id": "dream-chill-gravity",
-  "name": "Gravity",
+  "id": "lantern-down",
+  "name": "LANTERN DOWN",
   "kind": "sleep",
-  "group": "Dream Chill",
-  "description": "For when you need to calm doooown. Gravity brings you from high to low in twenty minutes flat, melting stress and anxiety into a relaxed, settled calm — easing you all the way down to ground without ever tipping you over into sleep. A soft landing, wheels-down, fully awake.",
-  "durationSec": 1200,
-  "strength": 1
- },
- {
-  "id": "dream-chill-lightward",
-  "name": "Lightward",
-  "kind": "sleep",
-  "group": "Dream Chill",
-  "description": "Slip the headphones on and let the binaural tones walk your mind down out of busy alpha into deep, low frequencies. As the waves wash lower, the bouts of sadness seem to loosen and dissolve — easing you back toward a quiet, reachable kind of happiness. Down into the low, up into the light.",
+  "group": "SLEEP",
+  "description": "Out of busy alpha into the very lowest beats, as deep as sound can carry you.",
   "durationSec": 1800,
-  "strength": 2
+  "strength": 2,
+  "phone": false
  },
  {
-  "id": "dream-chill-right-as-rain",
-  "name": "Right as Rain",
+  "id": "rain-on-the-sill",
+  "name": "RAIN ON THE SILL",
   "kind": "sleep",
-  "group": "Dream Chill",
-  "description": "Right as Rain calms and uplifts in the same breath, sweeping the negative thoughts out until everything just… settles into place. Soothing but quietly energizing, it leaves you smiling and worry-free — a genuine bit of relief for life's more knotted, stressful stretches. Nothing's wrong. Everything fits.",
+  "group": "SLEEP",
+  "description": "Calm and lifted at once: the noise rinsed out, everything settling into place.",
   "durationSec": 1200,
-  "strength": 1
+  "strength": 1,
+  "phone": false
  },
  {
-  "id": "dream-chill-solace",
-  "name": "Solace",
+  "id": "soft-gravity",
+  "name": "SOFT GRAVITY",
   "kind": "sleep",
-  "group": "Dream Chill",
-  "description": "Solace offers a brief respite from life's demands — a pocket of peace where your troubles quietly loosen and fade. It hushes the mental chatter and unknots the tension, tuning your brain toward tranquility and composure, and holds open a little space for reflection whenever solitude lets you slip away. A breath you actually get to finish.",
+  "group": "SLEEP",
+  "description": "From high to low in twenty minutes: stress melting downward into delta.",
+  "durationSec": 1200,
+  "strength": 1,
+  "phone": true
+ },
+ {
+  "id": "the-deep-floor",
+  "name": "THE DEEP FLOOR",
+  "kind": "sleep",
+  "group": "SLEEP",
+  "description": "The slowest band of ordinary sleep: half a hertz to four, dreamless and deep.",
   "durationSec": 1800,
-  "strength": 1
+  "strength": 1,
+  "phone": true
  },
  {
-  "id": "dream-chill-unclench",
-  "name": "Unclench",
+  "id": "the-doorway-hour",
+  "name": "THE DOORWAY HOUR",
   "kind": "sleep",
-  "group": "Dream Chill",
-  "description": "Unclench works on two levels at once. When anxiety has you in its grip, it eases the rising tide and helps you ride up over it — and taken beforehand, it steadies your nerves for the speech, the crowd, the party, so you walk in already loose and at ease. Reactive when you need it, preventative when you're smart.",
-  "durationSec": 1200,
-  "strength": 1
+  "group": "SLEEP",
+  "description": "Four to eight hertz: the borderland between waking and sleep, where images surface.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
  },
  {
-  "id": "articulate-night",
-  "name": "ARTICULATE NIGHT",
+  "id": "the-opened-hand",
+  "name": "THE OPENED HAND",
+  "kind": "sleep",
+  "group": "SLEEP",
+  "description": "When worry grips, it eases the rise; taken at night, it opens into theta and lets you go.",
+  "durationSec": 1200,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "the-quiet-pocket",
+  "name": "THE QUIET POCKET",
+  "kind": "sleep",
+  "group": "SLEEP",
+  "description": "A pocket of peace in a busy day: the chatter hushed, steady alpha all the way through.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "after-hours-elixir",
+  "name": "AFTER-HOURS ELIXIR",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "Lucidity arriving slowly: speech turning articulate, ideas linking up, the mind clear and strangely bright.",
+  "description": "Dance till the sun catches you: lights, waves of bliss, euphoria streaming through.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "alloy-tonic",
+  "name": "ALLOY TONIC",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "A hybrid that stirs rather than dulls, nudging you up to the next tier.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "amber-corridor",
+  "name": "AMBER CORRIDOR",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "A lift into giggling looseness, then a drift away from the body, each stage a door further down.",
   "durationSec": 2700,
-  "strength": 3
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "blue-ember",
+  "name": "BLUE EMBER",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "For intimacy: steady to begin, and staying open for more.",
+  "durationSec": 1200,
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "blue-sky-bitters",
+  "name": "BLUE-SKY BITTERS",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Bitters for the morning after: low, gentle tones to ease the head and settle the stomach.",
+  "durationSec": 1800,
+  "strength": 2,
+  "phone": true
+ },
+ {
+  "id": "breaking-cloud-cordial",
+  "name": "BREAKING-CLOUD CORDIAL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "The grey haze of a flat day lifted: bright, clearing tones, and room to think.",
+  "durationSec": 1800,
+  "strength": 2,
+  "phone": false
  },
  {
   "id": "brief-balloon",
@@ -528,7 +366,18 @@
   "group": "TINCTURES",
   "description": "Ten minutes: a quick rise into giggling exhilaration, and as quick a return.",
   "durationSec": 600,
-  "strength": 2
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "chain-reaction-cordial",
+  "name": "CHAIN-REACTION CORDIAL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Low and patient, then climbing, climbing, until it crests almost too bright to hold.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "clear-desk",
@@ -537,7 +386,18 @@
   "group": "TINCTURES",
   "description": "Attention sharpened and held; hunger and tiredness pushed to the back of the room.",
   "durationSec": 1680,
-  "strength": 2
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "cliff-edge-ether",
+  "name": "CLIFF-EDGE ETHER",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Eyes shut at the lip of a cliff: vertigo, a slow spin, thin crisp air.",
+  "durationSec": 2100,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "cushioned-fall",
@@ -546,16 +406,28 @@
   "group": "TINCTURES",
   "description": "Discomfort turned down and warmth rolled over you, the edges of the day softened.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "deep-cotton",
-  "name": "DEEP COTTON",
+  "id": "dark-roast-drops",
+  "name": "DARK ROAST DROPS",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "Sinking into slowness, wrapped in numb, padded comfort.",
+  "description": "Five minutes, like the first cup before the world's awake: a warm lift of alertness.",
+  "durationSec": 300,
+  "strength": 1,
+  "phone": true
+ },
+ {
+  "id": "daydream-draught",
+  "name": "DAYDREAM DRAUGHT",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Theta's floodgates opened: recall, fantasy, imagery and raw inspiration.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 6,
+  "phone": false
  },
  {
   "id": "dense-amber",
@@ -564,7 +436,28 @@
   "group": "TINCTURES",
   "description": "The same mellow lift pressed tighter: heavier, longer, slower to leave.",
   "durationSec": 2700,
-  "strength": 3
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "desert-dream-philtre",
+  "name": "DESERT-DREAM PHILTRE",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Fantasy threaded with dream recall, and moments of lucid control.",
+  "durationSec": 1920,
+  "strength": 4,
+  "phone": false
+ },
+ {
+  "id": "ember-balm",
+  "name": "EMBER BALM",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "The contented warmth after the heat has burned down, to simply lie in.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
  },
  {
   "id": "even-keel",
@@ -573,7 +466,18 @@
   "group": "TINCTURES",
   "description": "Peaks and valleys smoothed into a steadier line: less weather, more ground.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": true
+ },
+ {
+  "id": "evening-star-oil",
+  "name": "EVENING-STAR OIL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "From a faint shimmer into the body itself: tingling, warmth, a slow spreading heat.",
+  "durationSec": 3000,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "first-alarm",
@@ -582,34 +486,68 @@
   "group": "TINCTURES",
   "description": "The body's own alarm: the heart quick, the senses wide, every muscle ready to move.",
   "durationSec": 1800,
-  "strength": 2
+  "strength": 2,
+  "phone": false
  },
  {
-  "id": "glass-corridor",
-  "name": "GLASS CORRIDOR",
+  "id": "five-petal-sunrise",
+  "name": "FIVE-PETAL SUNRISE",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "A lift into giggling looseness, then a drifting away from the body, each stage a door further down the hall.",
-  "durationSec": 2700,
-  "strength": 3
+  "description": "A gentle warming of mood, contentment returning the way morning light does. The mildest of them.",
+  "durationSec": 1500,
+  "strength": 1,
+  "phone": false
  },
  {
-  "id": "golden-evening",
-  "name": "GOLDEN EVENING",
-  "kind": "tinctures",
-  "group": "TINCTURES",
-  "description": "Shoulders loosening, a lift in mood, then the easy giddiness of a long table and good company.",
-  "durationSec": 2100,
-  "strength": 1
- },
- {
-  "id": "iron-night",
-  "name": "IRON NIGHT",
+  "id": "glass-night",
+  "name": "GLASS NIGHT",
   "kind": "tinctures",
   "group": "TINCTURES",
   "description": "Relentless wakefulness: surging, sleepless energy with no sign of a floor.",
   "durationSec": 2100,
-  "strength": 3
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "green-swing",
+  "name": "GREEN SWING",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "A mellow lift, thoughts wandering somewhere philosophical, time stretching, everything a little funnier.",
+  "durationSec": 2700,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "heart-roll",
+  "name": "HEART ROLL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Energy braided with warmth: closeness, touch and music turned up, kind words easy.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "high-noon-oil",
+  "name": "HIGH-NOON OIL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Straight up to the edge: hard, good, no waiting.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "highland-frost",
+  "name": "HIGHLAND FROST",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "A climbing brightness: alert, talkative, sure of yourself, the mood lifted and sharpened.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "island-hush",
@@ -618,7 +556,28 @@
   "group": "TINCTURES",
   "description": "An earthy, numbing calm that loosens body and mind alike: sociable, slow, unbothered.",
   "durationSec": 1800,
-  "strength": 2
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "laurel-tonic",
+  "name": "LAUREL TONIC",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "The state of already having won, before the game, the workout, the speech.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "lightning-tonic",
+  "name": "LIGHTNING TONIC",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "A quick rush laced with euphoria and crystal clarity, opening into wide, fast thought.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "living-walls",
@@ -627,43 +586,38 @@
   "group": "TINCTURES",
   "description": "Energy and laughter rising, then colours breathing and patterns moving: the world quietly alive.",
   "durationSec": 2100,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "long-unfolding",
-  "name": "LONG UNFOLDING",
+  "id": "long-note-balm",
+  "name": "LONG-NOTE BALM",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "A sharp opening, then a stream of thought that loosens and wanders, settling at last into a wide, quiet bliss.",
+  "description": "A short listen before intimacy: the body settled, the moment stretched out.",
+  "durationSec": 1200,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "morning-swing",
+  "name": "MORNING SWING",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Feeling swings wide and fast, fear to delight and back, then settles into a dreamy hush.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 2,
+  "phone": false
  },
  {
-  "id": "open-heart",
-  "name": "OPEN HEART",
+  "id": "morpheus-cotton",
+  "name": "MORPHEUS COTTON",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "Energy braided with warmth: closeness, touch and music all turned up, and an easy wish to say kind things.",
+  "description": "Sinking into slowness, wrapped in numb, padded comfort.",
   "durationSec": 1800,
-  "strength": 3
- },
- {
-  "id": "porch-swing",
-  "name": "PORCH SWING",
-  "kind": "tinctures",
-  "group": "TINCTURES",
-  "description": "A mellow lift, thoughts wandering somewhere philosophical, time stretching, everything a little funnier.",
-  "durationSec": 2700,
-  "strength": 3
- },
- {
-  "id": "prism-bloom",
-  "name": "PRISM BLOOM",
-  "kind": "tinctures",
-  "group": "TINCTURES",
-  "description": "Colour rises at the edges of things; light gathers halos and scatters into patterns. Bright, playful, wide-eyed.",
-  "durationSec": 2100,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "quiet-crown",
@@ -672,43 +626,88 @@
   "group": "TINCTURES",
   "description": "For a pounding head: from an ordinary alpha down into a deep, dimmed delta that lets it ease.",
   "durationSec": 1200,
-  "strength": 1
+  "strength": 1,
+  "phone": false
  },
  {
-  "id": "rattling-engine",
-  "name": "RATTLING ENGINE",
+  "id": "reboot-salts",
+  "name": "REBOOT SALTS",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Ten minutes of stuttering pulses and surges: the signal scrambled, then rebooted clean.",
+  "durationSec": 600,
+  "strength": 4,
+  "phone": false
+ },
+ {
+  "id": "right-hand-engine",
+  "name": "RIGHT-HAND ENGINE",
   "kind": "tinctures",
   "group": "TINCTURES",
   "description": "Thoughts racing ahead of you, the heart loud, everything at once and none of it smooth.",
   "durationSec": 2100,
-  "strength": 3
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "rising-chorus-cordial",
+  "name": "RISING CHORUS CORDIAL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Wave stacked on wave into a full-body rush, each pass a little higher.",
+  "durationSec": 2527,
+  "strength": 4,
+  "phone": false
+ },
+ {
+  "id": "rose-and-briar-balm",
+  "name": "ROSE AND BRIAR BALM",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Pleasure braided with a little pain: warm numbness, rolling waves, a sharp edge.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "rust-and-rumour",
   "name": "RUST AND RUMOUR",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "Made more of story than of substance: a low, strange unease that turns, slowly, into an odd lucidity.",
+  "description": "Made more of story than of substance: a low, strange unease that turns into an odd lucidity.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "silver-edge",
-  "name": "SILVER EDGE",
+  "id": "sages-tilt",
+  "name": "SAGE'S TILT",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "A climbing brightness: alert, talkative, sure of yourself, the mood lifted and sharpened.",
+  "description": "The world tips into a new, shimmering angle: a short, deep displacement.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "slow-fire",
-  "name": "SLOW FIRE",
+  "id": "sated-syrup",
+  "name": "SATED SYRUP",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "For intimacy: steady to begin, and staying open for more.",
-  "durationSec": 1200,
-  "strength": 2
+  "description": "Appetite quieted: cravings hushed, the will steadied, a calm and satisfied stop.",
+  "durationSec": 1800,
+  "strength": 2,
+  "phone": false
+ },
+ {
+  "id": "scarlet-dusk",
+  "name": "SCARLET DUSK",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "An opening glow that eases into a drowsy, dreaming half-sleep.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
  },
  {
   "id": "slow-honey",
@@ -717,97 +716,178 @@
   "group": "TINCTURES",
   "description": "Everything slowed to a crawl and sweetened: heavy-lidded, sedated, content.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "soft-sunrise",
-  "name": "SOFT SUNRISE",
+  "id": "spirits-at-dusk",
+  "name": "SPIRITS AT DUSK",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "A gentle warming of mood, contentment returning the way morning light does. The mildest of the tinctures.",
-  "durationSec": 1500,
-  "strength": 1
+  "description": "Shoulders loosening, a lift in mood, then the easy giddiness of a long table.",
+  "durationSec": 2100,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "steady-hand-tonic",
+  "name": "STEADY-HAND TONIC",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "For the room full of strangers, the mic, the test: shyness eased, footing found.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "strike-of-flint",
   "name": "STRIKE OF FLINT",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "A fast, bright spark: confidence and alertness arriving all at once, and leaving as quickly.",
+  "description": "A fast, bright spark: confidence and alertness arriving at once, and leaving as quickly.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "sun-bleached-vision",
-  "name": "SUN-BLEACHED VISION",
+  "id": "sulphur-sprint",
+  "name": "SULPHUR SPRINT",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "A mystical loosening of the self, the senses knocked out of joint, the body light and very far away.",
-  "durationSec": 2100,
-  "strength": 3
- },
- {
-  "id": "swinging-gate",
-  "name": "SWINGING GATE",
-  "kind": "tinctures",
-  "group": "TINCTURES",
-  "description": "Feeling swings wide and fast, from fear to delight and back, before it settles into a dreamy hush.",
+  "description": "Wide awake and pushing forward: energy surging, focus narrowing, rest postponed.",
   "durationSec": 1800,
-  "strength": 2
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "the-far-room",
-  "name": "THE FAR ROOM",
+  "id": "summit-salts",
+  "name": "SUMMIT SALTS",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "Dreamy thinking and clumsy limbs at first, then a step back from the body, watching from somewhere further off.",
+  "description": "Smelling salts for the effort ahead: three tiers climbed to sharpen you before the work.",
+  "durationSec": 1800,
+  "strength": 1,
+  "phone": false
+ },
+ {
+  "id": "sun-button",
+  "name": "SUN BUTTON",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "A mystical loosening of the self, the senses knocked out of joint, the body very far away.",
   "durationSec": 2100,
-  "strength": 2
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "the-breath-long-world",
+  "name": "THE BREATH-LONG WORLD",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "In one breath the ordinary room is gone, and somewhere vast and certain stands in its place.",
+  "durationSec": 2100,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "the-emerald-hour",
+  "name": "THE EMERALD HOUR",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Lucidity arriving slowly: speech turning articulate, ideas linking up, the mind clear and strangely bright.",
+  "durationSec": 2700,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "the-far-hollow",
+  "name": "THE FAR HOLLOW",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Dreamy thinking and clumsy limbs, then a step back from the body, watching from further off.",
+  "durationSec": 2100,
+  "strength": 2,
+  "phone": false
  },
  {
   "id": "the-heavy-tide",
   "name": "THE HEAVY TIDE",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "The strongest of the warm, sinking kind: one full, heavy wave with nothing holding it back.",
+  "description": "The strongest of the warm, sinking kind: one full wave with nothing holding it back.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "the-long-sprint",
-  "name": "THE LONG SPRINT",
+  "id": "the-loosened-line",
+  "name": "THE LOOSENED LINE",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "Wide awake and pushing forward: energy surging, focus narrowing, rest postponed.",
+  "description": "Theta's border, where habits loosen: for shifting an attitude, or a behaviour.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 6,
+  "phone": false
  },
  {
-  "id": "the-swapped-world",
-  "name": "THE SWAPPED WORLD",
+  "id": "the-swoon-philtre",
+  "name": "THE SWOON PHILTRE",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "In one breath the ordinary room is gone, and somewhere vast and certain stands in its place. Brief, total and strange.",
+  "description": "Falling in love, in the body: the heart swooping, a warmth spreading.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "tidal-tonic",
+  "name": "TIDAL TONIC",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "A tide of well-being, and riding on it a spike of alertness that scrubs the fog away.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "two-tone-bloom",
+  "name": "TWO-TONE BLOOM",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Colour rising at the edges of things; light gathering halos and scattering into patterns.",
   "durationSec": 2100,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "tilted-light",
-  "name": "TILTED LIGHT",
+  "id": "umbra-drops",
+  "name": "UMBRA DROPS",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "The world tips into a new, shimmering angle: a short, deep displacement from where you were.",
-  "durationSec": 1800,
-  "strength": 3
+  "description": "The calming one: everything glows, then the light is drawn quietly away.",
+  "durationSec": 2100,
+  "strength": 3,
+  "phone": false
  },
  {
-  "id": "velvet-dusk",
-  "name": "VELVET DUSK",
+  "id": "unfolding-twenty-five",
+  "name": "UNFOLDING TWENTY-FIVE",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "An opening glow that eases into a drowsy, dreaming half-sleep.",
+  "description": "A sharp opening, then a stream of thought that loosens and wanders into a wide, quiet bliss.",
   "durationSec": 1800,
-  "strength": 1
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "unmarked-phial",
+  "name": "UNMARKED PHIAL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "No label, no promises: press play and see what is on the other side.",
+  "durationSec": 1800,
+  "strength": 4,
+  "phone": false
  },
  {
   "id": "warm-undertow",
@@ -816,16 +896,28 @@
   "group": "TINCTURES",
   "description": "A surge of warmth, then a slow pull down into heavy, wordless comfort.",
   "durationSec": 1800,
-  "strength": 3
+  "strength": 3,
+  "phone": false
+ },
+ {
+  "id": "waterfall-oil",
+  "name": "WATERFALL OIL",
+  "kind": "tinctures",
+  "group": "TINCTURES",
+  "description": "Sensation rolling in wave after wave after wave.",
+  "durationSec": 1800,
+  "strength": 3,
+  "phone": false
  },
  {
   "id": "white-horizon",
   "name": "WHITE HORIZON",
   "kind": "tinctures",
   "group": "TINCTURES",
-  "description": "Everything at once, then nothing at all: a fast, total dissolving into a bright stillness. The strongest of the tinctures; begin with another.",
+  "description": "Everything at once, then nothing at all: a total dissolving into bright stillness. The strongest; begin with another.",
   "durationSec": 2100,
-  "strength": 2
+  "strength": 2,
+  "phone": false
  },
  {
   "id": "wildfire",
@@ -834,6 +926,7 @@
   "group": "TINCTURES",
   "description": "An explosive, restless push, rougher than the rest; hard to sit still inside.",
   "durationSec": 1560,
-  "strength": 3
+  "strength": 3,
+  "phone": false
  }
 ]

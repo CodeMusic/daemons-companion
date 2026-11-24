@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "the-swoon-philtre",
+ "kind": "tinctures",
+ "meta": {
+  "name": "THE SWOON PHILTRE",
+  "description": "Falling in love, in the body: the heart swooping, a warmth spreading.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.04
+   },
+   {
+    "atSec": 120.09,
+    "beatHz": 10.07
+   },
+   {
+    "atSec": 242.69,
+    "beatHz": 2.48
+   },
+   {
+    "atSec": 539.82,
+    "beatHz": 2.48
+   },
+   {
+    "atSec": 601.21,
+    "beatHz": 3.57
+   },
+   {
+    "atSec": 900.01,
+    "beatHz": 3.56
+   },
+   {
+    "atSec": 960.1,
+    "beatHz": 5.94
+   },
+   {
+    "atSec": 1260.01,
+    "beatHz": 9.68
+   },
+   {
+    "atSec": 1352.4,
+    "beatHz": 14.12
+   },
+   {
+    "atSec": 1774.7,
+    "beatHz": 14.07
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.09
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

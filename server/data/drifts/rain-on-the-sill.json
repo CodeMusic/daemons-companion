@@ -1,0 +1,69 @@
+{
+ "formatVersion": 2,
+ "id": "rain-on-the-sill",
+ "kind": "sleep",
+ "meta": {
+  "name": "RAIN ON THE SILL",
+  "description": "Calm and lifted at once: the noise rinsed out, everything settling into place.",
+  "category": "SLEEP",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1200
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.89
+   },
+   {
+    "atSec": 300.19,
+    "beatHz": 10.05
+   },
+   {
+    "atSec": 599.91,
+    "beatHz": 1.44
+   },
+   {
+    "atSec": 1200.01,
+    "beatHz": 1.45
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 399.99,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.161,
+    "_measured": {
+     "slopeDbPerDecade": -10.8,
+     "levelDb": -69.9
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

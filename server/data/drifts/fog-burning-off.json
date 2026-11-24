@@ -1,0 +1,100 @@
+{
+ "formatVersion": 2,
+ "id": "fog-burning-off",
+ "kind": "meditation",
+ "meta": {
+  "name": "FOG BURNING OFF",
+  "description": "Hazy alpha sharpening up through beta: the fog burns off and the edges return.",
+  "category": "MEDITATION",
+  "strength": 3,
+  "strengthLabel": "Sharp",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 8.0,
+    "carrierHz": 240,
+    "noise": "grey",
+    "intensity": "=-",
+    "brightness": 0.5
+   },
+   {
+    "atSec": 300,
+    "beatHz": 11.0,
+    "carrierHz": 270,
+    "intensity": "=",
+    "brightness": 0.65
+   },
+   {
+    "atSec": 660,
+    "beatHz": 15.0,
+    "carrierHz": 310,
+    "noise": "white",
+    "intensity": "=",
+    "brightness": 0.8
+   },
+   {
+    "atSec": 1020,
+    "beatHz": 20.0,
+    "carrierHz": 350,
+    "intensity": "=",
+    "brightness": 0.95
+   },
+   {
+    "atSec": 1320,
+    "beatHz": 24.0,
+    "carrierHz": 370,
+    "intensity": "=+",
+    "brightness": 1.0
+   },
+   {
+    "atSec": 1560,
+    "beatHz": 18.0,
+    "carrierHz": 350,
+    "intensity": "=",
+    "brightness": 0.95
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 16.0,
+    "carrierHz": 340,
+    "intensity": "=",
+    "brightness": 0.9
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 320
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "white",
+    "level": 0.2
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": true,
+  "follow": "scenes",
+  "intensity": 4,
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

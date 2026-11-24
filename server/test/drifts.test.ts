@@ -38,6 +38,16 @@ describe("drifts", () => {
     const day = new Date(2026, 10, 24), st = stagesOfFile(longFallFile(day), 220);
     expect(st.map((s) => [s.at, s.beat])).toEqual(driftOf(day).map((s) => [s.at, s.beat]));
   });
+  it("the phone carries three of each kind, whole, and the index marks them (C-551)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const phone = JSON.parse(readFileSync(new URL("../data/drifts/phone.json", import.meta.url), "utf8")) as { id: string; kind: string }[];
+    const per: Record<string, number> = {};
+    for (const d of phone) per[d.kind] = (per[d.kind] ?? 0) + 1;
+    expect(per).toEqual({ sleep: 3, meditation: 3, tinctures: 3 });
+    const marked = driftList().filter((d) => d.phone).map((d) => d.id).sort();
+    expect(marked).toEqual(phone.map((d) => d.id).sort());
+    for (const d of phone) expect(stagesOfFile(d as never, 220).length).toBeGreaterThan(0);
+  });
   it("keeps the drift chosen, and falls back to THE LONG FALL", () => {
     expect(chosenDrift(store)).toBe(LONG_FALL);
     const other = driftList()[5].id;

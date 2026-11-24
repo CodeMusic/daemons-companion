@@ -1,0 +1,78 @@
+{
+ "formatVersion": 2,
+ "id": "sulphur-sprint",
+ "kind": "tinctures",
+ "meta": {
+  "name": "SULPHUR SPRINT",
+  "description": "Wide awake and pushing forward: energy surging, focus narrowing, rest postponed.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.99
+   },
+   {
+    "atSec": 300.47,
+    "beatHz": 10.06
+   },
+   {
+    "atSec": 540.37,
+    "beatHz": 14.05
+   },
+   {
+    "atSec": 960.01,
+    "beatHz": 14.05
+   },
+   {
+    "atSec": 1200.01,
+    "beatHz": 0.82
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 0.83
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.134,
+    "_measured": {
+     "slopeDbPerDecade": -11.0,
+     "levelDb": -72.4
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

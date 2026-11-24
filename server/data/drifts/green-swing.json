@@ -1,0 +1,122 @@
+{
+ "formatVersion": 2,
+ "id": "green-swing",
+ "kind": "tinctures",
+ "meta": {
+  "name": "GREEN SWING",
+  "description": "A mellow lift, thoughts wandering somewhere philosophical, time stretching, everything a little funnier.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 2700
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.8
+   },
+   {
+    "atSec": 119.63,
+    "beatHz": 10.11
+   },
+   {
+    "atSec": 245.85,
+    "beatHz": 5.91
+   },
+   {
+    "atSec": 539.82,
+    "beatHz": 5.9
+   },
+   {
+    "atSec": 600.38,
+    "beatHz": 9.71
+   },
+   {
+    "atSec": 758.74,
+    "beatHz": 9.72
+   },
+   {
+    "atSec": 900.38,
+    "beatHz": 9.68
+   },
+   {
+    "atSec": 960.28,
+    "beatHz": 5.93
+   },
+   {
+    "atSec": 1260.01,
+    "beatHz": 5.93
+   },
+   {
+    "atSec": 1320.1,
+    "beatHz": 10.08
+   },
+   {
+    "atSec": 1619.92,
+    "beatHz": 10.08
+   },
+   {
+    "atSec": 1680.1,
+    "beatHz": 15.08
+   },
+   {
+    "atSec": 1980.1,
+    "beatHz": 15.08
+   },
+   {
+    "atSec": 2040.11,
+    "beatHz": 23.98
+   },
+   {
+    "atSec": 2340.01,
+    "beatHz": 23.98
+   },
+   {
+    "atSec": 2400.11,
+    "beatHz": 30.03
+   },
+   {
+    "atSec": 2700.02,
+    "beatHz": 30.01
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.16,
+    "_measured": {
+     "slopeDbPerDecade": -11.4,
+     "levelDb": -70.0
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

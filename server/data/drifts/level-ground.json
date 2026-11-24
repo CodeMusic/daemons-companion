@@ -1,0 +1,61 @@
+{
+ "formatVersion": 2,
+ "id": "level-ground",
+ "kind": "meditation",
+ "meta": {
+  "name": "LEVEL GROUND",
+  "description": "Back to a calm, awake eight hertz, to clear the pull of the last drift.",
+  "category": "MEDITATION",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1200
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 7.93
+   },
+   {
+    "atSec": 1200.01,
+    "beatHz": 7.98
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 99.95,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.168,
+    "_measured": {
+     "slopeDbPerDecade": -11.0,
+     "levelDb": -69.3
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

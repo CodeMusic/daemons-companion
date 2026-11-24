@@ -1,0 +1,99 @@
+{
+ "formatVersion": 2,
+ "id": "still-pond",
+ "kind": "meditation",
+ "meta": {
+  "name": "STILL POND",
+  "description": "A slow descent into stillness, and then nothing asked of you.",
+  "category": "MEDITATION",
+  "strength": 2,
+  "strengthLabel": "Gentle",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9.0,
+    "carrierHz": 200,
+    "intensity": "=-",
+    "brightness": 0.5
+   },
+   {
+    "atSec": 360,
+    "beatHz": 7.0,
+    "carrierHz": 190,
+    "intensity": "=-",
+    "brightness": 0.4
+   },
+   {
+    "atSec": 780,
+    "beatHz": 6.0,
+    "carrierHz": 180,
+    "intensity": "=-",
+    "brightness": 0.35
+   },
+   {
+    "atSec": 1200,
+    "beatHz": 5.5,
+    "carrierHz": 185,
+    "intensity": "=-",
+    "brightness": 0.3
+   },
+   {
+    "atSec": 1500,
+    "beatHz": 6.0,
+    "carrierHz": 190,
+    "intensity": "=-",
+    "brightness": 0.35
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 6.0,
+    "carrierHz": 190,
+    "intensity": "=-",
+    "brightness": 0.3
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 190
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.18
+   },
+   {
+    "source": "texture",
+    "type": "rain",
+    "level": 0.3,
+    "params": {
+     "density": 0.5
+    }
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 0.6
+ },
+ "pulsetto": {
+  "enabled": true,
+  "follow": "scenes",
+  "intensity": 3,
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

@@ -9,6 +9,7 @@ import { api } from "../platform/net";
 import { keep, mine, type Creation } from "../platform/creations";   // C-358: what is played is kept in MINE
 import { CreationsScreen, RecordCover } from "./Creations";   // C-358
 import { driftOf, LONG_FALL, LONG_FALL_INFO, type DriftFile, type DriftInfo } from "../sound/binaural";
+import { phoneDriftFile, phoneDriftList } from "../sound/phoneDrifts";   // C-551: the phone's own three of each kind
 import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../sound/sleepSession";
 import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../shared/ui/ui";
 
@@ -30,13 +31,13 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
   const [, tickle] = useState(0);
   const [gallery, setGallery] = useState(false);                                 // C-358: CREATIONS, in place of this card
   // C-506: REVERIE's drifts -- the library (the hub's), the one chosen, and the list open or not
-  const [drifts, setDrifts] = useState<DriftInfo[]>([LONG_FALL_INFO]);
+  const [drifts, setDrifts] = useState<DriftInfo[]>([LONG_FALL_INFO, ...phoneDriftList()]);
   const [chosen, setChosen] = useState<string>(LONG_FALL);
   const [picking, setPicking] = useState(false);
   const [tonight, setTonight] = useState<Creation | null>(null);                 // C-358: tonight's piece as a creation (its cover)
   const load = () => api<Sleep>("/api/sleep").then(setSleep).catch((e) => setError(e.message));
   useEffect(() => { load(); return onSleep(setNow); }, []);
-  useEffect(() => {   // C-506: a hub without the library (or a phone on its own) has THE LONG FALL alone
+  useEffect(() => {   // C-506: a hub without the library (or a phone on its own) keeps THE LONG FALL and the phone's own (C-551)
     api<{ drifts: DriftInfo[]; chosen: string }>("/api/drifts").then((r) => { if (r.drifts?.length) setDrifts(r.drifts); setChosen(r.chosen ?? LONG_FALL); }).catch(() => {});
   }, []);
   const choose = async (id: string) => {
@@ -72,7 +73,8 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
         k = await keep(c, "household");
       }
       // C-506: the chosen drift's file (THE LONG FALL is made on the phone, as always)
-      const driftFile = chosen === LONG_FALL ? null : await api<DriftFile>(`/api/drifts/${encodeURIComponent(chosen)}`).catch(() => null);
+      const driftFile = chosen === LONG_FALL ? null
+        : await api<DriftFile>(`/api/drifts/${encodeURIComponent(chosen)}`).catch(() => phoneDriftFile(chosen));   // C-551: the phone's own, away
       await playSleep({ id: t.id, uri: k.local["phone.m4a"], title: k.title || `${t.nickname || "Your daemon"}'s sleep sounds`, keyscale: t.keyscale, drift, driftFile });
     } catch (e) { setError((e as Error).message); } finally { setBusy(""); }
   };

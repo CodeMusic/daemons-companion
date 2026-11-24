@@ -1,0 +1,95 @@
+{
+ "formatVersion": 2,
+ "id": "blue-ember",
+ "kind": "tinctures",
+ "meta": {
+  "name": "BLUE EMBER",
+  "description": "For intimacy: steady to begin, and staying open for more.",
+  "category": "TINCTURES",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 1200
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.3,
+    "carrierHz": 250.03
+   },
+   {
+    "atSec": 121.17,
+    "beatHz": 10.43,
+    "carrierHz": 249.09
+   },
+   {
+    "atSec": 240.3,
+    "beatHz": 12.34,
+    "carrierHz": 150.03
+   },
+   {
+    "atSec": 544.94,
+    "beatHz": 12.3,
+    "carrierHz": 147.97
+   },
+   {
+    "atSec": 660.14,
+    "beatHz": 14.51,
+    "carrierHz": 99.98
+   },
+   {
+    "atSec": 957.01,
+    "beatHz": 14.95,
+    "carrierHz": 149.48
+   },
+   {
+    "atSec": 963.24,
+    "beatHz": 15.41,
+    "carrierHz": 155.28
+   },
+   {
+    "atSec": 1019.65,
+    "beatHz": 24.5,
+    "carrierHz": 249.31
+   },
+   {
+    "atSec": 1200.04,
+    "beatHz": 24.46,
+    "carrierHz": 250.01
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 152.66,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.128
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

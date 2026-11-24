@@ -52,7 +52,7 @@ export type DriftFile = {
   audio?: { binaural?: { carrierHz?: number }; beds?: DriftBed[] };
 };
 export type DriftInfo = { id: string; name: string; kind: string; group: string | null; description: string;
-                          durationSec: number | null; strength: number | null };
+                          durationSec: number | null; strength: number | null; phone?: boolean };   // C-551: phone, one the app carries
 export const LONG_FALL = "the-long-fall";
 export const LONG_FALL_INFO: DriftInfo = { id: LONG_FALL, name: "THE LONG FALL", kind: "sleep", group: "DAEMONS",
   description: "Alpha as you settle, theta, then delta as you sleep: each beat placed by the day.", durationSec: 1800, strength: 1 };

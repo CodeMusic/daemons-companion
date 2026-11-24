@@ -1,0 +1,90 @@
+{
+ "formatVersion": 2,
+ "id": "full-chest",
+ "kind": "meditation",
+ "meta": {
+  "name": "FULL CHEST",
+  "description": "The warmth of being thankful, dwelt in: relaxed alpha that slowly swells.",
+  "category": "MEDITATION",
+  "strength": 3,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9.0,
+    "carrierHz": 200,
+    "intensity": "=-",
+    "brightness": 0.6
+   },
+   {
+    "atSec": 360,
+    "beatHz": 10.0,
+    "carrierHz": 230,
+    "intensity": "=",
+    "brightness": 0.75
+   },
+   {
+    "atSec": 720,
+    "beatHz": 11.0,
+    "carrierHz": 260,
+    "intensity": "=+",
+    "brightness": 0.95
+   },
+   {
+    "atSec": 1080,
+    "beatHz": 10.5,
+    "carrierHz": 250,
+    "intensity": "=+",
+    "brightness": 1.0
+   },
+   {
+    "atSec": 1440,
+    "beatHz": 10.0,
+    "carrierHz": 230,
+    "intensity": "=",
+    "brightness": 0.8
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 9.0,
+    "carrierHz": 210,
+    "intensity": "=-",
+    "brightness": 0.65
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 230
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.25
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": true,
+  "follow": "scenes",
+  "intensity": 4,
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

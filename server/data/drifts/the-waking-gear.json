@@ -1,0 +1,93 @@
+{
+ "formatVersion": 2,
+ "id": "the-waking-gear",
+ "kind": "meditation",
+ "meta": {
+  "name": "THE WAKING GEAR",
+  "description": "Thirteen to thirty: the everyday working mind, climbing to sharp attention.",
+  "category": "MEDITATION",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 12.8,
+    "carrierHz": 99.99
+   },
+   {
+    "atSec": 299.63,
+    "beatHz": 12.99,
+    "carrierHz": 99.97
+   },
+   {
+    "atSec": 361.02,
+    "beatHz": 17.07,
+    "carrierHz": 100.01
+   },
+   {
+    "atSec": 780.56,
+    "beatHz": 16.99,
+    "carrierHz": 100.86
+   },
+   {
+    "atSec": 840.19,
+    "beatHz": 25.04,
+    "carrierHz": 199.96
+   },
+   {
+    "atSec": 1320.66,
+    "beatHz": 25.02,
+    "carrierHz": 201.94
+   },
+   {
+    "atSec": 1380.84,
+    "beatHz": 30.04,
+    "carrierHz": 400.02
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 30.01,
+    "carrierHz": 399.99
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 150.41,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.18,
+    "_measured": {
+     "slopeDbPerDecade": -14.6,
+     "levelDb": -68.2
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

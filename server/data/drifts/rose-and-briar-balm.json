@@ -1,0 +1,85 @@
+{
+ "formatVersion": 2,
+ "id": "rose-and-briar-balm",
+ "kind": "tinctures",
+ "meta": {
+  "name": "ROSE AND BRIAR BALM",
+  "description": "Pleasure braided with a little pain: warm numbness, rolling waves, a sharp edge.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.99
+   },
+   {
+    "atSec": 120.09,
+    "beatHz": 10.07
+   },
+   {
+    "atSec": 360.19,
+    "beatHz": 15.09
+   },
+   {
+    "atSec": 658.43,
+    "beatHz": 15.09
+   },
+   {
+    "atSec": 900.38,
+    "beatHz": 2.48
+   },
+   {
+    "atSec": 1200.38,
+    "beatHz": 2.49
+   },
+   {
+    "atSec": 1499.82,
+    "beatHz": 0.22
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 0.23
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.153,
+    "_measured": {
+     "slopeDbPerDecade": -11.0,
+     "levelDb": -70.6
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

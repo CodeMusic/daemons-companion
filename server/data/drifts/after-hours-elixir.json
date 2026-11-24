@@ -1,0 +1,77 @@
+{
+ "formatVersion": 2,
+ "id": "after-hours-elixir",
+ "kind": "tinctures",
+ "meta": {
+  "name": "AFTER-HOURS ELIXIR",
+  "description": "Dance till the sun catches you: lights, waves of bliss, euphoria streaming through.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.05
+   },
+   {
+    "atSec": 300.37,
+    "beatHz": 10.08
+   },
+   {
+    "atSec": 540.37,
+    "beatHz": 14.04
+   },
+   {
+    "atSec": 959.91,
+    "beatHz": 14.04
+   },
+   {
+    "atSec": 1200.01,
+    "beatHz": 0.82
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 0.83
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.05,
+    "_measured": {
+     "slopeDbPerDecade": -11.4,
+     "levelDb": -82.1
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

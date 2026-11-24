@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "the-deep-floor",
+ "kind": "sleep",
+ "meta": {
+  "name": "THE DEEP FLOOR",
+  "description": "The slowest band of ordinary sleep: half a hertz to four, dreamless and deep.",
+  "category": "SLEEP",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 0.39,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 299.54,
+    "beatHz": 0.53,
+    "carrierHz": 100.03
+   },
+   {
+    "atSec": 368.55,
+    "beatHz": 1.06,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 780.75,
+    "beatHz": 0.94,
+    "carrierHz": 101.12
+   },
+   {
+    "atSec": 839.54,
+    "beatHz": 2.05,
+    "carrierHz": 199.11
+   },
+   {
+    "atSec": 1318.71,
+    "beatHz": 1.96,
+    "carrierHz": 199.97
+   },
+   {
+    "atSec": 1381.96,
+    "beatHz": 4.08,
+    "carrierHz": 400.0
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 4.04,
+    "carrierHz": 399.99
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 150.12,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.124
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

@@ -11,6 +11,7 @@
 #include <memory>
 #include <thread>
 
+#include "board.h"
 #include "caps/bus.h"
 #include "caps/cc1101.h"
 #include "paths.h"
@@ -141,13 +142,17 @@ const Found &find(bool again) {
     else f.kind = Kind::None;
   } else {
 #if ZERO_DEVICE
-    findOnDevice(f);
+    // C-514: the header's chips are asked only on a board that has the header -- its POWER_EN, GPIO26, is the Game
+    // HAT's A, the GamePi20's START and the uConsole AIO's LoRa DIO1, and must never be driven there
+    if (board::CAP_HEADER) findOnDevice(f);
+    else f.kind = Kind::None;
 #else
     f.kind = Kind::None;
     f.why = "a computer has no cap header (--cap cc1101 stands one in)";        // DRAFT
 #endif
   }
   offersFor(f);
+  if (!f.pretend && board::RADIOS) board::builtInRadios(f);   // C-514: what the board carries itself (receive only here)
   now = f;
   return now;
 }

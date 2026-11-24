@@ -3,6 +3,7 @@
 // a player reads here is DRAFT.
 #include <vector>
 
+#include "board.h"
 #include "app.h"
 #include "canvas.h"
 #include "caps/cap.h"
@@ -50,7 +51,7 @@ struct Home : Page {
     // C-380: a SYNC (C-397: of the one save, whichever game is played)
     if (hub::paired() && mirror::mode() == mirror::Mode::Send && hasGame) items.push_back({ "SYNC", PageId::Home });
     if (!hub::paired()) items.push_back({ "LINK", PageId::Pair });   // C-380
-    if (ZERO_DEVICE || caps::found().kind != caps::Kind::None) items.push_back({ "CAPS", PageId::Caps });   // C-444   // DRAFT
+    if ((ZERO_DEVICE && (board::CAP_HEADER || board::RADIOS)) || caps::found().kind != caps::Kind::None) items.push_back({ "CAPS", PageId::Caps });   // C-444   // DRAFT
     if (kit::configured()) items.push_back({ "KIT", PageId::Kit });   // C-453   // DRAFT
     items.push_back({ "LEAVE", PageId::Home });
     choices.items.clear();

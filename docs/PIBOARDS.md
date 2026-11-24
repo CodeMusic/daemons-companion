@@ -91,13 +91,16 @@ and cells already work under its desktop, so `tools/boards/uconsole.sh` adds onl
   way, once the build can make the window side on the device (to come).
 - **The keys**: one USB HID from the keyboard's own chip -- the keys, the trackball as a mouse, and a joystick. A switch
   on its back sets A B X Y SELECT START to keys (A `j`, B `k`, X `u`, Y `i`, SELECT space, START enter) or to joystick
-  buttons; the d-pad is always the arrows. **DAEMONS plays in the keys' mode** while the program reads one input device.
-  No shoulder buttons: X and Y are L and R (Q and P too).
+  buttons; the d-pad is always the arrows. **Either mode plays**: the keyboard and the joystick are read together
+  (`hal/device.cpp` opens every input a board reads; `board::rawKey` names the joystick's buttons 1 to 10). No shoulder
+  buttons: X and Y are L and R.
 - **The sound**: PWM on GPIO 12 and 13 (`audremap,pins_12_13`, in the uConsole's own config) to its amplifier and the
   jack; the jack takes a headset's microphone. Nothing is turned on for sound.
 - **The cells**: two 18650s read by the AXP228 (`axp20x-battery`): the percentage shows.
 - **The radios**: the AIO's, in `docs/CAPS.md`. The script adds its lines to config.txt where missing (SPI1, the UART,
   I2C, the RTC) and takes the serial console off the GPS's UART; it powers nothing on.
+- **AI on it**: a placeholder. Every AI harness takes THE BRAIN's shape (`docs/BRAIN.md`, C-517); the uConsole's part is
+  C-530 (brainstem, cerebellum, HANDS, its own thalamus when the hub is away, a small CPU cortex where it fits).
 - **Seen on the device: not yet** (DRAFT).
 
 **Setting one up**: put it on Tailscale, then `BOARD=uconsole tools/install.sh <user>@<its name>`, the lines it prints,
@@ -109,8 +112,9 @@ board's own script is then only its pins and its screen.
 
 ## Adding a board
 
-1. `src/boards/<id>.cpp`, from the nearest of the three (a pad board calls `boards/pad.cpp`): its `ID` (the start of the name it gives the hub), `NAME`, screen,
-   `KEYBOARD`, `INPUTS`, the game's keys, `forPage` and `word`.
+1. `src/boards/<id>.cpp`, from the nearest of the four (a pad board calls `boards/pad.cpp`): its `ID` (the start of the name it gives the hub), `NAME`, screen,
+   `KEYBOARD`, `INPUTS` (every one that opens is read), the game's keys, `forPage`, `word`, `rawKey` (codes of its own,
+   or none), `CAP_HEADER` (the Cardputer's EXT header: only the Zero), `RADIOS` and `builtInRadios` (C-514).
 2. If it has no launcher: `tools/boards/<id>.sh`, its pins and screen, using `common.sh` for the rest.
 3. A row in the table above, and in `LAYOUT.md` if a folder moved.
 

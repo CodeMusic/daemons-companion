@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #include "board.h"
 #include "hal/hal.h"
@@ -25,7 +26,8 @@
 
 namespace hal {
 static bool headlessMode;
-static int fbFd = -1, keyFd = -1;
+static int fbFd = -1;
+static std::vector<int> keyFds;   // C-514: every input the board reads (the uConsole's keys and its joystick)
 static uint8_t *fbMem;
 static size_t fbLen;
 static fb_var_screeninfo vinfo;
@@ -37,27 +39,40 @@ static bool shiftHeld;
 
 static bool testBit(const unsigned long *bits, int n) { return (bits[n / (8 * sizeof(long))] >> (n % (8 * sizeof(long)))) & 1; }
 
-static int openKeyboard() {
-  if (const char *k = getenv("ZERO_KEYS")) return open(k, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
-  // C-457: the board's own first (the Cardputer Zero's TCA8418 on I2C1, the GamePi20's buttons). Failing those, the
-  // first input device with letter keys -- or, on a pad, with a gamepad's A.
-  int fd = -1;
-  for (const char *const *in = board::INPUTS; *in; in++)
-    if ((fd = open(*in, O_RDONLY | O_NONBLOCK | O_CLOEXEC)) >= 0) return fd;
+// C-514: the inputs, all at once. ZERO_KEYS names one. Otherwise every device in the board's INPUTS that opens; failing
+// all of them, the first device with letter keys (a pad: with a gamepad's A), as before -- and beside it, on a board
+// that maps a joystick's buttons (board::rawKey), every joystick, so the uConsole's A B X Y reach us in either mode.
+static void openInputs() {
+  if (const char *k = getenv("ZERO_KEYS")) { int f = open(k, O_RDONLY | O_NONBLOCK | O_CLOEXEC); if (f >= 0) keyFds.push_back(f); return; }
+  for (const char *const *in = board::INPUTS; *in; in++) {
+    int f = open(*in, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+    if (f >= 0) keyFds.push_back(f);
+  }
+  if (!keyFds.empty()) return;
+  const bool joysticks = board::rawKey(BTN_TRIGGER) != Key::None || board::rawKey(BTN_THUMB) != Key::None;
+  bool found = false;
   DIR *d = opendir("/dev/input");
-  if (!d) return -1;
-  while (dirent *e = readdir(d)) {
-    if (strncmp(e->d_name, "event", 5) != 0) continue;
-    std::string p = std::string("/dev/input/") + e->d_name;
+  if (!d) return;
+  std::vector<std::string> names;
+  while (dirent *e = readdir(d))
+    if (strncmp(e->d_name, "event", 5) == 0) names.push_back(e->d_name);
+  closedir(d);
+  std::sort(names.begin(), names.end(), [](const std::string &a, const std::string &b) {
+    return atoi(a.c_str() + 5) < atoi(b.c_str() + 5);
+  });
+  for (auto &n : names) {
+    std::string p = "/dev/input/" + n;
     int f = open(p.c_str(), O_RDONLY | O_NONBLOCK | O_CLOEXEC);
     if (f < 0) continue;
     unsigned long bits[(KEY_MAX + 1) / (8 * sizeof(long)) + 1] = {};
-    if (ioctl(f, EVIOCGBIT(EV_KEY, sizeof bits), bits) >= 0 &&
-        (board::KEYBOARD ? testBit(bits, KEY_A) && testBit(bits, KEY_Z) : testBit(bits, BTN_A))) { fd = f; break; }
-    close(f);
+    bool keys = false, joy = false;
+    if (ioctl(f, EVIOCGBIT(EV_KEY, sizeof bits), bits) >= 0) {
+      keys = board::KEYBOARD ? testBit(bits, KEY_A) && testBit(bits, KEY_Z) : testBit(bits, BTN_A);
+      joy = joysticks && testBit(bits, BTN_TRIGGER);
+    }
+    if ((keys && !found) || joy) { keyFds.push_back(f); found = found || keys; }
+    else close(f);
   }
-  closedir(d);
-  return fd;
 }
 
 bool begin(int, bool headless) {
@@ -92,9 +107,9 @@ bool begin(int, bool headless) {
   memset(fbMem, 0, fbLen);
   fprintf(stderr, "screen: %s %ux%u, %u bits, line %u bytes, turned %d, x%d\n", path, vinfo.xres, vinfo.yres,
           vinfo.bits_per_pixel, finfo.line_length, rotate, zoom);
-  keyFd = openKeyboard();
-  if (keyFd < 0) fprintf(stderr, "keys: no keyboard found (set ZERO_KEYS)\n");
-  else if (getenv("ZERO_GRAB")) ioctl(keyFd, EVIOCGRAB, 1);
+  openInputs();
+  if (keyFds.empty()) fprintf(stderr, "keys: no keyboard found (set ZERO_KEYS)\n");
+  else if (getenv("ZERO_GRAB")) for (int f : keyFds) ioctl(f, EVIOCGRAB, 1);
   return true;
 }
 
@@ -160,14 +175,14 @@ static Key keyOf(int code) {
     case BTN_START: return Key::PadStart; case BTN_SELECT: return Key::PadSelect;
     case BTN_DPAD_UP: return Key::Up; case BTN_DPAD_DOWN: return Key::Down;
     case BTN_DPAD_LEFT: return Key::Left; case BTN_DPAD_RIGHT: return Key::Right;
-    default: return Key::None;
+    default: return board::rawKey(code);   // C-514: what this board means by a code the table does not know
   }
 }
 
 bool poll(KeyEvent &e) {
-  if (keyFd < 0) return false;
   input_event ev;
-  while (read(keyFd, &ev, sizeof ev) == (ssize_t)sizeof ev) {
+  for (int fd : keyFds) {
+  while (read(fd, &ev, sizeof ev) == (ssize_t)sizeof ev) {
     if (ev.type != EV_KEY || ev.value == 2) continue;   // 2: the key repeating -- every page counts its own
     Key k = keyOf(ev.code);
     if (k == Key::None) { if (getenv("ZERO_KEYLOG")) fprintf(stderr, "keys: code %d unmapped\n", ev.code); continue; }
@@ -177,6 +192,7 @@ bool poll(KeyEvent &e) {
     e.ch = e.down ? keyChar(k, shiftHeld) : 0;
     return true;
   }
+  }
   return false;
 }
 
@@ -185,7 +201,8 @@ bool closed() { return false; }
 void end() {
   if (fbMem) { munmap(fbMem, fbLen); fbMem = nullptr; }
   if (fbFd >= 0) close(fbFd);
-  if (keyFd >= 0) { ioctl(keyFd, EVIOCGRAB, 0); close(keyFd); }
+  for (int f : keyFds) { ioctl(f, EVIOCGRAB, 0); close(f); }
+  keyFds.clear();
 }
 
 // The cell: the first power_supply that is a battery (the BQ27220's, by M5Stack's own docs)

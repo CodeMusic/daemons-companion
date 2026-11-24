@@ -8,6 +8,8 @@
 #include <cstdint>
 #include "keys.h"
 
+namespace caps { struct Found; }
+
 namespace board {
 extern const char *const ID;       // "cardputer-zero": the start of the name this device gives the hub
 extern const char *const NAME;     // "Cardputer Zero": what the hub shows (DRAFT)
@@ -27,4 +29,15 @@ bool forPage(KeyEvent &e, const bool *held, bool inGame);
 
 // A hint's words as this board's keys are printed ("ENTER" is "A" on a pad); the pages print their hints through it
 const char *word(Key k);
+
+// C-514: an evdev code hal/device.cpp does not know, as this board means it (the uConsole's joystick buttons), or
+// Key::None. Asked only for codes the common table leaves unmapped.
+Key rawKey(int code);
+
+// C-514: the radios. CAP_HEADER: the Cardputer's EXT header, whose cap is looked for by asking its chips (docs/CAPS.md)
+// -- only there, since its POWER_EN, GPIO26, is a button or another chip's line on every other board. RADIOS: radios
+// the board carries itself (the uConsole's AIO), which builtInRadios() adds to what CAPS lists; it never transmits.
+extern const bool CAP_HEADER;
+extern const bool RADIOS;
+void builtInRadios(caps::Found &f);
 }

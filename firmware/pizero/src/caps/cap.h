@@ -7,7 +7,7 @@
 
 namespace caps {
 
-enum class Kind { None, Unknown, Cc1101Nfc, Lora1262 };
+enum class Kind { None, Unknown, Cc1101Nfc, Lora1262, BuiltIn };   // BuiltIn: no cap, but the board's own radios (C-514)
 enum class Band { B315, B433, B915 };       // the bands offered in North America (868 never: docs/CAPS.md)
 enum class Antenna { None, A315, A433, A868915 };
 

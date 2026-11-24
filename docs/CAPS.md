@@ -123,8 +123,10 @@ header both firmwares share (`firmware/common/`), as the LoRa frame is.
 
 *The user, 2026-11-24.* A board can carry radios of its own rather than a cap on a header. The ClockworkPi uConsole's
 are on HackerGadgets' **AIO** in its expansion slot (the user's board to be confirmed from its photos; v2 below), and CAPS
-lists them under the same ROUTINES names. **The Cardputer's cap is never looked for on another board**: its POWER_EN is
-GPIO26, which is the AIO's LoRa DIO1 (C-514 asks the board layer for that gate).
+lists them under the same ROUTINES names. **The Cardputer's cap is looked for only on a board with its header**
+(`board::CAP_HEADER`, the Zero alone): its POWER_EN is GPIO26, the Game HAT's A, the GamePi20's START and the AIO's LoRa
+DIO1, and before C-514 it was held high at start on every board. A board's own radios come from `board::builtInRadios`,
+found without asking a chip (USB ids and device nodes); CAPS shows on a board with either.
 
 | Radio | Chip | Wiring (HackerGadgets' guide) | What it offers | The rule |
 |---|---|---|---|---|

@@ -3,6 +3,7 @@
 // down) say which antenna is on; ENTER asks the chips again; ESC goes back. It never transmits. Every word DRAFT.
 #include <chrono>
 
+#include "board.h"
 #include "app.h"
 #include "apps.h"
 #include "canvas.h"
@@ -57,16 +58,16 @@ struct Caps : Page {
     canvas.setTextSize(1);
     canvas.setTextColor(DIM);
     canvas.setCursor(6, 20);
-    canvas.print("ON THE HEADER");                                                                               // DRAFT
+    canvas.print(board::CAP_HEADER ? "ON THE HEADER" : "BUILT IN");                                                                               // DRAFT
     canvas.setTextSize(2);
     canvas.setTextColor(TFT_WHITE);
     canvas.setCursor(6, 31);
-    canvas.print(f.kind == caps::Kind::None ? "NO CAP" : upper(f.name).substr(0, 25).c_str());                   // DRAFT
+    canvas.print(f.kind == caps::Kind::None ? (board::CAP_HEADER ? "NO CAP" : "NO RADIOS FOUND") : upper(f.name).substr(0, 25).c_str());                   // DRAFT
     canvas.setTextSize(1);
     canvas.setTextColor(SOFT);
     int y = 50;
     if (!f.detail.empty()) { canvas.setCursor(6, y); canvas.print(upper(f.detail).substr(0, 51).c_str()); y += 11; }
-    if (f.kind == caps::Kind::None) {
+    if (f.kind == caps::Kind::None && board::CAP_HEADER) {
       y += 2 + 10 * wrap(hint("Switch the Zero off before fitting a cap: a CC1101 + NFC or a LoRa-1262. It is found when "
                          "the Zero starts, or with ENTER here."), 6, y + 2, 51, 3, 10);                            // DRAFT
     }

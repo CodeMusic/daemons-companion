@@ -16,4 +16,8 @@ const char *const INPUTS[] = { "/dev/input/by-path/platform-daemons-pad-event", 
 void gameKeyDefaults(Key m[GBA_KEYS][2]) { pad::gameKeys(m); }
 bool forPage(KeyEvent &e, const bool *held, bool inGame) { return pad::forPage(e, held, inGame); }
 const char *word(Key k) { return pad::word(k); }
+Key rawKey(int) { return Key::None; }
+const bool CAP_HEADER = false;
+const bool RADIOS = false;
+void builtInRadios(caps::Found &) {}
 }  // namespace board

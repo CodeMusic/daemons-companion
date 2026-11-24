@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [cardputer-zero, gamepi20, gamehat]
+        board: [cardputer-zero, gamepi20, gamehat, uconsole]
     steps:
       - name: Tools
         run: |

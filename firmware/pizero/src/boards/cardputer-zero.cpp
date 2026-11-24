@@ -29,4 +29,8 @@ void gameKeyDefaults(Key m[GBA_KEYS][2]) {
 bool forPage(KeyEvent &, const bool *, bool) { return true; }   // a keyboard: every key as it is
 
 const char *word(Key k) { return keyName(k); }
+Key rawKey(int) { return Key::None; }
+const bool CAP_HEADER = true;   // the EXT header (C-444)
+const bool RADIOS = false;
+void builtInRadios(caps::Found &) {}
 }  // namespace board

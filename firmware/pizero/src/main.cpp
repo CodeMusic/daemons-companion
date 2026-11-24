@@ -295,7 +295,7 @@ int main(int argc, char **argv) {
   }
   if (listApps) {   // C-509: every app, and a launcher entry for each (tools/make_deb.sh writes them into the .deb)
     for (auto &a : apps()) {
-      if (a.zeroOnly && std::string(board::ID) != "cardputer-zero") continue;
+      if (a.zeroOnly && std::string(board::ID) != "cardputer-zero" && !(a.home == PageId::Caps && board::RADIOS)) continue;   // C-514
       printf("%-8s %-12s %s\n", a.id, a.name, a.about);
       if (desktopDir.empty()) continue;
       std::string path = desktopDir + "/daemons" + (std::string(a.id) == "daemons" ? "" : std::string("-") + a.id) + ".desktop";

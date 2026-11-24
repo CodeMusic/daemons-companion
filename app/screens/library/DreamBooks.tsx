@@ -10,7 +10,9 @@
 import { useState, type ReactNode } from "react";
 import { View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { Action, Art, Small, whenSaid } from "../../ui/ui";
+import { Action, Art, Segments, Small, whenSaid } from "../../ui/ui";
+import { Bookcase, type Shelf } from "./Bookcase";
+import speciesJson from "../../../server/data/species.json";
 import { VoiceButton } from "../../ui/voiceButton";
 import { DreamSymbol } from "../daemon/Dreams";
 import { useDark } from "../../state/look";
@@ -19,6 +21,8 @@ export type BookDream = { id: number; from: string; to: string; at: string; hour
                           quality: "vivid" | "quiet" | "broken"; text: string; nickname: string; species: number;
                           title: string; day: string; centre: number; dayColour: string };
 export type DreamVolume = { id: string; who: string; nickname: string; species: number; month: string; title: string; dreams: BookDream[] };
+// C-483: a daemon's own book, every dream it dreamt (server/src/dreams.ts dreamAuthors)
+export type DreamAuthor = { id: string; who: string; nickname: string; species: number; title: string; count: number; last: string; dreams: BookDream[] };
 
 // ---- the painting ----
 const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -72,7 +76,7 @@ export function DreamCover({ v, w, h }: { v: DreamVolume; w: number; h: number }
         <Text fontFamily="$mono" {...coverLine(17, 9, s)} fontWeight="800" color="#f3e6c4" textAlign="center" numberOfLines={2}>{v.title}</Text>
         <Art path={`/art/species/${v.species}.png`} size={Math.round(120 * s)} />
         <YStack alignItems="center" gap={2 * s}>
-          <Text fontFamily="$mono" {...coverLine(11, 7, s)} color="#e2c27c" textAlign="center" numberOfLines={1}>{v.month}</Text>
+          <Text fontFamily="$mono" {...coverLine(11, 7, s)} color="#e2c27c" textAlign="center" numberOfLines={2}>{v.month}</Text>
           <Text fontFamily="$mono" {...coverLine(10, 7, s)} color="#cbbf9f" textAlign="center" numberOfLines={1}>{`${v.dreams.length} ${v.dreams.length === 1 ? "DREAM" : "DREAMS"}`}</Text>
         </YStack>
       </YStack>
@@ -119,9 +123,85 @@ export function DreamBook({ v }: { v: DreamVolume }) {
       </YStack>
       <XStack justifyContent="space-between" alignItems="center" gap={8} flexWrap="wrap">
         <Action label="‹ BACK" onPress={() => setPage((p) => Math.max(0, p - 1))} />
-        {d ? <VoiceButton text={d.text} voice="daemon" /> : <Small>{`${last} ${last === 1 ? "dream" : "dreams"} this month.`}</Small>}
+        {d ? <VoiceButton text={d.text} voice="daemon" /> : <Small>{`${last} ${last === 1 ? "dream" : "dreams"} in this book.`}</Small>}
         <Action label="NEXT ›" onPress={() => setPage((p) => Math.min(last, p + 1))} />
       </XStack>
+    </YStack>
+  );
+}
+
+// ---- C-483: DAEMON DREAMS -- one book on the LIBRARY's shelf, and inside it a shelf of every daemon who has dreamt ----
+// (the user, 2026-11-23: "a book for Daemon Dreams <with its own book cover>, and when u click it u see a categorized
+// sections for all the daemons with dreams <with the specific daemon book cover like we have so far>, beside each ... how
+// many dreams are recorded ... categorized by the daemon type (with the type listed), and the basic ordering is by number
+// of dreams descending -- with a sort option for daemons with most recent dream first"). Every word DRAFT.
+const SPECIES = speciesJson as unknown as Record<string, { types?: string[] }>;
+const typesOf = (species: number) => SPECIES[String(species)]?.types ?? [];
+const MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+const monthOf = (iso: string) => { const d = new Date(iso); return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
+/** A daemon's book read as a volume: its months from the first dream to the last. */
+export function asVolume(a: DreamAuthor): DreamVolume {
+  const first = a.dreams[0], last = a.dreams[a.dreams.length - 1];
+  const f = new Date(first ? first.from || first.at : 0), t = new Date(last ? last.from || last.at : 0);
+  const short = (d: Date) => MONTHS[d.getMonth()].slice(0, 3);
+  // short, so it fits on the shelf's cover: SEP – NOV 2026, DEC 2026 – JAN 2027; one month in full
+  const month = !first ? "" : monthOf(f.toISOString()) === monthOf(t.toISOString()) ? monthOf(f.toISOString())
+    : f.getFullYear() === t.getFullYear() ? `${short(f)} – ${short(t)} ${t.getFullYear()}` : `${short(f)} ${f.getFullYear()} – ${short(t)} ${t.getFullYear()}`;
+  return { id: a.id, who: a.who, nickname: a.nickname, species: a.species, title: a.title, dreams: a.dreams, month };
+}
+
+export const DAEMON_DREAMS = { title: "DAEMON DREAMS", boards: "#1c1430", ink: "#f3e6c4", gilt: "#e2c27c" };   // DRAFT
+// its own cover: a night sky over the dreamers, a crescent, and the daemons who have dreamt the most, asleep in a row
+export function DaemonDreamsCover({ authors, w, h }: { authors: DreamAuthor[]; w: number; h: number }) {
+  const s = h / 320, total = authors.reduce((n, a) => n + a.count, 0);
+  const stars = Array.from({ length: 22 }, (_, i) => { const r = seeded(i + 7); return { x: r() * w, y: r() * h * 0.55, z: 1 + r() * 2 * s }; });
+  return (
+    <YStack position="relative" width={w} height={h} backgroundColor={DAEMON_DREAMS.boards} overflow="hidden">
+      <View style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: h * 0.45, backgroundColor: "#2a1f45", opacity: 0.9 }} />
+      {stars.map((t, i) => <View key={i} style={{ position: "absolute", left: t.x, top: t.y, width: t.z, height: t.z, borderRadius: t.z, backgroundColor: "#f3e6c4", opacity: 0.7 }} />)}
+      {/* the crescent, under the title and over the sleepers */}
+      <View style={{ position: "absolute", right: w * 0.14, top: h * 0.3, width: 30 * s, height: 30 * s, borderRadius: 15 * s, backgroundColor: DAEMON_DREAMS.gilt }} />
+      <View style={{ position: "absolute", right: w * 0.14 - 8 * s, top: h * 0.3 - 4 * s, width: 30 * s, height: 30 * s, borderRadius: 15 * s, backgroundColor: DAEMON_DREAMS.boards }} />
+      <YStack position="absolute" top={0} left={0} right={0} bottom={0} alignItems="center" justifyContent="space-between" paddingVertical={18 * s} paddingHorizontal={8 * s}>
+        <Text fontFamily="$mono" {...coverLine(19, 9, s)} fontWeight="800" color={DAEMON_DREAMS.ink} textAlign="center" numberOfLines={2}>{DAEMON_DREAMS.title}</Text>
+        <XStack justifyContent="center" gap={2 * s}>
+          {authors.slice(0, 3).map((a) => <Art key={a.id} path={`/art/species/${a.species}.png`} size={Math.round((authors.length > 1 ? 64 : 110) * s)} />)}
+        </XStack>
+        <Text fontFamily="$mono" {...coverLine(10, 7, s)} color={DAEMON_DREAMS.gilt} textAlign="center" numberOfLines={2}>
+          {`${authors.length} ${authors.length === 1 ? "DREAMER" : "DREAMERS"} · ${total} ${total === 1 ? "DREAM" : "DREAMS"}`}
+        </Text>
+      </YStack>
+    </YStack>
+  );
+}
+
+type Order = "most" | "recent";
+/** The shelf inside DAEMON DREAMS: a shelf for each type, each daemon's book on the shelf of its first type. */
+export function DreamShelves({ authors, order, onOpen }: { authors: DreamAuthor[]; order: Order; onOpen: (id: string) => void }) {
+  const key = (a: DreamAuthor) => (order === "most" ? a.count : Date.parse(a.last) / 1e13);
+  const byType = new Map<string, DreamAuthor[]>();
+  for (const a of authors) { const t = typesOf(a.species)[0] ?? "UNKNOWN"; byType.set(t, [...(byType.get(t) ?? []), a]); }
+  const ranked = (l: DreamAuthor[]) => [...l].sort((x, y) => key(y) - key(x) || y.count - x.count || Date.parse(y.last) - Date.parse(x.last));
+  const shelves: Shelf[] = [...byType.entries()].map(([type, l]) => ({ type, l: ranked(l) }))
+    .sort((x, y) => key(y.l[0]) - key(x.l[0]) || y.l[0].count - x.l[0].count || x.type.localeCompare(y.type))
+    .map(({ type, l }) => {
+      const n = l.reduce((m, a) => m + a.count, 0);
+      return { name: `${type} · ${n} ${n === 1 ? "DREAM" : "DREAMS"}`, books: l.map((a) => ({
+        id: a.id, title: a.title, cloth: "#2a1f33", onPress: () => onOpen(a.id),
+        about: `${typesOf(a.species).join(" / ") || "?"} · ${a.count} ${a.count === 1 ? "dream" : "dreams"} · the last ${whenSaid(a.last)}`,
+        cover: (w: number, h: number) => <DreamCover v={asVolume(a)} w={w} h={h} /> })) };
+    });
+  return <Bookcase shelves={shelves} />;
+}
+export function DaemonDreams({ authors, onOpen }: { authors: DreamAuthor[]; onOpen: (id: string) => void }) {
+  const [order, setOrder] = useState<Order>("most");
+  const total = authors.reduce((n, a) => n + a.count, 0);
+  return (
+    <YStack gap={12}>
+      <Text fontFamily="$mono" fontSize={20} fontWeight="800" letterSpacing={2} color="$color12">{DAEMON_DREAMS.title}</Text>
+      <Small>{`Every dream your daemons have dreamt, a book for each dreamer, shelved by type. ${authors.length} ${authors.length === 1 ? "dreamer" : "dreamers"}, ${total} ${total === 1 ? "dream" : "dreams"}.  DRAFT`}</Small>
+      <Segments value={order} onChange={setOrder} options={[["most", "MOST DREAMS"], ["recent", "MOST RECENT"]]} />
+      <DreamShelves authors={authors} order={order} onOpen={onOpen} />
     </YStack>
   );
 }

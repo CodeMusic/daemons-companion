@@ -50,7 +50,7 @@ describe("C-200: a night and its dream", () => {
 });
 
 // C-456: DREAM-BOOKS -- every dream kept for good, bound a volume a month for each daemon
-import { boundOf, dreamBooks } from "../src/dreams.js";
+import { boundOf, dreamAuthors, dreamBooks } from "../src/dreams.js";
 describe("DREAM-BOOKS (C-456)", () => {
   it("binds dreams past the journal's ninety and gathers a volume a month for each daemon", () => {
     const store = new Store(":memory:");
@@ -74,5 +74,20 @@ describe("DREAM-BOOKS (C-456)", () => {
     const labs = vols.find((v) => v.personality === 1002)!;
     expect(labs).toMatchObject({ title: "LABEL'S DREAMS", month: "NOVEMBER 2026", species: 7 });
     expect(labs.dreams.map((d) => d.from)).toEqual([...labs.dreams.map((d) => d.from)].sort());   // dreamt order
+  });
+  it("DAEMON DREAMS (C-483): one book a daemon, every dream in the order dreamt, the most dreams first", () => {
+    const store = new Store(":memory:");
+    const cub = { nickname: "ROVERCUB", species: 4, personality: 1001, device: "w1" };
+    const lab = { nickname: "LABEL", species: 7, personality: 1002, device: "w2" };
+    const night = (who: typeof cub, d: Date) =>
+      keepNight(store, { from: d.toISOString(), to: new Date(d.getTime() + 7 * 3600000).toISOString(), hours: 7, stirs: 0, tucked: false }, who);
+    for (let i = 0; i < 40; i++) night(cub, new Date(2026, 9, 20 + i, 23));      // across October, November and December
+    for (let i = 0; i < 3; i++) night(lab, new Date(2027, 0, 2 + i, 23));        // fewer, but later
+    const [first, second] = dreamAuthors(store);
+    expect(first).toMatchObject({ id: "dreams-1001", title: "ROVERCUB'S DREAMS", count: 40, species: 4 });
+    expect(first.dreams.map((d) => d.from)).toEqual([...first.dreams.map((d) => d.from)].sort());
+    expect(first.last).toBe(first.dreams[39].from);
+    expect(second).toMatchObject({ title: "LABEL'S DREAMS", count: 3 });
+    expect(Date.parse(second.last)).toBeGreaterThan(Date.parse(first.last));
   });
 });

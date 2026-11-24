@@ -46,7 +46,7 @@ export type Reply = { status: number; body: unknown };
 
 const STEP = /^\/api\/steps\/(\d+)\/(done|undo)$/, SPECIES_ID = /^\/api\/species\/(\d+)$/, CARE = /^\/api\/daemon\/(feed|water|train|sleep|wake)$/;
 import { ACTS, castsSince, sendCast, takeCast, type Via } from "./broadcast.js";   // C-134
-import { centreOf, checkNight, dayOfDream, dreamBooks, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf; T-531: dayOfDream; C-412: centreOf
+import { centreOf, checkNight, dayOfDream, dreamAuthors, dreamBooks, dreamsOf, keepNight, rested, titleOf, type Dream } from "./dreams.js";   // C-200; C-308: titleOf; T-531: dayOfDream; C-412: centreOf
 import { askFind, checkFix, fixesOf, walkedSince, keepFix, type Fix } from "./where.js";   // C-174
 import { bondAdd, evolvedOf } from "./evolve.js";
 import { songOf, SONGS, summonsFor } from "./ownsong.js";   // C-418; C-419 (3): summonsFor
@@ -154,8 +154,12 @@ export function route(h: Host, store: Store, a: Ask, now = new Date()): Reply {
     // C-456: the DREAM-BOOKS -- a volume a month for each daemon, every page as DREAMS shows it
     // C-455: MENTIONS FROM YOUR DAEMON -- every letter kept (newest first), and TODAY's: the newest not yet read
     if (path === "/api/mentions") return ok({ book: MENTIONS_BOOK, mentions: mentionsOf(store), unread: newestUnread(store, now) });
-    if (path === "/api/dreambooks") return ok({ volumes: dreamBooks(store).map((v) => ({ ...v, dreams: v.dreams.map(({ left: _l, right: _r, ...d }) => ({
-      ...d, title: titleOf(d), day: dayOfDream(d), centre: centreOf(d), dayColour: weekJson.days[new Date(d.from || d.at).getDay()].colour })) })) });
+    if (path === "/api/dreambooks") {
+      const page = ({ left: _l, right: _r, ...d }: Dream) => ({
+        ...d, title: titleOf(d), day: dayOfDream(d), centre: centreOf(d), dayColour: weekJson.days[new Date(d.from || d.at).getDay()].colour });
+      return ok({ volumes: dreamBooks(store).map((v) => ({ ...v, dreams: v.dreams.map(page) })),
+                  authors: dreamAuthors(store).map((a) => ({ ...a, dreams: a.dreams.map(page) })) });   // C-483: DAEMON DREAMS, a book a daemon
+    }
     if (path === "/api/dreams") return ok({ dreams: dreamsOf(store).map((d) => ({ ...d, title: titleOf(d), day: dayOfDream(d), centre: centreOf(d), dayColour: weekJson.days[new Date(d.from || d.at).getDay()].colour })) });   // C-200: the dream journal, the newest first; C-308: each titled
     if (path === "/api/where") {                          // C-174: the newest first; walked since the asker's midnight
       const fixes = fixesOf(store, a.query?.device || undefined), since = new Date(a.query?.since ?? "");

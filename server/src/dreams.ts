@@ -298,6 +298,25 @@ export function dreamBooks(store: Store): DreamVolume[] {
   return [...vols.values()].map((v) => ({ ...v, title: `${v.nickname}'S DREAMS` }))     // DRAFT
     .sort((a, b) => Date.parse(b.dreams[0].from || b.dreams[0].at) - Date.parse(a.dreams[0].from || a.dreams[0].at));
 }
+// C-483 (the user, 2026-11-23: "why not a book for Daemon Dreams, with its own book cover, and when u click it u see ...
+// all the daemons with dreams, with the specific daemon book cover ... beside each ... how many dreams are recorded"):
+// one book a daemon, every dream it dreamt in it, in the order dreamt. The shelf inside DAEMON DREAMS sorts and groups them.
+export type DreamAuthor = { id: string; who: string; nickname: string; species: number; personality: number | null;
+                            title: string; count: number; last: string; dreams: Dream[] };
+export function dreamAuthors(store: Store): DreamAuthor[] {
+  const by = new Map<string, DreamAuthor>();
+  for (const v of [...dreamBooks(store)].reverse()) {            // the oldest volume first, so its dreams stay in order
+    let a = by.get(v.who);
+    if (!a) by.set(v.who, (a = { id: `dreams-${v.who}`, who: v.who, nickname: v.nickname, species: v.species, personality: v.personality,
+                                 title: "", count: 0, last: "", dreams: [] }));
+    a.dreams.push(...v.dreams);
+    a.nickname = v.nickname; a.species = v.species;               // the author as it last dreamt
+  }
+  return [...by.values()].map((a) => {
+    const end = a.dreams[a.dreams.length - 1];
+    return { ...a, title: `${a.nickname}'S DREAMS`, count: a.dreams.length, last: end ? end.from || end.at : "" };   // DRAFT
+  }).sort((x, y) => y.count - x.count || Date.parse(y.last) - Date.parse(x.last));
+}
 // a night kept with its written dream (the module's, if it comes, replaces it: rewriteDream). The same night told twice
 // (the watch told it again, its answer lost) is the dream already kept.
 export function keepNight(store: Store, n: Night, who: { nickname: string; species: number; personality: number | null; device: string }): Dream {

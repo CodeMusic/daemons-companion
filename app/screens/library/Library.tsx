@@ -26,7 +26,7 @@ import { ShadowBook, SHADOW, type ShadowT } from "./Shadow";   // C-474
 import { seeMending, useMendingSeen } from "../../state/mended";   // C-299: the mending, once
 import { ManualBook, manualAbout } from "./Manual";   // C-233
 import { Bookcase, type CaseBook, type Shelf } from "./Bookcase";
-import { DreamBook, DreamCover, type DreamVolume } from "./DreamBooks";
+import { asVolume, DaemonDreams, DaemonDreamsCover, DreamBook, type DreamAuthor } from "./DreamBooks";   // C-483
 import { MentionsBook, MentionsCover, type MentionsT } from "./Mentions";   // C-455   // C-456   // C-320: the LIBRARY as a bookcase
 import { Listen } from "../../ui/bookAudio";   // C-277
 import { usePlace } from "../../state/place";   // C-309: the open book and its page outlive a refresh
@@ -130,10 +130,10 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  type Opened = "manual" | "quick" | "companion" | "watch" | "glass" | "cardputer" | "kodedot" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "shadow" | "notebook" | "songbook" | "stream" | "mentions" | `dreams-${string}`;   // C-456: a DREAM-BOOK
+  type Opened = "manual" | "quick" | "companion" | "watch" | "glass" | "cardputer" | "kodedot" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "shadow" | "notebook" | "songbook" | "stream" | "mentions" | "daemondreams" | `dreams-${string}`;   // C-456: a DREAM-BOOK
   const [book, setBook] = usePlace<Opened | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
-  const [dreamVols] = useApi<{ volumes: DreamVolume[] }>("/api/dreambooks");   // C-456: the DREAM-BOOKS
+  const [dreamVols] = useApi<{ authors?: DreamAuthor[] }>("/api/dreambooks");   // C-456: the DREAM-BOOKS; C-483: a book a daemon
   const [mentions] = useApi<MentionsT>("/api/mentions");   // C-455: MENTIONS FROM YOUR DAEMON
   const [her] = useApi<HermeticT>(`/api/hermetic${previewQuery() ? "?preview=1" : ""}`);   // C-238: THE HERMETIC LAYER, once found
   const [eud] = useApi<EudaimonT>(`/api/eudaimon${previewQuery() ? "?preview=1" : ""}`);   // C-297: THE EUDAIMON LAYER, the dawn half
@@ -200,9 +200,17 @@ export function LibraryScreen() {
   if (book === "songbook") return open(<SongbookBook />);
   if (book === "stream") return open(<StreamBook />);
   if (book === "mentions") return <YStack gap={14}>{back}{mentions ? <MentionsBook v={mentions} /> : <Small>Opening the book…</Small>}</YStack>;   // C-455, DRAFT
-  const vol = book?.startsWith("dreams-") ? dreamVols?.volumes.find((v) => v.id === book) : undefined;
-  if (vol) return <YStack gap={14}>{back}<DreamBook v={vol} /></YStack>;   // C-456
-  if (book?.startsWith("dreams-") && !dreamVols) return <YStack gap={14}>{back}<Small>Opening the book where you left it…</Small></YStack>;   // DRAFT
+  // C-483: DAEMON DREAMS -- the shelf of dreamers inside it, and a dreamer's own book, whose way back is to that shelf
+  const authors = dreamVols?.authors ?? [];
+  const toDreams = <Text fontFamily="$mono" fontSize={13} letterSpacing={2} color="$color10" cursor="pointer" role="button"
+                         onPress={() => setBook("daemondreams")}>‹ DAEMON DREAMS</Text>;   // DRAFT
+  if (book?.startsWith("dreams-") || book === "daemondreams") {
+    if (!dreamVols) return <YStack gap={14}>{back}<Small>Opening the book where you left it…</Small></YStack>;   // DRAFT
+    const a = authors.find((x) => x.id === book);
+    if (a) return <YStack gap={14}>{toDreams}<DreamBook key={a.id} v={asVolume(a)} /></YStack>;
+    // the shelf, also for a month's volume left open before C-483 (its id is gone)
+    return <YStack gap={14}>{back}<DaemonDreams authors={authors} onOpen={(id) => setBook(id as `dreams-${string}`)} /></YStack>;
+  }
   // C-320: the bookcase -- a shelf per kind, each book standing by its cover. The game's books stand only once found;
   // the halves leave as the mended book comes, and the mending plays once before it stands. DRAFT
   const game: CaseBook[] = [
@@ -236,10 +244,11 @@ export function LibraryScreen() {
           : s.diploma ? `DIPLOMA${s.best !== null ? ` · MARK ${s.best}` : ""}`
           : s.textbook ? `The TEXTBOOK · ${s.floors.filter(Boolean).length} of ${s.floors.length} floors` : "The seven floors and the paper." },
     ] },
-    // C-456: a volume a month for each daemon, its cover the daemon who dreamt it. DRAFT
-    { name: "DREAM-BOOKS", empty: "Each month's dreams are bound here, a book for each daemon who dreamt them.", books: (dreamVols?.volumes ?? []).map((v) => ({
-      id: v.id, title: v.title, about: `${v.month} · ${v.dreams.length} ${v.dreams.length === 1 ? "dream" : "dreams"}`, cloth: "#2a1f33",
-      cover: (w: number, h: number) => <DreamCover v={v} w={w} h={h} />, onPress: () => setBook(v.id as `dreams-${string}`) })).concat(
+    // C-456, C-483: one DAEMON DREAMS book, every dreamer's own book inside it. DRAFT
+    { name: "DREAM-BOOKS", empty: "Your daemons' dreams are bound here, in one book, once the first is dreamt.", books: (authors.length ? [{
+      id: "daemondreams", title: "DAEMON DREAMS", cloth: "#1c1430", onPress: () => setBook("daemondreams"),
+      about: `${authors.length} ${authors.length === 1 ? "dreamer" : "dreamers"} · ${authors.reduce((n, a) => n + a.count, 0)} dreams`,
+      cover: (w: number, h: number) => <DaemonDreamsCover authors={authors} w={w} h={h} /> }] : [] as CaseBook[]).concat(
       // C-455: MENTIONS FROM YOUR DAEMON stands beside them, once its first letter is written. DRAFT
       mentions?.mentions.length ? [{ id: "mentions", title: mentions.book, about: `${mentions.mentions.length} ${mentions.mentions.length === 1 ? "letter" : "letters"} from your daemon`,
         cloth: "#3a3420", cover: (w: number, h: number) => <MentionsCover v={mentions} w={w} h={h} />, onPress: () => setBook("mentions") }] : []) },

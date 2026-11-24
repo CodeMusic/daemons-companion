@@ -1,0 +1,103 @@
+{
+ "formatVersion": 2,
+ "id": "emotions-strength",
+ "kind": "meditation",
+ "meta": {
+  "name": "Strength",
+  "description": "Not fury — foundation. Strength builds from grounded alpha up into a firm, steady low-beta and locks there, the carrier kept low and weighted so it feels rooted rather than airy, the brown bed deep as bedrock. The body-pulse swells and holds, an anchor you can feel. Underneath it all the light keeps a slow, immovable beat — the ground that doesn't move while you rise to stand on it.",
+  "category": "Emotions",
+  "strength": 4,
+  "strengthLabel": "Grounded",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9.0,
+    "carrierHz": 150,
+    "intensity": "=",
+    "brightness": 0.6
+   },
+   {
+    "atSec": 360,
+    "beatHz": 11.0,
+    "carrierHz": 170,
+    "intensity": "=",
+    "brightness": 0.75
+   },
+   {
+    "atSec": 780,
+    "beatHz": 12.0,
+    "carrierHz": 185,
+    "intensity": "=+",
+    "brightness": 0.85
+   },
+   {
+    "atSec": 1200,
+    "beatHz": 13.0,
+    "carrierHz": 200,
+    "intensity": "=+",
+    "brightness": 0.95
+   },
+   {
+    "atSec": 1560,
+    "beatHz": 13.0,
+    "carrierHz": 200,
+    "intensity": "=+",
+    "brightness": 1.0
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 13.0,
+    "carrierHz": 200,
+    "intensity": "=+",
+    "brightness": 1.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 180
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.27
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "mode": "custom",
+  "maxHz": 60,
+  "brightness": 1.0,
+  "custom": {
+   "left": {
+    "duty": 0.5,
+    "level": 0.9,
+    "phaseHz": 8
+   },
+   "right": {
+    "duty": 0.5,
+    "level": 0.9,
+    "phaseHz": 8
+   }
+  }
+ },
+ "pulsetto": {
+  "enabled": true,
+  "follow": "scenes",
+  "intensity": 5,
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

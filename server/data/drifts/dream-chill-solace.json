@@ -1,0 +1,234 @@
+{
+ "formatVersion": 2,
+ "id": "dream-chill-solace",
+ "kind": "sleep",
+ "meta": {
+  "name": "Solace",
+  "description": "Solace offers a brief respite from life's demands — a pocket of peace where your troubles quietly loosen and fade. It hushes the mental chatter and unknots the tension, tuning your brain toward tranquility and composure, and holds open a little space for reflection whenever solitude lets you slip away. A breath you actually get to finish.",
+  "category": "Dream Chill",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.55,
+    "carrierHz": 299.88
+   },
+   {
+    "atSec": 0.19,
+    "beatHz": 10.19,
+    "carrierHz": 300.02
+   },
+   {
+    "atSec": 3.34,
+    "beatHz": 10.29,
+    "carrierHz": 300.04
+   },
+   {
+    "atSec": 5.94,
+    "beatHz": 9.86,
+    "carrierHz": 300.01
+   },
+   {
+    "atSec": 59.35,
+    "beatHz": 10.26,
+    "carrierHz": 300.06
+   },
+   {
+    "atSec": 59.54,
+    "beatHz": 9.8,
+    "carrierHz": 300.0
+   },
+   {
+    "atSec": 59.63,
+    "beatHz": 10.22,
+    "carrierHz": 300.03
+   },
+   {
+    "atSec": 70.68,
+    "beatHz": 10.28,
+    "carrierHz": 299.97
+   },
+   {
+    "atSec": 73.65,
+    "beatHz": 9.85,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 81.46,
+    "beatHz": 10.29,
+    "carrierHz": 300.01
+   },
+   {
+    "atSec": 114.24,
+    "beatHz": 9.84,
+    "carrierHz": 300.02
+   },
+   {
+    "atSec": 116.01,
+    "beatHz": 10.27,
+    "carrierHz": 299.98
+   },
+   {
+    "atSec": 159.1,
+    "beatHz": 9.89,
+    "carrierHz": 299.97
+   },
+   {
+    "atSec": 166.81,
+    "beatHz": 9.92,
+    "carrierHz": 300.07
+   },
+   {
+    "atSec": 166.91,
+    "beatHz": 10.37,
+    "carrierHz": 300.07
+   },
+   {
+    "atSec": 167.0,
+    "beatHz": 9.83,
+    "carrierHz": 299.94
+   },
+   {
+    "atSec": 167.18,
+    "beatHz": 10.4,
+    "carrierHz": 300.04
+   },
+   {
+    "atSec": 171.08,
+    "beatHz": 9.9,
+    "carrierHz": 300.0
+   },
+   {
+    "atSec": 178.61,
+    "beatHz": 10.23,
+    "carrierHz": 300.05
+   },
+   {
+    "atSec": 258.11,
+    "beatHz": 6.67,
+    "carrierHz": 267.48
+   },
+   {
+    "atSec": 272.14,
+    "beatHz": 6.58,
+    "carrierHz": 261.61
+   },
+   {
+    "atSec": 275.67,
+    "beatHz": 6.01,
+    "carrierHz": 260.11
+   },
+   {
+    "atSec": 338.55,
+    "beatHz": 3.52,
+    "carrierHz": 233.97
+   },
+   {
+    "atSec": 408.86,
+    "beatHz": 1.18,
+    "carrierHz": 204.67
+   },
+   {
+    "atSec": 412.39,
+    "beatHz": 0.64,
+    "carrierHz": 203.21
+   },
+   {
+    "atSec": 442.02,
+    "beatHz": 0.3,
+    "carrierHz": 200.03
+   },
+   {
+    "atSec": 644.31,
+    "beatHz": 0.74,
+    "carrierHz": 200.03
+   },
+   {
+    "atSec": 650.25,
+    "beatHz": 0.22,
+    "carrierHz": 200.04
+   },
+   {
+    "atSec": 650.44,
+    "beatHz": 0.71,
+    "carrierHz": 200.03
+   },
+   {
+    "atSec": 719.17,
+    "beatHz": 1.1,
+    "carrierHz": 298.53
+   },
+   {
+    "atSec": 954.15,
+    "beatHz": 0.88,
+    "carrierHz": 300.01
+   },
+   {
+    "atSec": 1018.8,
+    "beatHz": 2.04,
+    "carrierHz": 202.06
+   },
+   {
+    "atSec": 1260.47,
+    "beatHz": 1.94,
+    "carrierHz": 200.7
+   },
+   {
+    "atSec": 1321.49,
+    "beatHz": 3.04,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 1560.85,
+    "beatHz": 2.97,
+    "carrierHz": 298.69
+   },
+   {
+    "atSec": 1619.64,
+    "beatHz": 4.07,
+    "carrierHz": 200.66
+   },
+   {
+    "atSec": 1799.92,
+    "beatHz": 4.01,
+    "carrierHz": 199.98
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 299.97,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.205
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

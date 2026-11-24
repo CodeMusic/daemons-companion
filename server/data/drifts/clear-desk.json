@@ -1,0 +1,90 @@
+{
+ "formatVersion": 2,
+ "id": "clear-desk",
+ "kind": "tinctures",
+ "meta": {
+  "name": "CLEAR DESK",
+  "description": "Attention sharpened and held; hunger and tiredness pushed to the back of the room.",
+  "category": "TINCTURES",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 1680
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.88
+   },
+   {
+    "atSec": 120.06,
+    "beatHz": 10.07
+   },
+   {
+    "atSec": 239.02,
+    "beatHz": 14.99
+   },
+   {
+    "atSec": 271.87,
+    "beatHz": 15.04
+   },
+   {
+    "atSec": 539.82,
+    "beatHz": 15.03
+   },
+   {
+    "atSec": 660.14,
+    "beatHz": 11.98
+   },
+   {
+    "atSec": 1199.36,
+    "beatHz": 11.98
+   },
+   {
+    "atSec": 1260.2,
+    "beatHz": 10.07
+   },
+   {
+    "atSec": 1680.04,
+    "beatHz": 10.02
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 299.99,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.134,
+    "_measured": {
+     "slopeDbPerDecade": -11.0,
+     "levelDb": -72.4
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

@@ -1,0 +1,72 @@
+{
+ "formatVersion": 2,
+ "id": "emotions-awe",
+ "kind": "meditation",
+ "meta": {
+  "name": "Awe",
+  "description": "The feeling of being small in the best possible way. Awe starts you grounded and present, then lifts the ceiling — expanding up and out, brighter and vaster, until it crests at the edge of something too large to name. For a moment the boundaries thin and everything seems to connect. Then it eases you down into the warm afterglow of wonder, the world left a little bigger than you found it.",
+  "category": "Emotions",
+  "strength": 4,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9.0,
+    "carrierHz": 220
+   },
+   {
+    "atSec": 360,
+    "beatHz": 10.0,
+    "carrierHz": 260
+   },
+   {
+    "atSec": 720,
+    "beatHz": 12.0,
+    "carrierHz": 320
+   },
+   {
+    "atSec": 1080,
+    "beatHz": 20.0,
+    "carrierHz": 380
+   },
+   {
+    "atSec": 1320,
+    "beatHz": 28.0,
+    "carrierHz": 420
+   },
+   {
+    "atSec": 1500,
+    "beatHz": 14.0,
+    "carrierHz": 360
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 10.0,
+    "carrierHz": 300
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "blue",
+    "level": 0.22
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "maxHz": 60
+ }
+}

@@ -1,0 +1,118 @@
+{
+ "formatVersion": 2,
+ "id": "dense-amber",
+ "kind": "tinctures",
+ "meta": {
+  "name": "DENSE AMBER",
+  "description": "The same mellow lift pressed tighter: heavier, longer, slower to leave.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 2700
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.83
+   },
+   {
+    "atSec": 119.91,
+    "beatHz": 10.01
+   },
+   {
+    "atSec": 240.0,
+    "beatHz": 5.99
+   },
+   {
+    "atSec": 540.0,
+    "beatHz": 5.99
+   },
+   {
+    "atSec": 600.1,
+    "beatHz": 9.63
+   },
+   {
+    "atSec": 691.4,
+    "beatHz": 9.63
+   },
+   {
+    "atSec": 900.01,
+    "beatHz": 9.63
+   },
+   {
+    "atSec": 960.19,
+    "beatHz": 5.99
+   },
+   {
+    "atSec": 1259.73,
+    "beatHz": 5.99
+   },
+   {
+    "atSec": 1320.1,
+    "beatHz": 10.01
+   },
+   {
+    "atSec": 1620.1,
+    "beatHz": 10.01
+   },
+   {
+    "atSec": 1680.1,
+    "beatHz": 15.03
+   },
+   {
+    "atSec": 1980.01,
+    "beatHz": 15.03
+   },
+   {
+    "atSec": 2040.11,
+    "beatHz": 23.99
+   },
+   {
+    "atSec": 2340.01,
+    "beatHz": 23.99
+   },
+   {
+    "atSec": 2400.11,
+    "beatHz": 30.02
+   },
+   {
+    "atSec": 2700.02,
+    "beatHz": 30.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 200.01,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.05
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

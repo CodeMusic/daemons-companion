@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "spirituality-chakra",
+ "kind": "meditation",
+ "meta": {
+  "name": "Chakra",
+  "description": "A balancing session that walks your attention up through the seven traditional energy centers, root to crown. The frequencies shift gradually to invite alignment, openness, and calm focus — a gentle, grounding experience that slots neatly into meditation or a wind-down. Bottom to top, one center at a time.",
+  "category": "Spirituality",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.8,
+    "carrierHz": 300.0
+   },
+   {
+    "atSec": 300.0,
+    "beatHz": 10.11,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 419.45,
+    "beatHz": 3.95,
+    "carrierHz": 150.78
+   },
+   {
+    "atSec": 717.68,
+    "beatHz": 4.01,
+    "carrierHz": 150.0
+   },
+   {
+    "atSec": 841.86,
+    "beatHz": 5.0,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 1438.15,
+    "beatHz": 4.99,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 1500.1,
+    "beatHz": 6.0,
+    "carrierHz": 149.97
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 6.0,
+    "carrierHz": 149.97
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 149.99,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.146
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

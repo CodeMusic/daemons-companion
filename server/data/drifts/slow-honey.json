@@ -1,0 +1,90 @@
+{
+ "formatVersion": 2,
+ "id": "slow-honey",
+ "kind": "tinctures",
+ "meta": {
+  "name": "SLOW HONEY",
+  "description": "Everything slowed to a crawl and sweetened: heavy-lidded, sedated, content.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.0
+   },
+   {
+    "atSec": 181.77,
+    "beatHz": 10.04
+   },
+   {
+    "atSec": 420.19,
+    "beatHz": 0.42
+   },
+   {
+    "atSec": 957.96,
+    "beatHz": 0.91
+   },
+   {
+    "atSec": 1019.08,
+    "beatHz": 1.96
+   },
+   {
+    "atSec": 1259.82,
+    "beatHz": 1.94
+   },
+   {
+    "atSec": 1320.1,
+    "beatHz": 3.03
+   },
+   {
+    "atSec": 1559.73,
+    "beatHz": 3.01
+   },
+   {
+    "atSec": 1620.1,
+    "beatHz": 4.08
+   },
+   {
+    "atSec": 1799.92,
+    "beatHz": 4.04
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.14
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

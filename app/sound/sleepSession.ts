@@ -6,10 +6,11 @@
 import { AppState } from "react-native";
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
 import Night from "../modules/daemons-night";
-import { binauralStage, carrierOf, driftOf, stageAt, type Stage } from "./binaural";
+import { bedSound, binauralStage, carrierOf, driftOf, stageAt, stagesOfFile, type DriftFile, type Stage } from "./binaural";
 
 export const SESSION_S = 30 * 60, FADE_S = 10 * 60;
 const DRIFT_LEVEL = 0.22;                    // under the music, never over it
+const BED_LEVEL = 0.6;                       // C-506: a drift's noise bed, at its own level times this
 const MODE = { playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: "doNotMix" } as const;
 
 export type SleepState = { playing: boolean; id: string | null; startedAt: number; drift: boolean; stage: string | null;
@@ -20,7 +21,8 @@ const tell = (patch: Partial<SleepState>) => { state = { ...state, ...patch }; h
 export const sleepState = () => state;
 export const onSleep = (f: (s: SleepState) => void) => { heard.add(f); return () => { heard.delete(f); }; };
 
-let music: AudioPlayer | null = null, drift: AudioPlayer | null = null, tick: ReturnType<typeof setInterval> | null = null;
+let music: AudioPlayer | null = null, drift: AudioPlayer | null = null, bed: AudioPlayer | null = null, tick: ReturnType<typeof setInterval> | null = null;
+let bedUri = "";
 let carrier = 0, stageUri = "", stages: Stage[] = driftOf();   // C-386: the night's beats, placed by the day it began
 
 // headphones now: true, false, or null where this build cannot tell (then the listener's word is taken)
@@ -39,17 +41,28 @@ function step() {
     const ears = headphones();
     if (ears === false) { if (drift?.playing) drift.pause(); if (!state.driftHeld) tell({ driftHeld: "Quiet until headphones are in." }); }   // DRAFT
     else {
-      const st = stageAt(s, stages), uri = binauralStage(carrier, st.beat);
+      const st = stageAt(s, stages), uri = binauralStage(st.carrier ?? carrier, st.beat);
       drift ??= createAudioPlayer(null);
       if (uri !== stageUri) { drift.replace({ uri }); drift.loop = true; stageUri = uri; }
       drift.volume = DRIFT_LEVEL * v;
       if (!drift.playing) drift.play();
       if (state.stage !== st.word || state.driftHeld) tell({ stage: st.word, driftHeld: null });
     }
-  }
+    // C-506: the drift's noise bed, if it has one -- no headphones needed for it
+    const b = stageAt(s, stages).bed;
+    if (!b) { if (bed?.playing) bed.pause(); bedUri = ""; }
+    else {
+      const u = bedSound(b.type);
+      bed ??= createAudioPlayer(null);
+      if (u !== bedUri) { bed.replace({ uri: u }); bed.loop = true; bedUri = u; }
+      bed.volume = BED_LEVEL * b.level * v;
+      if (!bed.playing) bed.play();
+    }
+  } else if (bed?.playing) { bed.pause(); bedUri = ""; }
 }
 
-export async function playSleep(o: { id: string; uri: string; title: string; keyscale: string; drift: boolean }) {
+// C-506: `driftFile`, the drift chosen (REVERIE); none, THE LONG FALL as it always was
+export async function playSleep(o: { id: string; uri: string; title: string; keyscale: string; drift: boolean; driftFile?: DriftFile | null }) {
   await setAudioModeAsync(MODE);
   music ??= createAudioPlayer(null);
   music.replace({ uri: o.uri });
@@ -57,7 +70,9 @@ export async function playSleep(o: { id: string; uri: string; title: string; key
   music.volume = 1;
   music.setActiveForLockScreen(true, { title: o.title, artist: "DAEMONS", albumTitle: "Sleep sounds, DRAFT" });   // DRAFT
   music.play();
-  carrier = carrierOf(o.keyscale); stageUri = ""; stages = driftOf(new Date());
+  carrier = carrierOf(o.keyscale); stageUri = ""; bedUri = "";
+  stages = o.driftFile ? stagesOfFile(o.driftFile, carrier) : driftOf(new Date());
+  if (!stages.length) stages = driftOf(new Date());
   tell({ playing: true, id: o.id, startedAt: Date.now(), drift: o.drift, stage: null, driftHeld: null });
   if (tick) clearInterval(tick);
   tick = setInterval(step, 5000);
@@ -86,12 +101,13 @@ export const canSample = () => !!music && typeof (music as { setAudioSamplingEna
 export function setDrift(on: boolean) {
   tell({ drift: on, driftHeld: null, stage: on ? state.stage : null });
   if (!on && drift) { drift.pause(); stageUri = ""; }
+  if (!on && bed) { bed.pause(); bedUri = ""; }
   step();
 }
 
 export function stopSleep() {
   if (tick) { clearInterval(tick); tick = null; }
-  music?.pause(); drift?.pause(); stageUri = "";
+  music?.pause(); drift?.pause(); bed?.pause(); stageUri = ""; bedUri = "";
   try { music?.clearLockScreenControls(); } catch { /* none set */ }
   tell({ playing: false, id: null, stage: null, driftHeld: null });
 }

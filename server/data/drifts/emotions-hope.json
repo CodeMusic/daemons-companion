@@ -1,0 +1,112 @@
+{
+ "formatVersion": 2,
+ "id": "emotions-hope",
+ "kind": "meditation",
+ "meta": {
+  "name": "Hope",
+  "description": "The lift out of the low place. Hope begins down in the heavy dark — slow, dim, the bed a deep brown hush — then climbs: the tone brightening, the beat quickening from theta up toward the forward lean of beta, the bed warming from brown through pink to clear bright blue. All the while the light holds a steady shimmer up ahead of you — the future already lit — and the rest of you rises to meet it. You end somewhere open, awake, and tilted toward what's next.",
+  "category": "Emotions",
+  "strength": 4,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 4.0,
+    "carrierHz": 120,
+    "noise": "brown",
+    "intensity": "=-",
+    "brightness": 0.3
+   },
+   {
+    "atSec": 300,
+    "beatHz": 5.0,
+    "carrierHz": 150,
+    "intensity": "=-",
+    "brightness": 0.45
+   },
+   {
+    "atSec": 600,
+    "beatHz": 7.0,
+    "carrierHz": 190,
+    "noise": "pink",
+    "intensity": "=",
+    "brightness": 0.6
+   },
+   {
+    "atSec": 960,
+    "beatHz": 10.0,
+    "carrierHz": 240,
+    "intensity": "=",
+    "brightness": 0.8
+   },
+   {
+    "atSec": 1320,
+    "beatHz": 13.0,
+    "carrierHz": 300,
+    "noise": "blue",
+    "intensity": "=+",
+    "brightness": 0.95
+   },
+   {
+    "atSec": 1620,
+    "beatHz": 15.0,
+    "carrierHz": 340,
+    "intensity": "=+",
+    "brightness": 1.0
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 14.0,
+    "carrierHz": 330,
+    "intensity": "=",
+    "brightness": 1.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 240
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.26
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "mode": "custom",
+  "maxHz": 60,
+  "brightness": 1.0,
+  "custom": {
+   "left": {
+    "duty": 0.5,
+    "level": 0.85,
+    "phaseHz": 12
+   },
+   "right": {
+    "duty": 0.5,
+    "level": 0.85,
+    "phaseHz": 12
+   }
+  }
+ },
+ "pulsetto": {
+  "enabled": true,
+  "follow": "scenes",
+  "intensity": 4,
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

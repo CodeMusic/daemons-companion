@@ -1,0 +1,85 @@
+{
+ "formatVersion": 2,
+ "id": "soft-sunrise",
+ "kind": "tinctures",
+ "meta": {
+  "name": "SOFT SUNRISE",
+  "description": "A gentle warming of mood, contentment returning the way morning light does. The mildest of the tinctures.",
+  "category": "TINCTURES",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1500
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.03
+   },
+   {
+    "atSec": 299.72,
+    "beatHz": 10.07
+   },
+   {
+    "atSec": 360.75,
+    "beatHz": 12.18
+   },
+   {
+    "atSec": 659.82,
+    "beatHz": 12.19
+   },
+   {
+    "atSec": 720.28,
+    "beatHz": 7.71
+   },
+   {
+    "atSec": 1019.91,
+    "beatHz": 7.73
+   },
+   {
+    "atSec": 1080.1,
+    "beatHz": 4.82
+   },
+   {
+    "atSec": 1500.01,
+    "beatHz": 4.79
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.144,
+    "_measured": {
+     "slopeDbPerDecade": -11.0,
+     "levelDb": -71.5
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

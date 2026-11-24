@@ -1,0 +1,104 @@
+{
+ "formatVersion": 2,
+ "id": "sex-and-intimacy-cascade",
+ "kind": "meditation",
+ "meta": {
+  "name": "Cascade",
+  "description": "An intensifying journey of sensation that rolls in wave after wave after wave. Your body gets swept up in the beautiful chaos of it — doing the thing that feels good, again, and again, and again — as the glow climbs higher and burns brighter with every single crest. No plateau. Just the next wave, bigger than the last.",
+  "category": "Sex and Intimacy",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.96,
+    "carrierHz": 399.99
+   },
+   {
+    "atSec": 120.37,
+    "beatHz": 10.06,
+    "carrierHz": 399.73
+   },
+   {
+    "atSec": 240.74,
+    "beatHz": 2.48,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 539.82,
+    "beatHz": 2.48,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 599.63,
+    "beatHz": 3.55,
+    "carrierHz": 200.7
+   },
+   {
+    "atSec": 900.66,
+    "beatHz": 3.45,
+    "carrierHz": 198.99
+   },
+   {
+    "atSec": 963.26,
+    "beatHz": 6.09,
+    "carrierHz": 102.13
+   },
+   {
+    "atSec": 1258.99,
+    "beatHz": 9.55,
+    "carrierHz": 299.3
+   },
+   {
+    "atSec": 1260.01,
+    "beatHz": 9.69,
+    "carrierHz": 299.97
+   },
+   {
+    "atSec": 1352.4,
+    "beatHz": 14.0,
+    "carrierHz": 400.0
+   },
+   {
+    "atSec": 1765.6,
+    "beatHz": 14.0,
+    "carrierHz": 400.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 299.99,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.05
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

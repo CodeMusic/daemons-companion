@@ -1,0 +1,94 @@
+{
+ "formatVersion": 2,
+ "id": "cushioned-fall",
+ "kind": "tinctures",
+ "meta": {
+  "name": "CUSHIONED FALL",
+  "description": "Discomfort turned down and warmth rolled over you, the edges of the day softened.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 7.93,
+    "carrierHz": 99.96
+   },
+   {
+    "atSec": 300.09,
+    "beatHz": 7.98,
+    "carrierHz": 99.97
+   },
+   {
+    "atSec": 362.23,
+    "beatHz": 9.97,
+    "carrierHz": 100.03
+   },
+   {
+    "atSec": 778.15,
+    "beatHz": 9.94,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 839.54,
+    "beatHz": 12.05,
+    "carrierHz": 199.12
+   },
+   {
+    "atSec": 1321.12,
+    "beatHz": 11.96,
+    "carrierHz": 203.5
+   },
+   {
+    "atSec": 1379.45,
+    "beatHz": 13.0,
+    "carrierHz": 397.96
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 12.97,
+    "carrierHz": 400.01
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 149.57,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.139,
+    "_measured": {
+     "slopeDbPerDecade": -16.4,
+     "levelDb": -71.9
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

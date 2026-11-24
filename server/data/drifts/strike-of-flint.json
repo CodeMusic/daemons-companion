@@ -1,0 +1,83 @@
+{
+ "formatVersion": 2,
+ "id": "strike-of-flint",
+ "kind": "tinctures",
+ "meta": {
+  "name": "STRIKE OF FLINT",
+  "description": "A fast, bright spark: confidence and alertness arriving all at once, and leaving as quickly.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.01,
+    "carrierHz": 99.97
+   },
+   {
+    "atSec": 119.98,
+    "beatHz": 8.99,
+    "carrierHz": 99.96
+   },
+   {
+    "atSec": 180.05,
+    "beatHz": 17.0,
+    "carrierHz": 199.98
+   },
+   {
+    "atSec": 599.81,
+    "beatHz": 16.98,
+    "carrierHz": 200.04
+   },
+   {
+    "atSec": 900.95,
+    "beatHz": 20.01,
+    "carrierHz": 199.95
+   },
+   {
+    "atSec": 1800.02,
+    "beatHz": 19.94,
+    "carrierHz": 199.93
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 199.95,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.174,
+    "_measured": {
+     "slopeDbPerDecade": -12.9,
+     "levelDb": -68.7
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

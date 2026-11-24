@@ -1,0 +1,82 @@
+{
+ "formatVersion": 2,
+ "id": "the-swapped-world",
+ "kind": "tinctures",
+ "meta": {
+  "name": "THE SWAPPED WORLD",
+  "description": "In one breath the ordinary room is gone, and somewhere vast and certain stands in its place. Brief, total and strange.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 2100
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.01
+   },
+   {
+    "atSec": 120.28,
+    "beatHz": 9.99
+   },
+   {
+    "atSec": 420.47,
+    "beatHz": 2.49
+   },
+   {
+    "atSec": 1199.91,
+    "beatHz": 3.01
+   },
+   {
+    "atSec": 1260.29,
+    "beatHz": 4.02
+   },
+   {
+    "atSec": 1500.1,
+    "beatHz": 4.02
+   },
+   {
+    "atSec": 1680.1,
+    "beatHz": 0.9
+   },
+   {
+    "atSec": 2100.01,
+    "beatHz": 0.89
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 150.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.05
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

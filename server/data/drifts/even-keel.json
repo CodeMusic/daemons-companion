@@ -1,0 +1,94 @@
+{
+ "formatVersion": 2,
+ "id": "even-keel",
+ "kind": "tinctures",
+ "meta": {
+  "name": "EVEN KEEL",
+  "description": "Peaks and valleys smoothed into a steadier line: less weather, more ground.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 7.93,
+    "carrierHz": 99.96
+   },
+   {
+    "atSec": 300.09,
+    "beatHz": 7.98,
+    "carrierHz": 99.97
+   },
+   {
+    "atSec": 369.75,
+    "beatHz": 10.01,
+    "carrierHz": 100.01
+   },
+   {
+    "atSec": 778.15,
+    "beatHz": 9.93,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 839.63,
+    "beatHz": 12.06,
+    "carrierHz": 199.27
+   },
+   {
+    "atSec": 1310.26,
+    "beatHz": 11.93,
+    "carrierHz": 200.01
+   },
+   {
+    "atSec": 1379.45,
+    "beatHz": 13.01,
+    "carrierHz": 397.95
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 12.92,
+    "carrierHz": 400.01
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 149.65,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.18,
+    "_measured": {
+     "slopeDbPerDecade": -14.3,
+     "levelDb": -68.2
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

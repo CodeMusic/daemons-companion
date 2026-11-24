@@ -1,0 +1,83 @@
+{
+ "formatVersion": 2,
+ "id": "experimental-shockwave",
+ "kind": "meditation",
+ "meta": {
+  "name": "Shockwave",
+  "description": "A tidal surge of well-being and exhilaration rolls in — and riding shotgun is a massive spike of alertness and energy that scrubs every trace of fatigue clean off the map. The rush takes you somewhere bright and high and just… won't quit. No dips, no mercy, no coming down — not until the whole ride decides it's done with you.",
+  "category": "Experimental",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 0.44,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 780.65,
+    "beatHz": 0.93,
+    "carrierHz": 101.01
+   },
+   {
+    "atSec": 839.45,
+    "beatHz": 2.06,
+    "carrierHz": 199.01
+   },
+   {
+    "atSec": 1320.29,
+    "beatHz": 1.96,
+    "carrierHz": 200.81
+   },
+   {
+    "atSec": 1380.01,
+    "beatHz": 4.07,
+    "carrierHz": 399.85
+   },
+   {
+    "atSec": 1799.92,
+    "beatHz": 4.06,
+    "carrierHz": 400.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 199.91,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.05,
+    "_measured": {
+     "slopeDbPerDecade": -37.7,
+     "levelDb": -133.6
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

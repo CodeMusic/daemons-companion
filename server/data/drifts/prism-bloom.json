@@ -1,0 +1,86 @@
+{
+ "formatVersion": 2,
+ "id": "prism-bloom",
+ "kind": "tinctures",
+ "meta": {
+  "name": "PRISM BLOOM",
+  "description": "Colour rises at the edges of things; light gathers halos and scatters into patterns. Bright, playful, wide-eyed.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 2100
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.99
+   },
+   {
+    "atSec": 119.63,
+    "beatHz": 10.09
+   },
+   {
+    "atSec": 420.19,
+    "beatHz": 2.48
+   },
+   {
+    "atSec": 1198.52,
+    "beatHz": 3.02
+   },
+   {
+    "atSec": 1259.91,
+    "beatHz": 4.08
+   },
+   {
+    "atSec": 1499.08,
+    "beatHz": 4.08
+   },
+   {
+    "atSec": 1680.2,
+    "beatHz": 0.82
+   },
+   {
+    "atSec": 2100.01,
+    "beatHz": 0.84
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.137,
+    "_measured": {
+     "slopeDbPerDecade": -10.9,
+     "levelDb": -72.1
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

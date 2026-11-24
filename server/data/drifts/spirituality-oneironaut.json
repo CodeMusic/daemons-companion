@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "spirituality-oneironaut",
+ "kind": "meditation",
+ "meta": {
+  "name": "Oneironaut",
+  "description": "Oneironaut is for the act of waking up inside your dreams — present, aware, and at the controls. The dose sharpens dream recall and unlocks lucidity by carrying you from high theta down into low, where the dreamscape thickens and sharpens around you. It can hand you the steering wheel faster than years of traditional practice usually take — though fair warning: a first lucid breakthrough can hit hard. The dream becomes yours to walk.",
+  "category": "Spirituality",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.03,
+    "carrierHz": 300.0
+   },
+   {
+    "atSec": 300.0,
+    "beatHz": 10.09,
+    "carrierHz": 299.99
+   },
+   {
+    "atSec": 419.45,
+    "beatHz": 2.99,
+    "carrierHz": 150.78
+   },
+   {
+    "atSec": 719.82,
+    "beatHz": 3.01,
+    "carrierHz": 150.04
+   },
+   {
+    "atSec": 840.19,
+    "beatHz": 5.0,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 1439.92,
+    "beatHz": 4.99,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 1500.1,
+    "beatHz": 8.0,
+    "carrierHz": 150.04
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 7.99,
+    "carrierHz": 150.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 150.04,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.112
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

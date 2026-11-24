@@ -1,0 +1,122 @@
+{
+ "formatVersion": 2,
+ "id": "glass-corridor",
+ "kind": "tinctures",
+ "meta": {
+  "name": "GLASS CORRIDOR",
+  "description": "A lift into giggling looseness, then a drifting away from the body, each stage a door further down the hall.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 2700
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.05
+   },
+   {
+    "atSec": 120.19,
+    "beatHz": 10.07
+   },
+   {
+    "atSec": 240.09,
+    "beatHz": 5.93
+   },
+   {
+    "atSec": 539.82,
+    "beatHz": 5.93
+   },
+   {
+    "atSec": 600.38,
+    "beatHz": 9.69
+   },
+   {
+    "atSec": 758.74,
+    "beatHz": 9.69
+   },
+   {
+    "atSec": 900.01,
+    "beatHz": 9.68
+   },
+   {
+    "atSec": 960.28,
+    "beatHz": 5.93
+   },
+   {
+    "atSec": 1260.01,
+    "beatHz": 5.93
+   },
+   {
+    "atSec": 1320.19,
+    "beatHz": 10.08
+   },
+   {
+    "atSec": 1619.92,
+    "beatHz": 10.07
+   },
+   {
+    "atSec": 1680.38,
+    "beatHz": 15.09
+   },
+   {
+    "atSec": 1980.1,
+    "beatHz": 15.09
+   },
+   {
+    "atSec": 2040.11,
+    "beatHz": 23.98
+   },
+   {
+    "atSec": 2339.83,
+    "beatHz": 23.98
+   },
+   {
+    "atSec": 2400.11,
+    "beatHz": 30.03
+   },
+   {
+    "atSec": 2700.02,
+    "beatHz": 29.98
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.117,
+    "_measured": {
+     "slopeDbPerDecade": -11.4,
+     "levelDb": -73.9
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

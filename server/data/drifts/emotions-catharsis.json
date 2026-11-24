@@ -1,0 +1,77 @@
+{
+ "formatVersion": 2,
+ "id": "emotions-catharsis",
+ "kind": "meditation",
+ "meta": {
+  "name": "Catharsis",
+  "description": "Some feelings have to be felt all the way down before they'll let go. Catharsis walks you into the heavy water on purpose — down into the low, dim, slow place where grief lives — and lets you sit in it without flinching. Then comes the turn: the break, the release, the long rise back toward light and air. You come out the other side lighter than you went in, the weight finally set down.",
+  "category": "Emotions",
+  "strength": 5,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 4.0,
+    "carrierHz": 120
+   },
+   {
+    "atSec": 300,
+    "beatHz": 3.0,
+    "carrierHz": 105
+   },
+   {
+    "atSec": 600,
+    "beatHz": 2.5,
+    "carrierHz": 100
+   },
+   {
+    "atSec": 660,
+    "beatHz": 2.5,
+    "carrierHz": 100
+   },
+   {
+    "atSec": 720,
+    "beatHz": 5.0,
+    "carrierHz": 140
+   },
+   {
+    "atSec": 1080,
+    "beatHz": 7.0,
+    "carrierHz": 200
+   },
+   {
+    "atSec": 1440,
+    "beatHz": 9.0,
+    "carrierHz": 260
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 10.0,
+    "carrierHz": 280
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 120
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.28
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "maxHz": 60
+ }
+}

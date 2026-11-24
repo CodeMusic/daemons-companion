@@ -1,0 +1,79 @@
+{
+ "formatVersion": 2,
+ "id": "first-alarm",
+ "kind": "tinctures",
+ "meta": {
+  "name": "FIRST ALARM",
+  "description": "The body's own alarm: the heart quick, the senses wide, every muscle ready to move.",
+  "category": "TINCTURES",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 8.06,
+    "carrierHz": 99.94
+   },
+   {
+    "atSec": 120.66,
+    "beatHz": 7.99,
+    "carrierHz": 100.98
+   },
+   {
+    "atSec": 179.63,
+    "beatHz": 13.04,
+    "carrierHz": 199.25
+   },
+   {
+    "atSec": 601.26,
+    "beatHz": 12.91,
+    "carrierHz": 200.79
+   },
+   {
+    "atSec": 900.27,
+    "beatHz": 15.03,
+    "carrierHz": 400.01
+   },
+   {
+    "atSec": 1800.02,
+    "beatHz": 15.02,
+    "carrierHz": 400.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 200.02,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.089
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

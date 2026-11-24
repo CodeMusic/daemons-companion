@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "wildfire",
+ "kind": "tinctures",
+ "meta": {
+  "name": "WILDFIRE",
+  "description": "An explosive, restless push, rougher than the rest; hard to sit still inside.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1560
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.59,
+    "carrierHz": 100.0
+   },
+   {
+    "atSec": 359.77,
+    "beatHz": 9.91,
+    "carrierHz": 100.0
+   },
+   {
+    "atSec": 419.75,
+    "beatHz": 12.01,
+    "carrierHz": 199.5
+   },
+   {
+    "atSec": 540.07,
+    "beatHz": 11.99,
+    "carrierHz": 200.05
+   },
+   {
+    "atSec": 600.15,
+    "beatHz": 13.0,
+    "carrierHz": 200.01
+   },
+   {
+    "atSec": 960.34,
+    "beatHz": 12.95,
+    "carrierHz": 200.91
+   },
+   {
+    "atSec": 1019.56,
+    "beatHz": 14.03,
+    "carrierHz": 398.32
+   },
+   {
+    "atSec": 1559.98,
+    "beatHz": 13.96,
+    "carrierHz": 400.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 200.03,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.127
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

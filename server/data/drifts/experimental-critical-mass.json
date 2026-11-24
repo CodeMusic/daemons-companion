@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "experimental-critical-mass",
+ "kind": "meditation",
+ "meta": {
+  "name": "Critical Mass",
+  "description": "It starts low and patient — a slow tide of feeling that climbs, and climbs, until it crests into something almost too bright to hold. Then? Critical mass. BOOM. The blast flings you clean past the edge of the known, out into the deep black where reality runs out of road and there's nothing left to grip but the frequency itself.",
+  "category": "Experimental",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 0.39,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 299.54,
+    "beatHz": 0.53,
+    "carrierHz": 100.03
+   },
+   {
+    "atSec": 368.55,
+    "beatHz": 1.06,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 780.75,
+    "beatHz": 0.94,
+    "carrierHz": 101.12
+   },
+   {
+    "atSec": 839.54,
+    "beatHz": 2.05,
+    "carrierHz": 199.11
+   },
+   {
+    "atSec": 1318.71,
+    "beatHz": 1.96,
+    "carrierHz": 199.97
+   },
+   {
+    "atSec": 1380.01,
+    "beatHz": 4.07,
+    "carrierHz": 399.78
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 4.04,
+    "carrierHz": 400.01
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 150.12,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.094
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

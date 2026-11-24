@@ -83,6 +83,7 @@ import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, SLEEP_SYSTEM, 
 import { journalThreads, museKey, museOf, paintPalette } from "./psyche/muse.js";   // C-386
 import { hemisphereOf } from "./psyche/months.js";   // C-386
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./machine/sleeptracks.js";   // C-334
+import { chooseDrift, chosenDrift, driftFile, driftList } from "./machine/drifts.js";   // C-506
 import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./machine/sleepexport.js";   // C-358
 import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
 import { FRAME_MOST, InPlay, SOURCES } from "./game/inplay.js";   // C-478: THE GAMES IN PLAY
@@ -2279,6 +2280,16 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-334: sleep sounds made for the carried daemon. GET: tonight's recipe, its piece if made, and the pieces kept for it.
       // POST /api/sleep/make {again?}: its piece for tonight's context (kept, or asked for now: about three minutes, on
       // roverbyteseer). /api/sleep/tracks: every piece (the watch's list). /api/sleep/track/<id>/<file>: a file.
+      // C-506: REVERIE's drifts -- the library (THE LONG FALL first) and the one chosen; a drift's file to play
+      if (req.method === "GET" && path === "/api/drifts") return send(res, 200, { drifts: driftList(), chosen: chosenDrift(store) });
+      if (req.method === "GET" && path.startsWith("/api/drifts/")) {
+        const f = driftFile(decodeURIComponent(path.slice("/api/drifts/".length)));
+        return f ? send(res, 200, f) : send(res, 404, { error: "no such drift" });   // DRAFT
+      }
+      if (req.method === "POST" && path === "/api/drifts/choose") {
+        const b = await body(req).catch(() => ({})) as { id?: string };
+        return chooseDrift(store, String(b.id ?? "")) ? send(res, 200, { chosen: b.id }) : send(res, 404, { error: "no such drift" });   // DRAFT
+      }
       if (req.method === "GET" && (path === "/api/sleep" || path === "/api/sleep/tracks")) {
         const c = sleepContextFor(ecfg, store, deviceId), all = path === "/api/sleep/tracks";
         const r = c ? sleepRecipe(c) : null, kept = sleepTracks().list(all ? null : c?.species ?? -1);

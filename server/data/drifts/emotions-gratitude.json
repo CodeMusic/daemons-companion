@@ -1,0 +1,90 @@
+{
+ "formatVersion": 2,
+ "id": "emotions-gratitude",
+ "kind": "meditation",
+ "meta": {
+  "name": "Gratitude",
+  "description": "The full-chest warmth of being thankful, drawn out and dwelt in. Gratitude rests in open, relaxed alpha and slowly swells — the tone brightening, the pulse rising to fill you, the light blooming like warmth spreading through a room — before settling back into a quiet, contented glow. An emotion you usually only catch in passing, held long enough here to actually soak in.",
+  "category": "Emotions",
+  "strength": 3,
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": null,
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "scenes": [
+   {
+    "atSec": 0,
+    "beatHz": 9.0,
+    "carrierHz": 200,
+    "intensity": "=-",
+    "brightness": 0.6
+   },
+   {
+    "atSec": 360,
+    "beatHz": 10.0,
+    "carrierHz": 230,
+    "intensity": "=",
+    "brightness": 0.75
+   },
+   {
+    "atSec": 720,
+    "beatHz": 11.0,
+    "carrierHz": 260,
+    "intensity": "=+",
+    "brightness": 0.95
+   },
+   {
+    "atSec": 1080,
+    "beatHz": 10.5,
+    "carrierHz": 250,
+    "intensity": "=+",
+    "brightness": 1.0
+   },
+   {
+    "atSec": 1440,
+    "beatHz": 10.0,
+    "carrierHz": 230,
+    "intensity": "=",
+    "brightness": 0.8
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 9.0,
+    "carrierHz": 210,
+    "intensity": "=-",
+    "brightness": 0.65
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 230
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.25
+   }
+  ],
+  "transitionFade": "medium",
+  "masterVolume": 1
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": true,
+  "follow": "scenes",
+  "intensity": 4,
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

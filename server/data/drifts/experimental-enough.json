@@ -1,0 +1,83 @@
+{
+ "formatVersion": 2,
+ "id": "experimental-enough",
+ "kind": "meditation",
+ "meta": {
+  "name": "Enough",
+  "description": "A focused session for taming appetite — it hushes the cravings, steadies the will, and settles your mind into a calm, satisfied kind of control. Lean back, let the gentle pulse roll through, and feel the urge to reach for more just… loosen its grip and dissolve.",
+  "category": "Experimental",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 8.02,
+    "carrierHz": 149.76
+   },
+   {
+    "atSec": 120.23,
+    "beatHz": 8.01,
+    "carrierHz": 149.97
+   },
+   {
+    "atSec": 180.99,
+    "beatHz": 16.98,
+    "carrierHz": 150.04
+   },
+   {
+    "atSec": 599.89,
+    "beatHz": 16.97,
+    "carrierHz": 150.04
+   },
+   {
+    "atSec": 897.19,
+    "beatHz": 19.07,
+    "carrierHz": 249.04
+   },
+   {
+    "atSec": 1800.02,
+    "beatHz": 18.96,
+    "carrierHz": 249.97
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 150.04,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.097,
+    "_measured": {
+     "slopeDbPerDecade": -14.2,
+     "levelDb": -75.7
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

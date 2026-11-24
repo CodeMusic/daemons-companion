@@ -1,0 +1,98 @@
+{
+ "formatVersion": 2,
+ "id": "pure-theta",
+ "kind": "meditation",
+ "meta": {
+  "name": "Theta",
+  "description": "4–8 Hz. The borderland between waking and sleep — home to dreaming and those hazy, hypnagogic flashes that surface as you drift off at night or swim back up in the morning. Theta is where the unconscious and the conscious trade notes: the band of creative insight, deep relaxation, advanced meditation, and rich, vivid mental imagery.",
+  "category": "Pure",
+  "strength": 1,
+  "strengthLabel": "Moderate",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 3.44,
+    "carrierHz": 99.59
+   },
+   {
+    "atSec": 11.7,
+    "beatHz": 3.98,
+    "carrierHz": 100.0
+   },
+   {
+    "atSec": 293.96,
+    "beatHz": 3.9,
+    "carrierHz": 100.01
+   },
+   {
+    "atSec": 368.55,
+    "beatHz": 5.03,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 779.54,
+    "beatHz": 4.93,
+    "carrierHz": 100.03
+   },
+   {
+    "atSec": 839.45,
+    "beatHz": 7.06,
+    "carrierHz": 198.95
+   },
+   {
+    "atSec": 1317.04,
+    "beatHz": 6.95,
+    "carrierHz": 199.98
+   },
+   {
+    "atSec": 1381.87,
+    "beatHz": 8.01,
+    "carrierHz": 400.02
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 7.98,
+    "carrierHz": 399.99
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 100.03,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.18,
+    "_measured": {
+     "slopeDbPerDecade": -14.0,
+     "levelDb": -68.2
+    }
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

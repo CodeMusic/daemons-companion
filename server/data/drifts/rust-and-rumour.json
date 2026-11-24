@@ -1,0 +1,79 @@
+{
+ "formatVersion": 2,
+ "id": "rust-and-rumour",
+ "kind": "tinctures",
+ "meta": {
+  "name": "RUST AND RUMOUR",
+  "description": "Made more of story than of substance: a low, strange unease that turns, slowly, into an odd lucidity.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 0.44,
+    "carrierHz": 100.02
+   },
+   {
+    "atSec": 780.56,
+    "beatHz": 0.94,
+    "carrierHz": 100.87
+   },
+   {
+    "atSec": 839.54,
+    "beatHz": 2.05,
+    "carrierHz": 199.15
+   },
+   {
+    "atSec": 1318.24,
+    "beatHz": 1.93,
+    "carrierHz": 199.97
+   },
+   {
+    "atSec": 1386.14,
+    "beatHz": 4.09,
+    "carrierHz": 499.99
+   },
+   {
+    "atSec": 1799.92,
+    "beatHz": 3.98,
+    "carrierHz": 500.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 199.56,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.298
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

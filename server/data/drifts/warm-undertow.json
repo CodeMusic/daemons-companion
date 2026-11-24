@@ -1,0 +1,78 @@
+{
+ "formatVersion": 2,
+ "id": "warm-undertow",
+ "kind": "tinctures",
+ "meta": {
+  "name": "WARM UNDERTOW",
+  "description": "A surge of warmth, then a slow pull down into heavy, wordless comfort.",
+  "category": "TINCTURES",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.81
+   },
+   {
+    "atSec": 300.28,
+    "beatHz": 10.0
+   },
+   {
+    "atSec": 420.1,
+    "beatHz": 2.48
+   },
+   {
+    "atSec": 1189.6,
+    "beatHz": 2.52
+   },
+   {
+    "atSec": 1320.1,
+    "beatHz": 0.9
+   },
+   {
+    "atSec": 1799.92,
+    "beatHz": 0.9
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 149.98,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.05,
+    "_measured": {
+     "slopeDbPerDecade": -14.0,
+     "levelDb": -86.8
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

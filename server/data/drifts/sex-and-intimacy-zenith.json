@@ -1,0 +1,96 @@
+{
+ "formatVersion": 2,
+ "id": "sex-and-intimacy-zenith",
+ "kind": "meditation",
+ "meta": {
+  "name": "Zenith",
+  "description": "Sometimes you just want to make it happen — hard, good, no waiting. Zenith is built to carry you up to the mind-state right on the edge of orgasm and hold you at the summit: our strongest, fastest, most sensual dose. All the tension, all the heat, balanced at the very top of the arc.",
+  "category": "Sex and Intimacy",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 9.99
+   },
+   {
+    "atSec": 119.63,
+    "beatHz": 10.09
+   },
+   {
+    "atSec": 239.72,
+    "beatHz": 2.5
+   },
+   {
+    "atSec": 258.58,
+    "beatHz": 2.47
+   },
+   {
+    "atSec": 539.82,
+    "beatHz": 2.47
+   },
+   {
+    "atSec": 601.21,
+    "beatHz": 3.57
+   },
+   {
+    "atSec": 900.01,
+    "beatHz": 3.56
+   },
+   {
+    "atSec": 960.1,
+    "beatHz": 5.94
+   },
+   {
+    "atSec": 1260.01,
+    "beatHz": 9.69
+   },
+   {
+    "atSec": 1380.1,
+    "beatHz": 21.15,
+    "flashHz": 60.0
+   },
+   {
+    "atSec": 1800,
+    "beatHz": 21.18,
+    "flashHz": 60.0
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "brown",
+    "level": 0.128
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

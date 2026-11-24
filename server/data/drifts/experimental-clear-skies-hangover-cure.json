@@ -1,0 +1,58 @@
+{
+ "formatVersion": 2,
+ "id": "experimental-clear-skies-hangover-cure",
+ "kind": "meditation",
+ "meta": {
+  "name": "Clear Skies (Hangover Cure)",
+  "description": "A soothing morning-recovery session built from gentle low-frequency tones that ease a throbbing head and settle a queasy stomach. Soft, warming harmonics roll in like sunrise, washing the fog out of your skull and leaving behind a clear, rehydrated, finally-human-again kind of calm.",
+  "category": "Experimental",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.05
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 10.04
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.05
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

@@ -1,0 +1,89 @@
+{
+ "formatVersion": 2,
+ "id": "swinging-gate",
+ "kind": "tinctures",
+ "meta": {
+  "name": "SWINGING GATE",
+  "description": "Feeling swings wide and fast, from fear to delight and back, before it settles into a dreamy hush.",
+  "category": "TINCTURES",
+  "strength": 2,
+  "strengthLabel": "Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 8.52,
+    "carrierHz": 149.92
+   },
+   {
+    "atSec": 120.15,
+    "beatHz": 8.5,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 420.18,
+    "beatHz": 2.5,
+    "carrierHz": 149.96
+   },
+   {
+    "atSec": 1199.96,
+    "beatHz": 2.9,
+    "carrierHz": 149.95
+   },
+   {
+    "atSec": 1260.2,
+    "beatHz": 4.26,
+    "carrierHz": 150.0
+   },
+   {
+    "atSec": 1260.3,
+    "beatHz": 1.0,
+    "carrierHz": 32.0
+   },
+   {
+    "atSec": 1800.02,
+    "beatHz": 0.0,
+    "carrierHz": 32.23
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 149.95,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.05,
+    "_measured": {
+     "slopeDbPerDecade": -11.8,
+     "levelDb": -92.7
+    }
+   }
+  ],
+  "masterVolume": 1.0,
+  "transitionFade": "medium"
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

@@ -1,0 +1,81 @@
+{
+ "formatVersion": 2,
+ "id": "focus-and-energy-synthesis",
+ "kind": "meditation",
+ "meta": {
+  "name": "Synthesis",
+  "description": "Synthesis is our hybrid recreational smart-dose, built to nudge you up to the next tier. Instead of dulling the senses, it stirs the brainwaves tied to both analytical and imaginative thought — leaving you parked in a place of deep contemplation and crisp, glass-clear clarity as the session quietly unfolds around you.",
+  "category": "Focus and Energy",
+  "strength": 3,
+  "strengthLabel": "Very Strong",
+  "durationSec": 1800
+ },
+ "generation": {
+  "source": "binaural_decompose",
+  "from": "PulseEntrain"
+ },
+ "entrainment": {
+  "ramp": "linear",
+  "scenes": [
+   {
+    "atSec": 0.0,
+    "beatHz": 10.03
+   },
+   {
+    "atSec": 119.72,
+    "beatHz": 10.08
+   },
+   {
+    "atSec": 301.86,
+    "beatHz": 3.02
+   },
+   {
+    "atSec": 599.82,
+    "beatHz": 3.02
+   },
+   {
+    "atSec": 660.1,
+    "beatHz": 5.05
+   },
+   {
+    "atSec": 900.1,
+    "beatHz": 5.05
+   },
+   {
+    "atSec": 960.28,
+    "beatHz": 6.93
+   },
+   {
+    "atSec": 1800.01,
+    "beatHz": 6.94
+   }
+  ]
+ },
+ "audio": {
+  "binaural": {
+   "carrierHz": 300.0,
+   "follow": "beat"
+  },
+  "beds": [
+   {
+    "source": "noise",
+    "type": "pink",
+    "level": 0.105
+   }
+  ],
+  "masterVolume": 1.0
+ },
+ "nova": {
+  "mode": "follow",
+  "maxHz": 60,
+  "brightness": 1.0
+ },
+ "pulsetto": {
+  "enabled": false,
+  "follow": "scenes",
+  "intensityClamp": [
+   1,
+   9
+  ]
+ }
+}

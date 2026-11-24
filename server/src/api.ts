@@ -86,6 +86,7 @@ import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./machine/
 import { chooseDrift, chosenDrift, driftFile, driftList } from "./machine/drifts.js";   // C-506
 import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./machine/sleepexport.js";   // C-358
 import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
+import { PiBuilds, CHECK_EVERY_MS } from "./machine/pibuilds.js";   // C-541: the Pi program built by volunteers
 import { FRAME_MOST, InPlay, SOURCES } from "./game/inplay.js";   // C-478: THE GAMES IN PLAY
 import { dropSmall, smallCover } from "./thumbs.js";   // C-413: a cover's small copy
 import { renderAhead, VoiceBank } from "./machine/voicebank.js";   // C-251: fixed lines rendered ahead, said again in the same voice
@@ -801,6 +802,8 @@ export const DEVICE_DOOR = [
   (m: string, p: string) => m === "GET" && (p === "/api/books" || p === "/api/book" || p === "/api/book/recording" || p === "/api/device/meeting" || p === "/api/index/list" || p === "/api/index/entry" || p === "/api/subtle/today" || p === "/api/arcana/today" || p === "/api/arcana/draw"),   // C-230: the book's question, on the Ultra   // C-199: the INDEX on the Ultra   // C-212: its write-up, for the watch   // C-208: the Ultra reads the books held
   // C-328: BATTLE -- a board or watch asks, answers and fights as itself (battleroute.ts seats it by x-device)
   (m: string, p: string) => (m === "GET" || m === "POST") && BATTLE_PATHS.includes(p),
+  // C-541: the Pi program the household's volunteers built -- a public repository's build, fetched by a device's update
+  (m: string, p: string) => m === "GET" && /^\/api\/builds\/pizero\/[a-z0-9][a-z0-9.-]{0,80}$/.test(p),
   // C-335: a board's newest firmware, onto its card
   (m: string, p: string) => m === "GET" && (p === "/api/firmware" || p === "/api/firmware/image"),
   // C-332: the game's music, a track at a time onto the Ultra's card
@@ -946,6 +949,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
     end: (task, ok, error) => { TASKS.update(task, ok ? { state: "done" } : { state: "failed", error }); },
   }, { speed: process.env.VITEST ? 1 : undefined });
   useMesh((args, ins, outs, o) => MESH.ffmpeg(args, ins, outs, o));
+  // C-541: THE SHELF -- the Pi program built by the household's volunteers when its source is "volunteers" (pibuilds.ts)
+  const PIBUILDS = new PiBuilds(join(dirname(cfg.database === ":memory:" ? join(tmpdir(), "x") : cfg.database), "builds"), MESH, (k) => store.getSetting(k));
+  if (!process.env.VITEST) { setTimeout(() => void PIBUILDS.check(), 60_000).unref(); setInterval(() => void PIBUILDS.check(), CHECK_EVERY_MS).unref(); }
   // C-372: a painting's scene through the Tiiny's prompt enhancer when it has one; as written otherwise
   // C-388: by the Tiiny's thinker, always loaded (PE-T2I is not kept: the comparison of 2026-11-16 -- the same scenes,
   // the same seeds -- held every scene as well or better, in 15-17 s against 33-55 s); tiiny.enhancer names another
@@ -2486,6 +2492,21 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         res.writeHead(200, { "content-type": type, "content-length": size, "accept-ranges": "bytes", "access-control-allow-origin": "*",
                              ...(songFile[2] === "export.mp3" ? { "content-disposition": `attachment; filename="song.mp3"` } : {}) });
         return createReadStream(f).pipe(res);
+      }
+      // C-541: THE SHELF -- the volunteers' builds of the Pi program: its files (any device at home), its state, its source
+      if (req.method === "GET" && path.startsWith("/api/builds/pizero/")) {
+        const f = PIBUILDS.file(path.slice("/api/builds/pizero/".length));
+        if (!f) return send(res, 404, { error: "no such build" });
+        res.writeHead(200, { "content-type": f.endsWith(".json") ? "application/json" : "application/octet-stream", "content-length": statSync(f).size, "cache-control": "no-store" });
+        return createReadStream(f).pipe(res);
+      }
+      if (req.method === "GET" && path === "/api/builds") return send(res, 200, PIBUILDS.status());
+      if (req.method === "POST" && path === "/api/builds/pizero") {
+        const b = await body(req);
+        if (b.source === "github" || b.source === "volunteers") store.setSetting("builds.pizero.source", b.source);
+        if (typeof b.commit === "string") { const c = b.commit; void PIBUILDS.queue(c).catch(() => {}); }
+        else if (b.check === true) await PIBUILDS.check();
+        return send(res, 200, PIBUILDS.status());
       }
       // C-360: THE MESH -- a node (a paired key: hub/mesh.sh install) asks for work, fetches its inputs, sends its outputs
       // back and says how it went; GET /api/mesh: every node, its potential and score now, and the jobs going

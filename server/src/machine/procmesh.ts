@@ -21,6 +21,11 @@
 // Jobs today: ffmpeg runs (C-334's conversions, C-358's exports). Its arguments name files only as @in:<name> and
 // @out:<name>; a worker fetches each input from the hub and sends each output back, and runs only ffmpeg.
 // Every job is a task in THE MIND AT WORK (C-319), its node the mind it ran on, each hand-off a hop. Every word DRAFT.
+//
+// C-541: BUILDS -- one commit of one recipe for one board (today the Pi program, "pizero"), which the hub cannot run
+// itself. A build waits for a node whose caps name its recipe ("build:pizero" -- a DAEMONS Server host that lends its
+// container runtime) and is taken by the first able node that asks; its outputs come back as any job's do. A node that
+// fails it, or goes quiet past BUILD_MOST_MS, hands it back for another able node; with none left, it fails.
 import { execFile } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { cpus, loadavg } from "node:os";
@@ -31,7 +36,7 @@ export type Caps = string[];
 export type MeshNode = { id: string; name: string; caps: Caps; cores: number; speed: number; load: number; seen: number;
                          holds: number; history: boolean[]; here?: boolean };
 export type ProcJob = {
-  id: string; kind: "ffmpeg"; title: string; args: string[];
+  id: string; kind: "ffmpeg" | "build"; title: string; args: string[];      // a build's args: [recipe, commit, board]
   inputs: Record<string, string>; outputs: Record<string, string>;     // name -> the hub's own path
   expectMs: number;                                                   // how long it should take on a node of power 1
   asked: number; given: { node: string; at: number; taken?: number }[]; state: "waiting" | "running" | "done" | "failed";
@@ -41,6 +46,8 @@ export type Ledger = { open(title: string, mind: string): string; hop(task: stri
                        end(task: string, ok: boolean, error?: string): void };
 
 export const FRESH_MS = 15_000, TAKE_MS = 8_000, HISTORY = 20;
+export const BUILD_MOST_MS = 45 * 60_000, BUILD_TRIES = 3;
+export const RECIPES = ["pizero"];                                     // the recipes a build may name (C-541)
 const SAFE_ARG = (a: string) => !/^[/~]/.test(a) && !a.includes("../") && !a.includes("://") && !/^file:/i.test(a);
 export const safeArgs = (args: string[]) => args.every((a) => /^@(in|out):[a-z0-9._-]{1,40}$/i.test(a) || SAFE_ARG(a));
 
@@ -198,11 +205,55 @@ export class ProcMesh {
     return true;
   }
 
+  // C-541: a build, asked of whichever able node comes first; resolves with the node that built it
+  build(recipe: string, commit: string, board: string, outputs: Record<string, string>, o: { title: string; expectMs?: number }): Promise<string> {
+    if (!RECIPES.includes(recipe) || !/^[0-9a-f]{40}$/.test(commit) || !/^[a-z0-9-]{1,40}$/.test(board))
+      return Promise.reject(new Error("not a build this hub asks for"));
+    const job: ProcJob = { id: randomBytes(12).toString("hex"), kind: "build", title: o.title, args: [recipe, commit, board], inputs: {}, outputs,
+                           expectMs: o.expectMs ?? 15 * 60_000, asked: this.now(), given: [], state: "waiting" };
+    this.jobs.set(job.id, job);
+    return new Promise<void>((done, fail) => {
+      const task = this.ledger?.open(o.title, "");
+      this.waiters.set(job.id, { done, fail, task });
+    }).then(() => job.winner ?? "");
+  }
+  // a build no node has taken by a deadline is given up (a running one is left to finish)
+  drop(jobId: string, why: string): boolean {
+    const j = this.jobs.get(jobId);
+    if (!j || j.kind !== "build" || j.state !== "waiting") return false;
+    j.state = "failed"; j.error = why;
+    const w = this.waiters.get(j.id);
+    if (w?.task) this.ledger?.end(w.task, false, why);
+    w?.fail(new Error(why));
+    this.waiters.delete(j.id);
+    setTimeout(() => this.jobs.delete(j.id), 60_000).unref?.();
+    return true;
+  }
+  // the able nodes for a build that have not tried it yet
+  private ableToBuild(j: ProcJob, not: string[]) {
+    return [...this.nodes.values()].filter((n) => !n.here && this.now() - n.seen < FRESH_MS && n.caps.includes(`build:${j.args[0]}`) && !not.includes(n.id));
+  }
+  private takeBuild(nodeId: string): ProcJob | null {
+    const n = this.nodes.get(nodeId);
+    if (!n || n.here) return null;
+    const j = [...this.jobs.values()].filter((x) => x.kind === "build" && x.state === "waiting" && n.caps.includes(`build:${x.args[0]}`) &&
+                                                   !x.given.some((g) => g.node === nodeId)).sort((a, b) => a.asked - b.asked)[0];
+    if (!j) return null;
+    const at = this.now();
+    j.given.push({ node: nodeId, at, taken: at }); j.state = "running"; n.holds++;
+    const w = this.waiters.get(j.id);
+    if (w?.task) this.ledger?.hop(w.task, n.name);
+    setTimeout(() => { const g = j.given[j.given.length - 1];
+                       if (j.state === "running" && g?.node === nodeId && g.at === at) { n.holds = Math.max(0, n.holds - 1); this.finish(j, nodeId, false, "it went quiet"); } },
+               BUILD_MOST_MS).unref?.();
+    return j;
+  }
+
   // ---- a worker's side ----
   take(nodeId: string): ProcJob | null {
     const job = [...this.jobs.values()].find((j) => (j.state === "waiting" || j.state === "running") &&
                                                    j.given.some((g) => g.node === nodeId && !g.taken));
-    if (!job) return null;
+    if (!job) return this.takeBuild(nodeId);
     job.given.find((g) => g.node === nodeId)!.taken = this.now();
     job.state = "running";
     return job;
@@ -241,6 +292,17 @@ export class ProcMesh {
       return;
     }
     for (const p of Object.values(j.outputs)) rmSync(part(p), { force: true });
+    // C-541: a build goes back to wait for another able node; with none, or after BUILD_TRIES, it fails
+    if (j.kind === "build") {
+      if (j.given.length < BUILD_TRIES && this.ableToBuild(j, j.given.map((g) => g.node)).length) { j.state = "waiting"; return; }
+      j.state = "failed"; j.error = error ?? "it could not be built";
+      const w = this.waiters.get(j.id);
+      if (w?.task) this.ledger?.end(w.task, false, j.error);
+      w?.fail(new Error(j.error));
+      this.waiters.delete(j.id);
+      setTimeout(() => this.jobs.delete(j.id), 60_000).unref?.();
+      return;
+    }
     // this node failed it: someone else, unless every able node has tried (the hub last of all)
     if (j.given.some((g) => this.nodes.get(g.node)?.here) && nodeId !== "hub" && j.state !== "failed") return;   // the hub is on it
     const tried = j.given.map((g) => g.node), next = this.best("ffmpeg", tried);

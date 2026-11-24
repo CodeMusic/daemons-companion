@@ -26,24 +26,16 @@ jobs:
       - name: Tools
         run: |
           apt-get update -qq
-          apt-get install -y -qq git cmake g++ ninja-build pkg-config libcurl4-openssl-dev device-tree-compiler dpkg-dev ca-certificates >/dev/null
+          apt-get install -y -qq git cmake g++ ninja-build pkg-config libcurl4-openssl-dev device-tree-compiler dpkg-dev ca-certificates >/dev/null   # the same as tools/build.Dockerfile (C-541)
       - uses: actions/checkout@v4
-      - name: Build
+      - name: Build and package (the recipe a volunteer host runs too, C-541)
         working-directory: firmware/pizero
-        env: { BOARD: "${{ matrix.board }}", ZERO_VERSION: "${{ github.sha }}" }
-        run: ./build.sh device
-      - name: Package
-        working-directory: firmware/pizero
-        env: { BOARD: "${{ matrix.board }}" }
+        env: { ZERO_VERSION: "${{ github.sha }}" }
         run: |
-          out=build/device; [ "$BOARD" != cardputer-zero ] && out=build/device-$BOARD
-          cp ../../server/data/patches.json patches.json
-          deb=$(tools/make_deb.sh "$out/daemons-zero")
-          mkdir -p ../../dist && cp "$deb" "../../dist/daemons-zero-$BOARD.deb"
-          tar -czf "../../dist/daemons-zero-$BOARD.tar.gz" -C "$out" daemons-zero -C "$PWD" patches.json
-          sha=$(sha1sum "../../dist/daemons-zero-$BOARD.tar.gz" | cut -d' ' -f1)
-          printf '{"board":"%s","commit":"%s","at":"%s","sha1":"%s","file":"daemons-zero-%s.tar.gz"}\n' \
-            "$BOARD" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$sha" "$BOARD" > "../../dist/$BOARD.json"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          tools/package.sh fetch "${{ matrix.board }}"
+          tools/package.sh build "${{ matrix.board }}" ../../dist
       - uses: actions/upload-artifact@v4
         with: { name: "pizero-${{ matrix.board }}", path: dist/ }
   release:

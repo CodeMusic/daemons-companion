@@ -51,6 +51,7 @@ std::string key(std::string *said = nullptr) {
     if (!k.empty()) { if (said) *said = "YOUR OWN KEY"; return k; }   // DRAFT
   }
   std::string a = hub::address();
+  if (a.empty() && readText(inConfig("hub"), a)) while (!a.empty() && isspace((unsigned char)a.back())) a.pop_back();   // before hub::begin
   size_t s = a.find("://");
   if (s != std::string::npos) a = a.substr(s + 3);
   a = a.substr(0, a.find_first_of(":/"));

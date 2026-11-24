@@ -170,11 +170,10 @@ describe("pairing a phone (C-53)", () => {
     expect((await post("/api/phone/name", { name: "taken" })).status).toBe(403);   // this machine, but no phone's key
   });
 
-  it("retires a code after five wrong guesses", async () => {
+  it("never pauses this machine for wrong guesses (C-560: five from an address on the network pause that address, pairing.test.ts)", async () => {
     const { code } = (await post("/api/pair/code", {})).json;
-    const wrong = code === "123456" ? "654321" : "123456";
-    for (let i = 0; i < 5; i++) await post("/api/pair", { code: wrong });
-    expect((await post("/api/pair", { code })).status).toBe(403);
+    for (let i = 0; i < 5; i++) await post("/api/pair", { code: "wrong!" });
+    expect((await post("/api/pair", { code, name: "after five wrong" })).status).toBe(200);
   });
 });
 

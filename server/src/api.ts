@@ -867,14 +867,30 @@ const OWN_KEEP_MS = 48 * 3600000;
 // ---- C-53: pairing a phone. The site asks for a code (this machine only); the phone sends it back once, with a name,
 // and is given its own key. With the key, the whole API answers it across the network -- without one, only the board's
 // routes do. A code lasts ten minutes, is used once, and is retired after five wrong guesses.
-const PAIR_MS = 10 * 60 * 1000;
-class Pairing {
-  code: string | null = null; until = 0; misses = 0;
-  start(now = Date.now()) { this.code = String(randomInt(0, 1000000)).padStart(6, "0"); this.until = now + PAIR_MS; this.misses = 0; return this.code; }
-  take(code: unknown, now = Date.now()): boolean {
-    if (!this.code || now > this.until) return false;
-    if (String(code) !== this.code) { if (++this.misses >= 5) this.code = null; return false; }
-    this.code = null;
+// C-560 (the user, 2026-11-24): several codes live at once -- one code replaced the last, and five wrong tries anywhere
+// retired it, so two browsers pairing together spoiled each other's codes. Now each code keeps its own ten minutes (the
+// newest eight kept), and wrong tries are counted per address: five in ten minutes and that address is refused until
+// they pass, while every other device's codes still work. Eight live codes and five tries an address: 40 in a million.
+const PAIR_MS = 10 * 60 * 1000, PAIR_LIVE = 8, PAIR_MISSES = 5;
+export class Pairing {
+  private codes = new Map<string, number>();                     // code -> until
+  private misses = new Map<string, number[]>();                  // address -> when each wrong try came
+  start(now = Date.now()) {
+    for (const [c, until] of this.codes) if (now > until) this.codes.delete(c);
+    let code: string;
+    do code = String(randomInt(0, 1000000)).padStart(6, "0"); while (this.codes.has(code));
+    this.codes.set(code, now + PAIR_MS);
+    while (this.codes.size > PAIR_LIVE) this.codes.delete(this.codes.keys().next().value!);   // the oldest first
+    return code;
+  }
+  // `who` is the asking address; this machine ("") is never paused -- it can show itself a code whenever it likes
+  take(code: unknown, who = "", now = Date.now()): boolean {
+    const tries = who ? (this.misses.get(who) ?? []).filter((t) => now - t < PAIR_MS) : [];
+    if (tries.length >= PAIR_MISSES) { this.misses.set(who, tries); return false; }
+    const c = String(code ?? ""), until = this.codes.get(c);
+    if (until === undefined || now > until) { if (who) this.misses.set(who, [...tries, now]); if (until !== undefined) this.codes.delete(c); return false; }
+    this.codes.delete(c);
+    this.misses.delete(who);
     return true;
   }
 }
@@ -1844,7 +1860,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "POST" && path === "/api/pair") {
         const b = await body(req);
         const name = typeof b.name === "string" && b.name.trim() ? b.name.trim().slice(0, 40) : "a phone";
-        if (!pairing.take(b.code)) return send(res, 403, { error: "that code is not right, or has run out -- show a new one on the site" });
+        if (!pairing.take(b.code, isLoopback(req.socket.remoteAddress) ? "" : req.socket.remoteAddress ?? "?")) return send(res, 403, { error: "that code is not right, or has run out -- show a new one on the site" });
         const token = randomBytes(24).toString("base64url");
         store.addPhone(token, name);
         return send(res, 200, { token, name, away: store.getSetting("relay.url"), tailnet: tailnetHome(cfg.port) });   // C-56: the way back from anywhere

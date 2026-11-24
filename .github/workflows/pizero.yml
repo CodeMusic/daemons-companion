@@ -29,13 +29,16 @@ jobs:
           apt-get install -y -qq git cmake g++ ninja-build pkg-config libcurl4-openssl-dev device-tree-compiler dpkg-dev ca-certificates >/dev/null   # the same as tools/build.Dockerfile (C-541)
       - uses: actions/checkout@v4
       - name: Build and package (the recipe a volunteer host runs too, C-541)
-        working-directory: firmware/pizero
         env: { ZERO_VERSION: "${{ github.sha }}" }
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          # built at /daemons, as a volunteer's container builds it: the source's path is in the program
+          mkdir -p /daemons/firmware /daemons/server/data
+          cp -a firmware/pizero /daemons/firmware/ && cp server/data/patches.json /daemons/server/data/
+          cd /daemons/firmware/pizero
           tools/package.sh fetch "${{ matrix.board }}"
-          tools/package.sh build "${{ matrix.board }}" ../../dist
+          tools/package.sh build "${{ matrix.board }}" "$GITHUB_WORKSPACE/dist"
       - uses: actions/upload-artifact@v4
         with: { name: "pizero-${{ matrix.board }}", path: dist/ }
   release:

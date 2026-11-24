@@ -7,6 +7,8 @@
 # The tarball is made the same way on every machine (its files sorted, owned by 0, dated to the commit, gzip without
 # a name or time), and the program's built() is the commit's time (SOURCE_DATE_EPOCH), so two honest builds of one
 # commit give one SHA-1. ZERO_VERSION is the commit; SOURCE_DATE_EPOCH its time (both set by the caller, else git's).
+# Build it from /daemons/firmware/pizero: the source's own path is built into the program (ZERO_PATCHES_JSON, and the
+# file names the compiler keeps), so two builds compare only when both are made at that one path.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 step=${1:?fetch or build}; board=${2:?a board}
@@ -14,6 +16,7 @@ export BOARD=$board
 export ZERO_VERSION=${ZERO_VERSION:-$(git rev-parse HEAD 2>/dev/null || echo local)}
 export SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-$(git log -1 --format=%ct 2>/dev/null || date +%s)}
 out=build/device; [[ $board != cardputer-zero ]] && out=build/device-$board
+[[ $PWD == /daemons/firmware/pizero ]] || echo "package.sh: not at /daemons/firmware/pizero -- this build will not compare with GitHub's or a volunteer's" >&2
 args=(-DCMAKE_BUILD_TYPE=Release -DZERO_BOARD="$board")
 command -v ninja >/dev/null && args+=(-G Ninja)
 

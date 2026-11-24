@@ -19,6 +19,13 @@
 // THE ORDINAL, for counting in colour (a colour clock, later): a day is 1..7 (Sunday 1), a month 1..12. Nothing --
 // 0 -- is BLACK, the light off; past the top is WHITE, the carry, every colour at once spilling into the next place.
 //
+// A DAEMON'S THREE NOTES (T-612; the user, 2026-11-23, by multiple choice, every recommendation; DAEMONS vision 9.36):
+// its KEY, its first type's (bright when major, dim when minor) -- its kind; its DAY, its INDEX number mod 7 + 1 on the
+// week -- the day's virtue over its shadow, what it practises; its MONTH, mod 12 + 1 on the year -- the month's tone,
+// what it brings. A note outside the key is the daemon's own ACCIDENTAL: true pitch, true colour, used in passing and
+// resolved, never held in a drone. A second type adds nothing yet (T-615). Synesthesia.daemon(...) below; C-490 makes
+// with them.
+//
 // Every word here DRAFT.
 import week from "../../data/week.json" with { type: "json" };
 import { deviceDay, type Palette } from "./days.js";
@@ -61,6 +68,18 @@ export type Qualia = {
 };
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
+/** A type's key as songs.json carries it (DAEMONS 9.36): its tonic's pitch, 0..11 with C 0, and whether it is minor. */
+export type TypeKey = { tonic: number; minor: boolean };
+/** T-612: a daemon's three notes. key's colours are its tonic's; bright for a major key, dim for a minor. */
+export type DaemonNotes = {
+  n: number;
+  key: Qualia & { minor: boolean; bright: boolean; label: string };   // label: "A#/Bb MAJOR", as DEVELOPER MODE shows it
+  day: Qualia;                                                         // (n mod 7) + 1 on the week: always a white key
+  month: Qualia;                                                       // (n mod 12) + 1 on the year
+  accidentals: ("day" | "month")[];                                    // which of the two lie outside the key
+};
+/** The scales a song is made in (DAEMONS tools/gensongs.py: MAJOR, and the natural MINOR). */
+const MAJOR = [0, 2, 4, 5, 7, 9, 11] as const, MINOR = [0, 2, 3, 5, 7, 8, 10] as const;
 
 // the weekday(s) a pitch's colour is: a white key its own day, a black key the days either side
 function daysOfPitch(pitch: number): WeekDay[] {
@@ -141,6 +160,25 @@ export class Synesthesia {
   static beatIn(band: readonly [number, number], q: Qualia): number {
     const [lo, hi] = band;
     return Math.round(lo + ((hi - lo) * (q.ordinal - 1)) / (q.base - 1));
+  }
+  /** Whether a pitch (0..11) is one of a key's seven. */
+  static inKey(pitch: number, key: TypeKey): boolean {
+    return (key.minor ? MINOR : MAJOR).includes(mod(pitch - key.tonic, 12) as never);
+  }
+  /**
+   * T-612: a daemon's three notes and colours, from its INDEX number and its first type's key. The key is read on the
+   * year's twelve (its tonic may be a black key); the day and the month are the daemon's number on each wheel.
+   */
+  static daemon(n: number, key: TypeKey, palette: Palette = "checkpoint"): DaemonNotes {
+    const k = Synesthesia.month(mod(key.tonic, 12) + 1, palette);
+    const day = Synesthesia.day(mod(n, 7) + 1, palette), month = Synesthesia.month(mod(n, 12) + 1, palette);
+    const accidentals = ([["day", day], ["month", month]] as const)
+      .filter(([, q]) => !Synesthesia.inKey(q.pitch, key)).map(([w]) => w);
+    return {
+      n,
+      key: { ...k, minor: key.minor, bright: !key.minor, label: `${k.note} ${key.minor ? "MINOR" : "MAJOR"}` },
+      day, month, accidentals: [...accidentals],
+    };
   }
   /**
    * A number in colour, for a colour clock: its digits in base+1 (0..base), the most significant first, each one a

@@ -73,3 +73,37 @@ describe("translations", () => {
     expect(names(13, 12, 1)).toEqual(["carry", "off"]);       // a thirteen will not fit one place
   });
 });
+
+// T-612 (the user, 2026-11-23, every recommendation; DAEMONS vision 9.36, docs/three-notes-draft.md): a daemon's three notes
+describe("a daemon's three notes", () => {
+  const G_MINOR = { tonic: 7, minor: true }, EB_MINOR = { tonic: 3, minor: true };
+  const AB_MAJOR = { tonic: 8, minor: false }, A_MINOR = { tonic: 9, minor: true };
+  it("56 PREEMPT (LOGIC): G minor, Sunday's C, September's G#/Ab its accidental", () => {
+    const d = Synesthesia.daemon(56, G_MINOR);
+    expect(d.key).toMatchObject({ note: "G", minor: true, bright: false, label: "G MINOR", hues: ["blue"] });
+    expect([d.day.name, d.day.note, d.day.hues]).toEqual(["Sunday", "C", ["red"]]);
+    expect([d.month.name, d.month.note, d.month.hues]).toEqual(["September", "G#/Ab", ["blue", "indigo"]]);
+    expect(d.accidentals).toEqual(["month"]);
+  });
+  it("58 SENTRY (ENTROPY): E-flat minor, a black-key tonic, Tuesday's E its accidental", () => {
+    const d = Synesthesia.daemon(58, EB_MINOR);
+    expect(d.key).toMatchObject({ note: "D#/Eb", label: "D#/Eb MINOR", hues: ["orange", "yellow"], blend: true });
+    expect([d.day.name, d.day.note, d.month.name, d.month.note]).toEqual(["Tuesday", "E", "November", "A#/Bb"]);
+    expect(d.accidentals).toEqual(["day"]);
+  });
+  it("60 LOOP (FLOW) is all in A-flat major, bright", () => {
+    const d = Synesthesia.daemon(60, AB_MAJOR);
+    expect(d.key).toMatchObject({ bright: true, label: "G#/Ab MAJOR" });
+    expect([d.day.name, d.month.name, d.accidentals]).toEqual(["Thursday", "January", []]);
+  });
+  it("151 ARTSAI: its day and month are one note, both in A minor", () => {
+    const d = Synesthesia.daemon(151, A_MINOR);
+    expect([d.day.note, d.month.note, d.accidentals]).toEqual(["G", "G", []]);
+  });
+  it("every DAY note is in CONTENT's and CONTEXT's keys: the week is C major's seven", () => {
+    for (let n = 1; n <= 84; n++) {
+      expect(Synesthesia.daemon(n, { tonic: 0, minor: false }).accidentals).not.toContain("day");
+      expect(Synesthesia.daemon(n, A_MINOR).accidentals).not.toContain("day");
+    }
+  });
+});

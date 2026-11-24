@@ -11,7 +11,7 @@ C-469 and C-432 closed, so the second loop's last goal, C-454, is unblocked. C-4
 ("not yet again", 2026-11-23). Worked top down: build, test, deploy the hub, commit by path, push, note it in Redmine.
 
 1. ~~**C-454 RESEARCH, first slice**~~ -- a study with field, hypothesis, an editable expert, text and PDF sources, the
-   talk, findings proposed and kept, and two draws, the JOURNAL and GOALS (docs/RESEARCH.md). ***Built*** *(fa8d7d7d,
+   talk, findings proposed and kept, and two draws, the JOURNAL and GOALS (docs/RESEARCH.md). ***Built*** *(3058104a,
    DRAFT; seen on a scratch site with a synthetic save -- a PDF read, an ask failing cleanly with no mind, a finding kept.
    Not yet answered by a real mind, nor seen on the phone).*
 2. **C-406 boards from THE ENGINE ROOM** -- ***waits on the user's word*** (2026-11-23: "not yet again").

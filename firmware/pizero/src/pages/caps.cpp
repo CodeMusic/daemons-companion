@@ -23,6 +23,7 @@ struct Caps : Page {
   void key(const KeyEvent &e) override {
     if (!e.down) return;
     if (e.key == Key::Esc) { goHome(); return; }
+    if (e.key == Key::R && caps::found().kind == caps::Kind::Cc1101Nfc) { go(PageId::RollCall); return; }   // C-447
     if (e.key == Key::Enter) { caps::find(true); told = "Asked the cap again."; loudest = -127; return; }   // DRAFT
     if (caps::found().kind != caps::Kind::Cc1101Nfc) return;
     Dir d = dirOf(e.key);
@@ -111,12 +112,12 @@ struct Caps : Page {
       y += 10;
       canvas.setTextColor(DIM);
       canvas.setCursor(6, y);
-      canvas.print(caps::mayTransmit(b) ? "LISTENING. MAY SEND HERE LATER (ROLL CALL)" : "LISTENING ONLY ON THIS BAND");   // DRAFT
+      canvas.print(caps::mayTransmit(b) ? "LISTENING. ROLL CALL MAY SEND HERE (R)" : "LISTENING ONLY ON THIS BAND");   // DRAFT
     }
     canvas.setTextColor(DIM);
     canvas.setCursor(6, 160);
     std::string foot = !told.empty() ? upper(told) : !f.why.empty() ? upper(f.why)
-                       : f.kind == caps::Kind::Cc1101Nfc ? hint("Z C: BAND   F X: ANTENNA   ENTER: ASK AGAIN   ESC") : hint("ENTER: ASK AGAIN    ESC: BACK");   // DRAFT
+                       : f.kind == caps::Kind::Cc1101Nfc ? hint("Z C: BAND  F X: ANTENNA  R: ROLL CALL  ESC") : hint("ENTER: ASK AGAIN    ESC: BACK");   // DRAFT
     canvas.print(foot.substr(0, 52).c_str());
   }
 };

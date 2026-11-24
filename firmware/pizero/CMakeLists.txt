@@ -122,6 +122,7 @@ set(SRC
   src/pages/party.cpp
   src/pages/say.cpp
   src/pages/caps.cpp
+  src/pages/rollcall.cpp
   src/pages/talk.cpp
   src/pages/kit.cpp
   src/pages/engine.cpp
@@ -136,6 +137,7 @@ set(SRC
   src/caps/bus.cpp
   src/caps/cc1101.cpp
   src/caps/cap.cpp
+  src/caps/longwave.cpp
   src/boards/pad.cpp
   src/boards/${ZERO_BOARD}.cpp)
 
@@ -165,7 +167,7 @@ target_compile_options(lgfx PRIVATE -w -ffunction-sections -fdata-sections)
 target_link_libraries(lgfx PUBLIC ${LGFX_LIBS} Threads::Threads)
 
 add_executable(daemons-zero ${SRC})
-target_include_directories(daemons-zero PRIVATE src ${CMAKE_BINARY_DIR}/_deps/arduinojson ${miniaudio_SOURCE_DIR})
+target_include_directories(daemons-zero PRIVATE src ${CMAKE_SOURCE_DIR}/.. ${CMAKE_BINARY_DIR}/_deps/arduinojson ${miniaudio_SOURCE_DIR})
 target_compile_options(daemons-zero PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers)
 target_compile_definitions(daemons-zero PRIVATE ZERO_DEVICE=$<BOOL:${ZERO_DEVICE}> M_CORE_GBA BUILD_STATIC
   ZERO_PATCHES_JSON="${ZERO_PATCHES_JSON}"
@@ -181,6 +183,6 @@ endif()
 # The checks that need no device: BPS against vectors written by DAEMONS' own encoder, and the hashes
 enable_testing()
 add_executable(zero-tests test/tests.cpp src/game/hash.cpp src/game/bps.cpp src/kit/stackflow.cpp src/kit/policy.cpp)
-target_include_directories(zero-tests PRIVATE src ${CMAKE_BINARY_DIR}/_deps/arduinojson)
+target_include_directories(zero-tests PRIVATE src ${CMAKE_SOURCE_DIR}/.. ${CMAKE_BINARY_DIR}/_deps/arduinojson)
 target_compile_definitions(zero-tests PRIVATE ARDUINOJSON_STRING_LENGTH_SIZE=4)
 add_test(NAME bps COMMAND zero-tests ${CMAKE_CURRENT_SOURCE_DIR}/test)

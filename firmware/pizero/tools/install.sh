@@ -28,6 +28,9 @@ ssh "$host" 'mkdir -p ~/daemons-zero/src'
 rsync -rc --delete --exclude /build/ --exclude '/build-*/' --exclude /shots/ --exclude '*.gba' --exclude '*.sav' \
   --exclude '*.bps' --exclude '*.deb' --exclude /patches.json --exclude .DS_Store "$here/" "$host:daemons-zero/src/"
 scp -q "$repo/server/data/patches.json" "$host:daemons-zero/src/patches.json"
+# C-447: the frame every firmware shares (firmware/common/rollcall.h), beside the source as it sits in the repository
+ssh "$host" 'mkdir -p ~/daemons-zero/common'
+scp -q "$here/../common/rollcall.h" "$host:daemons-zero/common/rollcall.h"
 
 ssh "$host" 'bash -s' <<'EOF'
 set -euo pipefail

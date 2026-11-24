@@ -28,6 +28,8 @@
 //   daemons-zero --send-save           send the save kept here to the hub once (as SEND THE SAVE NOW), and stop
 //   daemons-zero --sync                a SYNC, as HOME's: this device's save out, the hub's SYNC, its copy back; and stop
 //   daemons-zero --cap cc1101|lora|none  a pretend cap on the header (a computer, or checks): no chip is asked (C-444)
+//   daemons-zero --rollcall all        a ROLL CALL on the cap's band: one:ID, some:ID,ID, all or once (C-447, docs/CAPS.md)
+//   daemons-zero --answer 60           answer roll calls heard for that many seconds; --antenna 433|915|none, --power DBM
 //   daemons-zero --caps                say which cap is fitted and what it offers, and stop (C-444, docs/CAPS.md)
 //   daemons-zero --band 315|433|915    set the CC1101's band, read the switch back, listen two seconds, and stop
 //   daemons-zero --kit                 the LLM630 Kit on the back: its link, agent, units and models; and stop (C-453)
@@ -52,6 +54,8 @@
 #include "board.h"
 #include "canvas.h"
 #include "caps/cap.h"
+#include "caps/longwave.h"
+#include "common/rollcall.h"
 #include "game/rom.h"
 #include "hal/hal.h"
 #include "hub/hub.h"
@@ -69,6 +73,7 @@ Page *stepPage();
 Page *partyPage();
 Page *sayPage();
 Page *capsPage();
+Page *rollCallPage();
 Page *talkPage();
 Page *kitPage();
 Page *enginePage();
@@ -93,6 +98,7 @@ Page *pageFor(PageId id) {
     case PageId::Party: return partyPage();
     case PageId::Say: return sayPage();
     case PageId::Caps: return capsPage();
+    case PageId::RollCall: return rollCallPage();
     case PageId::Talk: return talkPage();
     case PageId::Kit: return kitPage();
     case PageId::Engine: return enginePage();
@@ -179,7 +185,8 @@ int main(int argc, char **argv) {
   std::string updateWhat;   // C-515: check, take or back
   std::string desktopDir;
   std::string kitSay, kitHear;
-  std::string bandArg;
+  std::string bandArg, antennaArg, powerArg, rollcallArg;   // C-444, C-447
+  int answerFor = 0;
   bool mirrorIn = false, sendSave = false, syncOnce = false, keepThere = false;
   std::map<uint64_t, std::vector<Key>> presses;
   for (int i = 1; i < argc; i++) {
@@ -222,6 +229,10 @@ int main(int argc, char **argv) {
     else if (a == "--cap") caps::pretend(val());
     else if (a == "--caps") listCaps = true;
     else if (a == "--band") bandArg = val();
+    else if (a == "--antenna") antennaArg = val();
+    else if (a == "--power") powerArg = val();
+    else if (a == "--rollcall") rollcallArg = val();
+    else if (a == "--answer") answerFor = atoi(val().c_str());
     else if (a == "--kit") kitStatus = true;
     else if (a == "--kit-at") setenv("DAEMONS_KIT", val().c_str(), 1);
     else if (a == "--kit-say") kitSay = val();
@@ -253,6 +264,53 @@ int main(int argc, char **argv) {
     fprintf(stderr, "--band is 315, 433 or 915 (868 is never offered: docs/CAPS.md)\n");
     return 2;
   }
+  if (!antennaArg.empty()) {   // C-447: which antenna is on the cap's connector, as the user says
+    if (antennaArg == "433") caps::setAntenna(caps::Antenna::A433);
+    else if (antennaArg == "915" || antennaArg == "868/915") caps::setAntenna(caps::Antenna::A868915);
+    else if (antennaArg == "315") caps::setAntenna(caps::Antenna::A315);
+    else if (antennaArg == "none") caps::setAntenna(caps::Antenna::None);
+    else { fprintf(stderr, "--antenna is 315, 433, 915 or none\n"); return 2; }
+    printf("antenna said to be on: %s\n", caps::antennaName(caps::antenna()));
+    if (!listCaps && bandArg.empty() && rollcallArg.empty() && !answerFor) return 0;
+  }
+  if (!powerArg.empty()) { longwave::setPower(atoi(powerArg.c_str())); printf("roll call power: %d dBm\n", longwave::power()); }
+  if (!rollcallArg.empty() || answerFor > 0) {   // C-447: a roll call, or answering, from the command line (over SSH)
+    const caps::Found &f = caps::find();
+    if (!bandArg.empty()) caps::setBand(bandArg == "915" ? caps::Band::B915 : bandArg == "315" ? caps::Band::B315 : caps::Band::B433);
+    printf("cap: %s; band %s MHz; antenna %s; power %d dBm; key %s; this is %s (%04X)\n", f.kind == caps::Kind::None ? "none" : f.name.c_str(),
+           caps::bandName(caps::band()), caps::antennaName(caps::antenna()), longwave::power(), longwave::keyName().c_str(), longwave::myName().c_str(), longwave::me());
+    if (answerFor > 0) {
+      if (!longwave::setAnswering(true)) { printf("may not send on this band, so it cannot answer: %s\n", longwave::mayCall().c_str()); return 1; }
+      printf("answering for %d s\n", answerFor);
+      fflush(stdout);
+      for (auto t0 = std::chrono::steady_clock::now(); !quitting && std::chrono::steady_clock::now() - t0 < std::chrono::seconds(answerFor);) {
+        std::string l = longwave::tick();
+        if (!l.empty()) { printf("  %s\n", l.c_str()); fflush(stdout); }
+        else std::this_thread::sleep_for(std::chrono::microseconds(500));
+      }
+      printf("answered %d\n", longwave::answeredCount());
+      return 0;
+    }
+    std::string m = rollcallArg.substr(0, rollcallArg.find(':'));
+    uint8_t mode = m == "one" ? rollcall::ONE : m == "some" ? rollcall::SOME : m == "all" ? rollcall::ALL : m == "once" ? rollcall::ONCE : 255;
+    if (mode == 255) { fprintf(stderr, "--rollcall is one:ID, some:ID,ID, all or once\n"); return 2; }
+    std::vector<uint16_t> to;
+    if (rollcallArg.find(':') != std::string::npos) {
+      std::string ids = rollcallArg.substr(rollcallArg.find(':') + 1);
+      for (size_t at = 0; at < ids.size();) {
+        size_t c = ids.find(',', at);
+        to.push_back((uint16_t)strtoul(ids.substr(at, c == std::string::npos ? std::string::npos : c - at).c_str(), nullptr, 16));
+        at = c == std::string::npos ? ids.size() : c + 1;
+      }
+    }
+    longwave::Result r = longwave::call(mode, to);
+    if (!r.sent) { printf("no call: %s\n", r.why.c_str()); return 1; }
+    printf("call %u (%s): %d of %d packets sent at %d dBm\n", r.call, rollcall::modeName(mode), r.packets, rollcall::CALL_PACKETS, r.power);
+    for (auto &a : r.answers)
+      printf("  %-8s %04X slot %d: here %d dBm, there %d dBm, heard %d of %d\n", a.name.c_str(), a.id, a.slot, a.here, a.there, a.heard, a.of);
+    printf("  %zu answered; noise %d, other households %d, broken %d\n", r.answers.size(), r.noise, r.strangers, r.broken);
+    return 0;
+  }
   if (listCaps || !bandArg.empty()) {   // C-444: the cap, from the command line (over SSH, for checks)
     const caps::Found &f = caps::find();
     printf("cap: %s%s%s\n", f.kind == caps::Kind::None ? "none" : f.name.c_str(), f.detail.empty() ? "" : " -- ", f.detail.c_str());
@@ -269,7 +327,7 @@ int main(int argc, char **argv) {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
       }
       printf("  heard %d samples: quietest %d dBm, loudest %d, mean %d\n", n, lo, hi, n ? sum / n : 0);
-      printf("  antenna said to be on: %s; may transmit here: %s (nothing in this build does)\n", caps::antennaName(caps::antenna()),
+      printf("  antenna said to be on: %s; may transmit here: %s (only ROLL CALL does)\n", caps::antennaName(caps::antenna()),
              caps::mayTransmit(b) ? "yes" : "no");
       if (!ok) return 1;
     }
@@ -399,7 +457,7 @@ int main(int argc, char **argv) {
   caps::find();   // C-444: once at start; a cap is never fitted while the Zero is on
   const std::map<std::string, PageId> pages{ { "home", PageId::Home }, { "play", PageId::Play }, { "make", PageId::Make }, { "games", PageId::Make }, { "link", PageId::Pair },
                                            { "care", PageId::Care }, { "step", PageId::Step }, { "party", PageId::Party }, { "say", PageId::Say },
-                                           { "caps", PageId::Caps }, { "talk", PageId::Talk }, { "kit", PageId::Kit }, { "engine", PageId::Engine }, { "dashboard", PageId::Dashboard }, { "account", PageId::Account } };
+                                           { "caps", PageId::Caps }, { "rollcall", PageId::RollCall }, { "talk", PageId::Talk }, { "kit", PageId::Kit }, { "engine", PageId::Engine }, { "dashboard", PageId::Dashboard }, { "account", PageId::Account } };
   go(pages.count(start) ? pages.at(start) : app().home);   // C-509: --page, else the app's own first page
 
   auto lastDraw = std::chrono::steady_clock::now();

@@ -38,6 +38,11 @@ int rssiDbm();                              // what is heard now on the band (pr
 Antenna antenna();                          // what the user says is on the cap's connector
 void setAntenna(Antenna a);
 const char *antennaName(Antenna a);
-bool mayTransmit(Band b);                   // the region's rule and the antenna fitted (nothing in this build transmits)
+bool mayTransmit(Band b);                   // the region's rule and the antenna fitted (only ROLL CALL transmits, C-447)
+
+}  // namespace caps
+namespace cc1101 { struct Chip; }
+namespace caps {
+cc1101::Chip *radio();                      // C-447: the CC1101 itself, once found and set to a band; null otherwise (and pretend)
 
 }  // namespace caps

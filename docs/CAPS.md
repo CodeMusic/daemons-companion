@@ -101,6 +101,17 @@ a second, and at 433 MHz a call at most every ten seconds and the band quiet bet
 periodic transmitter as the user reads them, kept in the code as limits a setting cannot pass. *This is a design, not
 legal advice; the user is the licensee of nothing and transmits only on their own gear.*
 
+**As built (C-447, 2026-11-24; the Zero only, the ADV with C-448)**: `firmware/common/rollcall.h` holds the frame (26
+bytes: the mark DM, kind, mode, call number, the sender's short id, packet or slot, packets, power, the call's loudness
+as heard, slots, the named devices or the answerer's name, a version, and a check), the slots and the limits;
+`firmware/pizero/src/caps/longwave.cpp` the call and the answering, and `pages/rollcall.cpp` the page. **Whose devices
+answer**: the frame's check is made from a key and the hour; the key is the user's own in `~/.config/daemons/rollcall.key`
+if one is written there, else the paired hub's name (every device of the household pairs with the same hub), else
+none, when any DAEMONS device answers and the page says so. The hourly tag C-72's frames carry replaces this when the
+hub hands it out. **Timing**: a call is 3 packets 25 ms apart; the first slot opens 30 ms after the last, each slot
+25 ms; ALL has eight slots, a device's slot its short id modulo eight (two devices can share one: both are then
+counted as broken, and ONE or SOME tells them apart). The whole of a call, answers and all, is under 0.4 s.
+
 **Results go to the hub** (`/api/device/rollcall`, later): each run's table kept, so a run on Tuesday and one on
 Friday can be read side by side.
 

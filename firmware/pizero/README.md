@@ -98,8 +98,12 @@ you, and the hub lists the device among its phones. From then on the save is kep
 **CAPS (C-444, [docs/CAPS.md](../../docs/CAPS.md))**: which cap is on the EXT header -- the **CC1101 + NFC** or the
 **LoRa-1262** -- found by asking its chips (I2C 0x43, then the CC1101's PARTNUM and VERSION, read only), and what it
 offers. For the CC1101: its band (315, 433 or 915; never 868, the user being in North America), switched by RF_SW0
-(GPIO14) and RF_SW1 (the chip's own GDO2), the antenna said to be on, and what is heard on that band now. It never
-transmits. **Switch the Zero off before fitting or removing a cap.** `--caps` says what is fitted and stops; `--band 433`
+(GPIO14) and RF_SW1 (the chip's own GDO2), the antenna said to be on, and what is heard on that band now. Only **ROLL
+CALL** transmits (C-447, R on CAPS): a radio test between the user's own devices -- ONE, SOME, ALL or ALL AT ONCE; three
+short packets, each answer in its own slot, a table of who answered and how loud both ways -- at -10 dBm by default and
+never above 0, only on 433 or 915 with that band's antenna said to be on, and at 433 one call every ten seconds.
+`--rollcall all` (or `one:ID`, `some:ID,ID`, `once`) calls and prints the table; `--answer 60` answers for a minute;
+`--antenna 433` and `--power -20` set those. The frame is `firmware/common/rollcall.h`, which the ADV will share. **Switch the Zero off before fitting or removing a cap.** `--caps` says what is fitted and stops; `--band 433`
 sets the band, reads the switch back from the chip and listens for two seconds; `--cap cc1101|lora|none` stands a pretend
 cap in on a computer.
 

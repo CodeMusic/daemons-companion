@@ -80,7 +80,7 @@ void offersFor(Found &f) {
   f.offers.clear();
   if (f.kind == Kind::Cc1101Nfc) {
     f.offers.push_back({ "LONGWAVE", "Sub-GHz", "listening" });                 // DRAFT
-    f.offers.push_back({ "LONGWAVE ROLL CALL", "Sub-GHz", "to come" });         // DRAFT (C-447)
+    f.offers.push_back({ "LONGWAVE ROLL CALL", "Sub-GHz", "R: open" });          // DRAFT (C-447)
     f.offers.push_back({ "TOUCHSTONE", "NFC", "to come" });                     // DRAFT (C-445)
   } else if (f.kind == Kind::Lora1262) {
     f.offers.push_back({ "MESH", "LoRa", "to come" });                          // DRAFT (C-446)
@@ -206,6 +206,8 @@ int rssiDbm() {
   if (!chipReady) return -127;
   return chip.rssiDbm();
 }
+
+cc1101::Chip *radio() { return chipReady && !now.pretend ? &chip : nullptr; }
 
 Antenna antenna() { readConf(); return fitted; }
 void setAntenna(Antenna a) { readConf(); fitted = a; writeConf(); }

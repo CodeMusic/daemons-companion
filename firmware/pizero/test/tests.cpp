@@ -11,6 +11,7 @@
 #include "game/hash.h"
 #include "kit/policy.h"
 #include "kit/stackflow.h"
+#include "common/rollcall.h"
 
 // patch: 576 bytes; target sha1 571603f8103cd9791fc11f5957a81c1d6944eaac, size 8692
 static const uint8_t PATCH[] = {
@@ -115,6 +116,40 @@ int main() {
     l.alwaysAsk = false;
     CHECK("kit: always yes goes", kit::mayWake(70, false, -1, false, l) == kit::Wake::Go);
     CHECK("kit: always yes still refuses near empty", kit::mayWake(8, false, -1, false, l) == kit::Wake::Refuse);
+  }
+
+  // C-447: the roll call's frame -- it round-trips; another household, another version or a bit flipped is not read;
+  // slots keep answers apart (and ONCE together, on purpose); the limits cannot be passed
+  {
+    rollcall::Frame c;
+    c.kind = rollcall::CALL; c.mode = rollcall::SOME; c.call = 4242; c.from = 0x1A2B; c.index = 1; c.total = 3; c.power = -10;
+    c.slots = 2; c.targets[0] = 0x2A41; c.targets[1] = 0x7C12;
+    uint8_t air[rollcall::FRAME];
+    rollcall::pack(c, "hub:daemons-hearth", 493000, air);
+    rollcall::Frame got;
+    CHECK("rollcall: round trip", rollcall::unpack(air, "hub:daemons-hearth", 493000, got) == rollcall::OK && got.call == 4242 &&
+          got.from == 0x1A2B && got.power == -10 && got.targets[1] == 0x7C12 && got.index == 1);
+    CHECK("rollcall: an hour either side still reads", rollcall::unpack(air, "hub:daemons-hearth", 493001, got) == rollcall::OK);
+    CHECK("rollcall: two hours apart does not", rollcall::unpack(air, "hub:daemons-hearth", 493002, got) == rollcall::NOT_HOUSEHOLD);
+    CHECK("rollcall: another household is not read", rollcall::unpack(air, "hub:elsewhere", 493000, got) == rollcall::NOT_HOUSEHOLD);
+    air[9] ^= 1;
+    CHECK("rollcall: a changed byte fails the check", rollcall::unpack(air, "hub:daemons-hearth", 493000, got) == rollcall::NOT_HOUSEHOLD);
+    air[0] = 'X';
+    CHECK("rollcall: no mark, not ours", rollcall::unpack(air, "hub:daemons-hearth", 493000, got) == rollcall::NOT_OURS);
+    CHECK("rollcall: SOME's slots in order", rollcall::slotFor(c, 0x2A41) == 0 && rollcall::slotFor(c, 0x7C12) == 1 && rollcall::slotFor(c, 0x1111) == -1);
+    c.mode = rollcall::ONCE;
+    CHECK("rollcall: ALL AT ONCE shares slot 0", rollcall::slotFor(c, 0x2A41) == 0 && rollcall::slotFor(c, 0x7C12) == 0);
+    c.mode = rollcall::ALL;
+    CHECK("rollcall: ALL by id", rollcall::slotFor(c, 0x2A41) == 0x2A41 % rollcall::ALL_SLOTS);
+    rollcall::Frame a;
+    a.kind = rollcall::ANSWER; a.call = 4242; a.from = 0x2A41; a.heard = -61; a.total = 3;
+    memcpy(a.name, "ADV", 3);
+    rollcall::pack(a, "k", 1, air);
+    CHECK("rollcall: an answer carries its name", rollcall::unpack(air, "k", 1, got) == rollcall::OK && std::string(got.name) == "ADV" && got.heard == -61);
+    CHECK("rollcall: never above 0 dBm", rollcall::clampPower(10) == 0 && rollcall::clampPower(-50) == -30 && rollcall::clampPower(-10) == -10);
+    int whole = (rollcall::CALL_PACKETS - 1) * rollcall::CALL_SPACING_MS + rollcall::listenMs(rollcall::ALL_SLOTS);
+    CHECK("rollcall: a whole call is under a second", whole < rollcall::BURST_MAX_MS);
+    CHECK("rollcall: no short id is 0", rollcall::shortId("") != 0);
   }
 
   printf(failed ? "%d FAILED\n" : "all passed\n", failed);

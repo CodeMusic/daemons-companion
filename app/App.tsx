@@ -16,7 +16,7 @@ import { loadAccent, useAccentSetting, useUnlocked, wornAccent } from "./state/a
 import { AccentBand } from "./shared/ui/accentBand";   // C-349
 import { api, KEYED, KEPT, loadConnection, OFFLINE, ON_PHONE, onUnpaired } from "./platform/net";
 import { bumpFresh } from "./platform/useApi";   // C-344
-import { DaemonScreen, useNews } from "./screens/daemon/Daemon";
+import { DaemonScreen, useNews } from "./damagotchi/Daemon";
 import { openWhatsNew, useWhatsNewDue, WhatsNewOverlay } from "./shared/ui/whatsnew";   // C-318
 import { JourneyScreen } from "./lifemanagement/Journey";   // C-298: GOALS and the JOURNAL
 import { LibraryScreen } from "./screens/library/Library";

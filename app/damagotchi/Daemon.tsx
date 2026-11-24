@@ -1,45 +1,45 @@
 // DAEMON -- Yours (its life, care, TALK, SYNC, NEARBY, meetings), Party; the INDEX and the Routines are their own files. (C-157: out of App.tsx.)
 import { RecordingPresets, requestRecordingPermissionsAsync, setAudioModeAsync, useAudioPlayer, useAudioRecorder } from "expo-audio";
-import { creatorNow } from "../../../server/src/psyche/witching";   // C-314: only the real hour keeps a dawn
+import { creatorNow } from "../../server/src/psyche/witching";   // C-314: only the real hour keeps a dawn
 import { File } from "expo-file-system";
-import { keepStreamed, keepVoice, readingVoice, voiceFile } from "../../platform/voiceFile";
+import { keepStreamed, keepVoice, readingVoice, voiceFile } from "../platform/voiceFile";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable } from "react-native";
 import { Button, Input, Text, XStack, YStack } from "tamagui";
-import { ACTS, castLine, playerId } from "../../state/data";
+import { ACTS, castLine, playerId } from "../state/data";
 import { DenStage } from "./Den";
-import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../../platform/net";
-import { Carried, Cast, Daemon, DeviceRow, IndexEntry, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../../state/types";
-import { Action, Art, Card, CareKey, careSound, Choice, Eyebrow, Segments, Small, whenSaid } from "../../shared/ui/ui";
-import { hearSettings, soundLevel } from "../../sound/tuneSound";
-import { IndexScreen } from "../../shared/pages/Index";
-import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "../../shared/pages/OwnVoice";   // C-303
+import { ALONE, api, LOCAL, MEETING, ON_PHONE, redrawWidgetNow, WIDGET } from "../platform/net";
+import { Carried, Cast, Daemon, DeviceRow, IndexEntry, Life, Listen, Meeting, Message, Settings, Spoken, Today } from "../state/types";
+import { Action, Art, Card, CareKey, careSound, Choice, Eyebrow, Segments, Small, whenSaid } from "../shared/ui/ui";
+import { hearSettings, soundLevel } from "../sound/tuneSound";
+import { IndexScreen } from "../shared/pages/Index";
+import { OwnVoiceOverlay, ShimmerArt, useOwnVoice } from "../shared/pages/OwnVoice";   // C-303
 import { RoutinesCard } from "./Routines";
 import { SoundingsScreen } from "./Soundings";
 import { DreamsScreen } from "./Dreams";   // C-200
 import { MindScreen } from "./Mind";       // C-254
 import { CreationsScreen } from "./Creations";   // C-358
-import { followVoice, useMouth } from "../../sound/speaking";   // C-213
+import { followVoice, useMouth } from "../sound/speaking";   // C-213
 import { MeetingsScreen } from "./Meetings";   // C-212
-import { ReadsCard, Under } from "../../shared/pages/Reads";   // C-203, C-204
-import { AsAbove, HalloweenNote, HourCount, useAurora, useDawn, useDawnTone, useHalloween, useWitching, useWitchingLevel, WitchingHour } from "../../shared/pages/Witching";   // C-236, C-237, C-240; T-519
-import { FirstSight } from "../../shared/pages/Hermetic";   // C-238
-import { meshTalk, trailSaid } from "../../platform/mesh";   // C-307
-import { useApi, useFresh } from "../../platform/useApi";
-import { heardSync } from "../../shared/ui/received";              // C-261
-import type { Arrival } from "../../../server/src/core";
-import type { Care } from "../../../server/src/damagotchi/care";   // C-266
-import { pretendLife, useDev } from "../../state/dev";
-import { onLifeHeard } from "../../state/lifeHeard";   // C-300
+import { ReadsCard, Under } from "../shared/pages/Reads";   // C-203, C-204
+import { AsAbove, HalloweenNote, HourCount, useAurora, useDawn, useDawnTone, useHalloween, useWitching, useWitchingLevel, WitchingHour } from "../shared/pages/Witching";   // C-236, C-237, C-240; T-519
+import { FirstSight } from "../shared/pages/Hermetic";   // C-238
+import { meshTalk, trailSaid } from "../platform/mesh";   // C-307
+import { useApi, useFresh } from "../platform/useApi";
+import { heardSync } from "../shared/ui/received";              // C-261
+import type { Arrival } from "../../server/src/core";
+import type { Care } from "../../server/src/damagotchi/care";   // C-266
+import { pretendLife, useDev } from "../state/dev";
+import { onLifeHeard } from "../state/lifeHeard";   // C-300
 import { GIVEN, phraseMs, PROVISIONS, type Serving } from "./Provision";   // C-302
 import { evolves, SongCard, songLine, type Singing } from "./OwnSong";    // C-418: TRAIN sings; C-419: ITS SONG
-import { lesson as lessonOf } from "../../../server/src/damagotchi/ownsong";
-import { ownSongUri } from "../../sound/ownSong";
+import { lesson as lessonOf } from "../../server/src/damagotchi/ownsong";
+import { ownSongUri } from "../sound/ownSong";
 // C-327: the household space, as /api/device/state carries it (server/src/devices/household.ts)
 type TogetherState = { device: string; side: "left" | "right"; since: string; until: string;
                        daemon: { slot: number; species: number; name: string; nickname: string; level: number; art: string; artKey: string } | null;
                        care: { kind: string; by: string; at: string; mine: boolean } | null };
-import NIGHT from "../../modules/daemons-night";                       // C-284: the phone's own night   // C-269: as </> sets its mood and care (C-275: in the </> tab)
+import NIGHT from "../modules/daemons-night/index";                       // C-284: the phone's own night   // C-269: as </> sets its mood and care (C-275: in the </> tab)
  // C-119: how it looks now, decided on the server
 
 // C-122: what a press does to the day, assumed before anyone answers -- the widget's presume() (targets/widget/Care.swift)

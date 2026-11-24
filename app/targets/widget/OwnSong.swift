@@ -1,5 +1,5 @@
 // C-418 in the widget (DAEMONS T-594; the user, 2026-11-18: "Train should also (for both in app and on the widget) have an
-// animation"): TRAIN SINGS, as app/screens/daemon/OwnSong.tsx draws it -- the part it is learning leaving its mouth note by
+// animation"): TRAIN SINGS, as app/damagotchi/OwnSong.tsx draws it -- the part it is learning leaving its mouth note by
 // note, each rising in its pitch's colour (a note not yet learned a faint cloud of its candidates), then a group of green
 // binary for each note the TRAIN moved flying back into it. A widget is drawn from timeline entries (DaemonWidget.swift
 // wander): each entry says how far into the part it is (`sung`, seconds) or how far back the error has come (`back`,

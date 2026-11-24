@@ -17,7 +17,7 @@ import { readingVoice, voiceExt } from "../../platform/voiceFile";
 import { followVoice, setSpeaking, useMouth } from "../../sound/speaking";
 import type { Spoken } from "../../state/types";
 import { Art } from "../ui/ui";
-import { DenStage } from "../../screens/daemon/Den";
+import { DenStage } from "../../damagotchi/Den";
 
 const NATIVE = Platform.OS !== "web";
 const MONO = Platform.OS === "ios" ? "Menlo" : "monospace";

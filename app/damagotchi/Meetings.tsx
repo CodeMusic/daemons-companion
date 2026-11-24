@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
 import { requestRecordingPermissionsAsync, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import * as DocumentPicker from "expo-document-picker";
-import { api, ALONE, ON_PHONE } from "../../platform/net";
-import { forgetWaiting, MEETING_RECORDING, sendOrKeep, sendWaiting, waiting, type Waiting } from "../../platform/meetings";
-import { ReadAloud } from "../../shared/ui/readAloud";
-import { Action, Card, Eyebrow, Small } from "../../shared/ui/ui";
+import { api, ALONE, ON_PHONE } from "../platform/net";
+import { forgetWaiting, MEETING_RECORDING, sendOrKeep, sendWaiting, waiting, type Waiting } from "../platform/meetings";
+import { ReadAloud } from "../shared/ui/readAloud";
+import { Action, Card, Eyebrow, Small } from "../shared/ui/ui";
 
 type Meeting = { id: number; startedAt: string; endedAt: string | null; title: string; parts: (string | null)[];
                  state: "recording" | "hearing" | "writing" | "done" | "failed"; error?: string;

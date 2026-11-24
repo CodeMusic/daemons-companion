@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { api, apiLater, ON_PHONE } from "../../platform/net";
 import { Entry, Small } from "../../shared/ui/ui";
-import { useVoice } from "../daemon/Daemon";
+import { useVoice } from "../../damagotchi/Daemon";
 import { useFresh } from "../../platform/useApi";   // C-344
 
 const C = { boards: "#1b0f1f", page: "#2c1c32", edge: "#4a3352", ink: "#f0e6f2", faint: "#9a86a0", pink: "#e07ad0" };   // the book's own

@@ -1,6 +1,6 @@
 // C-302 in the widget (the user, 2026-11-18: "the widget on the phone should be more animated when u given an action, like
 // how u see in the app (eg feed and drink)"): what the daemon is given, on the den's floor in front of it, eaten or drunk
-// in four stages over the care's phrase, then gone -- app/screens/daemon/Provision.tsx's frames to the pixel and its
+// in four stages over the care's phrase, then gone -- app/damagotchi/Provision.tsx's frames to the pixel and its
 // timing (a stage a third of the phrase, empty a moment, then faded). Change the frames in both together. A widget is
 // drawn from timeline entries, so each stage is an entry (DaemonWidget.swift wander); between them SwiftUI animates.
 import SwiftUI

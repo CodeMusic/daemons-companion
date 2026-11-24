@@ -14,7 +14,7 @@ import { Action, Art, Segments, Small, whenSaid } from "../../shared/ui/ui";
 import { Bookcase, type Shelf } from "./Bookcase";
 import speciesJson from "../../../server/data/species.json";
 import { VoiceButton } from "../../shared/ui/voiceButton";
-import { DreamSymbol } from "../daemon/Dreams";
+import { DreamSymbol } from "../../damagotchi/Dreams";
 import { useDark } from "../../state/look";
 import { api } from "../../platform/net";   // C-484: a dream's signs asked of the house
 import week from "../../../server/data/week.json";   // C-484: the seven days' sections

@@ -8,11 +8,11 @@
 import { useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { api, apiLater } from "../../platform/net";
-import type { Spoken } from "../../state/types";
-import { Action, Art, Card, Eyebrow, Segments, Small, whenSaid } from "../../shared/ui/ui";
+import { api, apiLater } from "../platform/net";
+import type { Spoken } from "../state/types";
+import { Action, Art, Card, Eyebrow, Segments, Small, whenSaid } from "../shared/ui/ui";
 import { useVoice } from "./Daemon";
-import { useFresh } from "../../platform/useApi";   // C-344
+import { useFresh } from "../platform/useApi";   // C-344
 
 type FeltName = "GLAD" | "MAD" | "SAD" | "CALM" | "AFRAID" | "RESTLESS";
 type Felt = { name: FeltName; value: number; said: string; colour: string };

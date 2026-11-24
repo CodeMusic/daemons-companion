@@ -6,9 +6,9 @@
 // on this phone once it is ready and played here. Every word DRAFT.
 import { useEffect, useState } from "react";
 import { Text, TextArea, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
-import { keep, mine, type Creation } from "../../platform/creations";
-import { Action, Card, CareKey, Entry, Eyebrow, Small } from "../../shared/ui/ui";
+import { api } from "../platform/net";
+import { keep, mine, type Creation } from "../platform/creations";
+import { Action, Card, CareKey, Entry, Eyebrow, Small } from "../shared/ui/ui";
 import { CreationsScreen, RecordCover, SongPlayer } from "./Creations";
 
 type Mode = "prompt" | "lyrics" | "own";

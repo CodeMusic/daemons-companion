@@ -4,7 +4,7 @@
 // the center which each of the 2 daemons to each side eating it"): the watch's half of the household's spaces. The hub
 // keeps them (server/src/devices/household.ts, docs/TRADING.md); here TOGETHER and SWAP are chosen from the daemon's tiles (a
 // device of the household, as tiles), and a care given on either device is drawn between the two daemons -- C-302's
-// PROVISION, the same pixels as the app's (app/screens/daemon/Provision.tsx), eaten or drunk in four stages. Every word
+// PROVISION, the same pixels as the app's (app/damagotchi/Provision.tsx), eaten or drunk in four stages. Every word
 // DRAFT.
 #include "app.h"
 #include "board.h"

@@ -8,7 +8,7 @@
 // here changes. The frames may be drawn by hand; the two below are made from one drawing each, so a new one can be too.
 import { useEffect, useRef, useState } from "react";
 import { Animated, View } from "react-native";
-import { tuneNotes } from "../../sound/tuneSound";
+import { tuneNotes } from "../sound/tuneSound";
 
 export type Provision = { id: string; kind: "food" | "drink"; name: string; frames: string[][]; ink: Record<string, string> };
 

@@ -5,12 +5,12 @@
 // A piece made once is kept and played again until the daemon's context moves. Every word here is DRAFT.
 import { useEffect, useState } from "react";
 import { Text, XStack, YStack } from "tamagui";
-import { api } from "../../platform/net";
-import { keep, mine, type Creation } from "../../platform/creations";   // C-358: what is played is kept in MINE
+import { api } from "../platform/net";
+import { keep, mine, type Creation } from "../platform/creations";   // C-358: what is played is kept in MINE
 import { CreationsScreen, RecordCover } from "./Creations";   // C-358
-import { driftOf } from "../../sound/binaural";
-import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../../sound/sleepSession";
-import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../../shared/ui/ui";
+import { driftOf } from "../sound/binaural";
+import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../sound/sleepSession";
+import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../shared/ui/ui";
 
 type Track = { id: string; key: string; nickname: string; said: string; keyscale: string; state: "making" | "ready" | "failed";
                error?: string; asked: string; made?: string; seconds?: number; files: Record<string, string> | null };

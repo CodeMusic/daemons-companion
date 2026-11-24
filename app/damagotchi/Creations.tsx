@@ -7,14 +7,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, View } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
-import { api, TOKEN } from "../../platform/net";
-import { adoptOld, coverUri, thumbUri, exportFile, keep, letGo, mine, mineSet, onMine, type Creation, type Kept } from "../../platform/creations";
-import { driftOf, stageAt } from "../../sound/binaural";
-import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../../sound/sleepSession";
-import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../../sound/song";   // C-362
-import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../../shared/ui/ui";
-import { Synesthesia } from "../../../server/src/psyche/synesthesia";
-import { PALETTE } from "../../state/look";
+import { api, TOKEN } from "../platform/net";
+import { adoptOld, coverUri, thumbUri, exportFile, keep, letGo, mine, mineSet, onMine, type Creation, type Kept } from "../platform/creations";
+import { driftOf, stageAt } from "../sound/binaural";
+import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../sound/sleepSession";
+import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../sound/song";   // C-362
+import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../shared/ui/ui";
+import { Synesthesia } from "../../server/src/psyche/synesthesia";
+import { PALETTE } from "../state/look";
 
 type Where = "mine" | "household" | "community";
 type Kind = Creation["kind"];

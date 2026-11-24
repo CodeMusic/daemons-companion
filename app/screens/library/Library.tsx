@@ -11,7 +11,7 @@ import { meshTalk } from "../../platform/mesh";   // C-307
 import { songSound } from "../../sound/songSound";
 import { GuideBookT, Notebook, Profile, Progress, SchoolData, Spoken } from "../../state/types";
 import { Action, Art, Card, Entry, Eyebrow, linkLabel, Para, PIXELATED, Points, Small } from "../../shared/ui/ui";
-import { useVoice } from "../daemon/Daemon";   // C-209
+import { useVoice } from "../../damagotchi/Daemon";   // C-209
 import { useApi } from "../../platform/useApi";
 import { previewQuery } from "../../state/preview";
 import { bookForced } from "../../state/dev";   // C-299: the mended book forced held on the </> tab

@@ -4,9 +4,9 @@
 import { useEffect, useState } from "react";
 import { Button, Text, XStack, YStack } from "tamagui";
 import { View } from "react-native";
-import { api } from "../../platform/net";
-import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../../shared/ui/ui";
-import { useDark } from "../../state/look";
+import { api } from "../platform/net";
+import { Action, Art, Card, Eyebrow, Small, whenSaid } from "../shared/ui/ui";
+import { useDark } from "../state/look";
 
 // C-412 (the user, 2026-11-18, by multiple choice: "which centre"): the stage the dream took place at -- a spine of seven
 // dots through the day's ring, root at the foot and crown at the top, in the page's ink, the dream's own centre lit larger
@@ -29,9 +29,9 @@ export function DreamSymbol({ day, centre, colour, size, dark }: { day: string; 
     </View>
   );
 }
-import { VoiceButton } from "../../shared/ui/voiceButton";
+import { VoiceButton } from "../shared/ui/voiceButton";
 import { SleepSoundsCard } from "./SleepSounds";   // C-334
-import { useFresh } from "../../platform/useApi";   // C-344
+import { useFresh } from "../platform/useApi";   // C-344
 
 type Dream = { id: number; at: string; to: string; hours: number; stirs: number; tucked: boolean;
                quality: "vivid" | "quiet" | "broken"; text: string; by: "module" | "words"; nickname: string;

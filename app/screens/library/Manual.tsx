@@ -38,6 +38,9 @@ const BOOK: Record<Which, { title: string; about: string; says: string }> = {
                says: "The DAEMONS companion and game on M5Stack's Cardputers, and their caps" },                         // DRAFT (C-393)
   kodedot: { title: "THE KODE DOT", about: "Every routine in your pocket: the Kode Dot.",                                    // DRAFT (C-442)
              says: "The DAEMONS companion on Kode's Kode Dot: the den, its care, and every routine" },                     // DRAFT (C-442)
+  // C-549 (DAEMONS T-617): the first DESIGN on the shelf -- a daemon in a robot body, for the user's review; nothing in it is built
+  embodied: { title: "EMBODIED", about: "A daemon in a robot body: the design, for review. Nothing in it is built yet.",   // DRAFT (C-549)
+              says: "DAEMONS EMBODIED, the design: a daemon carried into a robot body" },                                 // DRAFT (C-549)
 };
 // the recording each book is heard in (DAEMONS docs/books/audio); the TEXTBOOK's is CALLOW SCHOOL's own (Library.tsx)
 const HEARD: Partial<Record<Which, Recorded>> = { player: "manual", quick: "quick", companion: "companion", social: "social",

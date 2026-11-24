@@ -98,7 +98,7 @@ python3 tools/releasedocs.py --companion --online
 
 It groups the commits since the previous WHAT'S NEW build by ticket, joins each to its WHAT'S NEW section and SET UP,
 and checks the READMEs, the five wikis (`wiki/`, published with `wiki/publish.sh` -- from HEAD when another session
-has wiki edits open), `docs/`, the manuals the app shows (DAEMONS `docs/manual-companion`, `docs/manual-watch`, `docs/manual-glass`, `docs/manual-cardputer`, `docs/manual-kodedot`, ...)
+has wiki edits open), `docs/`, the manuals the app shows (DAEMONS `docs/manual-companion`, `docs/manual-watch`, `docs/manual-glass`, `docs/manual-cardputer`, `docs/manual-kodedot`, `docs/manual-embodied` (a design, on the DESIGNS shelf, C-549), ...)
 and `wiki/Server-API.md` (every `/api/...` a build's notes name). **STALE** lines are fixed in the same build;
 each **CANDIDATE** is written or becomes a TODO row. Public writing: nothing personal, never the frightening word.
 

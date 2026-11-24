@@ -81,6 +81,7 @@ out by its own cover; tap one and it opens as a page of its own, **‹ LIBRARY**
 | **FOUND IN THE GAME** | the books your save has found -- THE GUIDE, THE SUBTLE LAYER -- each only once found; until then *The books you find in the game will stand here.* |
 | **MANUALS** | QUICK START, THE PLAYER'S MANUAL, **THE COMPANION**, THE WATCH, THE GLASSES, THE CARDPUTERS, PLAYING TOGETHER, A BIGGER MIND |
 | **HISTORY AND STUDY** | THE OLD WORD, CALLOW SCHOOL |
+| **DESIGNS** | EMBODIED: a daemon in a robot body, the design for review ([the PDF](https://github.com/CodeMusic/DAEMONS/blob/main/docs/DAEMONS-embodied.pdf)); nothing in it is built (C-549, DRAFT) |
 | **YOUR OWN PAGES** | the NOTEBOOK, the SONGBOOK, STREAM |
 
 **It keeps your place** (C-309): a sync, a redraw or the app opened again comes back to the same book and page, at the

@@ -130,7 +130,7 @@ export function PracticePaper() {
   );
 }
 export function LibraryScreen() {
-  type Opened = "manual" | "quick" | "companion" | "watch" | "glass" | "cardputer" | "kodedot" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "shadow" | "notebook" | "songbook" | "stream" | "mentions" | "daemondreams" | `dreams-${string}`;   // C-456: a DREAM-BOOK
+  type Opened = "manual" | "quick" | "companion" | "watch" | "glass" | "cardputer" | "kodedot" | "embodied" | "social" | "tiiny" | "word" | "school" | "guide" | "subtle" | "hermetic" | "eudaimon" | "unity" | "origin" | "shadow" | "notebook" | "songbook" | "stream" | "mentions" | "daemondreams" | `dreams-${string}`;   // C-456: a DREAM-BOOK
   const [book, setBook] = usePlace<Opened | null>("library.book", null);   // C-309: kept through a refresh, and the app opened again
   const [sub] = useApi<SubtleT>(`/api/subtle${previewQuery() ? "?preview=1" : ""}`);   // T-423: THE SUBTLE LAYER, once the save holds it
   const [dreamVols] = useApi<{ authors?: DreamAuthor[] }>("/api/dreambooks");   // C-456: the DREAM-BOOKS; C-483: a book a daemon
@@ -185,6 +185,7 @@ export function LibraryScreen() {
   if (book === "glass") return open(<ManualBook which="glass" />);           // C-262
   if (book === "cardputer") return open(<ManualBook which="cardputer" />);   // C-393
   if (book === "kodedot") return open(<ManualBook which="kodedot" />);       // C-442
+  if (book === "embodied") return open(<ManualBook which="embodied" />);     // C-549
   if (book === "social") return open(<ManualBook which="social" />);
   if (book === "tiiny") return open(<ManualBook which="tiiny" />);
   if (book === "word") return open(<ManualBook which="word" />);   // C-274
@@ -243,6 +244,12 @@ export function LibraryScreen() {
         about: !s ? "The seven floors, the TEXTBOOK and the paper."
           : s.diploma ? `DIPLOMA${s.best !== null ? ` · MARK ${s.best}` : ""}`
           : s.textbook ? `The TEXTBOOK · ${s.floors.filter(Boolean).length} of ${s.floors.length} floors` : "The seven floors and the paper." },
+    ] },
+    // C-549 (DAEMONS T-617; the user, 2026-11-24: the DAEMONS EMBODIED design "on the library like the others"): a shelf for
+    // DESIGNS, so a design is never taken for the manual of something that exists. The shelf and its name are DRAFT: the
+    // book's own question 11 asks the user whether a design has a shelf of its own
+    { name: "DESIGNS", books: [
+      { id: "embodied", title: "EMBODIED", about: manualAbout("embodied"), cloth: "#1f4a3a", onPress: () => setBook("embodied") },
     ] },
     // C-456, C-483: one DAEMON DREAMS book, every dreamer's own book inside it. DRAFT
     { name: "DREAM-BOOKS", empty: "Your daemons' dreams are bound here, in one book, once the first is dreamt.", books: (authors.length ? [{

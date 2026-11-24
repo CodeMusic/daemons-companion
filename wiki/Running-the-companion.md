@@ -63,7 +63,7 @@ NEARBY.
   SUMMARIZE, which turns what is new since the last summary into one page to export as a PDF or print.
 - **LIBRARY** -- a bookcase (C-320), every book standing by its cover: **FOUND IN THE GAME** (THE GUIDE and THE SUBTLE
   LAYER once your save has found them), **MANUALS** (QUICK START, THE PLAYER'S MANUAL, THE COMPANION, THE WATCH, THE GLASSES,
-  THE CARDPUTERS, THE KODE DOT, PLAYING TOGETHER, A BIGGER MIND), **HISTORY AND STUDY** (THE OLD WORD, CALLOW SCHOOL) and **YOUR OWN PAGES** (the **NOTEBOOK**, the
+  THE CARDPUTERS, THE KODE DOT, PLAYING TOGETHER, A BIGGER MIND), **HISTORY AND STUDY** (THE OLD WORD, CALLOW SCHOOL), **DESIGNS** (EMBODIED, a design for review: nothing in it is built, C-549) and **YOUR OWN PAGES** (the **NOTEBOOK**, the
   **SONGBOOK** -- your instrument to PLAY, and the songs you have learned, in their colours, with LISTEN -- and
   **STREAM**, every lesson a MARK or a ROOT has opened). It keeps your place in a book (C-309).
 - **YOU** -- you as the game draws you, the save's facts, MARKS and ROOTS that open, the two region maps, GROVES and GAME

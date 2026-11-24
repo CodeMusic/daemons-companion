@@ -1651,6 +1651,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.headers.origin !== undefined && !ourHost(String(req.headers.origin)) && !(outside && publicAdminHost(String(req.headers.origin))))
         return send(res, 403, { error: "not from a page of the companion's" });
       if (!ourHost(String(req.headers.host ?? "")) && !outside) return send(res, 403, { error: "not an address of the companion's" });
+      // C-499: the public name is THE ENGINE ROOM's alone -- its page, its API and its pictures; the bare address and
+      // anything else (the companion's own site) go to /admin/ (the user, 2026-11-24: "it seems to bring me to the main app")
+      if (outside && !(path === "/admin" || path.startsWith("/admin/") || path.startsWith("/api/") || path.startsWith("/art/"))) {
+        res.writeHead(302, { location: "/admin/" });
+        return res.end();
+      }
       // C-330: THE ENGINE ROOM, the hub's admin -- its files to the home network and the tailnet, never through the relay
       if (isAdminPath(req.method ?? "", path)) {
         if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "THE ENGINE ROOM is on the home network and the tailnet only" });   // DRAFT

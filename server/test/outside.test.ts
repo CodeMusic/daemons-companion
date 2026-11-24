@@ -36,6 +36,14 @@ describe("THE ENGINE ROOM from outside (C-499)", () => {
     expect((await ask("GET", "/admin/", { host: "evil.example", "x-forwarded-for": "203.0.113.9" })).status).toBe(403);
   });
 
+  it("sends the bare address, and anything not THE ENGINE ROOM's, to /admin/", async () => {
+    const root = await ask("GET", "/", OUT);
+    expect(root.status).toBe(302);
+    const other = await ask("GET", "/index.html", OUT);
+    expect(other.status).toBe(302);
+    expect((await ask("GET", "/admin/", OUT)).status).toBe(200);
+  });
+
   it("opens the API to a paired key only -- not to this machine's own address, not to the device door", async () => {
     // from this machine, without a key, the API answers (as it always has) ...
     expect((await ask("GET", "/api/games")).status).toBe(200);

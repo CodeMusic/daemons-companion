@@ -4,7 +4,7 @@
 // the daemon's song note is revealed" -- its candidates in the key at once, the true one louder the surer it is, over a
 // hiss that fades as it closes (server/src/damagotchi/ownsong.ts says which; DAEMONS tools/gensongs.py renders its previews the same
 // way). Under it, softly, the part's bass: the CONTEXT it is heard over. Every sound DRAFT.
-import { heardAt, SONGS, type SongPart } from "../../server/src/damagotchi/ownsong";
+import { heardAt, ringBeats, SONGS, type SongPart } from "../../server/src/damagotchi/ownsong";
 import { mixWav, type Hiss, type Voicing } from "./instrument";
 import { asUri, voiceNow } from "./tuneSound";
 
@@ -18,7 +18,7 @@ function voicePart(part: SongPart, share: number, t0: number, notes: Voicing[], 
   const beat = 60000 / part.bpm;
   let t = t0;
   heardAt(part, share).forEach((n, i) => {
-    const ms = n.beats * beat * 0.95;
+    const ms = ringBeats(n.beats) * beat * 0.95;   // T-613: the rest after a phrase is a breath
     if (n.sure >= 1) notes.push({ midi: n.midi, at: t, ms, vel: 0.8 });
     else {
       const w = 0.25 + 0.75 * n.sure, others = n.candidates.slice(1);

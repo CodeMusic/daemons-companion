@@ -8,7 +8,7 @@ import { setAudioModeAsync, useAudioPlayer } from "expo-audio";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Text as RNText, View } from "react-native";
 import { Text, YStack } from "tamagui";
-import { BOTTOM, heardAt, noteColours, spell, staffOf, type Heard, type SongPart } from "../../../server/src/damagotchi/ownsong";
+import { BOTTOM, CHORUS, heardAt, noteColours, spell, staffOf, withChorus, type Heard, type SongPart } from "../../../server/src/damagotchi/ownsong";
 import { ON_PHONE } from "../../platform/net";
 import { songTimes, songUri } from "../../sound/ownSong";
 
@@ -216,7 +216,8 @@ export function SongStaff({ part, share, sung = null, g = 8 }: { part: SongPart;
 /** Where a song stands while it is sung: which part, and which of its notes (-1 before its first). */
 export type SongAt = { part: number; note: number };
 /** A song's parts on their staves, each with its name and key, the earlier parts whole (DRAFT). */
-export function SongStaves({ parts, shares, at = null, g = 8 }: { parts: SongPart[]; shares: number[]; at?: SongAt | null; g?: number }) {
+export function SongStaves({ parts: verses, shares: verseShares, at = null, g = 8 }: { parts: SongPart[]; shares: number[]; at?: SongAt | null; g?: number }) {
+  const { parts, shares } = withChorus(verses, verseShares);   // T-613: its hidden chorus, once its last verse is whole
   return (
     <YStack gap={10}>
       {parts.map((p, i) => {
@@ -225,7 +226,8 @@ export function SongStaves({ parts, shares, at = null, g = 8 }: { parts: SongPar
         return (
           <YStack key={`${p.name}-${i}`} gap={4}>
             <Text fontFamily="$mono" fontSize={11} letterSpacing={1} color="$color10">
-              {`${p.name} · ${p.key.toUpperCase()}${share < 1 ? ` · ${Math.floor(share * 100)}% LEARNED` : ""}`}
+              {p.name === CHORUS ? `CHORUS · ${p.key.toUpperCase()}`   /* T-613, DRAFT */
+                : `${p.name} · ${p.key.toUpperCase()}${share < 1 ? ` · ${Math.floor(share * 100)}% LEARNED` : ""}`}
             </Text>
             <SongStaff part={p} share={share} sung={sung} g={g} />
           </YStack>
@@ -252,7 +254,8 @@ export function useSinging() {
     }, 60);
     return () => clearInterval(t);
   }, [on]);
-  const sing = (key: string, parts: SongPart[], shares: number[]) => {
+  const sing = (key: string, verses: SongPart[], verseShares: number[]) => {
+    const { parts, shares } = withChorus(verses, verseShares);   // T-613: as SongStaves draws it, so `at` lines up
     setFailed(""); setMs(-1);
     setOn({ key, phase: "making", t0: 0, times: songTimes(parts) });
     setTimeout(async () => {                                // let the spinner show while it is mixed

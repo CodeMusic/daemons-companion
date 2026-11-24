@@ -30,7 +30,12 @@ interface Songs {
   parts: Record<string, SongPart>; songs: Record<string, string[]>;
   summons?: Record<string, [number, (number | null)[]]>;  // C-419 (3): T-598's openings -- [its key wheel, pitch classes]
   shiny?: Record<string, [number, number][]>;            // C-482 (T-602): a form's notes a shiny sings -- [note index, MIDI]
+  ring?: number;                                         // T-613: a note sounds at most this many beats; the rest is a breath
+  chorus?: Record<string, ChorusRun[]>;                  // T-613: a final form's hidden CHORUS, a run between each two verses
 }
+/** T-613: one run of a final form's chorus -- in the key of the verse after it; `words` placeholders until T-599. */
+export interface ChorusRun { notes: [number, number][]; bass: [number, number][]; tonic: number; minor: boolean; key: string;
+                             bpm: number; words: string | null }
 export const SONGS = songsJson as unknown as Songs;
 
 export const TRAINS_A_DAY = 3, TRAIN_DAYS = 14;
@@ -80,6 +85,32 @@ export function shinyPart(form: string, part: SongPart): SongPart {
  *  (its earlier forms were shiny too). */
 export const songOf = (species: number | string, shiny = false): SongPart[] =>
   (SONGS.songs[String(species)] ?? []).flatMap((f) => (SONGS.parts[f] ? [shiny ? shinyPart(f, SONGS.parts[f]) : SONGS.parts[f]] : []));
+
+// T-613 THE VERSES (DAEMONS docs/song-verses-draft.md; the user, 2026-11-23): a line's song is its verses, and once its
+// final form knows its own verse whole, its hidden CHORUS between them. The chorus runs as parts of their own (named
+// CHORUS, every note learned), so a song's sound and its staves stay one list. The game sings it the same way
+// (DAEMONS engineGba src/daemon_song.c, SHARE_CHORUS).
+const FORM_OF: Record<string, string> = Object.fromEntries(Object.entries(SONGS.parts).map(([f, p]) => [p.name, f]));
+export const CHORUS = "CHORUS";
+/** A song with its chorus between the verses, when it has one and its last verse is whole; the shares to match. */
+export function withChorus(parts: SongPart[], shares: number[]): { parts: SongPart[]; shares: number[] } {
+  const last = parts[parts.length - 1], runs = last ? SONGS.chorus?.[FORM_OF[last.name]] : undefined;
+  if (!runs || parts.length < 2 || (shares[parts.length - 1] ?? 1) < 1) return { parts, shares };
+  const out: SongPart[] = [], sh: number[] = [];
+  parts.forEach((p, i) => {
+    const run = i > 0 ? runs[i - 1] : undefined;
+    if (run) {
+      out.push({ name: CHORUS, stage: 0, type: p.type, key: run.key, tonic: run.tonic, minor: run.minor, bpm: run.bpm,
+                 from: 0, to: 0, notes: run.notes.map(([m, b]) => [m, b, 0] as SongNote), bass: run.bass });
+      sh.push(1);
+    }
+    out.push(p);
+    sh.push(shares[i] ?? 1);
+  });
+  return { parts: out, shares: sh };
+}
+/** T-613: how long a note of this many beats sounds (the rest after it is silence). */
+export const ringBeats = (beats: number) => Math.min(beats, SONGS.ring ?? Infinity);
 
 const clamp = (x: number) => Math.max(0, Math.min(1, x));
 /** How much of a part a daemon of this growth curve with this much experience knows: 0 nothing, 1 perfect. */

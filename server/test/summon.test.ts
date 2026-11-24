@@ -12,14 +12,15 @@ import { syncSave } from "../src/game/save/writer.js";
 import { buildSave } from "./build_save.js";
 
 const ROVERCUB = 1;
-// its opening as MIDI, in two octaves at once (octave-blind): A C A G F D D C A -- F major's wheel
+// its opening as MIDI, in two octaves at once (octave-blind) -- F major's wheel
 const play = (pcs: (number | null)[], base = 60) => pcs.map((p, i) => base + (p ?? 0) + (i % 2 ? 12 : 0));
 
 describe("PLAY FREELY hears a daemon's opening (ownsong.ts)", () => {
   const [wheel, opening] = SONGS.summons![String(ROVERCUB)];
   it("carries every daemon's opening from DAEMONS' generator", () => {
     expect(Object.keys(SONGS.summons!).length).toBeGreaterThan(390);
-    expect([wheel, opening.length]).toEqual([5, 9]);                       // ROVERCUB: F major, nine notes
+    expect([wheel, opening.length]).toEqual([5, 7]);                       // ROVERCUB: F major, its seven-note hook (T-613)
+    expect(Object.values(SONGS.summons!).every(([, n]) => n.length === 7)).toBe(true);
   });
   it("comes when the played notes end with it, on its wheel, any octave, after anything", () => {
     const all = summonsFor([ROVERCUB, 2, 4]);
@@ -34,9 +35,10 @@ describe("PLAY FREELY hears a daemon's opening (ownsong.ts)", () => {
     expect(summonHeard(wheel, play(opening), summonsFor([]))).toBeNull();
   });
   it("lets any note stand where the wheel cannot play one", () => {
-    const wild = Object.entries(SONGS.summons!).find(([, [, n]]) => n.includes(null))!;
-    const [w, n] = wild[1], s = summonsFor([Number(wild[0])]);
-    expect(summonHeard(w, play(n.map((x) => x ?? 3)), s)?.species).toBe(Number(wild[0]));
+    // T-613's hooks are all in their keys, so none needs it today; the rule still holds for one that would
+    const wild = { species: 999, name: "WILD", wheel: 5, notes: [5, 7, null, 0, 2, 4, 5] };
+    expect(summonHeard(5, play([5, 7, 3, 0, 2, 4, 5]), [wild])?.species).toBe(999);
+    expect(summonHeard(5, play([5, 7, 3, 0, 2, 4, 7]), [wild])).toBeNull();
   });
 });
 

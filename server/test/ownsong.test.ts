@@ -264,3 +264,29 @@ describe("a shiny's song (C-482, DAEMONS T-602)", () => {
     expect(b.part!.notes.map((n) => n[0])).toEqual(songOf(1, true)[0].notes.map((n) => n[0]));
   });
 });
+
+import { CHORUS, ringBeats, withChorus } from "../src/damagotchi/ownsong.js";
+describe("THE VERSES (DAEMONS T-613): the hidden chorus and the breath after a phrase", () => {
+  it("sings the chorus between a line's verses only once its last verse is whole", () => {
+    const parts = songOf(3);                                         // ROVERCUB, ROVERSEER, ROVERBYTE
+    expect(parts.map((p) => p.name)).toEqual(["ROVERCUB", "ROVERSEER", "ROVERBYTE"]);
+    const whole = withChorus(parts, [1, 1, 1]);
+    expect(whole.parts.map((p) => p.name)).toEqual(["ROVERCUB", CHORUS, "ROVERSEER", CHORUS, "ROVERBYTE"]);
+    expect(whole.shares).toEqual([1, 1, 1, 1, 1]);
+    expect(whole.parts[1].notes.every(([, , at]) => at === 0)).toBe(true);   // a chorus is never static
+    expect(withChorus(parts, [1, 1, 0.5]).parts.length).toBe(3);    // not yet: the song goes verse to verse
+    expect(withChorus(songOf(1), [1]).parts.length).toBe(1);       // a first form alone has nothing between
+  });
+  it("a verse opens with its seven-note hook, unique across every form", () => {
+    const hooks = Object.values(SONGS.parts).map((p) => p.notes.slice(0, 7).map(([m]) => m % 12).join(","));
+    expect(Object.values(SONGS.parts).every((p) => p.notes.length >= 7)).toBe(true);
+    expect(new Set(Object.values(SONGS.summons ?? {}).map(([w, pcs]) => `${w}:${pcs.join(",")}`)).size)
+      .toBe(Object.keys(SONGS.summons ?? {}).length);
+    expect(Object.values(SONGS.summons ?? {}).every(([, pcs]) => pcs.length === 7)).toBe(true);
+    expect(hooks.length).toBe(Object.keys(SONGS.parts).length);
+  });
+  it("a note longer than a breath sounds only its ring", () => {
+    expect(ringBeats(1)).toBe(1);
+    expect(ringBeats(4.5)).toBe(SONGS.ring);
+  });
+});

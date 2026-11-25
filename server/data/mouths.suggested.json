@@ -1,8 +1,8 @@
 {
  "archiver": {
   "mouth": [
-   16,
-   28,
+   22,
+   30,
    2,
    1
   ],
@@ -10,80 +10,80 @@
  },
  "artsai": {
   "mouth": [
-   31,
-   29,
-   2,
+   32,
+   38,
+   3,
    1
   ],
   "drawn": true
  },
  "axiomkick": {
   "mouth": [
-   29,
-   29,
-   5,
+   24,
+   30,
+   3,
    1
   ],
-  "drawn": false
+  "drawn": true
  },
  "backdoor": {
   "mouth": [
-   30,
-   30,
-   4,
+   29,
+   31,
+   2,
    1
   ],
   "drawn": true
  },
  "bootrom": {
   "mouth": [
-   15,
-   28,
-   4,
+   25,
+   36,
+   3,
    1
   ],
   "drawn": true
  },
  "breathing": {
   "mouth": [
-   29,
-   35,
-   3,
+   30,
+   34,
+   4,
    1
   ],
   "drawn": true
  },
  "caremusai": {
   "mouth": [
-   22,
-   34,
-   10,
+   24,
+   30,
+   5,
    1
   ],
   "drawn": true
  },
  "cathode": {
   "mouth": [
-   22,
    31,
-   4,
+   26,
+   2,
    1
   ],
   "drawn": true
  },
  "codemusai": {
   "mouth": [
-   29,
-   28,
-   11,
+   19,
+   34,
+   2,
    1
   ],
   "drawn": true
  },
  "crackle": {
   "mouth": [
-   19,
-   24,
+   21,
+   23,
    3,
    1
   ],
@@ -91,9 +91,9 @@
  },
  "crank": {
   "mouth": [
-   26,
-   23,
-   2,
+   22,
+   33,
+   13,
    1
   ],
   "drawn": true
@@ -101,7 +101,7 @@
  "cunning": {
   "mouth": [
    17,
-   25,
+   27,
    2,
    1
   ],
@@ -109,17 +109,17 @@
  },
  "daydream": {
   "mouth": [
-   21,
-   34,
-   2,
+   20,
+   40,
+   4,
    1
   ],
   "drawn": true
  },
  "deadlock": {
   "mouth": [
-   32,
-   20,
+   36,
+   33,
    2,
    1
   ],
@@ -127,59 +127,14 @@
  },
  "delta": {
   "mouth": [
-   19,
-   17,
+   18,
+   29,
    3,
    1
   ],
   "drawn": true
  },
  "dread": {
-  "mouth": [
-   29,
-   28,
-   5,
-   1
-  ],
-  "drawn": false
- },
- "echo": {
-  "mouth": [
-   29,
-   30,
-   6,
-   1
-  ],
-  "drawn": true
- },
- "emergence": {
-  "mouth": [
-   12,
-   17,
-   2,
-   1
-  ],
-  "drawn": true
- },
- "glidepath": {
-  "mouth": [
-   20,
-   18,
-   4,
-   1
-  ],
-  "drawn": true
- },
- "hashcode": {
-  "mouth": [
-   26,
-   30,
-   2,
-   1
-  ],
-  "drawn": true
- },
- "hunch": {
   "mouth": [
    30,
    27,
@@ -188,10 +143,55 @@
   ],
   "drawn": true
  },
+ "echo": {
+  "mouth": [
+   31,
+   31,
+   3,
+   1
+  ],
+  "drawn": false
+ },
+ "emergence": {
+  "mouth": [
+   12,
+   20,
+   2,
+   1
+  ],
+  "drawn": true
+ },
+ "glidepath": {
+  "mouth": [
+   29,
+   37,
+   2,
+   1
+  ],
+  "drawn": true
+ },
+ "hashcode": {
+  "mouth": [
+   29,
+   34,
+   2,
+   1
+  ],
+  "drawn": true
+ },
+ "hunch": {
+  "mouth": [
+   29,
+   34,
+   5,
+   1
+  ],
+  "drawn": false
+ },
  "learnrate": {
   "mouth": [
-   16,
-   18,
+   20,
+   24,
    2,
    1
   ],
@@ -199,9 +199,9 @@
  },
  "lensmusai": {
   "mouth": [
-   25,
-   37,
-   5,
+   16,
+   30,
+   9,
    1
   ],
   "drawn": true
@@ -215,9 +215,18 @@
   ],
   "drawn": true
  },
+ "lookout": {
+  "mouth": [
+   45,
+   19,
+   2,
+   1
+  ],
+  "drawn": true
+ },
  "mood": {
   "mouth": [
-   28,
+   25,
    34,
    2,
    1
@@ -226,36 +235,36 @@
  },
  "pending": {
   "mouth": [
-   37,
-   23,
-   3,
+   28,
+   31,
+   8,
    1
   ],
   "drawn": true
  },
  "pilot": {
   "mouth": [
-   24,
-   40,
-   3,
+   22,
+   35,
+   2,
    1
   ],
   "drawn": true
  },
  "premise": {
   "mouth": [
-   28,
-   23,
-   6,
+   31,
+   36,
+   2,
    1
   ],
   "drawn": true
  },
  "primer": {
   "mouth": [
-   22,
+   28,
    30,
-   5,
+   7,
    1
   ],
   "drawn": true
@@ -263,43 +272,43 @@
  "relay": {
   "mouth": [
    26,
-   24,
-   2,
+   25,
+   4,
    1
   ],
-  "drawn": true
+  "drawn": false
  },
  "release": {
   "mouth": [
-   22,
-   16,
-   5,
+   47,
+   35,
+   4,
    1
   ],
   "drawn": true
  },
  "residual": {
   "mouth": [
-   29,
-   38,
-   4,
+   24,
+   40,
+   17,
    1
   ],
   "drawn": true
  },
  "respawn": {
   "mouth": [
-   27,
-   19,
-   2,
+   26,
+   28,
+   4,
    1
   ],
   "drawn": true
  },
  "rovercub": {
   "mouth": [
-   15,
-   25,
+   23,
+   32,
    2,
    1
   ],
@@ -307,26 +316,26 @@
  },
  "seekmusai": {
   "mouth": [
-   25,
-   32,
-   2,
+   23,
+   33,
+   4,
    1
   ],
   "drawn": true
  },
  "shell": {
   "mouth": [
-   15,
-   45,
-   3,
+   17,
+   41,
+   2,
    1
   ],
   "drawn": true
  },
  "shiftleft": {
   "mouth": [
-   38,
-   42,
+   25,
+   36,
    2,
    1
   ],
@@ -334,16 +343,16 @@
  },
  "sparring": {
   "mouth": [
+   29,
    31,
-   27,
-   2,
+   6,
    1
   ],
   "drawn": true
  },
  "torpor": {
   "mouth": [
-   23,
+   24,
    24,
    2,
    1
@@ -352,26 +361,26 @@
  },
  "unbranched": {
   "mouth": [
-   21,
+   5,
    28,
-   2,
+   4,
    1
   ],
   "drawn": true
  },
  "unspoken": {
   "mouth": [
-   28,
    30,
-   8,
+   31,
+   4,
    1
   ],
   "drawn": true
  },
  "warmup": {
   "mouth": [
-   29,
-   22,
+   28,
+   24,
    3,
    1
   ],
@@ -379,9 +388,9 @@
  },
  "witness": {
   "mouth": [
-   30,
-   30,
-   3,
+   26,
+   34,
+   4,
    1
   ],
   "drawn": true

@@ -47,8 +47,8 @@ describe("the save's INDEX (C-24)", () => {
   it("gives a bound daemon what it says of itself, and its open mouth where one is known (C-303)", () => {
     const ix = readIndex(save({ opus: false, party: [], seen: [1, 4, 41], bound: [1, 41] }), "CONTENT");
     const [cub, label, echo] = ix.entries;
-    expect(cub.said).toMatch(/\b(I|me|my)\b/);              // ROVERCUB, bound: its telling; nobody has found its mouth
-    expect(cub.mouth).toBeNull();
+    expect(cub.said).toMatch(/\b(I|me|my)\b/);              // ROVERCUB, bound: its telling, and its mouth on its screen (C-492)
+    expect(cub.mouth![0]).toMatchObject({ x: 23, y: 29, w: 2 });
     expect(label.said).toBeUndefined();                    // LABEL, only seen: the game shows nothing of it, nor does this
     expect(echo.mouth!.length).toBeGreaterThan(0);          // ECHO's mouth, as patches on its 64px picture
     expect(echo.mouth![0]).toMatchObject({ x: expect.any(Number), y: expect.any(Number), w: expect.any(Number), h: expect.any(Number) });
@@ -87,7 +87,7 @@ describe("a mouth for the speaking overlay (C-303)", () => {
     expect(openMouthOf("gfx/daemons/artsai_front.png")).toBeNull();            // checked, and given no mouth: none
     expect(openMouthOf("gfx/daemons/archiver_front.png")![0]).toMatchObject({ x: 22, y: 30, w: 2 });   // checked
     expect(openMouthOf("gfx/daemons/overloaded_front.png")![0]).toMatchObject({ x: 31, y: 42, w: 3, h: 2 });   // found
-    expect(openMouthOf("gfx/daemons/rovercub_front.png")).toBeNull();          // neither: it moves a little instead
+    expect(openMouthOf("gfx/daemons/delta_front.png")).toBeNull();             // checked in profile, no mouth drawn (C-492)
   });
   it("holds no found mouth for a daemon whose face a person has checked, and every box inside the sprite", () => {
     const found = (foundJson as any).mouths as Record<string, number[]>;

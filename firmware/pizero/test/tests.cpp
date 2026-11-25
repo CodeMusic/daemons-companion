@@ -11,6 +11,7 @@
 #include "game/hash.h"
 #include "kit/policy.h"
 #include "kit/stackflow.h"
+#include "touch.h"
 #include "common/rollcall.h"
 
 // patch: 576 bytes; target sha1 571603f8103cd9791fc11f5957a81c1d6944eaac, size 8692
@@ -65,6 +66,27 @@ static Bytes xorshift(size_t n, uint32_t x) {   // the same bytes make_vectors d
 template <typename F> static bool refuses(F f) { try { f(); } catch (const PatchError &) { return true; } return false; }
 
 int main() {
+  {  // C-512: touch as keys -- a tap ENTER, a hold ESC, a swipe an arrow; and a screen's calibration line
+    auto keys = [](touch::Gestures &g) { std::vector<Key> k; KeyEvent e; while (g.next(e)) if (e.down) k.push_back(e.key); return k; };
+    auto one = [](Key k) { return std::vector<Key>{k}; };
+    touch::Gestures g;
+    g.report(2000, 2000, true, 0); g.report(2010, 2005, true, 100); g.report(2010, 2005, false, 150);
+    CHECK("touch: a tap is ENTER", keys(g) == one(Key::Enter));
+    g.report(500, 2000, true, 0); g.report(3500, 2100, true, 200); g.report(3500, 2100, false, 250);
+    CHECK("touch: a swipe across is RIGHT", keys(g) == one(Key::Right));
+    g.report(2000, 3500, true, 0); g.report(2000, 500, false, 200);
+    CHECK("touch: a swipe up is UP", keys(g) == one(Key::Up));
+    g.report(2000, 2000, true, 0); g.report(2000, 2000, true, 700);
+    CHECK("touch: a hold is ESC before the finger lifts", keys(g) == one(Key::Esc));
+    g.report(2000, 2000, false, 900);
+    CHECK("touch: and lifting after a hold says nothing more", keys(g).empty());
+    touch::Cal c;
+    CHECK("touch: a calibration line", touch::parse("200 3900 300 3800 1 1 0", c) && c.minX == 200 && c.swapXY && c.invX && !c.invY);
+    touch::Gestures s(c);
+    s.report(2000, 3800, true, 0); s.report(2000, 300, false, 200);   // raw Y falls: swapped, that is across; inverted, rightward
+    CHECK("touch: swapped and inverted axes", keys(s) == one(Key::Right));
+    CHECK("touch: a span of nothing is refused", !touch::parse("5 5 0 100", c));
+  }
   const char *abc = "abc";
   CHECK("sha1 of abc", sha1Hex((const uint8_t *)abc, 3) == "a9993e364706816aba3e25717850c26c9cd0d89d");
   CHECK("sha1 of nothing", sha1Hex(nullptr, 0) == "da39a3ee5e6b4b0d3255bfef95601890afd80709");

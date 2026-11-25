@@ -23,6 +23,8 @@
 #include "board.h"
 #include "hal/hal.h"
 #include "paths.h"
+#include "touch.h"
+#include <ctime>
 
 namespace hal {
 static bool headlessMode;
@@ -36,6 +38,12 @@ static int rotate;              // quarter turns clockwise from our canvas to th
 static int offX, offY;          // C-457: where the canvas sits on a bigger screen (in the middle)
 static int zoom = 1;            // C-468: each canvas pixel this many wide and high -- the most whole steps that fit
 static bool shiftHeld;
+// C-512: a touch screen, when the board has one (the DAEMICOM's XPT2046, the kernel's ads7846): its taps, holds and
+// swipes read as keys (touch.h). Found by what it reports, so any board with one gets it and the rest never notice.
+static int touchFd = -1;
+static touch::Gestures gestures;
+static int touchX, touchY;
+static bool touchDown;
 
 static bool testBit(const unsigned long *bits, int n) { return (bits[n / (8 * sizeof(long))] >> (n % (8 * sizeof(long)))) & 1; }
 
@@ -75,6 +83,43 @@ static void openInputs() {
   }
 }
 
+static touch::Cal touchCal() {
+  touch::Cal c;
+  if (const char *z = getenv("ZERO_TOUCH")) { touch::parse(z, c); return c; }
+  std::string text;
+  if (readText(inConfig("touch.conf"), text)) {
+    size_t at = 0;
+    while (at < text.size()) {
+      size_t nl = text.find('\n', at);
+      std::string line = text.substr(at, nl == std::string::npos ? std::string::npos : nl - at);
+      if (!line.empty() && line[0] != '#' && touch::parse(line, c)) break;
+      if (nl == std::string::npos) break;
+      at = nl + 1;
+    }
+  }
+  return c;
+}
+
+static void openTouch() {
+  if (const char *t = getenv("ZERO_TOUCHDEV")) touchFd = open(t, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+  for (int n = 0; n < 16 && touchFd < 0; n++) {
+    std::string p = "/dev/input/event" + std::to_string(n);
+    int f = open(p.c_str(), O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+    if (f < 0) continue;
+    unsigned long keys[(KEY_MAX + 1) / (8 * sizeof(long)) + 1] = {}, abs[(ABS_MAX + 1) / (8 * sizeof(long)) + 1] = {};
+    const bool isTouch = ioctl(f, EVIOCGBIT(EV_KEY, sizeof keys), keys) >= 0 && testBit(keys, BTN_TOUCH) &&
+                         ioctl(f, EVIOCGBIT(EV_ABS, sizeof abs), abs) >= 0 && testBit(abs, ABS_X) && testBit(abs, ABS_Y);
+    if (isTouch) touchFd = f; else close(f);
+  }
+  if (touchFd >= 0) gestures = touch::Gestures(touchCal());
+}
+
+static uint64_t nowMs() {
+  timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  return (uint64_t)t.tv_sec * 1000 + (uint64_t)t.tv_nsec / 1000000;
+}
+
 bool begin(int, bool headless) {
   headlessMode = headless;
   if (headless) return true;
@@ -85,7 +130,7 @@ bool begin(int, bool headless) {
   static std::string panel;
   for (int n = 0; n < 4 && panel.empty(); n++) {
     std::string name;
-    if (readText("/sys/class/graphics/fb" + std::to_string(n) + "/name", name) && name.find("mipi-dbi") != std::string::npos)
+    if (readText("/sys/class/graphics/fb" + std::to_string(n) + "/name", name) && (name.find("mipi-dbi") != std::string::npos || name.find("ili9486") != std::string::npos))
       panel = "/dev/fb" + std::to_string(n);
   }
   const char *path = getenv("ZERO_FB") ? getenv("ZERO_FB") : access("/dev/fb_lcd", F_OK) == 0 ? "/dev/fb_lcd"
@@ -108,6 +153,7 @@ bool begin(int, bool headless) {
   fprintf(stderr, "screen: %s %ux%u, %u bits, line %u bytes, turned %d, x%d\n", path, vinfo.xres, vinfo.yres,
           vinfo.bits_per_pixel, finfo.line_length, rotate, zoom);
   openInputs();
+  openTouch();   // C-512
   if (keyFds.empty()) fprintf(stderr, "keys: no keyboard found (set ZERO_KEYS)\n");
   else if (getenv("ZERO_GRAB")) for (int f : keyFds) ioctl(f, EVIOCGRAB, 1);
   return true;
@@ -181,6 +227,17 @@ static Key keyOf(int code) {
 
 bool poll(KeyEvent &e) {
   input_event ev;
+  if (gestures.next(e)) return true;
+  if (touchFd >= 0) {
+    while (read(touchFd, &ev, sizeof ev) == (ssize_t)sizeof ev) {
+      if (ev.type == EV_ABS && ev.code == ABS_X) touchX = ev.value;
+      else if (ev.type == EV_ABS && ev.code == ABS_Y) touchY = ev.value;
+      else if (ev.type == EV_KEY && ev.code == BTN_TOUCH) touchDown = ev.value != 0;
+      else if (ev.type == EV_SYN && ev.code == SYN_REPORT) gestures.report(touchX, touchY, touchDown, nowMs());
+    }
+    if (touchDown) gestures.report(touchX, touchY, true, nowMs());   // a hold is told while the finger stays still
+    if (gestures.next(e)) return true;
+  }
   for (int fd : keyFds) {
   while (read(fd, &ev, sizeof ev) == (ssize_t)sizeof ev) {
     if (ev.type != EV_KEY || ev.value == 2) continue;   // 2: the key repeating -- every page counts its own
@@ -202,6 +259,7 @@ void end() {
   if (fbMem) { munmap(fbMem, fbLen); fbMem = nullptr; }
   if (fbFd >= 0) close(fbFd);
   for (int f : keyFds) { ioctl(f, EVIOCGRAB, 0); close(f); }
+  if (touchFd >= 0) { close(touchFd); touchFd = -1; }
   keyFds.clear();
 }
 

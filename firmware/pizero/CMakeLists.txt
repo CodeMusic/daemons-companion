@@ -79,7 +79,7 @@ else()
 endif()
 
 # C-457: the board this is built for -- src/boards/<ZERO_BOARD>.cpp, its screen, keys and name (docs/PIBOARDS.md)
-set(ZERO_BOARD cardputer-zero CACHE STRING "the Linux board: cardputer-zero, gamepi20, gamehat, uconsole")
+set(ZERO_BOARD cardputer-zero CACHE STRING "the Linux board: cardputer-zero, gamepi20, gamehat, uconsole, daemicom")
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/boards/${ZERO_BOARD}.cpp)
   message(FATAL_ERROR "no board called ${ZERO_BOARD}: src/boards/ has the ones there are")
 endif()
@@ -139,6 +139,7 @@ set(SRC
   src/caps/cap.cpp
   src/caps/longwave.cpp
   src/boards/pad.cpp
+  src/touch.cpp
   src/boards/${ZERO_BOARD}.cpp)
 
 if(ZERO_DEVICE)
@@ -182,7 +183,7 @@ endif()
 
 # The checks that need no device: BPS against vectors written by DAEMONS' own encoder, and the hashes
 enable_testing()
-add_executable(zero-tests test/tests.cpp src/game/hash.cpp src/game/bps.cpp src/kit/stackflow.cpp src/kit/policy.cpp)
+add_executable(zero-tests test/tests.cpp src/touch.cpp src/game/hash.cpp src/game/bps.cpp src/kit/stackflow.cpp src/kit/policy.cpp)
 target_include_directories(zero-tests PRIVATE src ${CMAKE_SOURCE_DIR}/.. ${CMAKE_BINARY_DIR}/_deps/arduinojson)
 target_compile_definitions(zero-tests PRIVATE ARDUINOJSON_STRING_LENGTH_SIZE=4)
 add_test(NAME bps COMMAND zero-tests ${CMAKE_CURRENT_SOURCE_DIR}/test)

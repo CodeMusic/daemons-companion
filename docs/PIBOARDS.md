@@ -36,6 +36,7 @@ the game's, and **SELECT and START held together** go back to HOME. A page's hin
 | **Game HAT** (Waveshare; C-468) | `gamehat` | a full Pi: 3B, 3B+ or 4 | 3.5-inch 480x320 IPS on the HDMI (sent 640x480) | d-pad, A B X Y, START, SELECT, L, R on GPIO | the HDMI's sound, to its speaker | `daemons@<user>.service` at boot |
 | **GamePi20** (Waveshare) | `gamepi20` | Zero 2 W (a first Zero or Zero W runs the companion; the game at full speed is unlikely) | 2-inch 320x240 ST7789VW on SPI0 | d-pad, A B X Y, START, SELECT, L, R on GPIO | a speaker on PWM (GPIO 18) | `daemons@<user>.service` at boot |
 | **uConsole** (ClockworkPi; C-514) | `uconsole` | CM4 (to confirm) | 5-inch 1280x720 IPS on DSI (a 720x1280 panel, turned; the canvas four times its size) | its own keyboard (a USB HID: keys, a trackball, a joystick), d-pad, A B X Y, SELECT, START | PWM to two speakers and the jack; a microphone through the jack | the desktop, or `daemons@<user>.service` with `boot` |
+| **DAEMICOM** (C-512; a Pi 5, DRAFT) | `daemicom` | Pi 5, booting from its SSD | 3.5-inch 480x320 ILI9486 on SPI0 (`piscreen`), XPT2046 **touch** | touch (a tap ENTER, a hold ESC, a swipe an arrow); a SIGIL read as a pad | the Pi's own, to a speaker; a USB microphone | `daemons@<user>.service` at boot, the desktop kept on HDMI |
 
 ### The GamePi20
 
@@ -106,13 +107,38 @@ and cells already work under its desktop, so `tools/boards/uconsole.sh` adds onl
 **Setting one up**: put it on Tailscale, then `BOARD=uconsole tools/install.sh <user>@<its name>`, the lines it prints,
 and a reboot. `tools/install.sh <user>@<its name> probe` first, to read what it has.
 
+### The DAEMICOM (C-512)
+
+The console (DRAFT: *the DAEMICOM Interactive Computer*, DCM-001, "It's running even when you're not."): a Raspberry Pi 5
+booting from its SSD, the generic **3.5inch RPi Display** on its pins, a microphone and a speaker. The plan for the
+console as a whole -- THE THRESHOLD, the SHEWSTONE modes (DUET, SPLIT, MIRROR, OFF), THE SANCTUM -- is C-564 to C-568.
+
+- **The screen**: LCD35 / MPI3501, an ILI9486 at 480x320 behind shift registers on SPI0 CE0 (DC 24, RESET 25), driven by
+  the kernel's own `piscreen` overlay (`tools/boards/daemicom.sh`: `dtoverlay=piscreen,speed=16000000,rotate=90`). Its
+  framebuffer is found by the driver's name (`ili9486`), so the desktop's HDMI framebuffer is never drawn on. The canvas
+  sits once in the middle until a page is laid out for the bigger screen.
+- **Touch** -- the first board with it: the XPT2046 on CE1 (PENIRQ 17) is the kernel's `ads7846`, raw 0..4095 on each
+  axis. `src/touch.cpp` reads it as the keys every page already listens for: **a tap is ENTER, a hold (600 ms) is ESC**
+  -- in the game, back to HOME -- **and a swipe is an arrow**, as the companion's swipes move on the phone. Any board with
+  a touch screen gets it: `hal/device.cpp` finds the device by what it reports (BTN_TOUCH with ABS_X and ABS_Y;
+  `ZERO_TOUCHDEV` names one). A screen whose axes lie differently is calibrated with one line in
+  `~/.config/daemons/touch.conf` (or `ZERO_TOUCH`): `minX maxX minY maxY swapXY invX invY`, e.g. `200 3900 300 3800 1 1 0`.
+- **A SIGIL** (any USB or Bluetooth game controller) is found by its gamepad buttons and read as a pad (`boards/pad.cpp`).
+- **The desktop stays**: the user keeps Raspberry Pi OS with its desktop on the HDMI ports; DAEMONS starts at boot on the
+  small screen only.
+- **AI on it**: THE BRAIN's shape (C-530): a small CPU cortex, whisper and piper locally, and a node of THE MESH.
+- **Seen on the device: not yet** (DRAFT). First to check: the overlay loads on a Pi 5, the screen's turn, and the
+  touch's axes.
+
+**Setting one up**: `BOARD=daemicom tools/install.sh <user>@<its name>`, the lines it prints, and a reboot.
+
 **What the two handhelds' setups share** is `tools/boards/common.sh`: the buttons as one gpio-keys device from twelve pins
 (`pad_buttons`), our lines in config.txt between two marks (`config_lines`), and DAEMONS at boot (`start_at_boot`). A
 board's own script is then only its pins and its screen.
 
 ## Adding a board
 
-1. `src/boards/<id>.cpp`, from the nearest of the four (a pad board calls `boards/pad.cpp`): its `ID` (the start of the name it gives the hub), `NAME`, screen,
+1. `src/boards/<id>.cpp`, from the nearest of the five (a pad board calls `boards/pad.cpp`): its `ID` (the start of the name it gives the hub), `NAME`, screen,
    `KEYBOARD`, `INPUTS` (every one that opens is read), the game's keys, `forPage`, `word`, `rawKey` (codes of its own,
    or none), `CAP_HEADER` (the Cardputer's EXT header: only the Zero), `RADIOS` and `builtInRadios` (C-514).
 2. If it has no launcher: `tools/boards/<id>.sh`, its pins and screen, using `common.sh` for the rest.

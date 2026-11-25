@@ -86,6 +86,7 @@ import { journalThreads, museKey, museOf, paintPalette } from "./psyche/muse.js"
 import { hemisphereOf } from "./psyche/months.js";   // C-386
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./machine/sleeptracks.js";   // C-334
 import { chooseDrift, chosenDrift, driftFile, driftList, keepMadeDrift, madeDriftsIn } from "./machine/drifts.js";   // C-506; C-554 made ones
+import { folderBytes, Renders, RENDER_LIMIT } from "./machine/reverierenders.js";   // C-508: REVERIE's renders
 import { LONG_FALL } from "./psyche/drift.js";
 import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./machine/sleepexport.js";   // C-358
 import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
@@ -1459,6 +1460,22 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // C-360: a piece's cover is painted once it is made (paintCover, given below), never while the music maker sings --
   // ACE-Step and FLUX together filled roverbyteseer's 32 GB and its swap, and it restarted (2026-11-14)
   if (cfg.database !== ":memory:") madeDriftsIn(join(dirname(cfg.database), "reverie"));   // C-554: drifts made here
+  // C-508: REVERIE's renders, made on asking and kept beside the made drifts (made when first asked for)
+  let rendersKept: Renders | null = null;
+  const renders = () => (rendersKept ??= new Renders(join(dirname(cfg.database), "reverie-renders")));
+  // a file, whole or in the range asked (AVPlayer, a watch resuming a copy, an <audio> seeking)
+  const sendFile = (req: IncomingMessage, res: ServerResponse, f: string, type: string, cache: string) => {
+    const size = statSync(f).size, range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? ""));
+    if (range && (range[1] || range[2])) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(size - 1, Number(range[2])) : size - 1;
+      if (start >= size || start > end) { res.writeHead(416, { "content-range": `bytes */${size}` }); return res.end(); }
+      res.writeHead(206, { "content-type": type, "content-length": end - start + 1, "content-range": `bytes ${start}-${end}/${size}`, "accept-ranges": "bytes" });
+      return createReadStream(f, { start, end }).pipe(res);
+    }
+    res.writeHead(200, { "content-type": type, "content-length": size, "accept-ranges": "bytes", "cache-control": cache });
+    return createReadStream(f).pipe(res);
+  };
   const sleepTracks = () => {
     if (!sleepKept) { sleepKept = new SleepTracks(join(dirname(cfg.database), "sleep"), () => sleepDoor((k) => store.getSetting(k))); sleepKept.ready = (t) => paintCover(t); }
     return sleepKept;
@@ -2730,17 +2747,25 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const [, , , , id, name] = path.split("/");
         const f = sleepTracks().file(id ?? "", name ?? "");
         if (!f) return send(res, 404, { error: "no such piece" });
-        const size = statSync(f).size, range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? ""));
-        const type = SLEEP_FILES[name as keyof typeof SLEEP_FILES];
-        if (range && (range[1] || range[2])) {     // AVPlayer and a watch resuming a copy ask in ranges
-          const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
-          const end = range[1] && range[2] ? Math.min(size - 1, Number(range[2])) : size - 1;
-          if (start >= size || start > end) { res.writeHead(416, { "content-range": `bytes */${size}` }); return res.end(); }
-          res.writeHead(206, { "content-type": type, "content-length": end - start + 1, "content-range": `bytes ${start}-${end}/${size}`, "accept-ranges": "bytes" });
-          return createReadStream(f, { start, end }).pipe(res);
-        }
-        res.writeHead(200, { "content-type": type, "content-length": size, "accept-ranges": "bytes", "cache-control": "max-age=31536000, immutable" });
-        return createReadStream(f).pipe(res);
+        return sendFile(req, res, f, SLEEP_FILES[name as keyof typeof SLEEP_FILES], "max-age=31536000, immutable");
+      }
+      // C-508: REVERIE's renders -- one made on asking (a drift over a piece the hub made), the list with what REVERIE
+      // keeps on the hub, and a render's file (counting as played: the oldest unplayed are let go first past the limit)
+      if (req.method === "POST" && path === "/api/reverie/render") {
+        const b = await body(req).catch(() => ({})) as { drift?: string; track?: string };
+        const d = driftFile(String(b.drift ?? "")), t = sleepTracks().byId(String(b.track ?? "")), f = t ? sleepTracks().file(t.id, "phone.m4a") : null;
+        if (!d) return send(res, 404, { error: "no such drift" });   // DRAFT
+        if (!t || !f) return send(res, 404, { error: "no such piece, or it is not made yet" });   // DRAFT
+        return send(res, 202, { render: renders().ask(d, { id: t.id, file: f, carrier: carrierOf(t.keyscale) }) });
+      }
+      if (req.method === "GET" && path === "/api/reverie/renders") {
+        const base = dirname(cfg.database);
+        return send(res, 200, { renders: renders().list(), limit: RENDER_LIMIT,
+                                bytes: { renders: renders().bytes(), drifts: folderBytes(join(base, "reverie")), music: folderBytes(join(base, "sleep")) } });
+      }
+      if (req.method === "GET" && /^\/api\/reverie\/render\/[a-z0-9-]+--[0-9a-f]{32}\.mp3$/.test(path)) {
+        const f = renders().file(path.slice("/api/reverie/render/".length, -4));
+        return f ? sendFile(req, res, f, "audio/mpeg", "no-cache") : send(res, 404, { error: "no such render" });   // DRAFT
       }
       if (req.method === "GET" && path === "/api/voice") return send(res, 200, voiceFor(ecfg, store, deviceId));
       if (req.method === "POST" && path === "/api/voice") {

@@ -41,6 +41,7 @@ const fresh = () => ({ name: "", line: "", kind: "sleep", side: "you", minutes: 
                        scenes: [{ atSec: 0, beatHz: 10 }, { atSec: 600, beatHz: 6 }, { atSec: 1200, beatHz: 3 }],
                        bed: { type: "pink", level: 0.1 }, isochronic: null, machine: null });
 let d = fresh(), sel = 0, drifts = [], pieces = [];
+let driftId = null;   // C-508: the drift as opened or last saved -- the one a render is made of
 const sorted = () => d.scenes.slice().sort((a, b) => a.atSec - b.atSec);
 const end = () => d.minutes * 60;
 const bandOf = (hz) => (BANDS.find(([, lo, hi]) => hz >= lo && hz < hi) ?? BANDS[4])[0];
@@ -147,6 +148,13 @@ function page() {
   <section class="card">
     <div class="row"><button class="btn gold" id="save">SAVE TO THE HUB</button><span class="small" id="saved"></span></div>
     <div class="small">Saved, it is kept with the drifts made on your hub and chosen: REVERIE plays it from the next PLAY.</div>
+  </section>
+  <section class="card">
+    <div class="eyebrow">ONE FILE</div>
+    <div class="row"><button class="btn" id="render">MAKE IT ONE FILE</button><span class="small" id="rendered"></span></div>
+    <div class="small">The drift as opened or last saved, over the music chosen above, made by the hub as one MP3 to keep or play
+      anywhere -- a speaker, a car, a watch that cannot play a beat. Headphones still carry the beat best. The hub keeps the
+      newest; past its room the oldest unplayed are let go, and any can be made again.</div>
   </section>`;
   wire(); drawPoint(); draw();
 }
@@ -175,12 +183,13 @@ function wire() {
   $("load").addEventListener("click", async () => {
     const id = $("from").value;
     if (!id) { d = fresh(); sel = 0; return page(); }
-    try { d = fromFile(await api(`${API}/drifts/${encodeURIComponent(id)}`)); sel = 0; page(); }
+    try { d = fromFile(await api(`${API}/drifts/${encodeURIComponent(id)}`)); driftId = id; sel = 0; page(); }
     catch (e) { if (e instanceof Unpaired) return pairPage(e.message); $("saved").textContent = e.message; }
   });
   $("play").addEventListener("click", () => hear().catch((e) => { $("hearing").textContent = e.message; }));
   $("stop").addEventListener("click", hush);
   $("save").addEventListener("click", save);
+  $("render").addEventListener("click", render);
   timeline($("tl"));
 }
 
@@ -341,11 +350,36 @@ async function save() {
   $("saved").textContent = "Saving…";
   try {
     const r = await api(`${API}/drifts/save`, { drift: { ...d, scenes: sorted() } });
+    driftId = r.id;
     $("saved").innerHTML = `<span class="good">Saved and chosen: ${esc(r.name)}.</span>`;
     drifts = (await api(`${API}/drifts`)).drifts ?? drifts;
   } catch (e) {
     if (e instanceof Unpaired) return pairPage(e.message);
     $("saved").innerHTML = `<span class="bad">${esc(e.message)}</span>`;
+  }
+}
+
+// ---- one file (C-508): asked of the hub, waited on, then downloaded ---------------------------------------------------
+const mb = (n) => `${(n / 1024 ** 2).toFixed(0)} MB`;
+async function render() {
+  const out = $("rendered"), track = $("music").value;
+  if (!driftId) { out.textContent = "Open a drift or save this one first: the file is made of a drift the hub keeps."; return; }   // DRAFT
+  if (!track) { out.textContent = "Choose the music under it first (HEAR IT, above)."; return; }   // DRAFT
+  out.textContent = "Asking the hub…";
+  try {
+    let r = (await api(`${API}/reverie/render`, { drift: driftId, track })).render;
+    for (let i = 0; r.state === "making" && i < 240; i++) {
+      out.textContent = `The hub is making it: ${Math.round(r.seconds / 60)} minutes of sound, a few minutes' work…`;   // DRAFT
+      await new Promise((ok) => setTimeout(ok, 5000));
+      r = ((await api(`${API}/reverie/renders`)).renders ?? []).find((x) => x.id === r.id) ?? { ...r, state: "failed", error: "it was let go" };
+    }
+    if (r.state !== "ready") { out.innerHTML = `<span class="bad">${esc(r.error ?? "It is still being made: ask again in a while.")}</span>`; return; }
+    const url = await blobOf(`${API}/reverie/render/${r.id}.mp3`), a = document.createElement("a");
+    a.href = url; a.download = `${(r.name || "reverie").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.mp3`; a.textContent = `DOWNLOAD ${r.name} (${mb(r.bytes ?? 0)})`;
+    a.className = "btn gold"; out.replaceChildren(a); a.click();
+  } catch (e) {
+    if (e instanceof Unpaired) return pairPage(e.message);
+    out.innerHTML = `<span class="bad">${esc(e.message)}</span>`;
   }
 }
 

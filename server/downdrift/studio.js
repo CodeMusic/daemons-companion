@@ -7,6 +7,9 @@
 // saved to the hub (POST /api/drifts/save), which checks it, keeps it with the drifts made there, and chooses it.
 // Nothing of the user's is in this file: everything comes from the API, behind a key this browser pairs for. DRAFT.
 "use strict";
+// where the API is: the hub's own /api, or -- through EUDAIMONIA (downdrift.daemons.codemusic.ca, behind its sign-in) --
+// the relay it names in the page (<meta name="downdrift-api">), which adds the hub's key itself
+const API = document.querySelector('meta[name="downdrift-api"]')?.content || "/api";
 const KEY = "downdrift.key";
 const keyNow = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
 const keep = (k) => { try { k ? localStorage.setItem(KEY, k) : localStorage.removeItem(KEY); } catch { /* a private window */ } };
@@ -57,6 +60,11 @@ function fromFile(f) {
 
 // ---- the page --------------------------------------------------------------------------------------------------------
 function pairPage(why) {
+  if (API !== "/api") {   // through EUDAIMONIA: its own sign-in, not the hub's pairing
+    $("page").innerHTML = `<div class="card"><div class="eyebrow">SIGN IN FIRST</div>
+      <p class="small">The studio opens for someone signed in to EUDAIMONIA. <a href="/">Sign in</a>, then come back to this page.</p></div>`;
+    return;
+  }
   $("page").innerHTML = `<div class="card"><div class="eyebrow">PAIR THIS BROWSER</div>
     <p class="small">The studio saves to your companion hub. Show a pairing code on the hub's own screen, or in the app's
       SETTINGS (PAIR A PHONE), and type it here.</p>
@@ -167,7 +175,7 @@ function wire() {
   $("load").addEventListener("click", async () => {
     const id = $("from").value;
     if (!id) { d = fresh(); sel = 0; return page(); }
-    try { d = fromFile(await api(`/api/drifts/${encodeURIComponent(id)}`)); sel = 0; page(); }
+    try { d = fromFile(await api(`${API}/drifts/${encodeURIComponent(id)}`)); sel = 0; page(); }
     catch (e) { if (e instanceof Unpaired) return pairPage(e.message); $("saved").textContent = e.message; }
   });
   $("play").addEventListener("click", () => hear().catch((e) => { $("hearing").textContent = e.message; }));
@@ -322,7 +330,7 @@ async function hear() {
     const now = ctx.currentTime; master.gain.setValueAtTime(0.03, now); master.gain.setValueAtTime(0.25, now + 0.02 + Math.random() * 0.04);
   }, 1000 / g);
   const id = $("music").value;
-  if (id) { music = new Audio(await blobOf(`/api/sleep/track/${encodeURIComponent(id)}/phone.m4a`)); music.volume = 0.8; music.play().catch(() => {}); }
+  if (id) { music = new Audio(await blobOf(`${API}/sleep/track/${encodeURIComponent(id)}/phone.m4a`)); music.volume = 0.8; music.play().catch(() => {}); }
   $("hearing").textContent = f === 1 ? `Playing in real time: ${d.minutes} minutes.` : "Playing the whole drift in one minute.";
   setTimeout(() => { if (nodes.length && ctx.currentTime >= stopAt - 0.05) hush(); }, (whole * f + 0.3) * 1000);
 }
@@ -332,9 +340,9 @@ async function save() {
   if (d.scenes.length < 2) { $("saved").textContent = "A drift needs at least two points."; return; }
   $("saved").textContent = "Saving…";
   try {
-    const r = await api("/api/drifts/save", { drift: { ...d, scenes: sorted() } });
+    const r = await api(`${API}/drifts/save`, { drift: { ...d, scenes: sorted() } });
     $("saved").innerHTML = `<span class="good">Saved and chosen: ${esc(r.name)}.</span>`;
-    drifts = (await api("/api/drifts")).drifts ?? drifts;
+    drifts = (await api(`${API}/drifts`)).drifts ?? drifts;
   } catch (e) {
     if (e instanceof Unpaired) return pairPage(e.message);
     $("saved").innerHTML = `<span class="bad">${esc(e.message)}</span>`;
@@ -345,8 +353,8 @@ async function save() {
 async function start() {
   $("where").textContent = location.host;
   try {
-    drifts = (await api("/api/drifts")).drifts ?? [];
-    pieces = ((await api("/api/sleep/tracks").catch(() => ({ tracks: [] }))).tracks ?? []).filter((t) => t.state === "ready");
+    drifts = (await api(`${API}/drifts`)).drifts ?? [];
+    pieces = ((await api(`${API}/sleep/tracks`).catch(() => ({ tracks: [] }))).tracks ?? []).filter((t) => t.state === "ready");
     page();
   } catch (e) { e instanceof Unpaired ? pairPage(e.message) : ($("page").innerHTML = `<p class="bad">${esc(e.message)}</p>`); }
 }

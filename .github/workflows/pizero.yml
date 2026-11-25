@@ -35,7 +35,7 @@ jobs:
           export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
           # built at /daemons, as a volunteer's container builds it: the source's path is in the program
           mkdir -p /daemons/firmware /daemons/server/data
-          cp -a firmware/pizero /daemons/firmware/ && cp server/data/patches.json /daemons/server/data/
+          cp -a firmware/pizero firmware/common /daemons/firmware/ && cp server/data/patches.json /daemons/server/data/   # common: C-447's rollcall.h, shared with the ESP32
           cd /daemons/firmware/pizero
           tools/package.sh fetch "${{ matrix.board }}"
           tools/package.sh build "${{ matrix.board }}" "$GITHUB_WORKSPACE/dist"

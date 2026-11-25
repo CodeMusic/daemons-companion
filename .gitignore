@@ -23,3 +23,8 @@ blobs/
 # the local cloud (seer/): its settings and keys, and what make.py writes from them
 seer/.seer
 seer/out/
+
+# T-636: Syncthing shares the private, git-ignored files between the two machines; its own files stay out of git
+.stignore
+.stfolder/
+.stversions/

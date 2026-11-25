@@ -34,17 +34,35 @@ export function reverieAsk(o: { kind: ReverieKind; side: ReverieSide; sound?: st
 }
 
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
+// the first object in what a mind said that holds scenes: its thinking (<think>...</think>, which has braces of its own)
+// set aside, then each balanced {...} tried in turn
+function objectIn(text: string): Record<string, unknown> | null {
+  const t = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  for (let i = t.indexOf("{"); i >= 0; i = t.indexOf("{", i + 1)) {
+    let depth = 0;
+    for (let j = i; j < t.length; j++) {
+      if (t[j] === "{") depth++;
+      else if (t[j] === "}" && --depth === 0) {
+        try { const o = JSON.parse(t.slice(i, j + 1)); if (o && Array.isArray(o.scenes)) return o; } catch { /* the next */ }
+        break;
+      }
+    }
+  }
+  return null;
+}
+const num = (o: Record<string, unknown> | null | undefined, ...keys: string[]) => {
+  for (const k of keys) { const v = Number(o?.[k]); if (o && o[k] !== undefined && Number.isFinite(v)) return v; }
+  return NaN;
+};
 // the words a drift may not carry (a TINCTURE is named for how it feels; nothing is a cure)
 const NOT = /\b(cure|cures|treat|treats|treatment|heal|heals|medicine|medication|drug|drugs|dose|overdose)\b/i;
 /** What a mind said, as a drift to keep -- or null when there is nothing usable in it. */
 export function driftFromMind(text: string | null | undefined, o: { kind: ReverieKind; side: ReverieSide; id: string; by?: string; sound?: string | null; style?: string | null }): DriftFile | null {
   if (!text) return null;
-  const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-  let a: { name?: unknown; line?: unknown; minutes?: unknown; carrierHz?: unknown; scenes?: unknown };
-  try { a = JSON.parse(json); } catch { return null; }
-  if (!Array.isArray(a.scenes)) return null;
-  const minutes = clamp(Math.round(Number(a.minutes) || 20), 10, 45), end = minutes * 60;
-  const raw = a.scenes.map((s: { atSec?: unknown; beatHz?: unknown }) => ({ atSec: Number(s?.atSec), beatHz: Number(s?.beatHz) }))
+  const a = objectIn(text) as { name?: unknown; line?: unknown; minutes?: unknown; carrierHz?: unknown; scenes?: unknown } | null;
+  if (!a || !Array.isArray(a.scenes)) return null;
+  const minutes = clamp(Math.round(num(a, "minutes", "durationMinutes") || 20), 10, 45), end = minutes * 60;
+  const raw = (a.scenes as Record<string, unknown>[]).map((s) => ({ atSec: num(s, "atSec", "at", "sec", "seconds", "t", "time"), beatHz: num(s, "beatHz", "beat", "hz", "frequency") }))
     .filter((s) => Number.isFinite(s.atSec) && Number.isFinite(s.beatHz)).slice(0, 24);
   if (raw.length < 2) return null;
   // its own times stretched onto the length it chose, in order, beats held within bounds
@@ -60,7 +78,7 @@ export function driftFromMind(text: string | null | undefined, o: { kind: Reveri
     id: o.id, kind: o.kind, side: o.side,
     meta: { name, description: line, category: o.kind.toUpperCase(), strength: 1, durationSec: end },
     entrainment: { ramp: "linear", scenes },
-    audio: { binaural: { carrierHz: Math.round(clamp(Number(a.carrierHz) || 200, 100, 500)) } },
+    audio: { binaural: { carrierHz: Math.round(clamp(num(a, "carrierHz", "carrier") || 200, 100, 500)) } },
     generation: { source: "mind", from: "REVERIE", by: o.by ?? null, sound: o.sound ?? null, style: o.style ?? null },
   };
   if (o.side === "daemon") {   // a daemon's sounds like a machine (C-553)

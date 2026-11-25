@@ -41,3 +41,12 @@ describe("REVERIE's MAKE", () => {
     expect(r.caption).toMatch(/field recording.*circuit hum/);
   });
 });
+
+describe("REVERIE's MAKE, a mind's ways", () => {
+  it("sets its thinking aside, and reads other spellings", () => {
+    const d = driftFromMind('<think>a drift {beat} should fall</think>\n```json\n{"name":"low tide","carrier":180,"scenes":[{"at":0,"hz":9},{"sec":60,"beat":5}]}\n```', o)!;
+    expect(d.meta.name).toBe("LOW TIDE");
+    expect(d.audio?.binaural?.carrierHz).toBe(180);
+    expect(d.entrainment.scenes.map((s) => s.beatHz)).toEqual([9, 5]);
+  });
+});

@@ -2386,9 +2386,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           } catch { /* the carried one makes it */ }
         }
         const sound = typeof b.sound === "string" ? b.sound.slice(0, 300) : null, style = typeof b.style === "string" ? b.style.slice(0, 120) : null;
-        const said = await mindSays(REVERIE_SYSTEM, reverieAsk({ kind, side, sound, nickname: c.nickname, entry: c.entry }), 600, 40_000);
+        const said = await mindSays(REVERIE_SYSTEM, reverieAsk({ kind, side, sound, nickname: c.nickname, entry: c.entry }), 900, 45_000);
         const made = driftFromMind(said, { kind, side, id: `made-${Date.now().toString(36)}`, by: c.nickname, sound, style });
         const keptId = made ? keepMadeDrift(made) : null;
+        // why the kind's own drift was chosen instead, when it was (DRAFT)
+        const why = keptId ? null : said ? "the mind's answer was not a drift" : "no mind answered in time";
         const all = driftList();
         const chosen = keptId ?? all.find((d) => d.kind === kind && (d.side ?? "you") === side && !d.made)?.id
                               ?? all.find((d) => d.kind === kind && !d.made)?.id ?? LONG_FALL;
@@ -2399,9 +2401,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
                                            by: phone?.name ?? (deviceId || "the site"), device: deviceId || undefined,
                                            types: Array.isArray(c.types) ? c.types : typeof c.types === "string" ? c.types.split("/") : undefined,
                                            category: typeof c.category === "string" ? c.category : undefined }, true);
-          return send(res, 202, { chosen, wrote: !!keptId, name: made?.meta.name ?? null, track: trackOut(t) });
+          return send(res, 202, { chosen, wrote: !!keptId, name: made?.meta.name ?? null, why, track: trackOut(t) });
         } catch (e) {   // no music maker: the drift is still written and chosen, and the answer says why there is no music
-          return send(res, 200, { chosen, wrote: !!keptId, name: made?.meta.name ?? null, track: null, music: (e as Error).message });
+          return send(res, 200, { chosen, wrote: !!keptId, name: made?.meta.name ?? null, why, track: null, music: (e as Error).message });
         }
       }
       // C-331 (1): a book's own recording, one chapter, as a board plays a voice (raw 16 kHz PCM) -- the Ultra keeps it on

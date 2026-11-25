@@ -79,11 +79,13 @@ import { preferTiiny } from "./machine/tiinyfirst.js";   // C-249: the Tiiny fir
 import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpointsView, forgetEndpoint, keepEndpoint, moveEndpoint, type EndpointHealth } from "./machine/endpoints.js";   // C-280 (1)
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./damagotchi/self.js";   // C-252
 import { readProfile } from "./game/save/profile.js";
-import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, SLEEP_SYSTEM, type SleepContext } from "./psyche/sleepsound.js";   // C-334
+import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, reverieRecipe, SLEEP_SYSTEM, type SleepContext } from "./psyche/sleepsound.js";   // C-334; C-554
+import { driftFromMind, reverieAsk, REVERIE_SYSTEM, type ReverieKind, type ReverieSide } from "./psyche/reverie.js";   // C-554: REVERIE's MAKE
 import { journalThreads, museKey, museOf, paintPalette } from "./psyche/muse.js";   // C-386
 import { hemisphereOf } from "./psyche/months.js";   // C-386
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./machine/sleeptracks.js";   // C-334
-import { chooseDrift, chosenDrift, driftFile, driftList } from "./machine/drifts.js";   // C-506
+import { chooseDrift, chosenDrift, driftFile, driftList, keepMadeDrift, madeDriftsIn } from "./machine/drifts.js";   // C-506; C-554 made ones
+import { LONG_FALL } from "./psyche/drift.js";
 import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./machine/sleepexport.js";   // C-358
 import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
 import { PiBuilds, CHECK_EVERY_MS } from "./machine/pibuilds.js";   // C-541: the Pi program built by volunteers
@@ -932,6 +934,18 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   };
   // C-280 (1): then the player's endpoints, in order, each answering (checkTalk) -- only those at home for the home ring
   const endpointsNowAll = (homeOnly: boolean) => endpointsNow(endpointsIn((k) => store.getSetting(k)), TALK_HEALTH.endpoints, homeOnly);
+  // C-554: a few words from the house's mind -- the Tiiny's quick thinker first (it answers in a few seconds), then the
+  // player's endpoints, then the house's module, as DAEMONS IN DIALOGUE asks; null when none answers in time (the
+  // INDEX image's chain, C-334, now shared with REVERIE's MAKE)
+  const mindSays = (system: string, ask: string, tokens: number, ms = 25_000): Promise<string | null> => {
+    const tryAll = async (): Promise<string | null> => {
+      const t = tiinyNow();
+      if (t) try { return await tiinyChat(t.at, t.quick || t.model, system, [], ask, fetch, ms, tokens); } catch { /* the next mind */ }
+      for (const n of endpointsNowAll(false)) try { return await chatOn(n.e, n.model, system, [], ask, fetch, ms, tokens); } catch { /* the next */ }
+      return house.any ? await house.write(system, ask, tokens).catch(() => null) : null;
+    };
+    return Promise.race([tryAll().catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), ms))]);
+  };
   // C-360: the household's phones that lend their thinking (THE MESH), and how many thoughts each mind holds now --
   // the house's minds put in order at each write (ai/thoughtroute.ts). MESH and TASKS are made below; asked only later.
   preferTiiny(house, tiinyNow, () => store.getSetting("voice.recipe.index") || INDEX_VOICE, endpointsNowAll,
@@ -1443,6 +1457,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   const firmwareImages = new FirmwareImages(join(dirname(cfg.database), "firmware"));   // C-335
   // C-360: a piece's cover is painted once it is made (paintCover, given below), never while the music maker sings --
   // ACE-Step and FLUX together filled roverbyteseer's 32 GB and its swap, and it restarted (2026-11-14)
+  if (cfg.database !== ":memory:") madeDriftsIn(join(dirname(cfg.database), "reverie"));   // C-554: drifts made here
   const sleepTracks = () => {
     if (!sleepKept) { sleepKept = new SleepTracks(join(dirname(cfg.database), "sleep"), () => sleepDoor((k) => store.getSetting(k))); sleepKept.ready = (t) => paintCover(t); }
     return sleepKept;
@@ -2339,15 +2354,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         const carried = carriedDaemon({ ...cfg, savePath: savePathOf(cfg, store) }, store, deviceId);
         const got = carried ? personaNow(carried.personality >>> 0) : null;
         const muse = got ? museFor(got.persona.text) : null, asking = sleepAsk(c, muse);
-        const imageOf = async (): Promise<string | null> => {
-          const t = tiinyNow();
-          if (t) try { return await tiinyChat(t.at, t.quick || t.model, SLEEP_SYSTEM, [], asking, fetch, 25_000, 40); } catch { /* the next mind */ }
-          for (const n of endpointsNowAll(false)) try { return await chatOn(n.e, n.model, SLEEP_SYSTEM, [], asking, fetch, 25_000, 40); } catch { /* the next */ }
-          return house.any ? await house.write(SLEEP_SYSTEM, asking, 40).catch(() => null) : null;
-        };
-        const image = c.entry || muse
-          ? cleanImage(await Promise.race([imageOf().catch(() => null), new Promise<null>((r) => setTimeout(() => r(null), 25000))]))
-          : null;
+        const image = c.entry || muse ? cleanImage(await mindSays(SLEEP_SYSTEM, asking, 40)) : null;
         const r = sleepRecipe(c, image);
         try {
           const t = sleepTracks().ask(r, { species: c.species ?? 0, nickname: c.nickname ?? "", said: sleepSaid(r, c.nickname || "your daemon"),
@@ -2357,6 +2364,45 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
           return send(res, 202, { track: trackOut(t) });
         }
         catch (e) { return send(res, 503, { error: (e as Error).message }); }
+      }
+      // C-554 (the user, 2026-11-24): REVERIE's MAKE -- yours or a daemon's, a kind, the daemon that makes it, and what you
+      // describe of its sound and its style. The house's mind writes the drift from the sound, named in that daemon's voice
+      // (psyche/reverie.ts checks it and holds it in bounds; with no mind, the kind's own drift from the library); its
+      // music is made from the style over that daemon's sleep recipe, on the music maker, and painted a cover when ready
+      // (as sleep sounds are). The drift becomes the one chosen. DRAFT.
+      if (req.method === "POST" && path === "/api/reverie/make") {
+        const b = await body(req).catch(() => ({})) as { side?: string; kind?: string; slot?: number; sound?: string; style?: string };
+        const kind = (["sleep", "meditation", "nature", "tinctures"].includes(String(b.kind)) ? b.kind : "sleep") as ReverieKind;
+        const side: ReverieSide = b.side === "daemon" ? "daemon" : "you";
+        const carried = sleepContextFor(ecfg, store, deviceId);
+        if (!carried) return send(res, 400, { error: "No daemon is carried." });   // DRAFT
+        let c: SleepContext = carried;
+        if (Number.isInteger(b.slot)) {   // another of the party makes it: its own kind, name and entry; tonight's feelings and care stay
+          try {
+            const p = readSave(new Uint8Array(readFileSync(savePathOf(cfg, store) ?? ""))).party.find((d) => d.slot === b.slot);
+            const sp = p ? SPECIES[String(p.species)] : null;
+            if (p && sp) c = { ...carried, species: p.species, nickname: p.nickname || String(sp.name ?? ""), types: sp.types as string[],
+                               category: (sp.category as string | undefined) ?? null, entry: (sp.entry as string | undefined) ?? null };
+          } catch { /* the carried one makes it */ }
+        }
+        const sound = typeof b.sound === "string" ? b.sound.slice(0, 300) : null, style = typeof b.style === "string" ? b.style.slice(0, 120) : null;
+        const said = await mindSays(REVERIE_SYSTEM, reverieAsk({ kind, side, sound, nickname: c.nickname, entry: c.entry }), 600, 40_000);
+        const made = driftFromMind(said, { kind, side, id: `made-${Date.now().toString(36)}`, by: c.nickname, sound, style });
+        const keptId = made ? keepMadeDrift(made) : null;
+        const all = driftList();
+        const chosen = keptId ?? all.find((d) => d.kind === kind && (d.side ?? "you") === side && !d.made)?.id
+                              ?? all.find((d) => d.kind === kind && !d.made)?.id ?? LONG_FALL;
+        chooseDrift(store, chosen);
+        const r = reverieRecipe(c, { kind, side, style });
+        try {
+          const t = sleepTracks().ask(r, { species: c.species ?? 0, nickname: c.nickname ?? "", said: made?.meta.description || sleepSaid(r, c.nickname || "your daemon"),
+                                           by: phone?.name ?? (deviceId || "the site"), device: deviceId || undefined,
+                                           types: Array.isArray(c.types) ? c.types : typeof c.types === "string" ? c.types.split("/") : undefined,
+                                           category: typeof c.category === "string" ? c.category : undefined }, true);
+          return send(res, 202, { chosen, wrote: !!keptId, name: made?.meta.name ?? null, track: trackOut(t) });
+        } catch (e) {   // no music maker: the drift is still written and chosen, and the answer says why there is no music
+          return send(res, 200, { chosen, wrote: !!keptId, name: made?.meta.name ?? null, track: null, music: (e as Error).message });
+        }
       }
       // C-331 (1): a book's own recording, one chapter, as a board plays a voice (raw 16 kHz PCM) -- the Ultra keeps it on
       // its card. ?book=<shelf id>&title=<the chapter's title>. 404 when that chapter has no recording (the board reads it

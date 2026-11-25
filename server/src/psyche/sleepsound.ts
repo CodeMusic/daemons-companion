@@ -18,6 +18,7 @@
 //                     for the same month feels new while it stays in the month's key
 //
 // The music model is asked only in music words -- nothing of the trainer, nothing personal. Every word here is DRAFT.
+import { cleanStyle, DAEMON_MUSIC, REVERIE_MUSIC, type ReverieKind, type ReverieSide } from "./reverie.js";   // C-554
 import { Synesthesia } from "./synesthesia.js";
 
 export type SleepContext = {
@@ -139,4 +140,13 @@ export const moodMinor = (f: SleepContext["feelings"]) => MOOD[moodBand(f)].mino
 export function cleanImage(t: string | null | undefined): string | null {
   const s = (t ?? "").split("\n")[0].replace(/["“”.]/g, "").replace(/[^\w ,'-]/g, "").trim().split(/\s+/).slice(0, 8).join(" ");
   return s.length >= 3 ? s.toLowerCase() : null;
+}
+
+// C-554: a REVERIE's music -- the daemon's own sleep recipe, its last words the kind's (and a daemon's, a machine's), the
+// style described laid in front; its own key, so a reverie never stands in for tonight's sleep piece
+export function reverieRecipe(c: SleepContext, o: { kind: ReverieKind; side: ReverieSide; style?: string | null; image?: string | null }): SleepRecipe {
+  const r = sleepRecipe(c, o.image), style = cleanStyle(o.style);
+  const tail = [REVERIE_MUSIC[o.kind], o.side === "daemon" ? DAEMON_MUSIC : ""].filter(Boolean).join(", ");
+  const caption = [style, r.caption.replace(ALWAYS, tail)].filter(Boolean).join(", ");
+  return { ...r, caption, key: `${r.key}-r${fnv(`${o.kind}/${o.side}/${style}`).toString(36)}`, bands: { ...r.bands, kind: o.kind, side: o.side } };
 }

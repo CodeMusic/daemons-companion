@@ -11,6 +11,7 @@ import { CreationsScreen, RecordCover } from "./Creations";   // C-358
 import { driftOf, LONG_FALL, LONG_FALL_INFO, type DriftFile, type DriftInfo } from "../sound/binaural";
 import { phoneDriftFile, phoneDriftList } from "../sound/phoneDrifts";   // C-551: the phone's own three of each kind
 import { kindName, ReverieDoor, type Kind, type Side } from "./ReverieDoor";   // C-550: REVERIE's door
+import { ReverieMake, type Made } from "./ReverieMake";   // C-554: REVERIE's MAKE
 import { headphones, onSleep, playSleep, SESSION_S, setDrift, sleepState, stopSleep, FADE_S } from "../sound/sleepSession";
 import { Action, Card, CareKey, Eyebrow, Small, whenSaid } from "../shared/ui/ui";
 
@@ -38,12 +39,21 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
   // C-550: the door -- you or a daemon, then a kind; the drifts listed are that kind's
   const [side, setSide] = useState<Side | null>(null), [kind, setKind] = useState<Kind | null>(null);
   const [choice, setChoice] = useState<"REASON" | "INSTINCT">("REASON");
-  const [party, setParty] = useState<{ slot: number }[]>([]);
+  const [party, setParty] = useState<{ slot: number; nickname?: string }[]>([]);
+  const [madeId, setMadeId] = useState<string | null>(null);   // C-554: the reverie made here, its music on the way
+  const [madeNote, setMadeNote] = useState("");
   useEffect(() => {
     api<{ choice?: "REASON" | "INSTINCT" }>("/api/profile").then((p) => { if (p.choice) setChoice(p.choice); }).catch(() => {});
-    api<{ party: { slot: number }[] }>("/api/party").then((r) => setParty(r.party ?? [])).catch(() => {});
+    api<{ party: { slot: number; nickname?: string }[] }>("/api/party").then((r) => setParty(r.party ?? [])).catch(() => {});
   }, []);
   const pickKind = (k: Kind | null) => { setKind(k); if (k) setPicking(true); };
+  const made = (m: Made) => {   // C-554: the drift it wrote is chosen; the list and the pieces are read again
+    setMadeId(m.track?.id ?? null); setChosen(m.chosen);
+    setMadeNote(`${m.wrote ? `Its drift, ${m.name ?? "a new one"}, is written and chosen.` : "No mind answered, so the kind's own drift is chosen."}` +
+                (m.music ? ` No music: ${m.music}` : ""));   // DRAFT
+    api<{ drifts: DriftInfo[]; chosen: string }>("/api/drifts").then((r) => { if (r.drifts?.length) setDrifts(r.drifts); }).catch(() => {});
+    load();
+  };
   // C-553: a kind's drifts for the side chosen -- a daemon's own where it has them (its machine voice), else yours
   const ofKind = kind ? drifts.filter((x) => x.kind === kind) : drifts;
   const daemons = ofKind.filter((x) => x.side === "daemon");
@@ -132,6 +142,15 @@ export function SleepSoundsCard({ ink }: { ink?: string }) {
         <CareKey label={drift ? "DRIFT DOWN · ON" : "DRIFT DOWN"} ink={ink ?? "#fbfaf6"} lit={drift} onPress={toggleDrift} />
       </XStack>
       <ReverieDoor side={side} kind={kind} choice={choice} party={party} onSide={setSide} onKind={pickKind} />
+      {side && kind ? <ReverieMake side={side} kind={kind} party={party} ink={ink} onMade={made} /> : null}
+      {madeNote ? <Small color="$color10">{madeNote}</Small> : null}
+      {(() => {   // C-554: the reverie made here -- its music on the way, then PLAY
+        const t = madeId ? sleep.tracks.find((x) => x.id === madeId) : null;
+        if (!t) return null;
+        return t.state === "ready" ? <Action label="PLAY YOUR REVERIE" ink={ink} onPress={() => play(t)} />
+          : t.state === "failed" ? <Small color="$color8">{`Its music was not made: ${t.error ?? "the music maker did not answer"}. Its drift is kept.`}</Small>
+          : <Small>{"Its music is being made, about three minutes."}</Small>;
+      })()}
       {(() => {   // C-506: which drift, and what it does
         const d = drifts.find((x) => x.id === chosen) ?? LONG_FALL_INFO;
         return (

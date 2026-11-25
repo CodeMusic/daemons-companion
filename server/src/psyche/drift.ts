@@ -55,11 +55,13 @@ export type DriftFile = {
             isochronic?: { level?: number; voice?: "tone" | "glitch"; toneHz?: number } };
   // C-553: a daemon's drift -- square waves, glitches, a wavering beat (shared/tones.ts); played on the daemon's side
   side?: "you" | "daemon";
+  generation?: Record<string, unknown>;   // where it came from (PulseEntrain, DAEMONS, or a mind, C-554)
   machine?: { wave?: "square" | "sine"; glitch?: { perSec: number; level?: number };
               waver?: { what: "beat" | "carrier" | "both"; deltaHz: number; periodSec: number } | null };
 };
 export type DriftInfo = { id: string; name: string; kind: string; group: string | null; description: string; side?: "you" | "daemon";
-                          durationSec: number | null; strength: number | null; phone?: boolean };   // C-551: phone, one the app carries
+                          durationSec: number | null; strength: number | null; phone?: boolean;   // C-551: phone, one the app carries
+                          made?: boolean };   // C-554: made here, on REVERIE's MAKE
 export const LONG_FALL = "the-long-fall";
 export const LONG_FALL_INFO: DriftInfo = { id: LONG_FALL, name: "THE LONG FALL", kind: "sleep", group: "DAEMONS",
   description: "Alpha as you settle, theta, then delta as you sleep: each beat placed by the day.", durationSec: 1800, strength: 1 };

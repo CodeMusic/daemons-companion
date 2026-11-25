@@ -50,3 +50,20 @@ describe("REVERIE's MAKE, a mind's ways", () => {
     expect(d.entrainment.scenes.map((s) => s.beatHz)).toEqual([9, 5]);
   });
 });
+
+describe("THE DOWNDRIFT STUDIO's drifts (C-507)", () => {
+  it("keeps its own times, its layers and its machine voice, held in bounds", async () => {
+    const { driftFrom } = await import("../src/psyche/reverie.js");
+    const d = driftFrom({ name: "night shift", line: "Slowly down.", minutes: 15, carrierHz: 210,
+                          scenes: [{ atSec: 0, beatHz: 10 }, { atSec: 400, beatHz: 6, carrierHz: 999 }, { atSec: 5000, beatHz: 3 }],
+                          bed: { type: "rain", level: 7 }, isochronic: { voice: "tone", level: 0.4, toneHz: 50 },
+                          machine: { wave: "square", glitch: { perSec: 99 }, waver: { what: "both", deltaHz: 30, periodSec: 1 } } },
+                        { kind: "sleep", side: "daemon", id: "made-x", extras: true, generation: { source: "studio" } })!;
+    expect(d.entrainment.scenes).toEqual([{ atSec: 0, beatHz: 10 }, { atSec: 400, beatHz: 6, carrierHz: 500 }, { atSec: 900, beatHz: 3 }]);
+    expect(d.audio?.beds).toEqual([{ source: "texture", type: "rain", level: 1 }]);
+    expect(d.audio?.isochronic).toEqual({ voice: "tone", level: 0.4, toneHz: 100 });
+    expect(d.machine).toEqual({ wave: "square", glitch: { perSec: 5, level: 0.5 }, waver: { what: "both", deltaHz: 10, periodSec: 2 } });
+    expect(driftFrom({ scenes: [{ atSec: 0, beatHz: 8 }, { atSec: 60, beatHz: 4 }], bed: { type: "<script>" } },
+                     { kind: "nature", side: "you", id: "made-y", extras: true, generation: {} })!.audio?.beds).toBeUndefined();
+  });
+});

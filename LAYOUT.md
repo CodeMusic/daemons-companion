@@ -65,6 +65,7 @@ How the app *navigates* (tabs, the iPad split, the game view mounted once) is in
 | `src/vault*.ts`, `src/backup.ts`, `src/sealing.ts`, `src/restore_main.ts` | THE VAULT (C-434), PRAXIS's encrypted relay on its own machine, holding no key; the hub's backup to it, the recovery code, and a new hub restored from the code alone (Node only) |
 | `src/site/` | C-428, the SITE domain: THE ENGINE ROOM's server side (`admin.ts`, C-330), its JOBS (`jobs.ts`) and THE HANDS that run them on the computer (`hands_main.ts`, started by `hub/hands.sh`, C-342), the companion's site from the companion itself (`site.ts`, C-170) and the site the hub fetches from the release (`sitefetch.ts`, C-342), and WHAT'S NEW (`whatsnew.ts`, C-318) |
 | `admin/` | THE ENGINE ROOM (C-330): the hub's admin (`src/site/admin.ts` serves it) -- one installable web app the server serves at `/admin/` (its page, script, manifest, worker and icons, the icons drawn by `tools/admin_icons.py`), never through the relay |
+| `downdrift/` | THE DOWNDRIFT STUDIO (C-507): make a REVERIE drift -- its timeline, carrier, bed, isochronic layer and a daemon's machine voice -- hear it, and save it to the hub (`src/site/downdrift.ts` serves it at `/downdrift/`), never through the relay |
 | `src/*.ts` | one file per feature otherwise (the weather, the walks, THE ENGINE ROOM, ...), until C-428 moves each into its domain |
 | `data/` | what the game is built from, exported by DAEMONS (species, art, sounds, maps, ...) |
 | `test/` | vitest, one file per feature (`npm test`, Node 22+) |

@@ -61,6 +61,7 @@ import { hostname, networkInterfaces } from "node:os";
 import { isSitePath, serveSite } from "./site/site.js";
 import { LINK_PAGE, linkHost, linkRoute, seatOk, seatSave, takeSave } from "./game/linkcable.js";   // C-221: THE LINK CABLE
 import { ADMIN_HOME_ONLY, isAdminPath, serveAdmin } from "./site/admin.js";   // C-330: THE ENGINE ROOM
+import { isDowndriftPath, serveDowndrift } from "./site/downdrift.js";   // C-507: THE DOWNDRIFT STUDIO
 import * as JOBS from "./site/jobs.js";                                       // C-342: its JOBS, for THE HANDS
 import { siteNow, siteUpdate, siteView } from "./site/sitefetch.js";
 import { deviceName } from "./devices/devicenames.js";                           // C-405: a device by its name           // C-342: the site, built on every push
@@ -80,7 +81,7 @@ import { chatOn, checkEndpoints, plainChat, endpointsIn, endpointsNow, endpoints
 import { bondTrend, feelingsSaid, keepBondDay, selfOf, SELF_INSTRUCTIONS, type SelfFacts, type SelfLength } from "./damagotchi/self.js";   // C-252
 import { readProfile } from "./game/save/profile.js";
 import { sleepRecipe, sleepSaid, sleepAsk, cleanImage, moodMinor, reverieRecipe, SLEEP_SYSTEM, type SleepContext } from "./psyche/sleepsound.js";   // C-334; C-554
-import { driftFromMind, reverieAsk, REVERIE_SYSTEM, type ReverieKind, type ReverieSide } from "./psyche/reverie.js";   // C-554: REVERIE's MAKE
+import { driftFrom, driftFromMind, reverieAsk, REVERIE_SYSTEM, type ReverieKind, type ReverieSide } from "./psyche/reverie.js";   // C-554: REVERIE's MAKE
 import { journalThreads, museKey, museOf, paintPalette } from "./psyche/muse.js";   // C-386
 import { hemisphereOf } from "./psyche/months.js";   // C-386
 import { SleepTracks, sleepDoor, SLEEP_FILES, type SleepTrack } from "./machine/sleeptracks.js";   // C-334
@@ -1683,6 +1684,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "THE ENGINE ROOM is on the home network and the tailnet only" });   // DRAFT
         return serveAdmin(req, res, path);
       }
+      // C-507: THE DOWNDRIFT STUDIO, as THE ENGINE ROOM is -- the home network and the tailnet only
+      if (isDowndriftPath(req.method ?? "", path)) {
+        if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "the downdrift studio is on the home network and the tailnet only" });   // DRAFT
+        return serveDowndrift(req, res, path);
+      }
       // C-221: THE LINK CABLE's page, for a phone's GAME tab -- the home network and the tailnet only, as its screens are
       if (req.method === "GET" && path === "/link/") {
         if (req.headers[RELAY_HEADER] !== undefined) return send(res, 403, { error: "the link cable is on the home network and the tailnet only" });   // DRAFT
@@ -2328,6 +2334,19 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       if (req.method === "GET" && path.startsWith("/api/drifts/")) {
         const f = driftFile(decodeURIComponent(path.slice("/api/drifts/".length)));
         return f ? send(res, 200, f) : send(res, 404, { error: "no such drift" });   // DRAFT
+      }
+      // C-507: a drift made on THE DOWNDRIFT STUDIO, checked and held in bounds (psyche/reverie.ts driftFrom), kept with
+      // the drifts made here and chosen
+      if (req.method === "POST" && path === "/api/drifts/save") {
+        const b = await body(req).catch(() => ({})) as { drift?: Record<string, unknown> };
+        const a = b.drift ?? null, kind = String(a?.kind ?? "");
+        if (!["sleep", "meditation", "nature", "tinctures"].includes(kind)) return send(res, 400, { error: "a drift needs its kind" });   // DRAFT
+        const d = driftFrom(a, { kind: kind as ReverieKind, side: a?.side === "daemon" ? "daemon" : "you", id: `made-${Date.now().toString(36)}`, extras: true,
+                                 generation: { source: "studio", from: "DOWNDRIFT", by: phone?.name ?? (deviceId || "the studio") } });
+        const id = d ? keepMadeDrift(d) : null;
+        if (!d || !id) return send(res, 400, { error: "that is not a drift: it needs at least two points" });   // DRAFT
+        chooseDrift(store, id);
+        return send(res, 200, { id, name: d.meta.name, drift: d });
       }
       if (req.method === "POST" && path === "/api/drifts/choose") {
         const b = await body(req).catch(() => ({})) as { id?: string };

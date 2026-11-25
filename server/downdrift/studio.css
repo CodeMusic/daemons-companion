@@ -1,0 +1,38 @@
+/* C-507: THE DOWNDRIFT STUDIO's look -- THE ENGINE ROOM's night palette (server/admin/admin.css), each band its colour. */
+:root {
+  --bg: #0f1420; --card: #171d2c; --line: #2a3349; --ink: #e6ebf5; --dim: #9aa6c4; --faint: #6c7696;
+  --gold: #d9a74a; --good: #3fb950; --bad: #e5534b;
+  --delta: #6a72ff; --theta: #27b3a0; --alpha: #58b04a; --beta: #e3a12f; --gamma: #e5534b;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 var(--sans); }
+button, input, select { font: inherit; color: inherit; }
+.top { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 10px;
+       padding: calc(10px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+       background: var(--bg); border-bottom: 1px solid var(--line); }
+.title { font: 700 13px var(--mono); letter-spacing: 2px; color: var(--gold); }
+.draft { font: 9px var(--mono); letter-spacing: 1px; color: var(--faint); border: 1px solid var(--line); border-radius: 4px; padding: 1px 4px; }
+.where { margin-left: auto; font: 11px var(--mono); color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page { max-width: 980px; margin: 0 auto; padding: 16px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left));
+        display: grid; gap: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.eyebrow { font: 700 11px var(--mono); letter-spacing: 2px; color: var(--dim); }
+.dim { color: var(--dim); } .small { font-size: 13px; color: var(--dim); } .bad { color: var(--bad); } .good { color: var(--good); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+label.f { display: grid; gap: 4px; font: 11px var(--mono); letter-spacing: 1px; color: var(--dim); min-width: 0; }
+.text, select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; min-width: 0; width: 100%; }
+.text:focus, select:focus, .btn:focus-visible, canvas:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.btn { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer;
+       font: 700 12px var(--mono); letter-spacing: 1.5px; }
+.btn.gold { background: var(--gold); color: #1b1408; border-color: var(--gold); }
+.btn[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+.timeline { width: 100%; height: 300px; display: block; border-radius: 8px; background: #0b0f19; touch-action: none; cursor: crosshair; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; font: 11px var(--mono); color: var(--dim); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.mono { font-family: var(--mono); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

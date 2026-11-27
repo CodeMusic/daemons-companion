@@ -154,7 +154,12 @@ static void closeOverlay(lv_event_t * = nullptr) {
 static lv_obj_t *openOverlay() {
   closeOverlay();
   overlay = lv_obj_create(lv_layer_top());
-  lv_obj_set_size(overlay, LV_PCT(100), LV_PCT(100));
+  // C-579: over the page only -- the status bar and the tabs stay uncovered, so a tab tapped from inside a book closes it
+  bool upright = displayPortrait();
+  int32_t w = M5.Display.width(), h = M5.Display.height() - 48;
+  if (upright) { lv_obj_set_size(overlay, w, h - 84); lv_obj_set_pos(overlay, 0, 48); }
+  else         { lv_obj_set_size(overlay, w - 190, h); lv_obj_set_pos(overlay, 190, 48); }
+  lv_obj_set_style_radius(overlay, 0, 0);
   lv_obj_set_style_bg_color(overlay, PAPER, 0);
   lv_obj_set_style_bg_opa(overlay, LV_OPA_COVER, 0);
   lv_obj_set_style_border_width(overlay, 0, 0);

@@ -48,7 +48,44 @@ static void takeDayColour() {
   for (int i = 0; i < P_COUNT; i++) drawnAt[i] = 0;
 }
 
+// C-578 (the user, 2026-11-26: pages lag and flicker while scrolling): two things. A page is never drawn again while a
+// finger is on it or it is still moving -- a sync that changed what it shows used to empty and rebuild it under the
+// finger -- it waits until the page has been still for a moment. And while a page flies (its speed, averaged, above
+// FAST px/ms) its pictures are not drawn: the cards and words move alone, a wireframe of the page, and the pictures come
+// back as it slows (below SLOW) or stops. Pixel art scaled up is the dearest thing on a page to draw.
+static const float FAST = 1.6f, SLOW = 0.5f;
+static bool wire = false, scrolling = false;
+static uint32_t stillSince = 0;
+static void wireTree(lv_obj_t *o, bool on) {
+  for (uint32_t i = 0; i < lv_obj_get_child_count(o); i++) {
+    lv_obj_t *c = lv_obj_get_child(o, i);
+    if (lv_obj_check_type(c, &lv_image_class)) lv_obj_set_style_opa(c, on ? LV_OPA_TRANSP : LV_OPA_COVER, 0);
+    else wireTree(c, on);
+  }
+}
+static void setWire(lv_obj_t *page, bool on) { if (wire == on) return; wire = on; wireTree(page, on); }
+static void pageScrolled(lv_event_t *e) {
+  lv_obj_t *page = (lv_obj_t *)lv_event_get_target(e);
+  static int32_t lastY = 0; static uint32_t lastAt = 0; static float speed = 0;
+  lv_event_code_t code = lv_event_get_code(e);
+  if (code == LV_EVENT_SCROLL_BEGIN) { scrolling = true; lastY = lv_obj_get_scroll_y(page); lastAt = millis(); speed = 0; return; }
+  if (code == LV_EVENT_SCROLL_END) { scrolling = false; stillSince = millis(); setWire(page, false); return; }
+  int32_t y = lv_obj_get_scroll_y(page); uint32_t now = millis(), dt = now - lastAt;
+  if (dt == 0) return;
+  speed = speed * 0.6f + 0.4f * (float)abs(y - lastY) / dt;   // px/ms, averaged over the last few frames
+  lastY = y; lastAt = now;
+  if (!wire && speed > FAST) setWire(page, true);
+  else if (wire && speed < SLOW) setWire(page, false);
+}
+static bool pageBusy() {
+  lv_indev_t *in = lv_indev_get_next(nullptr);
+  bool touched = in && lv_indev_get_state(in) == LV_INDEV_STATE_PRESSED;
+  if (touched) stillSince = millis();
+  return touched || scrolling || millis() - stillSince < 700;
+}
+
 static void redraw(int i) {
+  wire = false;                                    // a page drawn anew has every picture showing
   int32_t y = lv_obj_get_scroll_y(pages[i]);       // C-96: drawn again where it was, not back at the top
   lv_obj_clean(pages[i]);
   lv_obj_set_flex_flow(pages[i], LV_FLEX_FLOW_COLUMN);
@@ -58,6 +95,20 @@ static void redraw(int i) {
 }
 
 static void tabChanged(lv_event_t *) { drawnAt[lv_tabview_get_tab_active(tabs)] = 0; soundSelect(); }   // C-94
+
+// C-579 (the user, 2026-11-26): a tab tapped again goes back to its top -- from anywhere down the page, or from inside a
+// book (an overlay leaves the tabs uncovered); any tab tapped from inside an overlay closes it. Which tab was showing is
+// taken as the finger goes down, before the tab view moves on.
+static int tabWas = -1;
+static bool overlayWas = false;
+static void tabPressed(lv_event_t *) { tabWas = lv_tabview_get_tab_active(tabs); overlayWas = overlay != nullptr; }
+static void tabTapped(lv_event_t *e) {
+  int i = (int)(long)lv_event_get_user_data(e);
+  if (overlayWas) closeOverlay();
+  if (i != tabWas) return;                          // another tab: tabChanged has it
+  if (!overlayWas) soundSelect();
+  lv_obj_scroll_to_y(pages[i], 0, LV_ANIM_ON);
+}
 
 void uiBegin() { loadLook(); wearLook(wantDark()); buildFrame(); }   // C-144: in its light from the first frame
 
@@ -101,14 +152,35 @@ static void buildFrame() {
     pages[i] = lv_tabview_add_tab(tabs, TAB_NAMES[i]);
     lv_obj_set_style_pad_all(pages[i], 24, 0);
     lv_obj_set_style_pad_row(pages[i], 14, 0);
+    lv_obj_add_event_cb(pages[i], pageScrolled, LV_EVENT_SCROLL_BEGIN, nullptr);   // C-578
+    lv_obj_add_event_cb(pages[i], pageScrolled, LV_EVENT_SCROLL, nullptr);
+    lv_obj_add_event_cb(pages[i], pageScrolled, LV_EVENT_SCROLL_END, nullptr);
   }
-  for (uint32_t i = 0; i < lv_obj_get_child_count(tb); i++)   // the theme's button padding would take the room back
-    lv_obj_set_style_pad_hor(lv_obj_get_child(tb, i), 2, 0);
+  for (uint32_t i = 0; i < lv_obj_get_child_count(tb); i++) {   // the theme's button padding would take the room back
+    lv_obj_t *b = lv_obj_get_child(tb, i);
+    lv_obj_set_style_pad_hor(b, 2, 0);
+    lv_obj_add_event_cb(b, tabPressed, LV_EVENT_PRESSED, nullptr);             // C-579
+    lv_obj_add_event_cb(b, tabTapped, LV_EVENT_CLICKED, (void *)(long)i);
+  }
   lv_obj_add_event_cb(tabs, tabChanged, LV_EVENT_VALUE_CHANGED, nullptr);
   dayHex = 0; takeDayColour();
 }
 
-static String todayLine;
+static String todayLine, todayDay, todayCue;
+// C-580 (the user, 2026-11-26): held upright the day's line ran under the right side's words and off the edge. The left
+// side takes the longest of these that fits beside the right side: all of it, the day and its cue, the cue, the day, the
+// name alone.
+static int32_t textWidth(const String &s) {
+  lv_point_t sz; lv_text_get_size(&sz, s.c_str(), &lv_font_montserrat_20, 0, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
+  return sz.x;
+}
+static void fitBar(const String &whole) {
+  int32_t room = M5.Display.width() - 36 - 24 - textWidth(barRight);
+  String ways[] = { whole, todayDay.length() ? todayDay + "  -  " + todayCue : String(), todayCue, todayDay, "DAEMONS" };
+  String take = "DAEMONS";
+  for (const String &w : ways) if (w.length() && textWidth(w) <= room) { take = w; break; }
+  if (take != barLeft) { barLeft = take; lv_label_set_text(statusLeft, take.c_str()); }
+}
 static int artStale = 0;                           // 1: pictures changed (reset when no overlay is open); 2: all, now
 void uiLoop() {
   casinoTick60();                                   // C-155
@@ -130,7 +202,10 @@ void uiLoop() {
     for (int i = 0; i < P_COUNT; i++) if (what & NEEDS[i]) drawnAt[i] = 0;
     takeDayColour();
     JsonDocument t = newDoc();
-    todayLine = kept("today", t) ? "     " + String((const char *)(t["day"]["day"] | "")) + "  -  " + (const char *)(t["day"]["cue"] | "") : "";
+    bool hasDay = kept("today", t);
+    todayDay = hasDay ? String((const char *)(t["day"]["day"] | "")) : String();
+    todayCue = hasDay ? String((const char *)(t["day"]["cue"] | "")) : String();
+    todayLine = hasDay ? "     " + todayDay + "  -  " + todayCue : "";
     soundFromState();                                    // C-94: the volume and the day's key, as the state says
     bool allArt = net.artTotal && net.artDone == net.artTotal && artWas != (uint32_t)net.artTotal;
     if (allArt) { artWas = net.artTotal; artStale = 2; }      // every picture anew (pairing): now, the overlay with it
@@ -138,7 +213,8 @@ void uiLoop() {
   }
   // the review, 2026-10-18: nothing may still show a picture when its decoded copy is freed -- every page emptied and drawn
   // again first -- and a picture fetched anew is shown, not the one decoded before it
-  if (artStale == 2 || (artStale == 1 && !overlay)) {
+  bool busy = pageBusy();                              // C-578: nothing rebuilt under a finger or a moving page
+  if (artStale == 2 || (artStale == 1 && !overlay && !busy)) {
     artStale = 0;
     closeOverlay();
     for (int i = 0; i < P_COUNT; i++) { lv_obj_clean(pages[i]); drawnAt[i] = 0; }
@@ -146,7 +222,7 @@ void uiLoop() {
   }
   int at = lv_tabview_get_tab_active(tabs);
   netHomeWatch(at == P_PLACES);                        // C-139: HOME is downloaded while it is the page on the screen
-  if (!overlay && !drawnAt[at]) redraw(at);
+  if (!overlay && !drawnAt[at] && (!busy || !lv_obj_get_child_count(pages[at]))) redraw(at);   // an empty page at once
   if (listenLabel) {                                 // C-99: LISTEN, MAKING..., HUSH, and back when the voice ends
     if (netVoice == V_SPEAKING && !soundVoicePlaying()) netHush();
     String now = listenWord(), said = netMessage();
@@ -156,14 +232,14 @@ void uiLoop() {
   if (millis() - barAt > 1000) {
     barAt = millis();
     String left = "DAEMONS  companion" + todayLine;   // read when what is kept changes, not from flash every second
-    if (left != barLeft) { barLeft = left; lv_label_set_text(statusLeft, left.c_str()); }
     String right = net.syncing ? "syncing...   " : "";
     int waiting = outboxCount();
     if (waiting) right += String(waiting) + " waiting   ";
     right += !net.wifi ? "NO WI-FI" : !net.paired ? "NOT PAIRED" : net.home ? "HOME" : net.away ? "AWAY" : "KEPT";
     int bat = M5.Power.getBatteryLevel();
     if (bat >= 0) right += "   " + String(bat) + "%";
-    if (right != barRight) { barRight = right; lv_label_set_text(statusRight, right.c_str()); }
+    if (right != barRight) { barRight = right; lv_label_set_text(statusRight, right.c_str()); barLeft = ""; }
+    fitBar(left);
     if (at == P_SETTINGS && !overlay) { static String said; if (said != netMessage()) { said = netMessage(); drawnAt[P_SETTINGS] = 0; } }
     if (look == L_AUTO && !overlay) lookAgain();   // C-144: at 8pm and 6am, or once the companion has said the time
     if (at == P_PLACES && !overlay) { static int live = -1; int now = net.home || net.away; if (now != live) { live = now; drawnAt[P_PLACES] = 0; } }   // C-139: KEPT, or not

@@ -148,11 +148,20 @@ static void showGuide() {
 // left and its words on the right, a turning picture a frame every 0.7 s, TWO VOICES' asking voice faint. Every word DRAFT.
 // C-238: THE HERMETIC LAYER, the third book, is read the same way, in the tablet's emerald on the breathing purple, its
 // green words (an inscription: a spell, to be said) in emerald -- the one these pages draw is whichever was opened (`hermOpen`)
-struct BookLook { lv_color_t boards, page, edge, ink, faint, accent; const char *kept, *art, *title; };
+// C-137: THE SPELL LEFT RUNNING (C-474), the book of shadows, is the third read this way: parchment and the hat's night,
+// as the app's Shadow.tsx has it, its cover lettered low in chalk where the game letters it (rows 134 and 148 of 160).
+// coverInk/coverFaint letter the cover; titleY/subY are the art's own rows, scaled with it.
+struct BookLook { lv_color_t boards, page, edge, ink, faint, accent; const char *kept, *art, *title;
+                  lv_color_t coverInk, coverFaint; int titleY, subY; };
 static const BookLook SUBTLE_LOOK = { lv_color_hex(0x1B0F1F), lv_color_hex(0x2C1C32), lv_color_hex(0x4A3352), lv_color_hex(0xF0E6F2),
-                                      lv_color_hex(0x9A86A0), lv_color_hex(0xE07AD0), "subtle", "subtle_", "THE SUBTLE LAYER" };
+                                      lv_color_hex(0x9A86A0), lv_color_hex(0xE07AD0), "subtle", "subtle_", "THE SUBTLE LAYER",
+                                      lv_color_hex(0xF0E6F2), lv_color_hex(0x9A86A0), 11, 24 };
 static const BookLook HERMETIC_LOOK = { lv_color_hex(0x140B1C), lv_color_hex(0x231530), lv_color_hex(0x3F2A52), lv_color_hex(0xEDE6F2),
-                                        lv_color_hex(0x9886A6), lv_color_hex(0x50C878), "hermetic", "hermetic_", "THE HERMETIC LAYER" };
+                                        lv_color_hex(0x9886A6), lv_color_hex(0x50C878), "hermetic", "hermetic_", "THE HERMETIC LAYER",
+                                        lv_color_hex(0xEDE6F2), lv_color_hex(0x9886A6), 11, 24 };
+static const BookLook SHADOW_LOOK = { lv_color_hex(0x102142), lv_color_hex(0xF7EFDE), lv_color_hex(0xCEC6AD), lv_color_hex(0x21295A),
+                                      lv_color_hex(0x5E5E78), lv_color_hex(0x21295A), "shadow", "shadow_", "THE SPELL LEFT RUNNING",
+                                      lv_color_hex(0xFFF7E7), lv_color_hex(0xB5AD9D), 128, 143 };
 static const BookLook *bookOpen = &SUBTLE_LOOK;
 #define SUB_BOARDS (bookOpen->boards)
 #define SUB_PAGE (bookOpen->page)
@@ -168,6 +177,8 @@ static void showSubtle();
 static void tapSubtleAt(lv_event_t *e) { subtleAt = (int)(long)lv_event_get_user_data(e); showSubtle(); }
 static void openSubtle(lv_event_t *e) { bookOpen = &SUBTLE_LOOK; tapSubtleAt(e); }
 static void openHermetic(lv_event_t *e) { bookOpen = &HERMETIC_LOOK; tapSubtleAt(e); }
+static void openShadow(lv_event_t *e) { bookOpen = &SHADOW_LOOK; tapSubtleAt(e); }
+static void openShadowAt(int at) { closeOverlay(); bookOpen = &SHADOW_LOOK; subtleAt = at; showSubtle(); }   // TODAY's SPELL CHECK
 static void subtleClosing() { subtleImg = nullptr; if (subtleTimer) { lv_timer_delete(subtleTimer); subtleTimer = nullptr; } }
 static void subtleTurn(lv_timer_t *) {
   if (!subtleImg || subtleFrames < 2) return;
@@ -193,10 +204,12 @@ static lv_obj_t *subtleCover(lv_obj_t *parent, int k, JsonDocument &b, const Boo
     lv_image_set_pivot(img, 0, 0); lv_image_set_scale(img, 256 * k); lv_obj_set_pos(img, -54 * k, 0);
   }
   if (k >= 2) {
-    lv_obj_t *t = lv_label_create(box); lv_label_set_text(t, b["title"] | bookOpen->title);
-    lv_obj_set_style_text_font(t, &lv_font_montserrat_28, 0); lv_obj_set_style_text_color(t, SUB_INK, 0); lv_obj_align(t, LV_ALIGN_TOP_MID, 0, 11 * k);   // below the border (the user, 2026-10-19)
+    const char *title = b["title"] | bookOpen->title;
+    lv_obj_t *t = lv_label_create(box); lv_label_set_text(t, title);
+    lv_obj_set_style_text_font(t, strlen(title) > 18 ? &lv_font_montserrat_20 : &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(t, bookOpen->coverInk, 0); lv_obj_align(t, LV_ALIGN_TOP_MID, 0, bookOpen->titleY * k);   // below the border (the user, 2026-10-19)
     lv_obj_t *u = lv_label_create(box); lv_label_set_text(u, b["subtitle"] | "");
-    lv_obj_set_style_text_font(u, &lv_font_montserrat_20, 0); lv_obj_set_style_text_color(u, SUB_FAINT, 0); lv_obj_align(u, LV_ALIGN_TOP_MID, 0, 24 * k);
+    lv_obj_set_style_text_font(u, &lv_font_montserrat_20, 0); lv_obj_set_style_text_color(u, bookOpen->coverFaint, 0); lv_obj_align(u, LV_ALIGN_TOP_MID, 0, bookOpen->subY * k);
   } else if (!artDsc(String(bookOpen->art) + "cover")) {          // no cover drawn yet (the third book's): its title, small
     lv_obj_t *t = lv_label_create(box); lv_label_set_text(t, b["title"] | bookOpen->title); lv_obj_set_width(t, 120 * k);
     lv_label_set_long_mode(t, LV_LABEL_LONG_WRAP); lv_obj_set_style_text_align(t, LV_TEXT_ALIGN_CENTER, 0);
@@ -501,6 +514,17 @@ static void drawLibrary(lv_obj_t *p) {
     label(t, String((const char *)(hd["title"] | "THE HERMETIC LAYER")) + (preview ? "  -  PREVIEW" : ""), &lv_font_montserrat_20, QUIET);
     label(t, hd["subtitle"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
     button(t, "READ", openHermetic, (void *)(long)-1);
+  }
+  JsonDocument shd = newDoc();                      // C-137: THE SPELL LEFT RUNNING (C-474), once the save holds it -- or a PREVIEW
+  if (kept("shadow", shd) && (shd["held"] | false)) {
+    lv_obj_t *wc = card(p);
+    lv_obj_t *r = row(wc);
+    subtleCover(r, 1, shd, &SHADOW_LOOK);
+    lv_obj_t *t = column(r, 460);
+    bool preview = String((const char *)(shd["how"] | "")) == "preview";
+    label(t, String((const char *)(shd["title"] | "THE SPELL LEFT RUNNING")) + (preview ? "  -  PREVIEW" : ""), &lv_font_montserrat_20, QUIET);
+    label(t, shd["subtitle"] | "A BOOK OF SHADOWS", &lv_font_montserrat_28, INK, LV_PCT(100));
+    button(t, "READ", openShadow, (void *)(long)-1);
   }
   JsonDocument pg = newDoc(), sc = newDoc(), pr = newDoc();
   if (!kept("progress", pg) || !kept("school", sc)) { label(p, "Nothing kept yet: CALLOW SCHOOL comes from your save, after a SYNC.", &lv_font_montserrat_28, QUIET, LV_PCT(100)); return; }

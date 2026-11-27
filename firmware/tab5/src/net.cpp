@@ -33,7 +33,7 @@ static uint32_t sumOf(const String &s, int skipFrom = -1, int skipTo = -1) {   /
 static uint32_t bitFor(const char *name) {
   if (!strcmp(name, "notebook") || !strcmp(name, "marks") || !strcmp(name, "regions") || !strcmp(name, "progress") ||
       !strcmp(name, "groves") || !strcmp(name, "school") || !strcmp(name, "guide") || !strcmp(name, "subtle") ||
-      !strcmp(name, "hermetic") || !strcmp(name, "manual") || !strcmp(name, "dreams")) return K_PROFILE;
+      !strcmp(name, "hermetic") || !strcmp(name, "manual") || !strcmp(name, "dreams") || !strcmp(name, "shadow")) return K_PROFILE;
   if (!strcmp(name, "spell") || !strcmp(name, "tending") || !strcmp(name, "balance") || !strcmp(name, "mentions")) return K_TODAY;   // C-137   // C-145: the LIBRARY's GUIDE; T-423: THE SUBTLE LAYER; C-238, C-233
   if (!strcmp(name, "broadcasts") || !strcmp(name, "acts")) return K_STATE;
   if (!strcmp(name, "home")) return K_HOME;                                    // C-139: the HOME page's own   // C-134: the DAEMON page's NEARBY   // C-131, C-137: PROFILE's and SCHOOL's   // C-131: both are the PROFILE page's
@@ -464,15 +464,17 @@ static void fetchProfileArt() {
   }
   for (int m = 1; m <= 8; m++) one("mark" + String(m), "mark=" + String(m));
   one("guide_cover_plain", "guide=cover");         // C-145: the GUIDE's 8-bit cover (named anew when it changed: a kept picture is never fetched again -- now without its lettering, 78cce6f)
-  {                                                 // T-423: THE SUBTLE LAYER's cover and every page's pictures, once it is held
+  // T-423: THE SUBTLE LAYER's cover and every page's pictures, once it is held; C-137: THE HERMETIC LAYER's (never fetched
+  // till now: its pages stood empty) and THE SPELL LEFT RUNNING's alike, each kept as <book>_<picture>_<frame>
+  for (const char *book : { "subtle", "hermetic", "shadow" }) {
     JsonDocument sb = newDoc();
-    if (kept("subtle", sb) && (sb["held"] | false)) {
-      one("subtle_cover", "subtle=cover");
+    if (kept(book, sb) && (sb["held"] | false)) {
+      one(String(book) + "_cover", String(book) + "=cover");
       for (JsonObject s : sb["sections"].as<JsonArray>())
         for (JsonObject e : s["entries"].as<JsonArray>())
           for (int f = 0; f < max(1, (int)(e["frames"] | 1)); f++) {
             String p = String((const char *)(e["picture"] | "")) + "_" + String(f);
-            one("subtle_" + p, "subtle=" + p);
+            one(String(book) + "_" + p, String(book) + "=" + p);
           }
     }
   }
@@ -532,6 +534,7 @@ static void keepEverything(bool withArt) {
     fetchKeep("/api/guide", "guide");                 // C-145: the GUIDE, once the save holds it
     fetchKeep(netPreview() ? "/api/subtle?preview=1" : "/api/subtle", "subtle");         // T-423: THE SUBTLE LAYER, once the save holds it
     fetchKeep(netPreview() ? "/api/hermetic?preview=1" : "/api/hermetic", "hermetic");   // C-238: THE HERMETIC LAYER, once found (or a PREVIEW)
+    fetchKeep(netPreview() ? "/api/shadow?preview=1" : "/api/shadow", "shadow");         // C-137: THE SPELL LEFT RUNNING (C-474), once the save holds it
     fetchKeep("/api/dreambooks?only=authors", "dreams");   // C-137: DAEMON DREAMS, a book a daemon (C-483), with signs (C-484)
     fetchKeep("/api/manual", "manual");               // C-233: THE PLAYER'S MANUAL, as words
     fetchKeep("/api/marks", "marks");                 // each MARK's and understanding's words and colours

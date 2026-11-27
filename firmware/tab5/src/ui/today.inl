@@ -75,6 +75,9 @@ static void drawGoals(lv_obj_t *p) {
 // and the newest letter from your daemon (C-455). Each is kept on the Tab5 (net.cpp) and drawn only when the companion
 // has one to show. Every word DRAFT.
 static void goTab(lv_event_t *e);                        // pages.inl
+static void openShadowAt(int at);                         // library.inl: THE SPELL LEFT RUNNING, opened at a page
+static int spellPage = -1;                                // the SPELL CHECK's broom, counted through the book's pages
+static void tapSpellBook(lv_event_t *) { openShadowAt(spellPage); }
 static lv_color_t subtleInk() { return lv_color_hex(darkNow ? 0xEF8CD6 : 0xB0569E); }   // the app's SUBTLE (state/look.ts)
 // a small ring, filled when lit, with a word under it: one of the week's seven
 static lv_obj_t *weekDot(lv_obj_t *parent, const String &word, bool lit, bool today, bool ahead, lv_color_t ink) {
@@ -108,7 +111,14 @@ static void drawSpellCheck(lv_obj_t *p) {
   label(c, s["title"] | "", &lv_font_montserrat_28, INK, LV_PCT(100));
   label(c, s["check"] | "", &lv_font_montserrat_20, INK, LV_PCT(100));
   if (String((const char *)(s["broom"] | "")).length()) label(c, s["broom"] | "", &lv_font_montserrat_16, QUIET, LV_PCT(100));
-  button(c, "THE LIBRARY", goTab, (void *)(long)P_LIBRARY, false);
+  JsonDocument b = newDoc();                                // C-137: OPEN THE BOOK at the broom's page, as the app does
+  if (kept("shadow", b) && (b["held"] | false)) {
+    int s0 = s["s"] | -1, j = s["j"] | -1, at = 0;
+    JsonArray secs = b["sections"].as<JsonArray>();
+    for (int i = 0; i < s0 && i < (int)secs.size(); i++) at += secs[i]["entries"].size();
+    spellPage = s0 >= 0 && j >= 0 ? at + j : -1;
+    button(c, "OPEN THE BOOK", tapSpellBook);
+  } else button(c, "THE LIBRARY", goTab, (void *)(long)P_LIBRARY, false);
 }
 
 static void tapTended(lv_event_t *) { soundStep(false); netSend("POST", "/api/subtle/tending", "{}"); }

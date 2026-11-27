@@ -31,10 +31,12 @@ import { createHash, randomBytes } from "node:crypto";
 import { cpus, loadavg } from "node:os";
 import { existsSync, renameSync, rmSync } from "node:fs";
 import { FOUND_FFMPEG } from "./voice.js";
+// C-596: what a node is, when it is fresh, how reliable and how free -- kept once, with THE HOARD's (shared/nodes.ts)
+import { FRESH_MS, HISTORY, Nodes, freeOf, marked, reliability, scoreOf, type NetNode } from "../shared/nodes.js";
 
+export { FRESH_MS, HISTORY, reliability };
 export type Caps = string[];
-export type MeshNode = { id: string; name: string; caps: Caps; cores: number; speed: number; load: number; seen: number;
-                         holds: number; history: boolean[]; here?: boolean };
+export type MeshNode = NetNode & { cores: number; speed: number; load: number };
 export type ProcJob = {
   id: string; kind: "ffmpeg" | "build"; title: string; args: string[];      // a build's args: [recipe, commit, board]
   inputs: Record<string, string>; outputs: Record<string, string>;     // name -> the hub's own path
@@ -45,17 +47,16 @@ export type ProcJob = {
 export type Ledger = { open(title: string, mind: string): string; hop(task: string, mind: string): void;
                        end(task: string, ok: boolean, error?: string): void };
 
-export const FRESH_MS = 15_000, TAKE_MS = 8_000, HISTORY = 20;
+export const TAKE_MS = 8_000;
 export const BUILD_MOST_MS = 45 * 60_000, BUILD_TRIES = 3;
 export const RECIPES = ["pizero"];                                     // the recipes a build may name (C-541)
 const SAFE_ARG = (a: string) => !/^[/~]/.test(a) && !a.includes("../") && !a.includes("://") && !/^file:/i.test(a);
 export const safeArgs = (args: string[]) => args.every((a) => /^@(in|out):[a-z0-9._-]{1,40}$/i.test(a) || SAFE_ARG(a));
 
 // a node's potential free now, and the score the router ranks by
-export const reliability = (n: MeshNode) => { const ok = n.history.filter(Boolean).length; return (ok + 1) / (n.history.length + 2); };
 export const power = (n: MeshNode) => Math.max(0.1, n.cores * n.speed);
-export const free = (n: MeshNode) => Math.max(0.05, 1 - Math.min(1, n.load)) / (1 + n.holds);
-export const score = (n: MeshNode) => power(n) * reliability(n) * free(n);
+export const free = (n: MeshNode) => freeOf(n.load, n.holds);
+export const score = (n: MeshNode) => scoreOf(power(n), n, free(n));
 
 // how fast this machine is, by a fixed piece of work (a node's speed is this, measured where it runs): ~1 on a
 // small ARM board, more on a laptop
@@ -90,7 +91,7 @@ export type ThinkJob = { id: string; node: string; title: string; system: string
 export const THINK_MOST_MS = 120_000;
 
 export class ProcMesh {
-  nodes = new Map<string, MeshNode>();
+  nodes: Nodes<MeshNode>;
   jobs = new Map<string, ProcJob>();
   thoughts = new Map<string, ThinkJob>();
   private waiters = new Map<string, { done: () => void; fail: (e: Error) => void; task?: string }>();
@@ -98,6 +99,7 @@ export class ProcMesh {
   private localRunning = 0;
   constructor(private ledger: Ledger | null = null, opts: { speed?: number; name?: string; now?: () => number } = {}) {
     this.now = opts.now ?? Date.now;
+    this.nodes = new Nodes<MeshNode>({ now: () => this.now() });
     this.self = { id: "hub", name: opts.name ?? "the hub", caps: ["ffmpeg"], cores: cpus().length, speed: opts.speed ?? measureSpeed(),
                   load: 0, seen: this.now(), holds: 0, history: [], here: true };
     this.nodes.set("hub", this.self);
@@ -106,27 +108,21 @@ export class ProcMesh {
 
   // a worker says it is here (each time it asks for work)
   heard(n: { id: string; name?: string; caps?: unknown; cores?: unknown; speed?: unknown; load?: unknown; holds?: unknown }): MeshNode {
-    const id = String(n.id).replace(/[^A-Za-z0-9._-]/g, "").slice(0, 60) || "node";
-    const was = this.nodes.get(id);
-    const node: MeshNode = { id, name: String(n.name ?? was?.name ?? id).slice(0, 60),
-      caps: Array.isArray(n.caps) ? n.caps.map(String).slice(0, 12) : was?.caps ?? [],
+    return this.nodes.hear(n, (was) => ({
       cores: Math.max(1, Math.min(128, Number(n.cores) || was?.cores || 1)), speed: Math.max(0.05, Math.min(100, Number(n.speed) || was?.speed || 1)),
-      load: Math.max(0, Math.min(4, Number(n.load) || 0)), holds: Math.max(0, Number(n.holds) || 0), seen: this.now(), history: was?.history ?? [] };
-    this.nodes.set(id, node);
-    return node;
+      load: Math.max(0, Math.min(4, Number(n.load) || 0)) }));
   }
   // the nodes as THE MIND AT WORK shows them: fresh or not, their potential and their score now
   view() {
     this.self.load = Math.min(1, loadavg()[0] / this.self.cores); this.self.holds = this.localRunning; this.self.seen = this.now();
     return [...this.nodes.values()].map((n) => ({ id: n.id, name: n.name, caps: n.caps, cores: n.cores, speed: n.speed, load: n.load,
-      holds: n.holds, fresh: !!n.here || this.now() - n.seen < FRESH_MS, power: Math.round(power(n) * 10) / 10,
+      holds: n.holds, fresh: this.nodes.fresh(n), power: Math.round(power(n) * 10) / 10,
       reliability: Math.round(reliability(n) * 100) / 100, score: Math.round(score(n) * 100) / 100 }));
   }
   // the best node for a job now, other than those it was given to already
   best(cap: string, not: string[] = []): MeshNode {
     this.view();
-    const able = [...this.nodes.values()].filter((n) => (n.here || this.now() - n.seen < FRESH_MS) && n.caps.includes(cap) && !not.includes(n.id));
-    return able.sort((a, b) => score(b) - score(a))[0] ?? this.self;
+    return this.nodes.ranked(score, (n) => n.caps.includes(cap) && !not.includes(n.id))[0] ?? this.self;
   }
 
   // ---- asking: the job is given to the best node; the promise ends when its outputs are on the hub ----
@@ -158,7 +154,7 @@ export class ProcMesh {
   }
   private passOver(job: ProcJob, node: string, why: string) {
     const n = this.nodes.get(node);
-    if (n) { n.history = [...n.history, false].slice(-HISTORY); n.holds = Math.max(0, n.holds - 1); }
+    if (n) { n.history = marked(n.history, false); n.holds = Math.max(0, n.holds - 1); }
     if (job.given.some((g) => this.nodes.get(g.node)?.here)) return;    // the hub has it already: it finishes it
     this.give(job);
     void why;
@@ -175,7 +171,7 @@ export class ProcMesh {
 
   // ---- thought: the phones that lend, each one a mind the house can ask ----
   thinkers(): { id: string; name: string }[] {
-    return [...this.nodes.values()].filter((n) => !n.here && this.now() - n.seen < FRESH_MS && n.caps.includes("think"))
+    return [...this.nodes.values()].filter((n) => !n.here && this.nodes.fresh(n) && n.caps.includes("think"))
       .map((n) => ({ id: n.id, name: n.name }));
   }
   thinkOn(nodeId: string, system: string, user: string, most: number, title: string, signal?: AbortSignal): Promise<string> {
@@ -184,8 +180,8 @@ export class ProcMesh {
       const n = this.nodes.get(nodeId);
       const end = (f: () => void) => { if (!this.thoughts.has(id)) return; this.thoughts.delete(id); if (n) n.holds = Math.max(0, n.holds - 1); f(); };
       const job: ThinkJob = { id, node: nodeId, title, system, user, most, at: this.now(),
-                              ok: (t) => end(() => { if (n) n.history = [...n.history, true].slice(-HISTORY); ok(t); }),
-                              no: (e) => end(() => { if (n) n.history = [...n.history, false].slice(-HISTORY); no(e); }) };
+                              ok: (t) => end(() => { if (n) n.history = marked(n.history, true); ok(t); }),
+                              no: (e) => end(() => { if (n) n.history = marked(n.history, false); no(e); }) };
       this.thoughts.set(id, job);
       if (n) n.holds++;
       setTimeout(() => { const j = this.thoughts.get(id); if (j && !j.taken) j.no(new Error(`${n?.name ?? "the phone"} did not take it`)); }, TAKE_MS).unref?.();   // DRAFT
@@ -231,7 +227,7 @@ export class ProcMesh {
   }
   // the able nodes for a build that have not tried it yet
   private ableToBuild(j: ProcJob, not: string[]) {
-    return [...this.nodes.values()].filter((n) => !n.here && this.now() - n.seen < FRESH_MS && n.caps.includes(`build:${j.args[0]}`) && !not.includes(n.id));
+    return [...this.nodes.values()].filter((n) => !n.here && this.nodes.fresh(n) && n.caps.includes(`build:${j.args[0]}`) && !not.includes(n.id));
   }
   private takeBuild(nodeId: string): ProcJob | null {
     const n = this.nodes.get(nodeId);
@@ -280,7 +276,7 @@ export class ProcMesh {
     const n = this.nodes.get(nodeId);
     const part = (p: string) => `${p}.${nodeId.replace(/[^A-Za-z0-9_-]/g, "")}`;
     if (j.state === "done") { for (const p of Object.values(j.outputs)) rmSync(part(p), { force: true }); return; }   // another won
-    if (n) n.history = [...n.history, ok].slice(-HISTORY);
+    if (n) n.history = marked(n.history, ok);
     if (ok && Object.values(j.outputs).every((p) => existsSync(part(p)))) {
       for (const p of Object.values(j.outputs)) renameSync(part(p), p);
       j.state = "done"; j.winner = nodeId;

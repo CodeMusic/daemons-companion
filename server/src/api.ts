@@ -35,7 +35,7 @@
 import { parseLoraRadio, loraApart } from "./devices/lorabands.js";
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./devices/cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { copyFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
+import { copyFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
 import { platform, tmpdir } from "node:os";
@@ -90,6 +90,8 @@ import { folderBytes, Renders, RENDER_LIMIT } from "./machine/reverierenders.js"
 import { LONG_FALL } from "./psyche/drift.js";
 import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, useMesh, type ExportName } from "./machine/sleepexport.js";   // C-358
 import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
+import { Hoard } from "./hoard/hoard.js";            // C-596: THE HOARD, the household's own storage
+import { hoardApi, hoardDoor, hoardEngine, isHoardApi, isHoardDoor, isHoardEngine } from "./hoard/http.js";
 import { PiBuilds, CHECK_EVERY_MS } from "./machine/pibuilds.js";   // C-541: the Pi program built by volunteers
 import { FRAME_MOST, InPlay, SOURCES } from "./game/inplay.js";   // C-478: THE GAMES IN PLAY
 import { dropSmall, smallCover } from "./thumbs.js";   // C-413: a cover's small copy
@@ -966,6 +968,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   }, { speed: process.env.VITEST ? 1 : undefined });
   useMesh((args, ins, outs, o) => MESH.ffmpeg(args, ins, outs, o));
   // C-541: THE SHELF -- the Pi program built by the household's volunteers when its source is "volunteers" (pibuilds.ts)
+  // C-596: THE HOARD -- the ledger of the household's files and the nodes that hold them, beside the database (hoard/)
+  const HOARD = new Hoard(store, join(dirname(cfg.database === ":memory:" ? join(mkdtempSync(join(tmpdir(), "hoard-")), "x") : cfg.database), "hoard"));
   const PIBUILDS = new PiBuilds(join(dirname(cfg.database === ":memory:" ? join(tmpdir(), "x") : cfg.database), "builds"), MESH, (k) => store.getSetting(k));
   if (!process.env.VITEST) { setTimeout(() => void PIBUILDS.check(), 60_000).unref(); setInterval(() => void PIBUILDS.check(), CHECK_EVERY_MS).unref(); }
   // C-372: a painting's scene through the Tiiny's prompt enhancer when it has one; as written otherwise
@@ -1712,6 +1716,11 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
         return res.end(LINK_PAGE);
       }
+      // C-596: THE HOARD's door -- a blob for a ticket the hub signed, a friend's link; the ticket or the link is the leave
+      if (isHoardDoor(path)) {
+        await hoardDoor(HOARD, req, res, { method: req.method ?? "", path, url, relayed: req.headers[RELAY_HEADER] !== undefined, send });
+        return;
+      }
       if (cfg.siteDir && isSitePath(req.method ?? "", path)) return serveSite(siteNow(cfg.siteDir), req, res, path);   // C-170; C-342: the newest build
       // C-32: "usb" is the bridge on this machine speaking for the device down its cable; anything from the network is
       // the device itself, on the Wi-Fi.
@@ -1883,6 +1892,12 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
         return await linkRoute(res, linkHost(store.getSetting("link.host")), path, String(req.headers["accept-encoding"] ?? ""));
       }
       // ---- C-342: THE ENGINE ROOM's JOBS -- asked for here, taken and run by THE HANDS on the computer (jobs.ts) ----
+      // C-596: who is asking THE HOARD -- the person a paired key is, or the hub's own machine; and from where
+      const hoardCtx = () => ({ method: req.method ?? "", path, url, relayed, send, body,
+        who: HOARD.who(bearer, phone?.name, isLoopback(req.socket.remoteAddress)), key: bearer && phone ? Hoard.keyOf(bearer) : null,
+        asker: relayed ? "0.0.0.0" : (req.socket.remoteAddress ?? "").replace(/^::ffff:/, "") });
+      if (isHoardEngine(path)) { await hoardEngine(HOARD, req, res, hoardCtx()); return; }   // C-600: THE ENGINE ROOM's HOARD
+      if (isHoardApi(path)) { await hoardApi(HOARD, req, res, hoardCtx()); return; }         // C-598: the household's files
       if (path.startsWith("/api/engine/")) {
         const who = phone?.name ?? (isLoopback(req.socket.remoteAddress) ? "this machine" : "");
         const name = path.slice("/api/engine/".length), b = req.method === "POST" ? await body(req) : {};

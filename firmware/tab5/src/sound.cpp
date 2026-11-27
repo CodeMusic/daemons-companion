@@ -118,7 +118,7 @@ static void player(void *) {
     if (t.sampled) {                               // T-425: on the instrument; played out before the next is taken
       size_t n = 0;
       if (int16_t *pcm = renderTune(t, n)) {
-        M5.Speaker.setVolume((uint8_t)(volume * 2 * t.level));
+        M5.Speaker.setVolume((uint8_t)min(255.0f, volume * 2 * t.level));
         M5.Speaker.playRaw(pcm, n, RATE, false, 1, 0, true);
         vTaskDelay(pdMS_TO_TICKS(n * 1000 / RATE + 20));
         while (M5.Speaker.isPlaying(0)) vTaskDelay(pdMS_TO_TICKS(10));
@@ -127,7 +127,7 @@ static void player(void *) {
       }
     }
     uint8_t w[8]; wave(t.duty, w);
-    M5.Speaker.setVolume((uint8_t)(volume * 2 * t.level));
+    M5.Speaker.setVolume((uint8_t)min(255.0f, volume * 2 * t.level));
     for (int i = 0; i < t.n; i++) {
       if (t.notes[i].semis != 127) M5.Speaker.tone(noteHz(t.base + t.notes[i].semis), t.notes[i].ms, 0, true, w, 8);
       vTaskDelay(pdMS_TO_TICKS(t.notes[i].ms));
@@ -195,9 +195,11 @@ void soundVoice(int16_t *pcm, size_t samples, int rate) {
 bool soundVoicePlaying() { return voicePcm && M5.Speaker.isPlaying(VOICE_CH); }
 
 void soundWake()   { send(TUNE_WAKE, 6, WAKE_BASE, 0.8f); }
-void soundSelect() { send(TUNE_SELECT, 1, root, 1.0f, 0.5f, false); }   // a tap's click, the square wave
-void soundBack()   { send(TUNE_BACK, 1, root, 0.7f, 0.5f, false); }
-void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; send(t.notes, t.n, root, 0.85f); }   // C-114, C-118
+// C-583 (the user, 2026-11-26): the menu's tap was much louder than the care jingles, which were too quiet even at Loud --
+// the tap and back down, the jingles up past the old ceiling (the speaker's volume is capped at its 255)
+void soundSelect() { send(TUNE_SELECT, 1, root, 0.55f, 0.5f, false); }   // a tap's click, the square wave
+void soundBack()   { send(TUNE_BACK, 1, root, 0.4f, 0.5f, false); }
+void soundCare(int what) { const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; send(t.notes, t.n, root, 1.3f); }   // C-114, C-118
 #define TUNE(t) t, (int)(sizeof t / sizeof *t)
 void soundSlots(int what, const String &look) {   // C-158: the boards' rule (firmware/esp32/src/sound.cpp), without the lights
   if (what == 0) send(TUNE(TUNE_SLOTS_PULL), root, 0.8f);

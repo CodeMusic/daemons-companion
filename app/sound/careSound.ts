@@ -6,7 +6,9 @@ import { dayRoot, tuneSound } from "./tuneSound";
 type Care = "feed" | "water" | "train" | "sleep";
 const NAME: Record<Care, string> = { feed: "FED", water: "WATERED", train: "TRAINED", sleep: "SLEPT" };
 
-// The phrase for this care on this day's note, as a file to play (made once, then kept in the cache)
+// The phrase for this care on this day's note, as a file to play (made once, then kept in the cache). C-583 (the user,
+// 2026-11-26: the jingles too quiet even at Loud): made at 1.4 -- its peak near full scale, never clipped (pcmWav clamps)
+export const CARE_LEVEL = 1.4;
 export function careSound(care: Care, dayNote: string): string {
-  return tuneSound(NAME[care], dayRoot(dayNote)) ?? "";
+  return tuneSound(NAME[care], dayRoot(dayNote), CARE_LEVEL) ?? "";
 }

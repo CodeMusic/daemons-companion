@@ -562,8 +562,9 @@ void soundTurn(int dir) {
   notes(dir > 0 ? TUNE_TURN_UP : TUNE_TURN_DOWN, 2, 0.6f);
 }
 
-void soundSelect() { notes(TUNE_SELECT, 1, 1.0f); }
-void soundBack()   { notes(TUNE_BACK, 1, 0.7f); }
+// C-583 (the user, 2026-11-26): the menu's tap was much louder than the care jingles -- the tap and back down, the jingles up
+void soundSelect() { notes(TUNE_SELECT, 1, 0.6f); }
+void soundBack()   { notes(TUNE_BACK, 1, 0.45f); }
 
 // ---- a routine's tune: about six notes, its own shape in the day's key, the ring dancing in step --------------------
 
@@ -604,7 +605,7 @@ void soundGameRoutine(const String &name, const String &type, uint32_t rgb) {
 
 // C-13: tending it -- three notes, glad, in the day's key, the ring pulsing with them
 void soundCare(int what) { haptic(10);                     // C-176: a care, a double click on the wrist
-  const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; tuneLater(t.notes, t.n, root, DANCE_PULSE, 0.8f); }   // C-114; C-121: from its task
+  const CareTune &t = TUNE_CARE[constrain(what, 0, 3)]; tuneLater(t.notes, t.n, root, DANCE_PULSE, 1.2f); }   // C-114; C-121: from its task; C-583: louder
 
 // ---- C-50: accomplishment. Each daemon's tunes are its own: GENERATED from its species number and the day of the week
 // (the user, 2026-10-04), in a pentatonic scale on the day's note -- so no two notes ever clash -- with a voice (the

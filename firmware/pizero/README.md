@@ -113,7 +113,8 @@ cap in on a computer.
 build/window/daemons-zero --headless --page play --frames 3460 --press 1800:L,2100:L --shot out.bmp --every 300
 ```
 
-This runs 3460 frames unseen, presses A at those frames, and writes a 320x170 BMP at the end (and every 300 frames).
+This runs 3460 frames unseen, presses A at those frames, and writes a BMP of the canvas at the end (and every 300 frames): 320x170 on
+the Cardputer Zero, each board's own size otherwise (C-593; `--canvas 360x360@2` draws as another board would).
 
 **Speed**: `--bench 3000` runs the game as fast as it goes. The Mac does about 1,300 frames a second, the Zero 131.5 (one core
 at 1 GHz), and the GBA needs 59.7.
@@ -142,7 +143,7 @@ keys while running), `ZERO_KEYLOG=1` (print key codes it does not know).
 | `src/hal/` | `window.cpp` (SDL) and `device.cpp` (framebuffer, evdev, power_supply): the two sides |
 | `src/board.h`, `src/boards/` | C-457: the board -- `cardputer-zero.cpp`, `gamepi20.cpp` or `gamehat.cpp` (a pad's shared behaviour in `pad.cpp`), picked by CMake's `ZERO_BOARD` (`BOARD=gamepi20 ./build.sh`): its name, screen, keys or pad, and the game's keys (docs/PIBOARDS.md) |
 | `tools/boards/` | a board with no launcher made ready once on the device: `gamepi20.sh` and `gamehat.sh` (each its pins and screen), `common.sh` (the buttons, config.txt, at boot) and `daemons@.service` |
-| `src/canvas.*` | the 320x170 LovyanGFX sprite every page draws into, and a picture of it |
+| `src/canvas.*` | the LovyanGFX sprite every page draws into (the board's own size: `board::CANVAS_W`, `CANVAS_H`; 320x170 on the Cardputer Zero), and a picture of it |
 | `src/keys.*` | the device's keys by name, and the game's map (`~/.config/daemons/keys.conf`, `A = L`) |
 | `src/sound.*` | miniaudio, and a ring between the game and the speaker |
 | `src/game/` | SHA-1 and CRC32, BPS (a port of `server/src/game/bps.ts`), the games made (C-187's rules; both editions, release or testing: `games/`, `saves/`, `originals/`), mGBA's core |

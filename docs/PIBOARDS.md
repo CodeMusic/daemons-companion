@@ -18,9 +18,28 @@ CMake's `ZERO_BOARD` picks the board file (`BOARD=gamepi20 ./build.sh`); on a de
 Everything above them -- the game on mGBA's core, the one save kept in step with the hub (C-380, C-397), the GAMES page
 (C-395), every page, LINK, the caps (C-444) -- is the same program on every board.
 
-**The canvas.** The pages draw 320x170, the Cardputer Zero's screen. A bigger screen shows it as many whole times its
-size as fit (C-468), in the middle, the rest dark: the GamePi20's 320x240 once, with 35 rows above and below; the Game
-HAT's 640x480 twice, so its pixels stay square. A page laid out for the bigger screen is later work.
+**The canvas.** Every board has a canvas of its own size, and the pages fill it (C-593; the user, 2026-11-27: "each
+device should take full advantage of its screen"). A board file names it (`board::CANVAS_W`, `CANVAS_H`): the screen
+itself, or the screen at a whole fraction of its size where its pixels are small, shown a whole number of times over
+so they stay square and sharp (C-468).
+
+| Board | Screen | Canvas | Shown | The game |
+|---|---|---|---|---|
+| Cardputer Zero | 320x170 | 320x170 | once | 240x160, once, the companion either side |
+| GamePi20 | 320x240 | 320x240 | once | once, in the middle (DRAFT: drawn unseen) |
+| Game HAT | 640x480 | 320x240 | twice | twice, in the middle (DRAFT: drawn unseen) |
+| uConsole | 1280x720 | 320x180 | four times | four times (DRAFT: drawn unseen) |
+| DAEMICOM | 480x320 | 480x320 | once | twice: the whole screen (DRAFT: drawn unseen) |
+| HackberryPi | 720x720 | 360x360 | twice | three times, 720x480 across the top, the companion's strip under it |
+
+The pages were first drawn for 320x170 and are still drawn so there, pixel for pixel. On another canvas they place what
+they draw from its edges (`src/app.h`'s `lay`): more letters across, the rows that fit, the last lines at the bottom
+edge. A page with a picture (HOME, CARE, PARTY) puts it beside its words on a wide canvas and across the top on a tall
+one (300 high or more), the daemon as big as fits whole. PLAY shows the game as many whole times as fit the screen;
+where that is bigger than the canvas shows things (the HackberryPi: a canvas pixel is two of the screen's, a pixel of
+the game three), the hardware layer draws the game's picture over the canvas itself (`hal::game`). A new board needs
+only its two numbers. `daemons-zero --canvas 360x360@2` draws as another board would, for pictures of one that is not
+here.
 
 **A pad.** A board with no keyboard (its behaviour is `src/boards/pad.cpp`, shared by every pad board) reads its buttons as the keys the pages listen for (`board::forPage`): A is ENTER, B
 is ESC, SELECT is TAB, START is ENTER, Y is BACKSPACE, X is SPACE, L and R move along a row. In the game every button is
@@ -87,7 +106,7 @@ confirmed on the device), with HackerGadgets' AIO board in its expansion slot (a
 and cells already work under its desktop, so `tools/boards/uconsole.sh` adds only what DAEMONS needs:
 
 - **The screen**: a 5-inch 720x1280 panel held landscape, so the canvas is turned a quarter (`ZERO_ROTATE`, a drop-in for
-  `daemons@.service`) and drawn four times its size, 1280x680, in the middle. It draws on the framebuffer, so the
+  `daemons@.service`) and drawn four times its size: a 320x180 canvas, the whole 1280x720 (C-593; DRAFT, drawn unseen). It draws on the framebuffer, so the
   desktop must not hold the screen: `uconsole.sh <user> boot` starts DAEMONS at boot in the desktop's place
   (`systemctl set-default graphical.target` brings the desktop back). DAEMONS in a window on the desktop is the other
   way, once the build can make the window side on the device (to come).
@@ -116,8 +135,8 @@ console as a whole -- THE THRESHOLD, the SHEWSTONE modes (DUET, SPLIT, MIRROR, O
 
 - **The screen**: LCD35 / MPI3501, an ILI9486 at 480x320 behind shift registers on SPI0 CE0 (DC 24, RESET 25), driven by
   the kernel's own `piscreen` overlay (`tools/boards/daemicom.sh`: `dtoverlay=piscreen,speed=16000000,rotate=90`). Its
-  framebuffer is found by the driver's name (`ili9486`), so the desktop's HDMI framebuffer is never drawn on. The canvas
-  sits once in the middle until a page is laid out for the bigger screen.
+  framebuffer is found by the driver's name (`ili9486`), so the desktop's HDMI framebuffer is never drawn on. Its
+  canvas is the whole 480x320 (C-593; DRAFT, drawn unseen).
 - **Touch** -- the first board with it: the XPT2046 on CE1 (PENIRQ 17) is the kernel's `ads7846`, raw 0..4095 on each
   axis. `src/touch.cpp` reads it as the keys every page already listens for: **a tap is ENTER, a hold (600 ms) is ESC**
   -- in the game, back to HOME -- **and a swipe is an arrow**, as the companion's swipes move on the phone. Any board with
@@ -142,10 +161,13 @@ first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the
 - **The screen**: 720x720 on DPI, turned on by one line, `dtoverlay=vc4-kms-dpi-hyperpixel4sq`. One framebuffer
   (`vc4drmfb`, 16 bits), so it is fb0. DPI takes nearly every pin: no SPI, no cap header, and **I2C must stay off**
   (`dtparam=i2c_arm=on` leaves the screen black, the maker warns); a STEMMA port on GPIO 10 and 11 is the one bus left.
-  The kernel can only turn the backlight on or off; its brightness is a button on the top edge. The canvas is shown twice
-  its size, 640x340, in the middle -- on a square screen nearly half stays dark, so this is the board that most wants a
-  page of its own: the game three times its size is 720x480, the full width, with 720x240 left under it for the
-  companion (proposed, not built).
+  The kernel can only turn the backlight on or off; its brightness is a button on the top edge. **Its canvas is
+  360x360, shown twice over: the whole square** (C-593; it was 640x340 in the middle, nearly half the screen dark, until
+  the user saw it). HOME and CARE have the den across the top, 352x200, the daemon three times its size in it, and the
+  words under it; the other pages have more rows. **The game is three times its size, 720x480, across the top**, drawn
+  straight onto the screen, and under it a strip of 240 with the daemon in its den, the hour, the save's mark, and the
+  game's keys as this keyboard has them (MOVE W A S D, A L, B K, START ENTER, SELECT SPACE, L Q, R P, MENU the back
+  key): a keyboard's keys are not a pad's, so they are said. DRAFT words.
 - **The keys**: the keyboard and trackpad have a chip of their own (Vial firmware) and reach the Pi as one USB device,
   `ZitaoTech HackberryPi9900`: a keyboard, a mouse (the trackpad; not read), and two control devices. A red switch on
   the side sends them to the Pi or out of the lower USB-C to another computer, and a red button beside it powers the
@@ -197,9 +219,15 @@ first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the
   SYM and H, the `$` key, the back key, CTRL with delete, and the keyboard leaving with CTRL held and coming back. The
   first build on the device itself stopped at step 40 of 167: the handheld lost power or froze (no clean shutdown in
   its records, and its journal is kept in memory only, so which is not known) -- so it is installed from the package.
+  **The whole screen** (C-593, the same day): HOME and LINK filling the 720x720 framebuffer; a testing build of the
+  game from a folder in memory, three times its size across the top, about two thirds of one core (it runs 126 frames
+  a second flat out, the GBA 59.7), 52 degrees, never throttled; the test keyboard pressing START, A and the pad,
+  the back key to HOME and ENTER back into the game where it was; and the picture drawn point by point as a turned
+  screen's is (`ZERO_ROTATE=2`), whole. The folder was removed after: no game is kept on it.
 - **Not yet** (DRAFT): a key pressed by a thumb (what the menu and back keys really send; how the arrows' layer is
-  reached); the game, which needs the player's ROM made on the device; `daemons` typed at its console and LEAVE pressed
-  on HOME; sound by Bluetooth; a line on HOME when no keyboard is found.
+  reached); the glass itself seen (the framebuffer was read); the player's own ROM made into the game on the device;
+  HOME with a daemon carried (it is not linked to a hub); `daemons` typed at its console and LEAVE pressed on HOME;
+  sound by Bluetooth; a line on HOME when no keyboard is found (C-595).
 
 **Setting one up**: Raspberry Pi OS Lite (64-bit) on a microSD with Raspberry Pi Imager (hostname, user, Wi-Fi, SSH) and
 the screen's line in `config.txt`; then `BOARD=hackberry tools/install.sh <user>@<its name>`, which builds on the device,

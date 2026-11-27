@@ -52,7 +52,7 @@ export function SingScreen({ ink, name, onClose }: { ink: string; name: string; 
   if (kept) return <SongPlayer k={kept} ink={ink} onBack={() => { setKept(null); setAsked(null); setRow(null); }} />;
   return (
     <YStack gap={12}>
-      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={onClose}>{"‹ BACK"}</Text>
+      <Text fontFamily="$mono" fontSize={13} letterSpacing={2} fontWeight="700" color="$color12" cursor="pointer" role="link" onPress={onClose}>{"‹ THE STUDIO"}</Text>
       <Card>
         <Eyebrow>{"THE DAEMON SINGS · DRAFT"}</Eyebrow>
         <Small>{`${name} sings you a song. ${SAID[mode]}`}</Small>

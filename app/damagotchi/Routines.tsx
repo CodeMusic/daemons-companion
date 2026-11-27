@@ -11,9 +11,7 @@ import { api } from "../platform/net";
 import { Cast, PlayerState } from "../state/types";
 import { Action, Art, Card, Eyebrow, Small } from "../shared/ui/ui";
 import { EngineRoom } from "../shared/ui/engineRoom";   // C-330
-import { SingScreen } from "./Sing";   // C-362
-import { EaselScreen } from "./Easel";   // C-338
-import { SleepSoundsCard } from "./SleepSounds";   // C-334
+import { Studio, type StudioPage } from "./Studio";   // C-590: IT SINGS, THE EASEL, REVERIE and SYNESTHESIA, each its own page
 export const CASINO_BOOT = Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");
    // this start of the app
 export let casinoSeq = 0;
@@ -23,23 +21,21 @@ export let casinoSeq = 0;
 // the routines section as they are routines the daemon performs" -- its own first (IT SINGS and THE EASEL need the hub, as
 // they did), then the casino, the house and the party's. Dreams keeps SLEEP SOUNDS as a shortcut; YOURS keeps a link to the
 // galleries. Every word DRAFT.
-type Open = "sing" | "easel" | "sleep" | "casino" | "house" | "party";
+// C-590 (the user, 2026-11-26): those three now open from THE STUDIO above (Studio.tsx), each a page in its place, with
+// SYNESTHESIA beside them; while one is open the rest of ROUTINES steps aside.
+type Open = "casino" | "house" | "party";
 export function RoutinesCard({ ink, daemon }: { ink: string; daemon?: { nickname: string; slot: number | null } | null }) {
   const [open, setOpen] = useState<Open | null>(null);
+  const [studio, setStudio] = useState<StudioPage>("home");
   const flip = (o: Open) => () => setOpen(open === o ? null : o);
+  if (studio !== "home") return <Studio ink={ink} daemon={daemon} page={studio} onPage={setStudio} />;
   return (
+    <YStack gap={14}>
+    <Studio ink={ink} daemon={daemon} page={studio} onPage={setStudio} />
     <Card>
       <Eyebrow>ROUTINES</Eyebrow>
-      {daemon ? <Small>{`What ${daemon.nickname} does: sings, paints and makes the night's sleep sounds.  DRAFT`}</Small> : null}
+      <Small>{"The casino, the house, and what your party can do.  DRAFT"}</Small>
       <XStack gap={8} flexWrap="wrap" marginTop={4}>
-        {daemon ? <Action label={open === "sing" ? "Close" : "IT SINGS"} ink={ink} onPress={flip("sing")} /> : null}
-        {daemon ? <Action label={open === "easel" ? "Close" : "THE EASEL"} ink={ink} onPress={flip("easel")} /> : null}
-        <Action label={open === "sleep" ? "Close" : "SLEEP SOUNDS"} ink={ink} onPress={flip("sleep")} />
-      </XStack>
-      {open === "sing" && daemon ? <SingScreen ink={ink} name={daemon.nickname} onClose={() => setOpen(null)} /> : null}
-      {open === "easel" && daemon ? <EaselScreen ink={ink} name={daemon.nickname} slot={daemon.slot} /> : null}
-      {open === "sleep" ? <SleepSoundsCard ink={ink} /> : null}
-      <XStack gap={8} flexWrap="wrap" marginTop={8}>
         <Action label={open === "casino" ? "Leave the CASINO" : "THE CASINO"} ink={ink} onPress={flip("casino")} />
         <Action label={open === "house" ? "Close" : "THE HOUSE"} ink={ink} onPress={flip("house")} />
         <Action label={open === "party" ? "Close" : "YOUR PARTY'S ROUTINES"} ink={ink} onPress={flip("party")} />
@@ -48,6 +44,7 @@ export function RoutinesCard({ ink, daemon }: { ink: string; daemon?: { nickname
       {open === "house" ? <EngineRoom page="house" ink={ink} what="THE HOUSE -- the day's odds and why, everyone at the reels, what the house keeps -- is the hub's." /> : null}
       {open === "party" ? <PartyRoutines /> : null}
     </Card>
+    </YStack>
   );
 }
 

@@ -12,8 +12,10 @@
 //   SAVES        the trail of every save that moved, going back to one, and whose copy goes on (C-364, C-365)
 //   IN PLAY      every game being played in the ecosystem -- its screen, where it was saved, its party; starting (C-496) and ending an AI run (C-478)
 //   SYMBOLS      every symbol a dream has called up, its glyph and meaning, and any one drawn AGAIN (C-484)
+//   THE HOARD    the household's own storage: its nodes and offers, every file, what happens when it is full (C-600; hoard.js)
 // The page holds nothing of the user's: it asks the hub's API, with a paired key kept in this browser (on the hub's own
 // machine none is needed). Every word DRAFT.
+import { hoard } from "./hoard.js";   // C-600: THE HOARD's page, in its own file
 const KEY = "engine-room.key";
 const keyNow = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
 const keep = (k) => { try { k ? localStorage.setItem(KEY, k) : localStorage.removeItem(KEY); } catch { /* a private window */ } };
@@ -51,6 +53,8 @@ const ago = (iso, now = Date.now()) => {
 };
 const took = (ms) => (ms === undefined || ms === null ? "" : ms < 1000 ? `${ms}ms` : ms < 60000 ? `${(ms / 1000).toFixed(1)}s` : `${Math.round(ms / 60000)}m`);
 
+// C-600: THE HOARD's page is handed what a page needs (ui is replaced at every page change, so it is asked for each time)
+const HOARD = hoard({ api, esc, ago, note: () => note(), stale: () => stale(), page: $page, ui: () => ui });
 // ---- the pages, in the navigation's order ----
 const PAGES = [
   { id: "hub", glyph: "⌂", label: "THE HUB", short: "HUB", draw: drawHub },
@@ -66,6 +70,7 @@ const PAGES = [
   { id: "saves", glyph: "⟲", label: "SAVES", short: "SAVES", draw: drawSaves },               // C-364
   { id: "play", glyph: "◐", label: "IN PLAY", short: "PLAY", draw: drawInPlay, every: 3000 },    // C-478
   { id: "symbols", glyph: "✦", label: "SYMBOLS", short: "SIGNS", draw: drawSymbols },             // C-484
+  { id: "hoard", glyph: "▤", label: "THE HOARD", short: "HOARD", draw: HOARD.draw, every: 15000 },   // C-600
 ];
 let timer = null, ui = {}, drawing = null;          // ui: what a page keeps between its redraws (a filter, a task picked, a note)
 // a page asked for before another was opened, answering after it: it writes nothing
@@ -133,7 +138,7 @@ $page.addEventListener("click", async (ev) => {
   }
   await show(true);
 });
-const ACTS = {};
+const ACTS = { ...HOARD.acts };   // C-600: THE HOARD's, from hoard.js
 const note = () => `<div class="note" role="status">${esc(ui.note ?? "")}</div>`;
 const said = (s) => { ui.note = s; };
 

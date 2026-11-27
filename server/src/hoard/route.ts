@@ -63,9 +63,9 @@ export function whySaid(s: Source, size: number): string {
           s.link === "ethernet" ? "Ethernet" : s.link === "wifi" ? "Wi-Fi" : s.link,
           `${p >= 10 ? Math.round(p) : Math.round(p * 10) / 10} Mbit/s${s.learned ? " measured" : ""}`,
           s.traffic ? `${s.traffic} in hand` : "idle", `ping ${Math.round(s.ping ?? PING_UNKNOWN_MS[s.near])} ms`,
-          ...(s.relay ? ["passed on by the hub"] : []), `about ${secondsSaid(estimateMs(s, size))}`].join(", ");
+          ...(s.relay ? ["passed on by the hub"] : []), secondsSaid(estimateMs(s, size))].join(", ");
 }
-export const secondsSaid = (ms: number) => (ms < 1000 ? "under a second" : ms < 90_000 ? `${Math.round(ms / 1000)} s` : `${Math.round(ms / 60_000)} min`);
+export const secondsSaid = (ms: number) => (ms < 1000 ? "under a second" : ms < 90_000 ? `about ${Math.round(ms / 1000)} s` : `about ${Math.round(ms / 60_000)} min`);
 
 /** the sources of one file, the one that would deliver it soonest first */
 export function rank(sources: Source[], size: number): (Source & { ms: number; why: string })[] {

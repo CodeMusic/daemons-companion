@@ -570,7 +570,17 @@ describe("THE HOARD on the hub (C-596)", () => {
     const mid = (await get("/api/engine/hoard")).body;
     expect(mid.nodes.find((n: any) => n.id === "study").state).toBe("retiring");
     expect(mid.capacity).toBe(before.capacity - 2 * MB);
-    void onStudy;
+    expect(onStudy).toBeGreaterThan(0);
     expect(mid.safe).toBe(mid.blobs);                                                     // nothing is lost by it
+    // it holds on -- its door open, handing over and letting go as the hub asks -- until it is empty
+    expect(study.leaving).toBe(true);
+    for (let i = 0; i < 4 && !study.empty(); i++) for (const n of nodes) await n.beat();
+    expect(study.empty()).toBe(true);
+    const end = (await get("/api/engine/hoard")).body;
+    expect(end.safe).toBe(end.blobs);                                                     // every file still held by a node that stays
+    expect(end.nodes.find((n: any) => n.id === "study")).toMatchObject({ has: 0, state: "retiring" });
+    // changed their mind: the offer stands again, and it is given files again
+    study.stay(); await study.beat();
+    expect((await get("/api/engine/hoard")).body.nodes.find((n: any) => n.id === "study").state).toBe("on");
   });
 });

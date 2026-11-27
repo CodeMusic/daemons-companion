@@ -17,9 +17,9 @@
 // The hub itself is a node when it has an offer of its own (a drive or folder, set in THE ENGINE ROOM); with none it only
 // keeps the ledger and a STAGE, where a new file waits until a node has it. Every word a person reads is DRAFT.
 import { createHash, randomBytes } from "node:crypto";
-import { existsSync, readdirSync, statfsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readdirSync, realpathSync, statfsSync, statSync } from "node:fs";
 import { join } from "node:path";
-import type { Readable } from "node:stream";
+import { Readable } from "node:stream";
 import type { Store } from "../shared/store.js";
 import { Nodes, marked, reliability, type NetNode } from "../shared/nodes.js";
 import { DiskStore, HASH, HOARD_FRESH_MS, TICKET_S, doorPath, linkKind, type Beat, type BeatReply } from "./node.js";
@@ -38,6 +38,7 @@ type Row = HoardFile & { link: string | null };
 export type Ask = { name?: unknown; mime?: unknown; share?: unknown; friend?: unknown; minutes?: unknown; once?: unknown; how?: unknown;
                     kind?: unknown; of?: unknown; meta?: unknown; protected?: unknown; sha?: unknown; size?: unknown };
 export class HoardError extends Error { status: number; constructor(status: number, message: string) { super(message); this.status = status; } }
+const TEXT_MOST = 400 * 1024;
 const STAGE_KEEP_FREE = 512 * 1024 * 1024;     // the hub's own disk is never filled by what is waiting on it (DRAFT)
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 const HUB = "hub";
@@ -166,7 +167,7 @@ export class Hoard {
     const seen = new Set<string>(), out: { path: string; free: number; total: number }[] = [];
     const add = (p: string) => {
       if (seen.has(p) || !existsSync(p)) return;
-      try { if (!statSync(p).isDirectory()) return; const s = statfsSync(p); seen.add(p); out.push({ path: p, free: Number(s.bavail) * Number(s.bsize), total: Number(s.blocks) * Number(s.bsize) }); } catch { /* unreadable */ }
+      try { if (!statSync(p).isDirectory() || realpathSync(p) === "/") return; const s = statfsSync(p); seen.add(p); out.push({ path: p, free: Number(s.bavail) * Number(s.bsize), total: Number(s.blocks) * Number(s.bsize) }); } catch { /* unreadable */ }
     };
     for (const base of ["/Volumes", "/media", "/mnt", "/run/media"]) {
       let names: string[] = [];
@@ -542,6 +543,41 @@ export class Hoard {
     if (this.summoned.get(sha) !== nodeId) throw new HoardError(403, "the hub did not ask for that");
     await this.stage.put(body, { sha, most: Math.max(0, this.stage.diskFree() - STAGE_KEEP_FREE) });
     this.summoned.delete(sha);
+  }
+
+  // ---- for a making (makings.ts): the hub's own reads, after it has asked rules.ts who may ----
+  /** a file's row as it is, with no caller: only for work the hub does itself once the caller was checked */
+  rowOf_(id: string) { return this.row(id); }
+  /** facts a making learned about a file, kept with it (what a picture holds, what a recording says) */
+  noteMeta(id: string, patch: Record<string, unknown>) {
+    const f = this.row(id);
+    if (f) this.store.db.prepare("UPDATE hoard_files SET meta = ? WHERE id = ?").run(JSON.stringify({ ...f.meta, ...patch }).slice(0, 8000), f.id);
+  }
+  /** a text file's words, from the hub's copy or a node's (the first 400 KB) */
+  async text(sha: string, size: number): Promise<{ text: string; whole: boolean }> {
+    const most = Math.min(size, TEXT_MOST), whole = size <= TEXT_MOST;
+    const file = this.find(sha), chunks: Buffer[] = [];
+    if (file) { if (most > 0) for await (const ch of createReadStream(file, { start: 0, end: most - 1 })) chunks.push(ch as Buffer); }
+    else {
+      const from = this.relayFrom(sha);
+      if (!from) throw new HoardError(503, "no node that holds it is here now");
+      const r = await this.f(from, { headers: { range: `bytes=0-${Math.max(0, most - 1)}` }, signal: AbortSignal.timeout(60_000) });
+      if (!r.ok) throw new HoardError(502, `the node answered ${r.status}`);
+      chunks.push(Buffer.from(await r.arrayBuffer()));
+    }
+    return { text: Buffer.concat(chunks).toString("utf8"), whole };
+  }
+  /** a blob as a file on the hub: where it already is, or fetched from a node that holds it into `dir` */
+  async bring(sha: string, dir: string): Promise<string> {
+    const here = this.find(sha);
+    if (here) return here;
+    const from = this.relayFrom(sha);
+    if (!from) throw new HoardError(503, "no node that holds it is here now");
+    const r = await this.f(from, { signal: AbortSignal.timeout(3_600_000) });
+    if (!r.ok || !r.body) throw new HoardError(502, `the node answered ${r.status}`);
+    const store = new DiskStore(dir, false);
+    await store.put(Readable.fromWeb(r.body as never), { sha });
+    return store.path(sha);
   }
 
   // ---- what THE ENGINE ROOM and the app are shown ----

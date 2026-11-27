@@ -8,16 +8,20 @@
 //   /api/engine/hoard/...   THE ENGINE ROOM's: every file, the offers, the nodes, what happens when it is full. A keeper.
 //
 // Who may read or remove what is rules.ts's to say; this only asks it. Every word a person reads is DRAFT.
-import { createReadStream } from "node:fs";
+import { createWriteStream } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { Hoard, HoardError } from "./hoard.js";
+import type { Job, Makings } from "./makings.js";
 import { serveFile, ticketOk, type Beat } from "./node.js";
 import { looksOf, sizeSaid, type Who } from "./rules.js";
 
 export type Ctx = {
   method: string; path: string; url: URL;
+  device?: string;                 // the device that asked (whose daemon "the daemon on your device" is)
   who: Who | null;                 // the caller as THE HOARD knows them (a paired key's person, or the hub's own machine)
   key: string | null;              // the paired key itself, as THE HOARD names it (a node is bound to it)
   asker: string;                   // the address they asked from
@@ -28,7 +32,8 @@ export type Ctx = {
 export const isHoardDoor = (path: string) => path === "/hoard/ping" || path.startsWith("/hoard/d/") || path.startsWith("/hoard/s/");
 export const isHoardApi = (path: string) => path === "/api/hoard" || path.startsWith("/api/hoard/");
 export const isHoardEngine = (path: string) => path === "/api/engine/hoard" || path.startsWith("/api/engine/hoard/");
-const TEXT_MOST = 400 * 1024;
+const SAID_MOST = 12 * 1024 * 1024;   // a spoken question: a couple of minutes of any recording
+const jobShown = (j: Job) => ({ id: j.id, kind: j.kind, title: j.title, state: j.state, step: j.step, progress: j.progress, at: j.at });
 const once = new Set<string>();    // the once-only files being handed over now: one at a time each
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -113,7 +118,7 @@ export async function hoardDoor(H: Hoard, req: IncomingMessage, res: ServerRespo
 }
 
 /** the household's requests, and a node's. true: answered */
-export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerResponse, c: Ctx): Promise<boolean> {
+export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerResponse, c: Ctx, M: Makings | null = null): Promise<boolean> {
   if (!isHoardApi(c.path)) return false;
   const { method, path, send } = c;
   try {
@@ -155,9 +160,23 @@ export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerRespon
                                     size: req.headers["content-length"] ? Number(req.headers["content-length"]) : undefined }, who);
       send(res, 200, r); return true;
     }
-    const f = /^\/api\/hoard\/files\/([0-9a-f]{16})(?:\/(remove|sources|fetched|text))?$/.exec(path);
+    // ---- MAKINGS: queued, built one at a time, kept as creations (C-605) ----
+    if (M && method === "POST" && path === "/api/hoard/make") { const b = await c.body(req); send(res, 200, { job: jobShown(M.ask(b.kind, b, who, c.device ?? "")) }); return true; }
+    if (M && method === "GET" && path === "/api/hoard/jobs") { send(res, 200, M.list(who)); return true; }
+    const job = /^\/api\/hoard\/jobs\/([0-9a-f]{16})\/(stop|again)$/.exec(path);
+    if (M && job && method === "POST") { send(res, 200, job[2] === "stop" ? { ok: M.stop(job[1], who) } : { job: jobShown(M.again(job[1], who)) }); return true; }
+    const f = /^\/api\/hoard\/files\/([0-9a-f]{16})(?:\/(remove|sources|fetched|text|ask))?$/.exec(path);
     if (f) {
       const id = f[1], act = f[2];
+      if (M && method === "POST" && act === "ask") {            // C-606: ASK A FILE, typed -- or spoken, the recording as the request's body
+        H.file(id, who);
+        if (c.url.searchParams.get("spoken") !== "1") { send(res, 200, { job: jobShown(M.ask("answer", { of: id, text: (await c.body(req)).text }, who, c.device ?? "")) }); return true; }
+        const said = join(M.inbox(), `said-${randomBytes(8).toString("hex")}`);
+        let size = 0;
+        await pipeline(req, async function* (src) { for await (const ch of src) { size += ch.length; if (size > SAID_MOST) throw new HoardError(413, "that is too long a question"); yield ch; } }, createWriteStream(said));
+        if (size < 200) throw new HoardError(400, "nothing was said");
+        send(res, 200, { job: jobShown(M.ask("answer", { of: id, said }, who, c.device ?? "")) }); return true;
+      }
       if (method === "GET" && !act) { send(res, 200, { file: H.shown(H.file(id, who), who) }); return true; }
       if (method === "POST" && !act) { send(res, 200, H.change(id, await c.body(req), who)); return true; }
       if (method === "POST" && act === "remove") { const gone = H.remove(id, who); send(res, 200, { ok: true, removed: gone.id }); return true; }
@@ -166,28 +185,12 @@ export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerRespon
       if (method === "GET" && act === "text") {
         const file = H.file(id, who);
         if (looksOf(file.mime) !== "text") { send(res, 415, { error: "that is not a text file" }); return true; }
-        send(res, 200, await readText(H, file.sha, file.size)); return true;
+        send(res, 200, await H.text(file.sha, file.size)); return true;
       }
     }
     send(res, 404, { error: "not found" });
   } catch (e) { send(res, (e as { status?: number }).status ?? 500, { error: (e as Error).message }); }
   return true;
-}
-
-/** a text file's words, from the hub's copy or a node's (the first 400 KB) */
-export async function readText(H: Hoard, sha: string, size: number): Promise<{ text: string; whole: boolean }> {
-  const most = Math.min(size, TEXT_MOST), whole = size <= TEXT_MOST;
-  const file = H.find(sha);
-  const chunks: Buffer[] = [];
-  if (file) { if (most > 0) for await (const ch of createReadStream(file, { start: 0, end: most - 1 })) chunks.push(ch as Buffer); }
-  else {
-    const from = H.relayFrom(sha);
-    if (!from) throw new HoardError(503, "no node that holds it is here now");
-    const r = await fetch(from, { headers: { range: `bytes=0-${Math.max(0, most - 1)}` }, signal: AbortSignal.timeout(60_000) });
-    if (!r.ok) throw new HoardError(502, `the node answered ${r.status}`);
-    chunks.push(Buffer.from(await r.arrayBuffer()));
-  }
-  return { text: Buffer.concat(chunks).toString("utf8"), whole };
 }
 
 /** THE ENGINE ROOM's requests: a keeper's. true: answered */

@@ -35,7 +35,7 @@
 import { parseLoraRadio, loraApart } from "./devices/lorabands.js";
 import { cardOp, companionId, keepNote, noteWritten, validUid, type CardOp } from "./devices/cards.js";
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from "node:http";
-import { copyFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
+import { copyFileSync, createReadStream, createWriteStream, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync, renameSync, unlinkSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { execFile, execFileSync } from "node:child_process";
 import { platform, tmpdir } from "node:os";
@@ -73,7 +73,7 @@ import { keepLoaded, keepOf } from "./machine/tiinykeep.js";   // C-375
 import { pickQuick, pickThinker, standIn, unloaded, tiinyChat, tiinyEnhance, tiinyWhy, tiinyHear, tiinyIn, tiinyModels, tiinySpeak, tiinySpeakStream, tiinyUrl, tiinyView, STOPPED, type WriteJob } from "./machine/tiiny.js";   // C-249
 import { ENTRY_VOICE, INDEX_VOICE, voiceGeneration, voiceRecipe } from "./psyche/voices.js";   // C-251; C-303: the voices' generation; C-387: the INDEX's and the entry's too
 import { speakerNamed, voiceOf } from "./psyche/voiceof.js";   // C-323: a voice by name, from what is known of its speaker
-import { cardOf, dayFacts, speciesFacts, type PersonaFacts } from "./psyche/personaof.js";   // C-329: a persona from what is known of a daemon
+import { cardOf, dayFacts, personaOf, speciesFacts, type PersonaFacts } from "./psyche/personaof.js";   // C-329: a persona from what is known of a daemon
 import { recover as recoverDialogues, setDialogueThinker } from "./damagotchi/dialogue.js";   // C-329: DAEMONS IN DIALOGUE
 import { playerContextOf } from "./psyche/playervoice.js";        // C-323: the player's, from their save
 import { preferTiiny } from "./machine/tiinyfirst.js";   // C-249: the Tiiny first, for all the house's AI
@@ -92,6 +92,10 @@ import { carrierOf, exportImedx, exportMp3, exportsMade, makeExports, stagesOf, 
 import { ProcMesh } from "./machine/procmesh.js";   // C-360: THE MESH for processing
 import { Hoard } from "./hoard/hoard.js";            // C-596: THE HOARD, the household's own storage
 import { hoardApi, hoardDoor, hoardEngine, isHoardApi, isHoardDoor, isHoardEngine } from "./hoard/http.js";
+import { Makings, type Makers } from "./hoard/makings.js";   // C-605: THE HOARD's makings, one at a time
+import { pickSeer, seeImage } from "./machine/seeing.js";    // C-577: a picture shown to the house's own model
+import { musicPiece } from "./machine/musicdoor.js";         // C-604: one piece from the music door
+import { SEE_SCHEMA } from "./psyche/photovoice.js";
 import { PiBuilds, CHECK_EVERY_MS } from "./machine/pibuilds.js";   // C-541: the Pi program built by volunteers
 import { FRAME_MOST, InPlay, SOURCES } from "./game/inplay.js";   // C-478: THE GAMES IN PLAY
 import { dropSmall, smallCover } from "./thumbs.js";   // C-413: a cover's small copy
@@ -969,7 +973,42 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   useMesh((args, ins, outs, o) => MESH.ffmpeg(args, ins, outs, o));
   // C-541: THE SHELF -- the Pi program built by the household's volunteers when its source is "volunteers" (pibuilds.ts)
   // C-596: THE HOARD -- the ledger of the household's files and the nodes that hold them, beside the database (hoard/)
-  const HOARD = new Hoard(store, join(dirname(cfg.database === ":memory:" ? join(mkdtempSync(join(tmpdir(), "hoard-")), "x") : cfg.database), "hoard"));
+  const hoardDir = join(dirname(cfg.database === ":memory:" ? join(mkdtempSync(join(tmpdir(), "hoard-")), "x") : cfg.database), "hoard");
+  if (cfg.database === ":memory:") process.once("exit", () => { try { rmSync(dirname(hoardDir), { recursive: true, force: true }); } catch { /* gone already */ } });   // a test's: nothing left behind
+  const HOARD = new Hoard(store, hoardDir);
+  // C-605: its MAKINGS -- queued and built one at a time; the machine's doors are handed in here, each asked for when a
+  // making reaches it (so a door set up later is found), and each write a task in THE MIND AT WORK
+  const hoardMakers: Makers = {
+    get see() {
+      const at = tiinyIn((k) => store.getSetting(k)), model = at ? pickSeer(TALK_HEALTH.tiiny?.models ?? [], store.getSetting("tiiny.see")) : null;
+      return at && model ? (jpeg: Uint8Array, prompt: string, signal: AbortSignal) => seeImage(at, model, jpeg, prompt, { schema: SEE_SCHEMA, signal }) : null;
+    },
+    write: async (title, system, user, most, signal) => {
+      const l = ledgered({ kind: "hoard", title });
+      const stop = () => l.abort();
+      signal.addEventListener("abort", stop, { once: true });
+      try { const t = await l.write(system, user, most); l.end(t?.trim() ? "done" : "failed", t?.trim() ? {} : { error: "no words came" }); return t ?? ""; }   // DRAFT
+      catch (e) { l.end("failed", { error: (e as Error)?.message?.slice(0, 120) }); throw e; }
+      finally { signal.removeEventListener("abort", stop); }
+    },
+    speak: async (text, recipe) => { await musicIdle(); const v = await house.voice(sayable(text), recipe); return v?.audio?.length ? new Uint8Array(v.audio) : null; },
+    hear: (wav) => house.transcribe(wav).catch(() => null),
+    ffmpeg: (args, ins, outs, o) => MESH.ffmpeg(args, ins, outs, o),
+    get music() {
+      const door = sleepDoor((k) => store.getSetting(k));
+      return door ? async (p: { song: boolean; caption: string; lyrics?: string; seconds: number; to: string }, signal: AbortSignal) => { await musicIdle(); await musicPiece(door, p, p.to, { signal }); } : null;
+    },
+    daemon: (name, device) => {
+      const e: Config = { ...cfg, savePath: savePathOf(cfg, store) }, recipe = namedRecipe(e, store, device, name);
+      if (!recipe) return null;
+      const sp = /^daemon:(\d{1,4})/.exec(name);
+      const d = sp ? null : (deviceState(e, store, new Date(), device).daemon as Record<string, any> | null);
+      if (!sp && !d) return null;
+      const f = speciesFacts(sp ? Number(sp[1]) : d!.species, sp ? "" : d!.nickname ?? "", e.edition, sp ? null : d!.personality);
+      return { recipe, persona: personaOf(f), name: f.nickname || f.name || "a daemon" };
+    },
+  };
+  const MAKINGS = new Makings(HOARD, store, join(hoardDir, "makings"), hoardMakers, { paused: !!process.env.VITEST });
   const PIBUILDS = new PiBuilds(join(dirname(cfg.database === ":memory:" ? join(tmpdir(), "x") : cfg.database), "builds"), MESH, (k) => store.getSetting(k));
   if (!process.env.VITEST) { setTimeout(() => void PIBUILDS.check(), 60_000).unref(); setInterval(() => void PIBUILDS.check(), CHECK_EVERY_MS).unref(); }
   // C-372: a painting's scene through the Tiiny's prompt enhancer when it has one; as written otherwise
@@ -984,7 +1023,7 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
   // runs, reaches the Tiiny's or the board's request), named by the mind that took it, sized in and out, its tokens kept.
   // The work is given `write` (house.write, counted) and says how it ended with `end`.
   const RUNNING = new Map<string, AbortController>();
-  const PRIVATE_KINDS = new Set(["journal", "meeting", "memory", "dream", "research"]);   // C-454: a study is the person's own too
+  const PRIVATE_KINDS = new Set(["journal", "meeting", "memory", "dream", "research", "hoard"]);   // C-454: a study is the person's own too; C-605: so is a person's file
     // C-480: the person's own words, or their daemon's nights
   const ledgered = (o: { kind: TaskKind; title: string; user?: string; device?: string; retry?: boolean; mind?: string; parent?: string; plan?: string;
                          quick?: boolean }) => {   // C-338: quick -- someone stands waiting: the quick thinker, thinking off
@@ -1895,9 +1934,9 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       // C-596: who is asking THE HOARD -- the person a paired key is, or the hub's own machine; and from where
       const hoardCtx = () => ({ method: req.method ?? "", path, url, relayed, send, body,
         who: HOARD.who(bearer, phone?.name, isLoopback(req.socket.remoteAddress)), key: bearer && phone ? Hoard.keyOf(bearer) : null,
-        asker: relayed ? "0.0.0.0" : (req.socket.remoteAddress ?? "").replace(/^::ffff:/, "") });
+        asker: relayed ? "0.0.0.0" : (req.socket.remoteAddress ?? "").replace(/^::ffff:/, ""), device: validDeviceId(deviceId) ? deviceId : "" });
       if (isHoardEngine(path)) { await hoardEngine(HOARD, req, res, hoardCtx()); return; }   // C-600: THE ENGINE ROOM's HOARD
-      if (isHoardApi(path)) { await hoardApi(HOARD, req, res, hoardCtx()); return; }         // C-598: the household's files
+      if (isHoardApi(path)) { await hoardApi(HOARD, req, res, hoardCtx(), MAKINGS); return; }   // C-598: the household's files; C-605: its makings
       if (path.startsWith("/api/engine/")) {
         const who = phone?.name ?? (isLoopback(req.socket.remoteAddress) ? "this machine" : "");
         const name = path.slice("/api/engine/".length), b = req.method === "POST" ? await body(req) : {};

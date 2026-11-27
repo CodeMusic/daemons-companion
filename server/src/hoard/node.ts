@@ -45,8 +45,13 @@ export class DiskStore {
   }
   has(sha: string): boolean { return HASH.test(sha) && existsSync(this.path(sha)); }
   size(sha: string): number { try { return statSync(this.path(sha)).size; } catch { return -1; } }
+  private listed: { at: number; all: { sha: string; size: number }[] } | null = null;
+  /** every blob here. Read from the folder at most once a minute, and again after anything this store itself changed
+   *  (a node says what it holds at every beat: a large folder is not walked every five seconds) */
   list(): { sha: string; size: number }[] {
+    if (this.listed && Date.now() - this.listed.at < 60_000) return this.listed.all;
     const out: { sha: string; size: number }[] = [];
+    this.listed = { at: Date.now(), all: out };
     let dirs: string[] = [];
     try { dirs = readdirSync(this.root); } catch { return out; }
     for (const d of dirs) {
@@ -56,7 +61,7 @@ export class DiskStore {
     return out;
   }
   used(): number { return this.list().reduce((s, b) => s + b.size, 0); }
-  remove(sha: string): boolean { if (!this.has(sha)) return false; rmSync(this.path(sha), { force: true }); return true; }
+  remove(sha: string): boolean { if (!this.has(sha)) return false; rmSync(this.path(sha), { force: true }); this.listed = null; return true; }
   /** free bytes on the drive the folder is on (0 when it cannot be read) */
   diskFree(): number {
     let at = this.root;
@@ -81,7 +86,7 @@ export class DiskStore {
       const sha = h.digest("hex");
       if (o.sha && o.sha !== sha) throw Object.assign(new Error("those are not the bytes it was said to be"), { status: 422 });
       const to = this.path(sha), fresh = !existsSync(to);
-      if (fresh) { mkdirSync(dirname(to), { recursive: true }); renameSync(part, to); } else rmSync(part, { force: true });
+      if (fresh) { mkdirSync(dirname(to), { recursive: true }); renameSync(part, to); this.listed = null; } else rmSync(part, { force: true });
       return { sha, size, md5: m.digest("hex"), fresh };
     } catch (e) { rmSync(part, { force: true }); throw e; }
   }
@@ -90,6 +95,7 @@ export class DiskStore {
     const to = this.path(sha);
     if (existsSync(to)) return;
     mkdirSync(dirname(to), { recursive: true });
+    this.listed = null;
     try { renameSync(file, to); } catch { const part = `${to}.part`; copyFileSync(file, part); renameSync(part, to); }
   }
   /** parts left by a write that never finished (a restart mid-transfer) */
@@ -251,6 +257,7 @@ export type NodeOptions = {
   up?: () => number | null;                 // its internet's upload, megabits a second, when its owner said
   link?: () => LinkKind | null;             // Ethernet or Wi-Fi as its owner said, when the reading is wrong (null: read it)
   when?: () => When;
+  rest?: () => string;                      // one more reason to rest, said first (its owner paused it); "" for none
   doors?: () => string[];                   // its doors as it would have them said (default: every address, its port)
   log?: (...a: unknown[]) => void;
   fetch?: typeof fetch;
@@ -265,6 +272,7 @@ export class HoardNode {
   lastError = "";
   rests = "";
   link: LinkKind = "other";
+  leaving = false;                           // its offer is taken back: it holds on until its files are held elsewhere
   moving = "";                               // what it is fetching or sending now
   moved: { sha: string; bytes: number; ms: number; way: "in" | "out" | "served"; at: number }[] = [];
   port = 0;
@@ -303,13 +311,29 @@ export class HoardNode {
     this.timer = setInterval(() => void this.beat(), BEAT_MS);
     void this.beat();
   }
+  /** close the door and stop the beat. `final`: one last beat first that says the offer is taken back -- waited for
+   *  even when a beat is in hand. A reader in the middle of a file is given a moment, then let go */
   async stop(final = false): Promise<void> {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    if (final) await this.beat(true).catch(() => {});
-    await new Promise<void>((ok) => (this.server ? this.server.close(() => ok()) : ok()));
+    if (final) {
+      for (let i = 0; this.beating && i < 100; i++) await new Promise((r) => setTimeout(r, 50));
+      await this.beat(true).catch(() => {});
+    }
+    const s = this.server;
     this.server = null;
+    if (!s) return;
+    await new Promise<void>((ok) => {
+      const t = setTimeout(() => { (s as Server & { closeAllConnections?: () => void }).closeAllConnections?.(); }, 2000);
+      s.close(() => { clearTimeout(t); ok(); });
+    });
   }
+  /** Take the offer back without stranding what it holds: from now it says so at every beat, fetches nothing more, and
+   *  still hands over and lets go of what the hub asks -- until `empty()`, when its owner may stop it for good */
+  leave() { this.leaving = true; }
+  /** changed their mind: the offer stands again */
+  stay() { this.leaving = false; }
+  empty(): boolean { return this.store.list().length === 0; }
   private note(sha: string, bytes: number, ms: number, way: "in" | "out" | "served") {
     this.moved = [{ sha, bytes, ms, way, at: Date.now() }, ...this.moved].slice(0, 40);
   }
@@ -318,35 +342,37 @@ export class HoardNode {
   state() {
     const list = this.store.list();
     return { id: this.o.id(), kind: this.o.kind(), bytes: this.o.bytes(), used: list.reduce((s, b) => s + b.size, 0), files: list.length,
-             diskFree: this.store.diskFree(), folder: this.store.root, doors: this.doors(), link: this.link, rests: this.rests,
+             diskFree: this.store.diskFree(), folder: this.store.root, doors: this.doors(), link: this.link, rests: this.rests, leaving: this.leaving,
              traffic: this.traffic, lastHeard: this.lastHeard, lastError: this.lastError, moving: this.moving, moved: this.moved.slice(0, 12) };
   }
 
-  /** one beat: say what it is and holds, do what the hub answers. `leaving`: its offer is taken back */
+  /** one beat: say what it is and holds, do what the hub answers. `leaving`: its offer is taken back from this beat on */
   async beat(leaving = false): Promise<void> {
+    if (leaving) this.leaving = true;
     if (this.beating || !this.o.key() || !this.o.hub()) return;
     this.beating = true;
     try {
       if (Date.now() - this.probed > 30_000) { this.link = this.o.link?.() ?? linkKind(); this.power = onPower(); this.probed = Date.now(); }
       else if (this.o.link?.()) this.link = this.o.link()!;
-      this.rests = restsBy(this.o.when?.() ?? { wifiOnly: false, pluggedOnly: false }, this.link, this.power);
+      this.rests = this.o.rest?.() || restsBy(this.o.when?.() ?? { wifiOnly: false, pluggedOnly: false }, this.link, this.power);
       const list = this.store.list(), got = this.got.splice(0), gone = this.gone.splice(0);
-      const beat: Beat = { id: this.o.id(), name: this.o.name(), offer: leaving ? null : { kind: this.o.kind(), bytes: Math.max(0, Math.floor(this.o.bytes())) },
+      const beat: Beat = { id: this.o.id(), name: this.o.name(), offer: this.leaving ? null : { kind: this.o.kind(), bytes: Math.max(0, Math.floor(this.o.bytes())) },
         used: list.reduce((s, b) => s + b.size, 0), diskFree: this.store.diskFree(), doors: this.rests ? [] : this.doors(), link: this.link,
         up: this.o.up?.() ?? null, traffic: this.traffic, rests: this.rests, got, gone, ...(this.listNext ? { have: list.map((b) => b.sha) } : {}) };
       let r: BeatReply;
       try {
         const res = await this.f()(`${this.o.hub()}/api/hoard/beat`, { method: "POST", headers: { ...this.auth(), "content-type": "application/json" },
                                     body: JSON.stringify(beat), signal: AbortSignal.timeout(20_000) });
-        if (res.status === 401 || res.status === 403) throw new Error(`the hub refused this node's key (${res.status}): pair it again`);
-        r = (await res.json()) as BeatReply;
+        r = (await res.json().catch(() => ({}))) as BeatReply;
+        // the hub says why when it can (another key already keeps a node by this name); a bare refusal is the key
+        if (res.status === 401 || res.status === 403) throw new Error(r.error ? `the hub refused: ${r.error}` : `the hub refused this node's key (${res.status}): pair it again`);
         if (!res.ok) throw new Error(r.error || `the hub answered ${res.status}`);
       } catch (e) { this.got.unshift(...got); this.gone.unshift(...gone); throw e; }
       this.lastHeard = Date.now(); this.lastError = ""; this.listNext = r.list === true;
       if (r.secret) this.secret = r.secret;
-      if (this.rests || leaving) return;
+      if (this.rests) return;                                      // resting: nothing moves
       for (const sha of r.drop ?? []) { this.store.remove(sha); this.gone.push(sha); }
-      for (const w of r.want ?? []) await this.fetchIn(w.sha, w.size, list.reduce((s, b) => s + b.size, 0));
+      if (!this.leaving) for (const w of r.want ?? []) await this.fetchIn(w.sha, w.size, this.store.used());
       for (const sha of r.send ?? []) await this.sendOut(sha);
     } catch (e) { this.lastError = (e as Error).message.slice(0, 200); }
     finally { this.beating = false; this.moving = ""; }

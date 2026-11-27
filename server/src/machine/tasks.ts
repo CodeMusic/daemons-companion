@@ -26,6 +26,7 @@ export const TASK_KINDS = {
   tutor: { colour: "#6fae7f", said: "THE TUTOR" },   // C-433: LEARNING's syllabus, lessons and cards
   research: { colour: "#9a8fc4", said: "RESEARCH" },   // C-454: a study's expert answering
   work: { colour: "#7a7f8a", said: "WORK" },   // C-455: MENTIONS
+  hoard: { colour: "#9fb8a0", said: "THE HOARD" },   // C-605: a making's words -- a picture's, a text's voice, a file's answer
 } as const satisfies Record<string, { colour: string; said: string }>;
 export type TaskKind = keyof typeof TASK_KINDS;
 export const kindSaid = (k: string) => (TASK_KINDS as Record<string, { colour: string; said: string }>)[k] ?? { colour: TASK_KINDS.work.colour, said: k.toUpperCase() };

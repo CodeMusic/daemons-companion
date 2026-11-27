@@ -37,7 +37,10 @@ describe("THE ENGINE ROOM's files (C-330)", () => {
 
   it("reaches every admin feature from its one navigation", () => {
     const js = readFileSync(join(ADMIN_DIR, "admin.js"), "utf8");
-    for (const id of ["hub", "mind", "house", "voices", "devices", "exchange", "commons", "keys", "jobs", "saves", "play", "symbols"]) expect(js).toContain(`id: "${id}"`);
+    for (const id of ["hub", "mind", "house", "voices", "devices", "exchange", "commons", "keys", "jobs", "saves", "play", "symbols", "hoard"]) expect(js).toContain(`id: "${id}"`);
+    // C-600: THE HOARD's page is its own file, and the worker keeps it with the shell
+    expect(readFileSync(join(ADMIN_DIR, "hoard.js"), "utf8")).toContain("/api/engine/hoard");
+    expect(readFileSync(join(ADMIN_DIR, "sw.js"), "utf8")).toContain('"hoard.js"');
     for (const api of ["/api/mind/tasks", "/api/casino", "voicesAgain", "/api/devices/forget", "/api/exchange/invite", "/api/commons"])
       expect(js).toContain(api);
   });

@@ -227,6 +227,23 @@ export class Hoard {
     const hub = this.nodes.get(HUB);
     if (hub && this.here) { hub.used = this.here.used(); hub.diskFree = this.here.diskFree(); }
     if (hub && hub.state === "retiring" && !this.copies().some((c) => c.node === HUB)) { this.nodes.delete(HUB); this.here = null; }
+    if (this.here && this.copies().some((c) => c.node === HUB && c.state === "want")) void this.fillHere();
+  }
+  private filling = false;
+  /** The hub's own folder was given a blob the hub does not hold (a node took its offer back, or the hub's offer is new):
+   *  fetched from a node that holds it, as any node fetches what it is asked to keep. Tried again at the next change */
+  async fillHere(): Promise<void> {
+    if (this.filling || !this.here) return;
+    this.filling = true;
+    try {
+      let got = 0;
+      for (const c of this.copies().filter((x) => x.node === HUB && x.state === "want")) {
+        if (this.find(c.sha)) { got++; continue; }
+        try { await this.bring(c.sha, this.stage.root); got++; } catch { /* no holder can be reached now */ }
+      }
+      this.filling = false;
+      if (got) this.replan();
+    } finally { this.filling = false; }
   }
 
   // ---- a file comes in ----
@@ -383,15 +400,17 @@ export class Hoard {
   }
 
   // ---- THE BEAT: a node says it is here ----
+  /** A node is known by its own paired key, whatever it says its id or name is -- as THE MESH knows a phone (C-360).
+   *  So no key can speak for another's node, and a computer that is renamed is still the node it was. */
+  static nodeIdOf(key: string) { return `n${key.replace(/^k/, "")}`; }
   beat(b: Beat, owner: string): BeatReply {
-    const id = String(b.id ?? "").replace(/[^A-Za-z0-9._-]/g, "").slice(0, 60);
-    if (!id || id === HUB) throw new HoardError(400, "a node says its own id");
+    if (!/^k[0-9a-f]{12}$/.test(owner)) throw new HoardError(403, "a node of THE HOARD needs a paired key");
+    const id = Hoard.nodeIdOf(owner);
     const was = this.nodes.get(id);
-    if (was && was.owner !== owner) throw new HoardError(403, "another key already keeps a node by that name");   // DRAFT
     const offer = b.offer && OFFER_KINDS.includes(b.offer.kind) && Number(b.offer.bytes) > 0 ? { kind: b.offer.kind, bytes: Math.floor(Number(b.offer.bytes)) } : null;
     if (!was && !offer) return {};
     const before = was ? `${was.kind}/${was.offer}/${was.state}` : "";
-    const n = this.nodes.hear({ id, name: b.name, caps: ["store"], holds: Number(b.traffic) || 0 }, (w) => ({
+    const n = this.nodes.hear({ id, name: b.name ?? b.id, caps: ["store"], holds: Number(b.traffic) || 0 }, (w) => ({
       kind: offer?.kind ?? w?.kind ?? "extend", offer: offer?.bytes ?? 0, used: Math.max(0, Number(b.used) || 0), diskFree: Math.max(0, Number(b.diskFree) || 0),
       doors: (Array.isArray(b.doors) ? b.doors : []).map(String).filter((d) => /^https?:\/\/[A-Za-z0-9.\-[\]:]+$/.test(d)).slice(0, 8),
       link: LINKS.includes(b.link as Link) ? (b.link as Link) : "other", up: Number(b.up) > 0 ? Math.min(100_000, Number(b.up)) : null,

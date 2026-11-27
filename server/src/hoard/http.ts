@@ -135,8 +135,8 @@ export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerRespon
     }
     const blob = /^\/api\/hoard\/blob\/([0-9a-f]{64})$/.exec(path);
     if (blob) {
-      const node = String(req.headers["x-hoard-node"] ?? "").replace(/[^A-Za-z0-9._-]/g, "").slice(0, 60);
-      if (!c.key || H.nodes.get(node)?.owner !== c.key) { send(res, 403, { error: "that is a node's own, by its own key" }); return true; }
+      const node = c.key ? Hoard.nodeIdOf(c.key) : "";               // a node is its key's, whatever it says it is
+      if (!c.key || !H.nodes.get(node)) { send(res, 403, { error: "that is a node's own, by its own key" }); return true; }
       if (c.relayed) { send(res, 403, { error: "a node moves its files on the home network and the tailnet only" }); return true; }
       if (method === "GET") {
         const r = H.forNode(blob[1], node, c.asker);

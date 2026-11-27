@@ -53,18 +53,19 @@ describe("THE PHOTO'S VOICE: what is asked, and how the answers are read (C-577)
     const seen: Seen = { tag: "food", faces: 0, description: "A loaf cooling on a rack.", colours: "brown, gold", mood: "patient", mouth: null };
     const a = imagineAsk(seen);
     expect(a.user).toContain("A loaf cooling on a rack.");
-    expect(a.user).toMatch(/spoken by the dish/);
-    expect(a.user).toMatch(/"persona"/);
+    expect(a.system).toMatch(/spoken by the dish/);                     // what is wanted, and its shape, are asked first
+    expect(a.system).toMatch(/"persona"/);
+    expect(a.user.length).toBeLessThan(1000);                           // what a quick thinker reads of a message
     expect(readImagined('{"persona":"An older, flour-soft voice, slow and kind.","phrase":"I rose slowly, and waited for you."}')).toEqual({ persona: "An older, flour-soft voice, slow and kind.", phrase: "I rose slowly, and waited for you." });
     // the person's own words: only the voice is asked for, and their words are what is said
     const mine = imagineAsk(seen, { words: "Happy birthday, from the bread." });
     expect(mine.user).toContain("Happy birthday, from the bread.");
-    expect(mine.user).not.toMatch(/"phrase"/);
+    expect(mine.system).not.toMatch(/"phrase"/);
     expect(readImagined('{"persona":"A warm baker."}', { words: "Happy birthday, from the bread." }).phrase).toBe("Happy birthday, from the bread.");
     // a daemon speaking: it is itself, and says what it sees
     const d = imagineAsk(seen, { as: "You are SPARK, a small quick daemon." });
     expect(d.system).toContain("You are SPARK");
-    expect(d.user).not.toMatch(/"persona"/);
+    expect(d.system).not.toMatch(/"persona"/);
     expect(() => readImagined('{"phrase":"hello"}')).toThrow(/no voice/);
   });
   it("casts a text's reader from the file's own facts, and lets a file answer as itself", () => {
@@ -76,6 +77,7 @@ describe("THE PHOTO'S VOICE: what is asked, and how the answers are read (C-577)
     expect(q.system).toContain("I rose slowly.");
     expect(q.user).toBe("How long did you bake?");
     expect(sequenceSongAsk(["a loaf", "a table"], "slow folk").user).toMatch(/1\. a loaf\n2\. a table/);
+    expect(t.system).toMatch(/Write JSON only/);
   });
   it("shows a picture only to the house's own models", async () => {
     const held = ["tiiny-35b", "or-gemma3-27b", "qwen3-vl-4b", "minicpm-v-4-6", "or-nemotron-omni"];
@@ -174,7 +176,7 @@ const makers: Makers = {
     if (/its song/.test(title)) return '{"title":"Bread Song","style":"slow folk, guitar","lyrics":"[verse]\\nThe loaf is cooling\\n[chorus]\\nWait for me"}';
     if (/its answer/.test(title)) return '"About an hour, and I was worth it."';
     if (/what .* says/.test(title)) return '{"phrase":"That smells better than a battery."}';
-    if (/"phrase"/.test(user)) return '{"persona":"An older, flour-soft voice, slow and kind.","phrase":"I rose slowly, and waited for you."}';
+    if (/"phrase"/.test(system)) return '{"persona":"An older, flour-soft voice, slow and kind.","phrase":"I rose slowly, and waited for you."}';
     return '{"persona":"A clear, unhurried reader in her forties."}';
   },
   speak: async (text, recipe, signal) => {
@@ -297,7 +299,7 @@ describe("THE HOARD's makings (C-605)", () => {
     await M.idle();
     expect(creation(jobOf(own.id, A).result!, A).meta).toMatchObject({ phrase: "Come and eat.", persona: "A clear, unhurried reader in her forties." });   // what the stand-in casts when asked for a voice alone
     expect(calls.write.length).toBe(1);
-    expect(calls.write[0].user).not.toMatch(/"phrase"/);
+    expect(calls.write[0].system).not.toMatch(/"phrase"/);
   });
   it("a picture with no mouth still speaks: it brightens with its voice instead", async () => {
     reset();

@@ -270,6 +270,7 @@ async function node(key: string, name: string, kind: "extend" | "replica", bytes
 }
 const hubDir = mkdtempSync(join(tmp, "hub-drive-"));
 let study!: HoardNode, attic!: HoardNode;
+const ids: Record<string, string> = {};        // each node's id at the hub, by its name
 
 describe("THE HOARD on the hub (C-596)", () => {
   it("has no room until something offers some", async () => {
@@ -291,15 +292,25 @@ describe("THE HOARD on the hub (C-596)", () => {
     await attic.beat();
     const h = (await get("/api/hoard")).body;
     expect(h.capacity).toBe(5 * MB);                                                    // REPLICA: still 5 MB
-    expect(h.nodes.map((n: any) => `${n.id}:${n.kind}:${n.fresh}`).sort()).toEqual(["attic:replica:true", "hub:extend:true", "study:extend:true"]);
+    expect(h.nodes.map((n: any) => `${n.name}:${n.kind}:${n.fresh}`).sort()).toEqual(["attic:replica:true", "study:extend:true", "the hub:extend:true"]);
+    for (const n of h.nodes) ids[n.name] = n.id;
+    expect(ids.study).toMatch(/^n[0-9a-f]{12}$/);                                       // a node is known by its key, not by what it calls itself
     expect(study.secret).toMatch(/^[0-9a-f]{48}$/);                                     // each node its own secret, from the hub
     expect(attic.secret).not.toBe(study.secret);
   });
-  it("a node is its key's: another key cannot speak for it", async () => {
-    const r = await post("/api/hoard/beat", { id: "study", name: "study", offer: { kind: "extend", bytes: 9e12 }, used: 0, diskFree: 0, doors: [], link: "ethernet", up: null, traffic: 0, rests: "" }, N2);
-    expect(r.status).toBe(403);
-    expect((await get("/api/hoard")).body.capacity).toBe(5 * MB);
+  it("a node is its key's: another key cannot speak for it, and a renamed computer is still the node it was", async () => {
+    // the attic's key says it is the study, with a vast offer: it has only changed what its own node is called and offers
+    const r = await post("/api/hoard/beat", { id: "study", name: "study", offer: { kind: "replica", bytes: 9e12 }, used: 0, diskFree: 0, doors: [], link: "ethernet", up: null, traffic: 0, rests: "" }, N2);
+    expect(r.status).toBe(200);
+    const v = (await get("/api/engine/hoard")).body;
+    expect(v.capacity).toBe(5 * MB);
+    expect(v.nodes.length).toBe(3);                                                      // no new node, and none taken over
+    expect(v.nodes.find((n: any) => n.id === ids.study)).toMatchObject({ name: "study", kind: "extend", offer: 2 * MB });
+    expect(v.nodes.find((n: any) => n.id === ids.attic)).toMatchObject({ name: "study", kind: "replica", offer: 9e12 });
+    await attic.beat();                                                                  // its own next beat says what it really is
+    expect((await get("/api/engine/hoard")).body.nodes.find((n: any) => n.id === ids.attic)).toMatchObject({ name: "attic", offer: 20 * MB });
     expect((await post("/api/hoard/beat", { id: "study" }, null)).status).toBe(403);     // nor the hub's own machine without a key
+    expect((await fetch(`${hub}/api/hoard/blob/${"0".repeat(64)}`, { headers: as(A) })).status).toBe(403);   // a key with no node fetches no blob
   });
 
   const mine = bytesOf(200_000, "ada's notes"), shared = bytesOf(150_000, "the household's list");
@@ -326,8 +337,8 @@ describe("THE HOARD on the hub (C-596)", () => {
     await attic.beat();                                                                  // and says so
     const v = (await get("/api/engine/hoard")).body;
     expect(v).toMatchObject({ blobs: 1, safe: 1, twice: 1, waiting: 0 });
-    expect(v.nodes.find((n: any) => n.id === "attic")).toMatchObject({ has: 1, behind: 0 });
-    expect(v.nodes.find((n: any) => n.id === "hub").has + v.nodes.find((n: any) => n.id === "study").has).toBe(1);   // one EXTEND copy, not two
+    expect(v.nodes.find((n: any) => n.name === "attic")).toMatchObject({ has: 1, behind: 0 });
+    expect(v.nodes.find((n: any) => n.id === "hub").has + v.nodes.find((n: any) => n.name === "study").has).toBe(1);   // one EXTEND copy, not two
     expect(existsSync(join(hubDir, "daemons-hoard", shaOf(mine).slice(0, 2), shaOf(mine)))).toBe(true);              // the hub had the most room
   });
   it("the household: shared for a limited time, then its owner's alone again", async () => {
@@ -454,8 +465,8 @@ describe("THE HOARD on the hub (C-596)", () => {
   it("asks a file of the node that would deliver it soonest, and learns from what a download measured", async () => {
     for (const n of nodes) await n.beat();
     const s = (await get(`/api/hoard/files/${mineId}/sources`)).body;
-    const by = Object.fromEntries(s.sources.map((x: any) => [x.node, x]));
-    expect(Object.keys(by).sort()).toEqual(["attic", "hub"]);                             // the two that hold it
+    const by = Object.fromEntries(s.sources.map((x: any) => [x.node === "hub" ? "hub" : x.name, x]));
+    expect(Object.keys(by).sort()).toEqual(["attic", "hub"]);                             // the two that hold it (by name; the hub's node is "hub")
     expect(by.attic).toMatchObject({ near: "here", link: "wifi" });
     expect(s.sources[0].ms).toBeLessThanOrEqual(s.sources[1].ms);                          // soonest first
     expect(s.sources[0].why).toMatch(/on this network/);
@@ -476,18 +487,18 @@ describe("THE HOARD on the hub (C-596)", () => {
     expect((await get(`/api/hoard/files/${mineId}/sources`)).body.sources[0].node).toBe("hub");
     attic.traffic = 0; await attic.beat();
     // downloads measured: the attic really delivers far faster than the hub does -- it is asked first from then on
-    await post(`/api/hoard/files/${mineId}/fetched`, { node: "attic", near: "here", bytes: 300 * MB, ms: 3000, ok: true });
+    await post(`/api/hoard/files/${mineId}/fetched`, { node: ids.attic, near: "here", bytes: 300 * MB, ms: 3000, ok: true });
     await post(`/api/hoard/files/${mineId}/fetched`, { node: "hub", near: "here", bytes: 300 * MB, ms: 300_000, ok: true });
     const then = (await get(`/api/hoard/files/${mineId}/sources`)).body.sources;
-    expect(then[0].node).toBe("attic");
+    expect(then[0].name).toBe("attic");
     expect(then[0].learned).toBeCloseTo(838.86, 0);
     expect(then[0].why).toMatch(/measured/);
     // and a node whose deliveries fail is trusted less: the same file from it is now reckoned to take far longer
-    for (let i = 0; i < 12; i++) await post(`/api/hoard/files/${mineId}/fetched`, { node: "attic", ok: false });
-    const failing = (await get(`/api/hoard/files/${mineId}/sources`)).body.sources.find((x: any) => x.node === "attic");
+    for (let i = 0; i < 12; i++) await post(`/api/hoard/files/${mineId}/fetched`, { node: ids.attic, ok: false });
+    const failing = (await get(`/api/hoard/files/${mineId}/sources`)).body.sources.find((x: any) => x.name === "attic");
     expect(failing.ms - failing.ping).toBeGreaterThan((then[0].ms - then[0].ping) * 4);
-    expect((await get("/api/engine/hoard")).body.nodes.find((n: any) => n.id === "attic").reliability).toBeLessThan(0.2);
-    for (let i = 0; i < 20; i++) await post(`/api/hoard/files/${mineId}/fetched`, { node: "attic", near: "here", bytes: 300 * MB, ms: 3000, ok: true });
+    expect((await get("/api/engine/hoard")).body.nodes.find((n: any) => n.name === "attic").reliability).toBeLessThan(0.2);
+    for (let i = 0; i < 20; i++) await post(`/api/hoard/files/${mineId}/fetched`, { node: ids.attic, near: "here", bytes: 300 * MB, ms: 3000, ok: true });
   });
   it("a node that rests (not on Wi-Fi, not plugged in) is not asked", async () => {
     const was = attic.o.when;
@@ -496,7 +507,7 @@ describe("THE HOARD on the hub (C-596)", () => {
     await attic.beat();
     expect(attic.rests).toBe("not on Wi-Fi");
     expect((await get(`/api/hoard/files/${mineId}/sources`)).body.sources.map((x: any) => x.node)).toEqual(["hub"]);
-    expect((await get("/api/hoard")).body.nodes.find((n: any) => n.id === "attic").rests).toBe("not on Wi-Fi");
+    expect((await get("/api/hoard")).body.nodes.find((n: any) => n.name === "attic").rests).toBe("not on Wi-Fi");
     attic.o.when = was; attic.o.link = () => "wifi";
     await attic.beat();
     expect((await get(`/api/hoard/files/${mineId}/sources`)).body.sources.length).toBe(2);
@@ -514,7 +525,7 @@ describe("THE HOARD on the hub (C-596)", () => {
     expect(attic.store.has(shaOf(big))).toBe(true);                                       // and to the REPLICA
     expect((await get("/api/engine/hoard")).body.waiting).toBe(0);                        // the hub holds no copy of this one
     let s = (await get(`/api/hoard/files/${r.body.file.id}/sources`, B)).body.sources;
-    expect(s.filter((x: any) => !x.relay).map((x: any) => x.node).sort()).toEqual(["attic", "study"]);
+    expect(s.filter((x: any) => !x.relay).map((x: any) => x.name).sort()).toEqual(["attic", "study"]);
     // the last resort: the hub passing on a copy it does not hold itself -- whole, and by range
     const relay = s.find((x: any) => x.relay);
     expect(relay).toMatchObject({ node: "hub", relay: true });
@@ -529,9 +540,9 @@ describe("THE HOARD on the hub (C-596)", () => {
     skew += HOARD_FRESH_MS + 1000;
     await attic.beat();
     s = (await get(`/api/hoard/files/${r.body.file.id}/sources`, B)).body.sources;
-    expect(s.filter((x: any) => !x.relay).map((x: any) => x.node)).toEqual(["attic"]);
+    expect(s.filter((x: any) => !x.relay).map((x: any) => x.name)).toEqual(["attic"]);
     expect(shaOf(Buffer.from(await (await fetch(s[0].url)).arrayBuffer()))).toBe(shaOf(big));
-    expect((await get("/api/hoard")).body.nodes.find((n: any) => n.id === "study").fresh).toBe(false);
+    expect((await get("/api/hoard")).body.nodes.find((n: any) => n.name === "study").fresh).toBe(false);
   });
 
   it("when it is full: by hand it refuses; OLDEST FIRST removes only what a newer file needs, never a PROTECTED one", async () => {
@@ -571,13 +582,14 @@ describe("THE HOARD on the hub (C-596)", () => {
     expect((await get(`/api/hoard/files/${oldest.id}`)).status).toBe(200);
   });
   it("a node that takes its offer back is emptied before it is let go; its copies move to the nodes that stay", async () => {
+    await post("/api/engine/hoard/offer", { dir: hubDir, gb: (8 * MB) / 1e9, kind: "extend" });      // the hub's own folder has room for what the study holds
     for (const n of nodes) await n.beat();
     for (const n of nodes) await n.beat();
     const before = (await get("/api/engine/hoard")).body;
-    const onStudy = before.nodes.find((n: any) => n.id === "study").has;
+    const onStudy = before.nodes.find((n: any) => n.name === "study").has;
     await study.beat(true);                                                               // its owner takes the offer back
     const mid = (await get("/api/engine/hoard")).body;
-    expect(mid.nodes.find((n: any) => n.id === "study").state).toBe("retiring");
+    expect(mid.nodes.find((n: any) => n.name === "study").state).toBe("retiring");
     expect(mid.capacity).toBe(before.capacity - 2 * MB);
     expect(onStudy).toBeGreaterThan(0);
     expect(mid.safe).toBe(mid.blobs);                                                     // nothing is lost by it
@@ -587,9 +599,16 @@ describe("THE HOARD on the hub (C-596)", () => {
     expect(study.empty()).toBe(true);
     const end = (await get("/api/engine/hoard")).body;
     expect(end.safe).toBe(end.blobs);                                                     // every file still held by a node that stays
-    expect(end.nodes.find((n: any) => n.id === "study")).toMatchObject({ has: 0, state: "retiring" });
+    expect(end.nodes.find((n: any) => n.name === "study")).toMatchObject({ has: 0, state: "retiring" });
+    // what the study held for THE HOARD's capacity is given to the hub's own folder where it fits, and the hub fetches
+    // it from the node that still holds it (the attic), as any node fetches what it is asked to keep
+    await new Promise((r) => setTimeout(r, 200));
+    const after = (await get("/api/engine/hoard")).body, hubNow = after.nodes.find((n: any) => n.id === "hub");
+    expect(hubNow.behind).toBe(0);
+    expect(hubNow.has).toBeGreaterThan(mid.nodes.find((n: any) => n.id === "hub").has);
+    expect(after.waiting).toBe(0);
     // changed their mind: the offer stands again, and it is given files again
     study.stay(); await study.beat();
-    expect((await get("/api/engine/hoard")).body.nodes.find((n: any) => n.id === "study").state).toBe("on");
+    expect((await get("/api/engine/hoard")).body.nodes.find((n: any) => n.name === "study").state).toBe("on");
   });
 });

@@ -81,18 +81,20 @@ export function readSeen(text: string): Seen {
 }
 
 /** IMAGINE: a voice for the picture and what it says. With `words` the saying is the person's own, and only the voice is asked.
- *  `as`: a speaker who is not the picture (a daemon, by its own persona) saying what it sees */
+ *  `as`: a speaker who is not the picture (a daemon, by its own persona) saying what it sees.
+ *  What is wanted and its shape go in the system message, what was seen in the user's: a writer that reads only the
+ *  start of a long message (the house's quick thinker does) still reads the whole of what it is asked for. */
 export function imagineAsk(seen: Seen, o: { words?: string; as?: string } = {}): { system: string; user: string } {
   const what = `Here is what is in the picture:\n${seen.description}\nStrongest colours: ${seen.colours}. Mood: ${seen.mood}. Kind of picture: ${seen.tag}.`;
   const voice = `"persona": a voice-casting description for a text-to-speech voice designer, one sentence: age, timbre, pace, warmth, an accent only if the picture suggests one. The voice should sound the way the picture's colours and mood look`;
   if (o.as)
-    return { system: `${o.as}\n\nYou are shown a picture and say one thing about it, in your own way.`,
-             user: `${what}\n\nWrite JSON only:\n{"phrase": what you say on seeing it. One or two sentences, at most 30 words, built from details actually in the picture. No names. No emoji.}` };
+    return { system: `${o.as}\n\nYou are shown a picture and say one thing about it, in your own way.\nWrite JSON only:\n{"phrase": what you say on seeing it. One or two sentences, at most 30 words, built from details actually in the picture. No names. No emoji.}`,
+             user: what };
   if (o.words?.trim())
-    return { system: "A picture is about to speak, in a voice of its own. You cast its voice.",
-             user: `${what}\n\nIt will say: "${o.words.trim().slice(0, 600)}"\n\nWrite JSON only:\n{${voice}}` };
-  return { system: "A picture is about to speak, in a voice of its own. You cast its voice and write what it says.",
-           user: `${what}\n\nWrite JSON only:\n{${voice},\n "phrase": ${SHAPES[seen.tag]}. One or two sentences, at most 30 words, built from concrete details actually in the picture. Gentle, specific, never generic, never a greeting card. No names. No emoji.}` };
+    return { system: `A picture is about to speak, in a voice of its own. You cast its voice.\nWrite JSON only:\n{${voice}}`,
+             user: `${what}\n\nIt will say: "${o.words.trim().slice(0, 600)}"` };
+  return { system: `A picture is about to speak, in a voice of its own. You cast its voice and write what it says.\nWrite JSON only:\n{${voice},\n "phrase": ${SHAPES[seen.tag]}. One or two sentences, at most 30 words, built from concrete details actually in the picture. Gentle, specific, never generic, never a greeting card. No names. No emoji.}`,
+           user: what };
 }
 export function readImagined(text: string, o: { words?: string; persona?: string } = {}): Imagined {
   const j = jsonIn(text);
@@ -105,9 +107,9 @@ export function readImagined(text: string, o: { words?: string; persona?: string
 /** A TEXT'S VOICE: the reader a file of words would have, from the file's own facts */
 export type TextFacts = { name: string; kind: string; words: number; opening: string; added?: string };
 export function textVoiceAsk(f: TextFacts): { system: string; user: string } {
-  return { system: "A written file is about to be read aloud. You cast the reader's voice from what the file is.",
-           user: `The file: "${f.name}" (${f.kind}), about ${f.words} words${f.added ? `, kept since ${f.added}` : ""}.\nIt opens:\n${f.opening.slice(0, 700)}\n\n` +
-                 `Write JSON only:\n{"persona": a voice-casting description for a text-to-speech voice designer, one sentence: age, timbre, pace, warmth -- the voice that suits reading THIS aloud (a note, a story, a list, a letter each want a different reader). Never a named person.}` };
+  return { system: "A written file is about to be read aloud. You cast the reader's voice from what the file is.\n" +
+                   `Write JSON only:\n{"persona": a voice-casting description for a text-to-speech voice designer, one sentence: age, timbre, pace, warmth -- the voice that suits reading THIS aloud (a note, a story, a list, a letter each want a different reader). Never a named person.}`,
+           user: `The file: "${f.name}" (${f.kind}), about ${f.words} words${f.added ? `, kept since ${f.added}` : ""}.\nIt opens:\n${f.opening.slice(0, 700)}` };
 }
 export function readPersona(text: string): string {
   const p = String(jsonIn(text).persona ?? "").trim().slice(0, 400);
@@ -128,9 +130,9 @@ export const cleanAnswer = (text: string) => String(text ?? "").replace(/<think>
 
 /** A SONG FOR A SEQUENCE: when no picture speaks, the song carries the words -- its lyrics from what the pictures hold */
 export function sequenceSongAsk(scenes: string[], hint?: string): { system: string; user: string } {
-  return { system: "You write the words of a short song to play over a sequence of pictures.",
-           user: `The pictures, in order:\n${scenes.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n${hint?.trim() ? `\nThe music asked for: ${hint.trim().slice(0, 200)}\n` : ""}\n` +
-                 `Write JSON only:\n{"title": a short title, "style": the music in a few plain words (instruments, tempo, feeling), "lyrics": two short verses and a chorus, one line per picture where it fits, built from what is actually in the pictures. No names. Use [verse] and [chorus] tags on their own lines.}` };
+  return { system: "You write the words of a short song to play over a sequence of pictures.\n" +
+                   `Write JSON only:\n{"title": a short title, "style": the music in a few plain words (instruments, tempo, feeling), "lyrics": two short verses and a chorus, one line per picture where it fits, built from what is actually in the pictures. No names. Use [verse] and [chorus] tags on their own lines.}`,
+           user: `${hint?.trim() ? `The music asked for: ${hint.trim().slice(0, 200)}\n\n` : ""}The pictures, in order:\n${scenes.map((s, i) => `${i + 1}. ${s.slice(0, 300)}`).join("\n")}` };
 }
 export function readSong(text: string): { title: string; style: string; lyrics: string } {
   const j = jsonIn(text), lyrics = String(j.lyrics ?? "").trim().slice(0, 2400);

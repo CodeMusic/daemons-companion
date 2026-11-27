@@ -14,7 +14,10 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-export const BOARDS = ["cardputer-zero", "gamepi20", "gamehat", "uconsole", "daemicom", "hackberry"];
+// C-593: not the hackberry yet. Its card is Debian 12 and the volunteers' container is Debian 13: that build would not
+// start on it (its --update refuses it). GitHub builds it in Debian 12 (.github/workflows/pizero.yml); the volunteers'
+// recipe is to follow (firmware/pizero/tools/build.Dockerfile takes SYSTEM=bookworm).
+export const BOARDS = ["cardputer-zero", "gamepi20", "gamehat", "uconsole", "daemicom"];
 export const REPO = "CodeMusic/daemons-companion";
 export const PATHS = ["firmware/pizero", "server/data/patches.json"];
 export const CHECK_EVERY_MS = 15 * 60_000, GIVE_UP_MS = 6 * 60 * 60_000;

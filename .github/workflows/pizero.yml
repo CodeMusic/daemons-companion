@@ -17,11 +17,16 @@ concurrency: { group: pizero, cancel-in-progress: true }
 jobs:
   build:
     runs-on: ubuntu-24.04-arm
-    container: debian:trixie
+    # C-593: a board's own system where it is not Debian 13. The HackberryPi's card is Debian 12, and a program built in
+    # 13 does not start there (GLIBC_2.38 not found; seen 2026-11-27, and --update refuses such a build: "would not run
+    # here"). One built in 12 starts on both.
+    container: debian:${{ matrix.system || 'trixie' }}
     strategy:
       fail-fast: false
       matrix:
-        board: [cardputer-zero, gamepi20, gamehat, uconsole, daemicom, hackberry]
+        board: [cardputer-zero, gamepi20, gamehat, uconsole, daemicom]
+        include:
+          - { board: hackberry, system: bookworm }
     steps:
       - name: Tools
         run: |

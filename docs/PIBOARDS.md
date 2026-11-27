@@ -161,12 +161,24 @@ first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the
   `tools/boards/hackberry.sh` writes `daemons`, a command that takes the keys while DAEMONS runs and hides the console's
   cursor; LEAVE on HOME gives both back. With `boot`, DAEMONS starts at boot on a console of its own (the eighth), and
   the first console is shown again when it stops. THE THRESHOLD's DEPART (C-564) is this done inside the program.
-- **Seen on the device** (2026-11-27): the overlay, the framebuffer, the keyboard's name and its port. **Not yet**
-  (DRAFT): the program on its screen, the game's keys under the thumbs, `daemons` and `boot`.
+- **Its system is Debian 12**, a release behind the other boards' 13 (the first one's card: Raspberry Pi OS Lite from
+  mid-2025). A program built in 13 does not start there (`GLIBC_2.38 not found`); one built in 12 starts on both. So
+  GitHub builds this board in Debian 12 (`system: bookworm` in the workflow's matrix), and the hub's volunteers' list
+  leaves it out until their container does the same (`tools/build.Dockerfile` takes `SYSTEM=bookworm`). `--update`
+  asks a new build to say its version before keeping it, so one that will not start is refused ("would not run here")
+  and never made current.
+- **Seen** (2026-11-27). On the device: the overlay, the framebuffer, the keyboard's name and its port. Off it: the
+  program built for this board in a Debian 12 container on arm64 (`tools/package.sh`, two minutes), its checks passed,
+  its pages drawn unseen (`--headless --shot`). The first build on the device itself stopped at step 40 of 167 when the
+  handheld left the network; why is not known yet. **Not yet** (DRAFT): the program on its screen, the game's keys
+  under the thumbs, the marks an address needs on LINK (SYM there is the key that sends GUI; which key of the 9900
+  that is has not been pressed), `daemons` and `boot`.
 
 **Setting one up**: Raspberry Pi OS Lite (64-bit) on a microSD with Raspberry Pi Imager (hostname, user, Wi-Fi, SSH) and
 the screen's line in `config.txt`; then `BOARD=hackberry tools/install.sh <user>@<its name>`, which builds on the device,
-installs, and writes `daemons`. `sudo ~/daemons-zero/src/tools/boards/hackberry.sh <user> boot` starts it at boot.
+installs, and writes `daemons` -- a long build for a Zero 2 W, so on its charger; or the package GitHub builds for it,
+`daemons-zero-hackberry.deb` in the `pizero` release, with `sudo dpkg -i`, and the setup script from a copy of
+`firmware/pizero/tools/`. `sudo ~/daemons-zero/src/tools/boards/hackberry.sh <user> boot` starts it at boot.
 `tools/install.sh <user>@<its name> probe` first, to read what it has.
 
 **What the two handhelds' setups share** is `tools/boards/common.sh`: the buttons as one gpio-keys device from twelve pins

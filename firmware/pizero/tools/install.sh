@@ -32,7 +32,9 @@ scp -q "$repo/server/data/patches.json" "$host:daemons-zero/src/patches.json"
 ssh "$host" 'mkdir -p ~/daemons-zero/common'
 scp -q "$here/../common/rollcall.h" "$host:daemons-zero/common/rollcall.h"
 
-ssh "$host" 'bash -s' <<'EOF'
+# C-593: asked every 30 seconds whether it is still there -- a handheld that leaves the network mid-build (its cells
+# empty, its Wi-Fi gone) is noticed in two minutes, not in the two hours ssh otherwise waits
+ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=4 "$host" 'bash -s' <<'EOF'
 set -euo pipefail
 need=()
 for p in cmake g++ ninja-build pkg-config libcurl4-openssl-dev rsync device-tree-compiler; do dpkg -s "$p" >/dev/null 2>&1 || need+=("$p"); done

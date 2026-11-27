@@ -149,10 +149,32 @@ first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the
 - **The keys**: the keyboard and trackpad have a chip of their own (Vial firmware) and reach the Pi as one USB device,
   `ZitaoTech HackberryPi9900`: a keyboard, a mouse (the trackpad; not read), and two control devices. A red switch on
   the side sends them to the Pi or out of the lower USB-C to another computer, and a red button beside it powers the
-  USB hub: without it there are no keys. The maker's keymap sends letters, SPACE, ENTER and BACKSPACE plain, ESC and TAB
-  by a tap of two top keys, numbers and marks while one layer key is held, and **the arrows on W A S D while a second
-  is held**. So the game's keys (DRAFT) are the pad on W A S D, A `l`, B `k`, START enter, SELECT space, L `q`, R `p`
-  (`~/.config/daemons/keys.conf` changes any); on a page the arrows are the layer's, or F X Z C as on the Cardputer Zero.
+  USB hub: without it there are no keys. **The keyboard can leave and come back while DAEMONS runs** -- on its first
+  day the hub left the bus twice. When every input has left, the program looks for its inputs again once a second and
+  takes the keys again; the keys that were down as it left are let go.
+- **Its keymap, read from the chip** (Vial's raw HID, read commands only, 2026-11-27; a keymap can be changed in Vial,
+  so another one may differ). Plain, then with the **right aA key** held:
+
+  | the keys | plain | right aA held |
+  |---|---|---|
+  | top row: call, menu, trackpad, back, end | TAB, keypad `.`, a mouse button, keypad `/`, the keys' light | the light's steps, the other mouse button, PAGE UP, PAGE DOWN |
+  | Q W E R T Y U I O P | the letters | `# 1 2 3 ( ) _ - + @` |
+  | A S D F G H J K L del | the letters, BACKSPACE | `* 4 5 6 / : ; ' "` DELETE |
+  | alt Z X C V B N M $ enter | SHIFT, the letters, `$` (Shift and 4), ENTER | SHIFT `7 8 9 ? ! , . ;` ENTER |
+  | aA 0 space sym aA | CTRL, ALT, SPACE, nothing sent, the layer | CTRL `0` SPACE |
+
+  A third layer holds the arrows on W A S D, the brackets and the light; no key of the plain layer turns it on as the
+  map stands (the maker's page says a held key does: not pressed yet). **No key is ESC, on any layer**, and ESC is how
+  every page and the game are left. So on this board (`src/boards/hackberry.cpp`):
+  - **the back key goes back** (keypad `/`) and **the menu key is SYM** (keypad `.`) -- DRAFT: the chip's own program
+    may send something else for a tap, and `ZERO_KEYLOG=1` prints any code still unread;
+  - **the left aA key held and the delete key pressed goes back** too, on a page and in the game: both are plain keys
+    in every keymap, so no page is one a player cannot leave;
+  - **the marks type themselves**: `. , : / - ' ?` and the rest reach a page as what they type (`Key::Mark`), and a
+    digit with Shift held types the mark over it. An address is typed on LINK as it is written.
+
+  The game's keys (DRAFT) are all plain ones: the pad on W A S D, A `l`, B `k`, START enter, SELECT space, L `q`, R `p`
+  (`~/.config/daemons/keys.conf` changes any). On a page: F X Z C move as on the Cardputer Zero, ENTER chooses.
 - **The sound**: none of its own -- no speaker, no microphone, no jack; ALSA lists only the HDMI. Bluetooth is there
   (a headset or a speaker: to come).
 - **The cells**: two Nokia BL-5C, swapped one at a time without stopping (5 hours on the command line by the maker's
@@ -167,12 +189,17 @@ first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the
   leaves it out until their container does the same (`tools/build.Dockerfile` takes `SYSTEM=bookworm`). `--update`
   asks a new build to say its version before keeping it, so one that will not start is refused ("would not run here")
   and never made current.
-- **Seen** (2026-11-27). On the device: the overlay, the framebuffer, the keyboard's name and its port. Off it: the
-  program built for this board in a Debian 12 container on arm64 (`tools/package.sh`, two minutes), its checks passed,
-  its pages drawn unseen (`--headless --shot`). The first build on the device itself stopped at step 40 of 167 when the
-  handheld left the network; why is not known yet. **Not yet** (DRAFT): the program on its screen, the game's keys
-  under the thumbs, the marks an address needs on LINK (SYM there is the key that sends GUI; which key of the 9900
-  that is has not been pressed), `daemons` and `boot`.
+- **Seen on the device** (2026-11-27): the package built in Debian 12 (`tools/package.sh` in a container on arm64, two
+  minutes) installed and started. With `boot`: DAEMONS on the screen 12.7 seconds after power on, on the eighth
+  console, the keyboard held, 15 MB of memory and about one hundredth of a core on HOME; stopped, the first console
+  shown again as it was. Sound: nothing opens with no screen in the HDMI, and the program carries on. The key path,
+  with a test keyboard made in the kernel (uinput) sending the chip's codes: an address typed on LINK with its marks,
+  SYM and H, the `$` key, the back key, CTRL with delete, and the keyboard leaving with CTRL held and coming back. The
+  first build on the device itself stopped at step 40 of 167: the handheld lost power or froze (no clean shutdown in
+  its records, and its journal is kept in memory only, so which is not known) -- so it is installed from the package.
+- **Not yet** (DRAFT): a key pressed by a thumb (what the menu and back keys really send; how the arrows' layer is
+  reached); the game, which needs the player's ROM made on the device; `daemons` typed at its console and LEAVE pressed
+  on HOME; sound by Bluetooth; a line on HOME when no keyboard is found.
 
 **Setting one up**: Raspberry Pi OS Lite (64-bit) on a microSD with Raspberry Pi Imager (hostname, user, Wi-Fi, SSH) and
 the screen's line in `config.txt`; then `BOARD=hackberry tools/install.sh <user>@<its name>`, which builds on the device,

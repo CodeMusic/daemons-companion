@@ -14,8 +14,9 @@
 #   - with "boot": DAEMONS at boot (daemons@<user>.service) on a console of its own, the eighth, so what the first
 #     console prints is never drawn over it; when DAEMONS stops, the first console is shown again. Without it, nothing
 #     is started at boot and the device starts as it always did.
-# Seen on the device (2026-11-27): the screen's overlay, the framebuffer, the keyboard. The `daemons` command and
-# "boot": not yet (DRAFT; docs/PIBOARDS.md).
+# Seen on the device (2026-11-27): the screen's overlay, the framebuffer, the keyboard, and "boot" -- DAEMONS on the
+# eighth console 12.7 seconds after power on, and stopped, the first console back as it was. The `daemons` command
+# typed at the console: not yet (DRAFT; docs/PIBOARDS.md).
 set -euo pipefail
 source "$(dirname "$0")/common.sh"
 mode=${2:-}

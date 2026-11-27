@@ -33,7 +33,6 @@ export const isHoardDoor = (path: string) => path === "/hoard/ping" || path.star
 export const isHoardApi = (path: string) => path === "/api/hoard" || path.startsWith("/api/hoard/");
 export const isHoardEngine = (path: string) => path === "/api/engine/hoard" || path.startsWith("/api/engine/hoard/");
 const SAID_MOST = 12 * 1024 * 1024;   // a spoken question: a couple of minutes of any recording
-const jobShown = (j: Job) => ({ id: j.id, kind: j.kind, title: j.title, state: j.state, step: j.step, progress: j.progress, at: j.at });
 const once = new Set<string>();    // the once-only files being handed over now: one at a time each
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -50,13 +49,14 @@ async function hand(H: Hoard, req: IncomingMessage, res: ServerResponse, sha: st
   const from = H.relayFrom(sha);
   if (!from) { free(); res.writeHead(503, { "content-type": "application/json", "retry-after": "10" }); return res.end(JSON.stringify({ error: "no node that holds it is here now", coming: H.summon(sha) })); }
   try {
-    const r = await fetch(from, { headers: req.headers.range ? { range: String(req.headers.range) } : {}, signal: AbortSignal.timeout(3_600_000) });
-    if (!r.ok || !r.body) throw new Error(`the node answered ${r.status}`);
+    const r = await fetch(from, { method: req.method === "HEAD" ? "HEAD" : "GET", headers: req.headers.range ? { range: String(req.headers.range) } : {}, signal: AbortSignal.timeout(3_600_000) });
+    if (!r.ok || (!r.body && req.method !== "HEAD")) throw new Error(`the node answered ${r.status}`);
     const head: Record<string, string> = { "content-type": o.mime || "application/octet-stream", "accept-ranges": "bytes", "cache-control": "private, max-age=3600",
                                            "access-control-allow-origin": "*", "access-control-expose-headers": "content-length, content-range" };
     for (const h of ["content-length", "content-range"]) { const v = r.headers.get(h); if (v) head[h] = v; }
     if (o.name) head["content-disposition"] = `inline; filename*=UTF-8''${encodeURIComponent(o.name)}`;
     res.writeHead(r.status, head);
+    if (req.method === "HEAD") { res.end(); return; }
     await pipeline(Readable.fromWeb(r.body as never), res);
     if (r.status === 200) o.done?.();
   } catch (e) {
@@ -117,6 +117,10 @@ export async function hoardDoor(H: Hoard, req: IncomingMessage, res: ServerRespo
   return true;
 }
 
+/** a friend's link as a whole address: by the name this hub was asked at (whoever shares it reached the hub by it) */
+const linked = <T extends { link?: string }>(req: IncomingMessage, r: T): T & { linkAt?: string } =>
+  (r.link && req.headers.host ? { ...r, linkAt: `http://${req.headers.host}${r.link}` } : r);
+
 /** the household's requests, and a node's. true: answered */
 export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerResponse, c: Ctx, M: Makings | null = null): Promise<boolean> {
   if (!isHoardApi(c.path)) return false;
@@ -158,9 +162,10 @@ export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerRespon
       const q = c.url.searchParams, ask = Object.fromEntries(["name", "mime", "share", "friend", "minutes", "how", "sha"].map((k) => [k, q.get(k) ?? undefined]));
       const r = await H.take(req, { ...ask, once: q.get("once") === "1", protected: q.get("protected") === "1" ? true : undefined,
                                     size: req.headers["content-length"] ? Number(req.headers["content-length"]) : undefined }, who);
-      send(res, 200, r); return true;
+      send(res, 200, linked(req, r)); return true;
     }
     // ---- MAKINGS: queued, built one at a time, kept as creations (C-605) ----
+    const jobShown = (j: Job) => M!.shown(j, who);
     if (M && method === "POST" && path === "/api/hoard/make") { const b = await c.body(req); send(res, 200, { job: jobShown(M.ask(b.kind, b, who, c.device ?? "")) }); return true; }
     if (M && method === "GET" && path === "/api/hoard/jobs") { send(res, 200, M.list(who)); return true; }
     const job = /^\/api\/hoard\/jobs\/([0-9a-f]{16})\/(stop|again)$/.exec(path);
@@ -178,14 +183,17 @@ export async function hoardApi(H: Hoard, req: IncomingMessage, res: ServerRespon
         send(res, 200, { job: jobShown(M.ask("answer", { of: id, said }, who, c.device ?? "")) }); return true;
       }
       if (method === "GET" && !act) { send(res, 200, { file: H.shown(H.file(id, who), who) }); return true; }
-      if (method === "POST" && !act) { send(res, 200, H.change(id, await c.body(req), who)); return true; }
+      if (method === "POST" && !act) { send(res, 200, linked(req, H.change(id, await c.body(req), who))); return true; }
       if (method === "POST" && act === "remove") { const gone = H.remove(id, who); send(res, 200, { ok: true, removed: gone.id }); return true; }
       if (method === "GET" && act === "sources") { send(res, 200, H.sources(id, who, c.asker)); return true; }
       if (method === "POST" && act === "fetched") { H.file(id, who); H.fetched(await c.body(req)); send(res, 200, { ok: true }); return true; }
       if (method === "GET" && act === "text") {
         const file = H.file(id, who);
         if (looksOf(file.mime) !== "text") { send(res, 415, { error: "that is not a text file" }); return true; }
-        send(res, 200, await H.text(file.sha, file.size)); return true;
+        const t = await H.text(file.sha, file.size);
+        send(res, 200, t);
+        if (t.whole) H.delivered(id, who);            // read whole by someone else: a once-only share ends here too
+        return true;
       }
     }
     send(res, 404, { error: "not found" });

@@ -13,6 +13,8 @@ import { Brand, Carried, DeviceRow, DeviceSettings, Link, type Yours } from "../
 import { Action, Art, Card, Choice, Eyebrow, Pending, Result, Small } from "../../shared/ui/ui";
 import { useApi } from "../../platform/useApi";
 import { HubCard, TalkFirstRow } from "./Hub";   // C-190; C-211
+import { HoardCard, HoardScreen } from "./Hoard";   // C-596
+import { usePlace } from "../../state/place";
 import { GlassCard } from "./Glass";   // C-262
 import { HomeScreen } from "./Home";
 import { TvCard } from "./Tv";
@@ -383,7 +385,9 @@ function grouped(ds: DeviceRow[], order: Order): { maker: string | null; ds: Dev
 
 // C-287: the PLACES tab -- the devices, the glass, the home and the TV, as one page (it was put together in App.tsx)
 export function PlacesScreen({ ink, goSettings }: { ink: string; goSettings: () => void }) {
-  return <YStack gap={14}><InPlayCard />{/* C-493: the games in play, as the hub knows them */}<DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={goSettings} /><TvCard ink={ink} goSettings={goSettings} /></YStack>;
+  const [page, setPage] = usePlace<"" | "hoard">("places.page", "");   // C-596: THE HOARD's page, opened from its card (C-309: kept through a refresh)
+  if (page === "hoard") return <HoardScreen ink={ink} onClose={() => setPage("")} />;
+  return <YStack gap={14}><InPlayCard />{/* C-493: the games in play, as the hub knows them */}{ALONE ? null : <HoardCard ink={ink} onOpen={() => setPage("hoard")} />}<DeviceScreen ink={ink} /><GlassCard ink={ink} /><HomeScreen ink={ink} goSettings={goSettings} /><TvCard ink={ink} goSettings={goSettings} /></YStack>;
 }
 
 // C-344: the last link and brands heard, for this run of the app -- PLACES opened again is drawn at once, at its height

@@ -24,7 +24,7 @@ import { askedAsk, cleanAnswer, imagineAsk, readImagined, readPersona, readSeen,
 import { Hoard, HoardError } from "./hoard.js";
 import { FPS, LEVELS, SIDE, glowStills, hearableArgs, jawStills, joinArgs, joinWavs, mouthLevels, pixelArgs, plainWavArgs, pngOf, selectCommands, speakArgs, squareArgs, stillArgs,
          voiceFileArgs, wavPcm } from "./render.js";
-import { canRead, looksOf, type HoardFile, type Who } from "./rules.js";
+import { canRead, looksOf, stageOf, MUSIC_PROMPT_MOST, SCENES_MOST, SPOKEN_MOST, TITLE_MOST, WORDS_MOST, type HoardFile, type Who } from "./rules.js";
 
 export type Makers = {
   /** a picture (a JPEG) shown to the house's own seeing model with a question; null when the house has none */
@@ -47,7 +47,8 @@ export type MakeKind = (typeof MAKE_KINDS)[number];
 export type JobState = "waiting" | "making" | "done" | "failed" | "stopped";
 export type Job = { id: string; kind: MakeKind; title: string; state: JobState; step: string; progress: number; at: number; started: number | null;
                     ended: number | null; error: string | null; owner: string; ownerName: string; device: string; args: Record<string, any>; result: string | null };
-export const SPOKEN_MOST = 12_000, SCENES_MOST = 24, PIECE = 1000;       // DRAFT: the most of a text read aloud; of a sequence; of one breath
+export const PIECE = 1000;       // DRAFT: the most said in one breath
+export { SCENES_MOST, SPOKEN_MOST };
 const STOPPED = "stopped";
 const base = (name: string) => name.replace(/\.[A-Za-z0-9]{1,5}$/, "").slice(0, 80) || "a file";
 
@@ -96,10 +97,14 @@ export class Makings {
     const place = new Map(rows.map((j, i) => [j.id, i]));       // newest first
     const jobs = rows.sort((a, b) => rank(a) - rank(b) || (rank(a) === 1 ? place.get(b.id)! - place.get(a.id)! : place.get(a.id)! - place.get(b.id)!))
       .filter((j) => j.owner === who.key || j.state === "making" || j.state === "waiting")
-      .map((j) => { const mine = j.owner === who.key; return { id: j.id, kind: j.kind, title: mine ? j.title : "someone else's making", state: j.state, step: mine ? j.step : "",
-                                                              progress: j.progress, at: j.at, started: j.started, ended: j.ended, error: mine ? j.error : null,
-                                                              by: j.ownerName, mine, result: mine ? j.result : null }; });
+      .map((j) => this.shown(j, who));
     return { jobs, now: rows.find((j) => j.state === "making")?.id ?? null };
+  }
+  /** a job as a caller is shown it: another person's by its being there, never by its name */
+  shown(j: Job, who: Who) {
+    const mine = j.owner === who.key;
+    return { id: j.id, kind: j.kind, title: mine ? j.title : "someone else's making", state: j.state, step: mine ? j.step : "", stage: stageOf(j.state, j.step),
+             progress: j.progress, at: j.at, started: j.started, ended: j.ended, error: mine ? j.error : null, by: j.ownerName, mine, result: mine ? j.result : null };
   }
   /** queue a making. Everything it names is checked now: the file is there, the asker may read it, it is the right kind */
   ask(kind: unknown, a: Record<string, any>, who: Who, device = ""): Job {
@@ -117,18 +122,18 @@ export class Makings {
       args = { of: f.id, voice: voice(a.voice, "daemon") }; title = `"${f.name}" read aloud`;
     } else if (kind === "magic") {
       const f = file(a.of, ["image"], "only a picture is made to speak");
-      args = { of: f.id, voice: voice(a.voice), words: typeof a.words === "string" ? a.words.trim().slice(0, 600) : "" }; title = `"${f.name}" speaks`;
+      args = { of: f.id, voice: voice(a.voice), words: typeof a.words === "string" ? a.words.trim().slice(0, WORDS_MOST) : "" }; title = `"${f.name}" speaks`;
     } else if (kind === "video") {
       const scenes = Array.isArray(a.scenes) ? a.scenes : [];
       if (!scenes.length || scenes.length > SCENES_MOST) throw new HoardError(400, `a magic video has 1 to ${SCENES_MOST} pictures`);
       const music = a.music === "under" || a.music === "song" ? a.music : "none";
-      args = { music, musicPrompt: typeof a.musicPrompt === "string" ? a.musicPrompt.trim().slice(0, 200) : "", title: typeof a.title === "string" ? a.title.trim().slice(0, 80) : "",
+      args = { music, musicPrompt: typeof a.musicPrompt === "string" ? a.musicPrompt.trim().slice(0, MUSIC_PROMPT_MOST) : "", title: typeof a.title === "string" ? a.title.trim().slice(0, TITLE_MOST) : "",
         scenes: scenes.map((s: any) => {
           const f = file(s?.of, ["image"], "a magic video is made of pictures");
           const say = s?.say === "words" || s?.say === "daemon" ? s.say : "auto";
           if (say === "words" && !String(s.words ?? "").trim()) throw new HoardError(400, "write what that picture says, or let it decide");
           if (say === "daemon" && !/^\d{1,4}$/.test(String(s.species ?? ""))) throw new HoardError(400, "pick the daemon that speaks");
-          return { of: f.id, say, words: say === "words" ? String(s.words).trim().slice(0, 600) : "", species: say === "daemon" ? Number(s.species) : null };
+          return { of: f.id, say, words: say === "words" ? String(s.words).trim().slice(0, WORDS_MOST) : "", species: say === "daemon" ? Number(s.species) : null };
         }) };
       if (music === "song" && args.scenes.some((s: any) => s.say !== "auto")) throw new HoardError(400, "a song carries the words only when no picture has a speaker");
       if (music !== "none" && !this.makers.music) throw new HoardError(503, "the house has no music door now");
@@ -136,7 +141,7 @@ export class Makings {
     } else {
       const f = this.H.file(String(a.of ?? ""), who);
       if (f.kind === "file" && !["image", "audio", "text"].includes(looksOf(f.mime))) throw new HoardError(415, "ask a picture, a recording, a text or a creation");
-      const text = typeof a.text === "string" ? a.text.trim().slice(0, 600) : "";
+      const text = typeof a.text === "string" ? a.text.trim().slice(0, WORDS_MOST) : "";
       if (!text && typeof a.said !== "string") throw new HoardError(400, "ask it something");
       args = { of: f.id, text, said: typeof a.said === "string" ? a.said : "" }; title = text ? `"${f.name}" asked: ${text.slice(0, 60)}` : `"${f.name}" asked aloud`;
     }
@@ -198,7 +203,8 @@ export class Makings {
   }
   private make(j: Job, who: Who, work: string, signal: AbortSignal): Promise<string> {
     const step = (s: string, p: number) => { if (signal.aborted) throw new Error(STOPPED); this.set(j.id, { step: s, progress: Math.max(0, Math.min(0.99, p)) }); };
-    const m = new Making(this.H, this.makers, who, j, work, signal, step, this.now);
+    const heard = (text: string) => { this.store.db.prepare("UPDATE hoard_jobs SET args = ? WHERE id = ?").run(JSON.stringify({ ...j.args, text, said: "" }), j.id); };
+    const m = new Making(this.H, this.makers, who, j, work, signal, step, this.now, heard);
     return j.kind === "spoken" ? m.spoken() : j.kind === "magic" ? m.magic() : j.kind === "video" ? m.video() : m.answer();
   }
 }
@@ -206,10 +212,10 @@ export class Makings {
 /** one making, start to finish */
 class Making {
   private H: Hoard; private K: Makers; private who: Who; private j: Job; private work: string; private signal: AbortSignal;
-  private step: (s: string, p: number) => void; private now: () => number;
+  private step: (s: string, p: number) => void; private now: () => number; private heard: (text: string) => void;
   private n = 0;
-  constructor(H: Hoard, K: Makers, who: Who, j: Job, work: string, signal: AbortSignal, step: (s: string, p: number) => void, now: () => number) {
-    this.H = H; this.K = K; this.who = who; this.j = j; this.work = work; this.signal = signal; this.step = step; this.now = now;
+  constructor(H: Hoard, K: Makers, who: Who, j: Job, work: string, signal: AbortSignal, step: (s: string, p: number) => void, now: () => number, heard: (text: string) => void) {
+    this.H = H; this.K = K; this.who = who; this.j = j; this.work = work; this.signal = signal; this.step = step; this.now = now; this.heard = heard;
   }
   private path(name: string) { return join(this.work, `${++this.n}-${name}`); }
   /** the file a making is made of, still its asker's to read, and its bytes on the hub */
@@ -403,9 +409,10 @@ class Making {
       this.step("hearing the question", 0.05);
       const wav = this.path("heard");
       await this.K.ffmpeg(hearableArgs(), { said: a.said }, { wav }, { title: `${this.j.title}: what was said`, expectMs: 6000 });
-      question = ((await this.K.hear(new Uint8Array(readFileSync(wav)))) ?? "").trim().slice(0, 600);
+      question = ((await this.K.hear(new Uint8Array(readFileSync(wav)))) ?? "").trim().slice(0, WORDS_MOST);
       rmSync(a.said, { force: true });
       if (!question) throw new Error("nothing was heard: ask it again, a little nearer");
+      this.heard(question);                 // kept with the job as its words: the recording is gone, and it can still be made again
     }
     this.step("remembering what it is", 0.15);
     const { f, at } = await this.source(a.of);

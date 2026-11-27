@@ -16,6 +16,7 @@ import { muteAway, setMuteAway } from "../../state/away";
 import { DevModeCard } from "../../shared/ui/devpanel";
 import { MindCard } from "./Mind";   // C-307 (was C-280's PhoneMind)
 import { MindAtWork } from "./MindMap";   // C-319
+import { HoardSettingsCard } from "./Hoard";   // C-601
 import { HomeAssistantCard } from "../places/Home";
 import { ThemeSettings } from "./Theme";   // C-349, C-350
 import { usePlace } from "../../state/place";
@@ -46,6 +47,7 @@ export function SettingsScreen({ ink }: { ink: string }) {
           {ALONE ? null : <TalkSettingsCard ink={ink} />}
           <MindCard ink={ink} />{/* C-307 */}
           <MindAtWork ink={ink} />{/* C-319 */}
+          {ALONE ? null : <HoardSettingsCard ink={ink} />}{/* C-601: THE HOARD, the storage twin of THE MIND */}
         </YStack>
       ) : (
         <YStack gap={14}>

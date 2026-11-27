@@ -221,6 +221,7 @@ describe("THE HOARD's makings (C-605)", () => {
     expect(mid.now).toBe(first.id);
     expect(mid.jobs.map((j) => `${j.id === first.id ? "first" : "second"}:${j.state}`)).toEqual(["first:making", "second:waiting"]);
     expect(mid.jobs[0].step).toBe("reading it aloud");
+    expect(mid.jobs.map((j) => j.stage)).toEqual(["voice", "waiting"]);       // where each is, for whoever draws it
     expect(mid.jobs[0].progress).toBeGreaterThan(0);
     expect(mid.jobs[0].progress).toBeLessThan(1);
     open(); gate = null;
@@ -389,6 +390,8 @@ describe("THE HOARD's makings (C-605)", () => {
     expect(calls.hear).toBe(1);
     expect(creation(jobOf(s.id, A).result!, A).meta.question).toBe("what do you remember");
     expect(existsSync(said)).toBe(false);
+    // what was heard is kept with the job as its words, so it can be made again though the recording is gone
+    expect(JSON.parse((store.db.prepare("SELECT args FROM hoard_jobs WHERE id = ?").get(s.id) as { args: string }).args)).toMatchObject({ text: "what do you remember", said: "" });
     // a creation is asked as what it is; a recording by what is heard in it
     reset();
     const magic = H.list(A).find((f) => f.kind === "magic")!;

@@ -345,8 +345,10 @@ export class Hoard {
       if (!canProtect(f, who)) throw new HoardError(403, "only its owner or a keeper protects a file");   // DRAFT
       this.store.db.prepare("UPDATE hoard_files SET protected = ? WHERE id = ?").run(b.protected === true ? 1 : 0, f.id);
     }
-    if (b.name !== undefined || b.share !== undefined) {
+    if (b.name !== undefined || b.share !== undefined || b.how !== undefined) {
       if (!canChange(f, who)) throw new HoardError(403, "only the one who put a file here changes it");   // DRAFT
+      // C-576: how it came is put right once the device has checked -- a MOVE whose local copy was kept after all is a COPY
+      if (b.how === "copy" || b.how === "move") this.store.db.prepare("UPDATE hoard_files SET how = ? WHERE id = ?").run(b.how, f.id);
       if (b.name !== undefined) this.store.db.prepare("UPDATE hoard_files SET name = ? WHERE id = ?").run(cleanName(b.name), f.id);
       if (b.share !== undefined) {
         if (!SHARES.includes(b.share as Share)) throw new HoardError(400, "yourself, the household or a friend");

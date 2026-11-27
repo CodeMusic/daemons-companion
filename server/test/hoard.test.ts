@@ -378,6 +378,14 @@ describe("THE HOARD on the hub (C-596)", () => {
     expect((await get("/api/hoard/files", B)).body.files.some((f: any) => f.id === id)).toBe(false);
     expect((await get(`/api/hoard/files/${id}`)).body.file).toMatchObject({ shareNow: "me", ended: true });   // still its owner's
     expect((await get(`/api/hoard/files/${id}/sources`)).body.sources.length).toBeGreaterThan(0);
+    // a text read whole in the app is a download too
+    const words = (await upload(Buffer.from("read me once"), { name: "once.txt", share: "household", once: "1" })).body.file.id;
+    expect((await get(`/api/hoard/files/${words}/text`)).body.text).toBe("read me once");     // its owner reading it ends nothing
+    expect((await get(`/api/hoard/files/${words}/text`, B)).body.text).toBe("read me once");
+    expect((await get(`/api/hoard/files/${words}/text`, B)).status).toBe(403);
+    // how a file came is its owner's to put right (a MOVE whose local copy was kept after all)
+    expect((await post(`/api/hoard/files/${words}`, { how: "move" }, B)).status).toBe(403);
+    expect((await post(`/api/hoard/files/${words}`, { how: "move" })).body.file.how).toBe("move");
   });
 
   it("a friend outside the household: a link that opens one file, for its time, and once if asked", async () => {
@@ -385,6 +393,7 @@ describe("THE HOARD on the hub (C-596)", () => {
     const r = await upload(gift, { name: "for you.txt", share: "friend", friend: "Wren", minutes: "30" });
     expect(r.body.file).toMatchObject({ share: "friend", friend: "Wren" });
     expect(r.body.link).toMatch(/^\/hoard\/s\/[A-Za-z0-9_-]{24}$/);
+    expect(r.body.linkAt).toBe(`${hub}${r.body.link}`);                                  // the whole address, by the name the hub was asked at
     expect(JSON.stringify((await get("/api/engine/hoard")).body)).not.toContain(r.body.link.split("/").pop());   // the link is kept only as its hash
     const page = await fetch(hub + r.body.link);
     expect(page.status).toBe(200);

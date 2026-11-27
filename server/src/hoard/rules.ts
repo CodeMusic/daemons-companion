@@ -147,6 +147,23 @@ export function plan(blobs: Blob[], nodes: Holder[], copies: Copy[]): Copy[] {
 export const held = (b: Blob, nodes: Holder[], copies: Copy[]) =>
   copies.some((c) => c.sha === b.sha && c.state === "have" && nodes.some((n) => n.id === c.node && n.state !== "gone"));
 
+// ---- a making's limits, said once for the hub and the app (C-605) ----
+export const SCENES_MOST = 24;                 // the most pictures in a magic video
+export const WORDS_MOST = 600;                 // what a picture is given to say; a question asked of a file
+export const MUSIC_PROMPT_MOST = 200, TITLE_MOST = 80;
+export const SPOKEN_MOST = 12_000;             // the most of a text read aloud, characters (DRAFT)
+/** where a making is, for whoever draws it: looking, finding words, finding its voice, putting it together, keeping it */
+export type Stage = "waiting" | "seeing" | "thinking" | "voice" | "making" | "keeping" | "";
+export function stageOf(state: string, step: string): Stage {
+  if (state === "waiting") return "waiting";
+  if (state !== "making") return "";
+  if (/keeping/.test(step)) return "keeping";
+  if (/voice|aloud/.test(step)) return "voice";
+  if (/looking|hearing|remembering|reading it$/.test(step)) return "seeing";
+  if (/words|thinking|writing/.test(step)) return "thinking";
+  return "making";
+}
+
 // ---- names and kinds ----
 /** a file's name as it is kept: no path, no control characters, 200 at most */
 export const cleanName = (name: unknown) => (String(name ?? "").replace(/[\u0000-\u001f\u007f]/g, "").split(/[\\/]/).pop() ?? "").trim().slice(0, 200) || "a file";

@@ -20,9 +20,9 @@ bool begin(int scale, bool headless) {
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) { fprintf(stderr, "SDL: %s\n", SDL_GetError()); return false; }
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");   // pixels stay pixels
   const std::string title = std::string("DAEMONS -- ") + board::NAME;
-  scale = std::max(1, std::min(scale, 1280 / board::SCREEN_W));   // C-468: the Game HAT's 640 wide is two times at most
-  win = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, board::SCREEN_W * scale,
-                         board::SCREEN_H * scale, 0);
+  scale = std::max(1, std::min(scale, 1280 / screenW));   // C-468: the Game HAT's 640 wide is two times at most
+  win = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenW * scale,
+                         screenH * scale, 0);
   if (!win) { fprintf(stderr, "SDL: %s\n", SDL_GetError()); return false; }
   ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (!ren) ren = SDL_CreateRenderer(win, -1, 0);
@@ -46,7 +46,7 @@ void present(const uint16_t *px) {
   int ww, wh;
   SDL_GetRendererOutputSize(ren, &ww, &wh);
   // the board's screen fills the window; the canvas sits in its middle, as many whole times its size as fit (C-468)
-  const int s = ww / board::SCREEN_W * std::max(1, std::min(board::SCREEN_W / W, board::SCREEN_H / H));
+  const int s = ww / screenW * zoom();
   SDL_Rect at{ (ww - W * s) / 2, (wh - H * s) / 2, W * s, H * s };
   SDL_RenderCopy(ren, tex, nullptr, &at);
   SDL_RenderPresent(ren);
@@ -103,6 +103,10 @@ bool poll(KeyEvent &e) {
 }
 
 bool closed() { return wasClosed; }
+
+// C-593: on a computer the page draws the game into the canvas, at whatever size the board would show it
+bool gameDirect() { return false; }
+void game(const uint32_t *, int, int, int, int, int) {}
 
 void end() {
   if (tex) SDL_DestroyTexture(tex);

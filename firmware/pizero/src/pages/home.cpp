@@ -145,75 +145,87 @@ struct Home : Page {
     canvas.setFont(&fonts::Font0);
     canvas.setTextSize(1);
     if (!v.reached) {
+      int y = 22;
+      if (lay::tall()) {   // C-593: the den all the same, empty until a hub says who lives in it
+        const Split s = split(104);
+        drawDen(v, s.px, s.py, s.pw, s.ph);
+        y = s.ty + 2;
+      }
       canvas.setTextColor(SOFT);
-      canvas.setCursor(6, 22);
+      canvas.setCursor(6, y);
       canvas.print(hub::address().empty() ? "NOT LINKED TO A HUB" : !v.asked ? "ASKING THE HUB" : "THE HUB IS NOT ANSWERING");
       canvas.setTextColor(DIM);
-      wrap(v.error, 6, 34, 51, 2, 10);
+      wrap(v.error, 6, y + 12, lay::cols(), 2, 10);
     } else {
-      // left: the den, and the daemon in it
-      drawDen(v, 4, 18, 104, 104);
-      const int x = 116;
+      // the den, and the daemon in it: on the left with the words beside it, or (C-593) across the top of a tall
+      // canvas with the words below, the care's pips beside the name's lines there so the step has the rows
+      const Split s = split(104);
+      const bool tall = lay::tall();
+      drawDen(v, s.px, s.py, s.pw, s.ph);
+      const int x = s.tx, y = s.ty;
       if (v.carrying) {
         canvas.setTextSize(2);
         canvas.setTextColor(TFT_WHITE);
-        canvas.setCursor(x, 20);
-        canvas.print(upper(v.nickname.empty() ? v.name : v.nickname).substr(0, 16).c_str());
+        canvas.setCursor(x, y);
+        canvas.print(upper(v.nickname.empty() ? v.name : v.nickname).substr(0, (hal::W - x - 6) / 12).c_str());
         canvas.setTextSize(1);
         canvas.setTextColor(SOFT);
-        canvas.setCursor(x, 40);
+        canvas.setCursor(x, y + 20);
         canvas.printf("LV %d  %s", v.level, upper(v.types).c_str());
         canvas.setTextColor(day);
-        canvas.setCursor(x, 52);
+        canvas.setCursor(x, y + 32);
         canvas.print(upper(v.tired == "asleep" ? "asleep" : v.word).c_str());
+        const int cx = tall ? hal::W / 2 + 30 : x, cy = tall ? y + 20 : y + 46;
         canvas.setTextColor(DIM);
-        canvas.setCursor(x, 66);
+        canvas.setCursor(cx, cy);
         canvas.print("FED");
-        drawPips(x + 42, 66, v.fedToday, v.fedDue, day, DIM);
-        canvas.setCursor(x, 78);
+        drawPips(cx + 42, cy, v.fedToday, v.fedDue, day, DIM);
+        canvas.setCursor(cx, cy + 12);
         canvas.print("WATER");
-        drawPips(x + 42, 78, v.wateredToday, v.wateredDue, day, DIM);
+        drawPips(cx + 42, cy + 12, v.wateredToday, v.wateredDue, day, DIM);
       } else {
         canvas.setTextColor(SOFT);
-        canvas.setCursor(x, 22);
+        canvas.setCursor(x, y + 2);
         canvas.print("NO DAEMON CARRIED HERE");
         canvas.setTextColor(DIM);
-        wrap("Send one from the game, then SYNC.", x, 36, 32, 2, 10);
+        wrap("Send one from the game, then SYNC.", x, y + 16, s.cols, 2, 10);
       }
       if (!v.stepText.empty()) {
+        const int ny = tall ? y + 52 : y + 74;
         canvas.setTextColor(day);
-        canvas.setCursor(x, 94);
+        canvas.setCursor(x, ny);
         canvas.print("NEXT");
         canvas.setTextColor(TFT_WHITE);
-        wrap(v.stepText, x, 106, 32, 3, 10);
+        wrap(v.stepText, x, ny + 12, s.cols, (lay::foot(128) - (ny + 12)) / 10 + (tall ? 0 : 1), 10);   // three rows on the first canvas
       }
       canvas.setTextColor(DIM);
-      canvas.setCursor(6, 128);
+      canvas.setCursor(6, lay::foot(128));
       canvas.print(upper(v.day + "  " + v.season).c_str());
     }
     if (hasGame) {
       canvas.setTextColor(DIM);
       std::string g = game.edition + " " + game.release + (game.testing ? " TESTING" : "");
-      canvas.setCursor(hal::W - 6 - 6 * (int)g.size(), 128);
+      canvas.setCursor(hal::W - 6 - 6 * (int)g.size(), lay::foot(128));
       canvas.print(g.c_str());
     }
-    choices.draw(146, day);
+    choices.draw(lay::foot(146), day);
     if (!told.empty()) {
-      canvas.fillRect(0, 126, hal::W, 12, rgb(0x18, 0x1c, 0x24));
+      canvas.fillRect(0, lay::foot(126), hal::W, 12, rgb(0x18, 0x1c, 0x24));
       canvas.setTextColor(SOFT);
-      canvas.setCursor(6, 128);
-      canvas.print(upper(told).substr(0, 51).c_str());
+      canvas.setCursor(6, lay::foot(128));
+      canvas.print(upper(told).substr(0, lay::cols()).c_str());
     }
     if (!received.empty()) {   // C-397: RECEIVED, as the app's card (app/shared/ui/received.tsx): who, what, where it is, from whom
       const mirror::Arrival &a = received.front();
       const uint16_t paper = rgb(0xfb, 0xfa, 0xf6), ink = rgb(0x1d, 0x20, 0x29), rule = rgb(0x2b, 0x2f, 0x3a);
-      canvas.fillRoundRect(40, 18, hal::W - 80, 140, 6, rule);
-      canvas.fillRoundRect(43, 21, hal::W - 86, 134, 5, day);
-      canvas.fillRoundRect(46, 24, hal::W - 92, 128, 4, paper);
+      const int oy = lay::more() / 2;   // C-593: the card in the middle of a higher canvas
+      canvas.fillRoundRect(40, oy + 18, hal::W - 80, 140, 6, rule);
+      canvas.fillRoundRect(43, oy + 21, hal::W - 86, 134, 5, day);
+      canvas.fillRoundRect(46, oy + 24, hal::W - 92, 128, 4, paper);
       canvas.setTextColor(ink);
       canvas.setTextSize(1);
       std::string who = upper(receivedBy.empty() ? "YOU" : receivedBy) + " RECEIVED";   // DRAFT
-      canvas.setCursor((hal::W - 6 * (int)who.size()) / 2, 30);
+      canvas.setCursor((hal::W - 6 * (int)who.size()) / 2, oy + 30);
       canvas.print(who.c_str());
       // the daemon itself when it is the one this device now carries, its picture come with the state
       const bool here = a.kind == "sent" && !carriedHere.empty() && a.nickname == carriedHere;
@@ -224,42 +236,43 @@ struct Home : Page {
       std::string from = "FROM " + upper(a.kind == "sent" ? (receivedBy.empty() ? "you" : receivedBy) : a.from.empty() ? "your companion" : a.from);   // DRAFT
       what = upper(what);
       if (art) {   // the picture on the left, the words beside it
-        const int scale = art->h <= 40 ? 2 : 1, ax = 52 + (80 - art->w * scale) / 2, ay = 42 + (88 - art->h * scale) / 2;
+        const int scale = art->h <= 40 ? 2 : 1, ax = 52 + (80 - art->w * scale) / 2, ay = oy + 42 + (88 - art->h * scale) / 2;
         drawSprite(*art, ax, ay, scale);
         const int tx = 140, cols = (hal::W - 50 - tx) / 6;
         canvas.setTextSize(what.size() * 12 <= (size_t)(hal::W - 50 - tx) ? 2 : 1);
-        canvas.setCursor(tx, 58);
+        canvas.setCursor(tx, oy + 58);
         canvas.print(what.substr(0, canvas.getTextSizeX() > 1 ? cols / 2 : cols).c_str());
         canvas.setTextSize(1);
         canvas.setTextColor(rule);
-        wrap(where, tx, 82, cols, 2, 10);
-        wrap(from, tx, 104, cols, 2, 10);
+        wrap(where, tx, oy + 82, cols, 2, 10);
+        wrap(from, tx, oy + 104, cols, 2, 10);
       } else {
         canvas.setTextSize(2);
         what = what.substr(0, 17);
-        canvas.setCursor((hal::W - 12 * (int)what.size()) / 2, 62);
+        canvas.setCursor((hal::W - 12 * (int)what.size()) / 2, oy + 62);
         canvas.print(what.c_str());
         canvas.setTextSize(1);
         canvas.setTextColor(rule);
-        canvas.setCursor((hal::W - 6 * (int)where.size()) / 2, 88);
+        canvas.setCursor((hal::W - 6 * (int)where.size()) / 2, oy + 88);
         canvas.print(where.c_str());
-        canvas.setCursor((hal::W - 6 * (int)from.size()) / 2, 100);
+        canvas.setCursor((hal::W - 6 * (int)from.size()) / 2, oy + 100);
         canvas.print(from.c_str());
       }
       canvas.setTextColor(day);
       std::string more = received.size() > 1 ? hint("ENTER: NEXT") : hint("ENTER");   // DRAFT
-      canvas.setCursor((hal::W - 6 * (int)more.size()) / 2, 140);
+      canvas.setCursor((hal::W - 6 * (int)more.size()) / 2, oy + 140);
       canvas.print(more.c_str());
       return;
     }
     if (offer) {   // C-215, the app's question
-      canvas.fillRoundRect(16, 30, hal::W - 32, 96, 4, rgb(0x10, 0x12, 0x18));
-      canvas.drawRoundRect(16, 30, hal::W - 32, 96, 4, day);
+      const int oy = lay::more() / 2;   // C-593: in the middle of a higher canvas
+      canvas.fillRoundRect(16, oy + 30, hal::W - 32, 96, 4, rgb(0x10, 0x12, 0x18));
+      canvas.drawRoundRect(16, oy + 30, hal::W - 32, 96, 4, day);
       canvas.setTextColor(TFT_WHITE);
       wrap("This game isn't the one the companion follows, so it isn't mirrored. Keep it on the companion as a save of "
-           "its own?", 24, 38, 46, 5, 11);   // DRAFT, the app's words
+           "its own?", 24, oy + 38, (hal::W - 44) / 6, 5, 11);   // DRAFT, the app's words
       canvas.setTextColor(day);
-      canvas.setCursor(24, 110);
+      canvas.setCursor(24, oy + 110);
       canvas.print(hint("ENTER: KEEP IT THERE    ESC: NOT NOW"));   // DRAFT
     }
   }

@@ -104,6 +104,7 @@ set(SRC
   src/paths.cpp
   src/keys.cpp
   src/canvas.cpp
+  src/hal/size.cpp
   src/sound.cpp
   src/game/hash.cpp
   src/game/bps.cpp

@@ -9,6 +9,15 @@
 #include "keys.h"
 
 void drawSprite(const Sprite &s, int x, int y, int scale);                  // index 0 left clear
+
+// C-593: a page with a picture and words. On a wide canvas the picture is on the left and the words beside it, as the
+// Cardputer Zero has them (and a higher canvas makes the picture higher); on a tall one (the HackberryPi's square) the
+// picture is across the top and the words below it.
+struct Split {
+  int px, py, pw, ph;   // the picture
+  int tx, ty, cols;     // the words: their corner, and the Font0 letters that fit a line
+};
+Split split(int side);   // side: the picture's side on the first canvas (104; CARE's is 120)
 void drawDen(const HubView &v, int x, int y, int w, int h);                  // the den's wall and floor, the daemon on it
 void drawPartyMember(const PartyMember &m, const HubView &v, int x, int y, int w, int h);
 void drawPips(int x, int y, int have, int due, uint16_t on, uint16_t off);  // ● for each given, ○ for each still due

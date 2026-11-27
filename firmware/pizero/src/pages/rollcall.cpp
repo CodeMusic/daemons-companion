@@ -106,7 +106,7 @@ struct RollCall : Page {
       else canvas.printf("CALLS %s (%04X)  F X: ANOTHER", known[pick].name.c_str(), known[pick].id);              // DRAFT
     } else if (mode == rollcall::SOME) {
       if (known.empty()) canvas.print("CALL ALL FIRST, TO FIND WHO IS ABOUT");                                    // DRAFT
-      else { std::string s = "CALLS"; for (size_t i = 0; i < known.size() && i < 4; i++) s += " " + known[i].name; canvas.print(s.substr(0, 52).c_str()); }   // DRAFT
+      else { std::string s = "CALLS"; for (size_t i = 0; i < known.size() && i < 4; i++) s += " " + known[i].name; canvas.print(s.substr(0, lay::across()).c_str()); }   // DRAFT
     } else if (mode == rollcall::ALL) canvas.print("EVERY DEVICE THAT HEARS IT ANSWERS, EACH IN ITS SLOT");      // DRAFT
     else canvas.print("EVERY DEVICE ANSWERS IN ONE SLOT: HOW MANY SURVIVE");                                      // DRAFT
 
@@ -123,7 +123,7 @@ struct RollCall : Page {
         canvas.printf("NOBODY ANSWERED CALL %u (%d OF %d SENT)", last.call, last.packets, rollcall::CALL_PACKETS);   // DRAFT
         y += 10;
       }
-      for (size_t i = 0; i < last.answers.size() && i < 4; i++) {
+      for (size_t i = 0; i < last.answers.size() && (int)i < lay::rows(4, 10); i++) {
         auto &a = last.answers[i];
         canvas.setTextColor(TFT_WHITE);
         canvas.setCursor(6, y);
@@ -136,18 +136,18 @@ struct RollCall : Page {
       y += 10;
     }
     for (auto &l : log) {
-      if (y > 140) break;
+      if (y > lay::foot(140)) break;
       canvas.setTextColor(SOFT);
       canvas.setCursor(6, y);
-      canvas.print(l.substr(0, 52).c_str());
+      canvas.print(l.substr(0, lay::across()).c_str());
       y += 10;
     }
 
     canvas.setTextColor(DIM);
-    canvas.setCursor(6, 160);
+    canvas.setCursor(6, lay::foot(160));
     std::string why = longwave::mayCall();
     std::string foot = !told.empty() ? upper(told) : !why.empty() ? upper(why) : hint("ENTER: CALL  A: ANSWER  P: POWER  ESC");   // DRAFT
-    canvas.print(foot.substr(0, 52).c_str());
+    canvas.print(foot.substr(0, lay::across()).c_str());
   }
 };
 }  // namespace

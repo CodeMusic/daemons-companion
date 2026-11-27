@@ -40,26 +40,28 @@ struct Party : Page {
     canvas.setTextSize(1);
     if (v.party.empty()) {
       canvas.setTextColor(SOFT);
-      wrap(v.reached ? "The save holds no party yet." : "The hub is not answering.", 6, 24, 51, 2, 10);
+      wrap(v.reached ? "The save holds no party yet." : "The hub is not answering.", 6, 24, lay::cols(), 2, 10);
       return;
     }
     if (at >= (int)v.party.size()) at = 0;
     const PartyMember &m = v.party[at];
-    drawPartyMember(m, v, 4, 18, 104, 104);
-    const int x = 116;
+    Split s = split(104);   // C-593: its picture beside the words, or across the top of a tall canvas
+    if (lay::tall()) { s.ph -= 36; s.ty -= 36; }   // lower than the den's: four routines go under it
+    drawPartyMember(m, v, s.px, s.py, s.pw, s.ph);
+    const int x = s.tx, ty = s.ty;
     canvas.setTextSize(2);
     canvas.setTextColor(TFT_WHITE);
-    canvas.setCursor(x, 20);
-    canvas.print(upper(m.name).substr(0, 16).c_str());
+    canvas.setCursor(x, ty);
+    canvas.print(upper(m.name).substr(0, (hal::W - x - 6) / 12).c_str());
     canvas.setTextSize(1);
     canvas.setTextColor(SOFT);
-    canvas.setCursor(x, 40);
+    canvas.setCursor(x, ty + 20);
     canvas.printf("LV %d  %s", m.level, upper(m.types).c_str());
     canvas.setTextColor(day);
-    canvas.setCursor(x, 56);
+    canvas.setCursor(x, ty + 36);
     canvas.print("ROUTINES");
     for (size_t i = 0; i < m.routines.size() && i < 4; i++) {
-      const int y = 70 + (int)i * 14;
+      const int y = ty + 50 + (int)i * 14;
       canvas.fillRect(x, y - 1, 4, 10, hex(m.routineColours[i], DIM));   // the streak's colour on its body
       canvas.setTextColor(TFT_WHITE);
       canvas.setCursor(x + 10, y);
@@ -70,11 +72,11 @@ struct Party : Page {
     }
     // where it sits in the party
     for (int i = 0; i < (int)v.party.size(); i++) {
-      if (i == at) canvas.fillCircle(hal::W / 2 - (int)v.party.size() * 6 + i * 12 + 6, 132, 3, day);
-      else canvas.drawCircle(hal::W / 2 - (int)v.party.size() * 6 + i * 12 + 6, 132, 3, DIM);
+      if (i == at) canvas.fillCircle(hal::W / 2 - (int)v.party.size() * 6 + i * 12 + 6, lay::foot(132), 3, day);
+      else canvas.drawCircle(hal::W / 2 - (int)v.party.size() * 6 + i * 12 + 6, lay::foot(132), 3, DIM);
     }
     canvas.setTextColor(DIM);
-    canvas.setCursor(6, 148);
+    canvas.setCursor(6, lay::foot(148));
     canvas.print(hint("Z C: THE OTHERS    ESC: BACK"));
   }
 };

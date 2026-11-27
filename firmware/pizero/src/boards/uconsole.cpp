@@ -28,7 +28,8 @@ enum { BTN_TRIGGER = 0x120, BTN_THUMB, BTN_THUMB2, BTN_TOP, BTN_BASE3 = 0x128, B
 namespace board {
 const char *const ID = "uconsole";
 const char *const NAME = "uConsole";   // DRAFT
-const int SCREEN_W = 1280, SCREEN_H = 720;   // as held, landscape; the canvas four times its size fits (1280x680)
+const int SCREEN_W = 1280, SCREEN_H = 720;   // as held, landscape
+const int CANVAS_W = 320, CANVAS_H = 180;    // C-593: the whole screen, four times over (DRAFT: drawn unseen, not yet on the device)
 const bool KEYBOARD = true;
 // Its names under /dev/input/by-id are seen on the first day; until then the search finds the keyboard and the joystick
 const char *const INPUTS[] = { nullptr };

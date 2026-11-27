@@ -10,6 +10,7 @@ namespace board {
 const char *const ID = "gamepi20";
 const char *const NAME = "GamePi20";   // DRAFT
 const int SCREEN_W = 320, SCREEN_H = 240;
+const int CANVAS_W = 320, CANVAS_H = 240;   // C-593: the whole screen (DRAFT: drawn unseen, not yet on the device)
 const bool KEYBOARD = false;
 const char *const INPUTS[] = { "/dev/input/by-path/platform-daemons-pad-event", nullptr };   // else the search finds BTN_A
 

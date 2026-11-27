@@ -156,7 +156,7 @@ struct Games : Page {
       canvas.setCursor(6, 40);
       canvas.print("LOOKING...");   // DRAFT
       canvas.setTextColor(dim);
-      wrap("Your own ROMs, the newest release, and what the hub holds for testing.", 6, 56, 51, 3, 10);   // DRAFT
+      wrap("Your own ROMs, the newest release, and what the hub holds for testing.", 6, 56, lay::cols(), 3, 10);   // DRAFT
       return;
     }
     if (state == Working) {
@@ -165,7 +165,7 @@ struct Games : Page {
       canvas.print(upper(step).c_str());
       canvas.setTextColor(dim);
       wrap("Your own ROM is checked, our patch is fetched and checked, and DAEMONS is made here. Your ROM is never sent "
-           "anywhere.", 6, 60, 51, 4, 10);   // DRAFT
+           "anywhere.", 6, 60, lay::cols(), 4, 10);   // DRAFT
       return;
     }
     if (state == Done) {
@@ -177,15 +177,15 @@ struct Games : Page {
       canvas.print(hint("ENTER PLAYS IT   ESC: THE LIST"));   // DRAFT
       if (made.testing) {
         canvas.setTextColor(dim);
-        wrap("It plays your one save, as every game here does, kept in step with the hub.", 6, 80, 51, 3, 10);   // DRAFT (C-397)
+        wrap("It plays your one save, as every game here does, kept in step with the hub.", 6, 80, lay::cols(), 3, 10);   // DRAFT (C-397)
       }
       return;
     }
     if (state == Failed) {
       canvas.setTextColor(rgb(0xe0, 0x90, 0x80));
-      wrap(message, 6, 36, 51, 6, 10);
+      wrap(message, 6, 36, lay::cols(), lay::rows(6, 10), 10);
       canvas.setTextColor(soft);
-      canvas.setCursor(6, 150);
+      canvas.setCursor(6, lay::foot(150));
       canvas.print(hint("ENTER: BACK TO THE LIST"));   // DRAFT
       return;
     }
@@ -214,7 +214,7 @@ struct Games : Page {
     int below = 86;   // the testing line goes under however many lines this took (three, and it overlapped)
     if (origs.empty()) {
       below += 10 * wrap(hint("Put your own FireRed or LeafGreen (USA, the .gba you own) in DAEMONS in your home folder, or on a USB stick. "
-           "TAB looks again."), 6, 86, 51, 4, 10);   // DRAFT
+           "TAB looks again."), 6, 86, lay::cols(), 4, 10);   // DRAFT
     } else {
       std::string line = "YOUR ROMS:";   // DRAFT
       for (auto &o : origs) {
@@ -222,14 +222,14 @@ struct Games : Page {
         if (n.rfind("Pokemon ", 0) == 0) n = n.substr(8);
         line += "  " + upper(n);
       }
-      below += 10 * wrap(line, 6, 86, 51, 2, 10);
+      below += 10 * wrap(line, 6, 86, lay::cols(), lay::rows(2, 10), 10);
     }
     if (testing.editions.empty() && !testing.why.empty()) {
       canvas.setTextColor(dim);
-      wrap("TESTING: " + testing.why, 6, std::max(110, below + 4), 51, 3, 10);   // DRAFT
+      wrap("TESTING: " + testing.why, 6, std::max(110, below + 4), lay::cols(), 3, 10);   // DRAFT
     }
     canvas.setTextColor(soft);
-    canvas.setCursor(6, 156);
+    canvas.setCursor(6, lay::foot(156));
     canvas.print(hint("ENTER PLAYS OR MAKES  TAB LOOKS AGAIN  ESC HOME"));   // DRAFT
   }
   ~Games() override { if (worker.joinable()) worker.join(); }

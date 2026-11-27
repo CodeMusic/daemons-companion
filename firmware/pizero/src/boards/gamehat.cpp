@@ -10,6 +10,7 @@ namespace board {
 const char *const ID = "gamehat";
 const char *const NAME = "Game HAT";   // DRAFT
 const int SCREEN_W = 640, SCREEN_H = 480;   // the picture the Pi sends; the HAT shows it at 480x320
+const int CANVAS_W = 320, CANVAS_H = 240;   // C-593: the whole picture, twice over (DRAFT: drawn unseen, not yet on the device)
 const bool KEYBOARD = false;
 const char *const INPUTS[] = { "/dev/input/by-path/platform-daemons-pad-event", nullptr };
 

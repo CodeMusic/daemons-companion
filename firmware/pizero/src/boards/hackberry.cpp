@@ -28,7 +28,10 @@
 namespace board {
 const char *const ID = "hackberry";
 const char *const NAME = "HackberryPi";   // DRAFT
-const int SCREEN_W = 720, SCREEN_H = 720;   // square: the canvas twice its size (640x340) in the middle
+const int SCREEN_W = 720, SCREEN_H = 720;
+// C-593: the whole square, twice over (the user, 2026-11-27: "each device should take full advantage of its screen");
+// the game's picture three times its size across the top (720x480), the companion's strip under it
+const int CANVAS_W = 360, CANVAS_H = 360;
 const bool KEYBOARD = true;
 // The keyboard's chip is on the third port of the board's own USB hub, whichever keyboard it carries (Q10, Q20 or
 // 9900); failing it, the search finds the first device with letter keys. Its mouse is not read.
@@ -57,7 +60,8 @@ bool forPage(KeyEvent &e, const bool *held, bool) {
   return true;
 }
 
-const char *word(Key k) { return keyName(k); }
+// A hint's ESC is this keyboard's back key (DRAFT: the word, and the key itself until a thumb has pressed it)
+const char *word(Key k) { return k == Key::Esc ? "BACK KEY" : keyName(k); }
 // The two top keys the chip sends as keypad codes: the back key goes back, the menu key is SYM (DRAFT: neither has
 // been pressed yet, and the chip's own program may send something else for a tap; ZERO_KEYLOG=1 prints what comes)
 Key rawKey(int code) {

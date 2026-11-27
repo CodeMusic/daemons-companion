@@ -3,6 +3,7 @@
 // a player reads here is DRAFT until the user has seen it on the device.
 #include <string>
 #include "game/emu.h"
+#include "hal/hal.h"
 #include "keys.h"
 
 enum class PageId { Home, Play, Make, Pair, Care, Step, Party, Say, Caps, Talk, Kit, Engine, Dashboard, Account, RollCall };
@@ -26,6 +27,18 @@ extern volatile bool quitting;
 extern bool headless;
 extern bool savedSinceSync;                     // C-397: the game saved since the last SYNC (HOME SYNCs then)
 void keepSave();                                // the game's save into its own file (savePath), if it moved since kept
+
+// C-593: where a page puts things, on whichever canvas this board has (hal::W, hal::H). Every page was first drawn for
+// 320x170, and on that canvas each of these gives the number the page had: a bigger canvas gets more letters across,
+// more rows, and its last lines at its own bottom edge.
+namespace lay {
+inline int more() { return hal::H - 170; }                         // the height this canvas has over the first
+inline int cols(int x = 6) { return (hal::W - x - 6) / 6; }        // Font0 letters from x to the right margin: 51 from 6
+inline int across() { return (hal::W - 8) / 6; }                   // a whole line, edge to edge: 52
+inline int foot(int y) { return y + more(); }                      // a line counted from the bottom: the first canvas's y, here
+inline int rows(int n, int lineH) { return n + more() / lineH; }   // a list or wrapped words: the first canvas's rows and those that fit now
+inline bool tall() { return hal::H >= 300; }                       // room for a picture above its words (a square screen), not beside them
+}
 
 // drawing shared by the pages
 void drawBand(const char *title, uint16_t colour);   // the top 14 px: a title, the hour and the cell

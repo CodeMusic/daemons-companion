@@ -91,10 +91,10 @@ struct Account : Page {
     if (!commons::joined()) {
       canvas.setTextColor(SOFT);
       y += 10 * wrap("Play as a profile: in the app, GUARDIAN > the profile > OPEN ON A DEVICE makes an eight-letter code. "
-                     "Type it here, then ENTER.", 6, y, 51, 4, 10) + 10;                                          // DRAFT
+                     "Type it here, then ENTER.", 6, y, lay::cols(), 4, 10) + 10;                                          // DRAFT
       canvas.setTextSize(2);
       canvas.setTextColor(TFT_WHITE);
-      canvas.setCursor(60, y);
+      canvas.setCursor(60 + (hal::W - 320) / 2, y);
       for (int i = 0; i < 8; i++) canvas.print(i < (int)code.size() ? code[i] : '_'), canvas.print(' ');
       canvas.setTextSize(1);
     } else if (!known) {
@@ -123,9 +123,9 @@ struct Account : Page {
       }
     }
     canvas.setTextColor(told.empty() ? DIM : WARN);
-    canvas.setCursor(6, 160);
+    canvas.setCursor(6, lay::foot(160));
     std::string foot = !told.empty() ? upper(told) : commons::joined() ? hint("R: AGAIN   L: LEAVE   ESC: BACK") : hint("TYPE THE CODE   ENTER: JOIN   ESC: BACK");   // DRAFT
-    canvas.print(foot.substr(0, 52).c_str());
+    canvas.print(foot.substr(0, lay::across()).c_str());
   }
 };
 }  // namespace

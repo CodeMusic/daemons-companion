@@ -37,7 +37,10 @@ static fb_var_screeninfo vinfo;
 static fb_fix_screeninfo finfo;
 static int rotate;              // quarter turns clockwise from our canvas to the framebuffer
 static int offX, offY;          // C-457: where the canvas sits on a bigger screen (in the middle)
-static int zoom = 1;            // C-468: each canvas pixel this many wide and high -- the most whole steps that fit
+static int zm = 1;              // C-468: each canvas pixel this many wide and high -- the most whole steps that fit
+// C-593: the game's picture, drawn by present() at its own size (hal.h): where it is on the screen as held, and how big
+static struct { const uint32_t *video = nullptr; int stride = 0, w = 0, h = 0, x = 0, y = 0; } shown;
+static int gzm = 1;
 static bool shiftHeld;
 // C-593: a keyboard on USB can be switched off and on while we run (the HackberryPi's was, twice, on its first day).
 // When every input has left, the inputs are looked for again once a second; the keys that were down as it left are
@@ -153,12 +156,16 @@ bool begin(int, bool headless) {
   // C-457: on a bigger screen (the GamePi20's 320x240) the canvas in the middle, the rest dark; C-468: as many whole
   // times its size as fit (the Game HAT's 640x480 takes it twice over), so its pixels stay square and sharp
   const int fw = (rotate & 1) ? (int)vinfo.yres : (int)vinfo.xres, fh = (rotate & 1) ? (int)vinfo.xres : (int)vinfo.yres;
-  zoom = std::max(1, std::min(fw / W, fh / H));
-  offX = fw > W * zoom ? (fw - W * zoom) / 2 : 0;
-  offY = fh > H * zoom ? (fh - H * zoom) / 2 : 0;
+  // C-593: the screen as it really is, so the canvas and the game are sized by it (a board file's SCREEN is a promise)
+  screenW = fw;
+  screenH = fh;
+  zm = zoom();
+  gzm = gameZoom();
+  offX = fw > W * zm ? (fw - W * zm) / 2 : 0;
+  offY = fh > H * zm ? (fh - H * zm) / 2 : 0;
   memset(fbMem, 0, fbLen);
-  fprintf(stderr, "screen: %s %ux%u, %u bits, line %u bytes, turned %d, x%d\n", path, vinfo.xres, vinfo.yres,
-          vinfo.bits_per_pixel, finfo.line_length, rotate, zoom);
+  fprintf(stderr, "screen: %s %ux%u, %u bits, line %u bytes, turned %d, the %dx%d canvas x%d, the game x%d\n", path, vinfo.xres,
+          vinfo.yres, vinfo.bits_per_pixel, finfo.line_length, rotate, W, H, zm, gzm);
   openInputs();
   openTouch();   // C-512
   if (keyFds.empty()) fprintf(stderr, "keys: no keyboard found (set ZERO_KEYS)\n");
@@ -166,36 +173,101 @@ bool begin(int, bool headless) {
   return true;
 }
 
+bool gameDirect() { return fbMem && !headlessMode && gzm != zm; }
+void game(const uint32_t *video, int stride, int w, int h, int canvasX, int canvasY) {
+  shown.video = video;
+  shown.stride = stride;
+  shown.w = w;
+  shown.h = h;
+  shown.x = canvasX * zm + offX;
+  shown.y = canvasY * zm + offY;
+}
+
+// a point of the screen as held, turned onto the framebuffer
+static inline void plot(int sx, int sy, uint16_t c) {
+  const int sw = W * zm + 2 * offX, sh = H * zm + 2 * offY;
+  int fx = sx, fy = sy;
+  switch (rotate) {
+    case 1: fx = sh - 1 - sy; fy = sx; break;
+    case 2: fx = sw - 1 - sx; fy = sh - 1 - sy; break;
+    case 3: fx = sy; fy = sw - 1 - sx; break;
+  }
+  if ((unsigned)fx >= vinfo.xres || (unsigned)fy >= vinfo.yres) return;
+  const int bpp = vinfo.bits_per_pixel;
+  uint8_t *at = fbMem + (size_t)(fy + vinfo.yoffset) * finfo.line_length + (size_t)(fx + vinfo.xoffset) * (bpp / 8);
+  if (bpp == 16) *(uint16_t *)at = c;
+  else if (bpp == 32) {
+    uint32_t r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
+    r = r << 3 | r >> 2; g = g << 2 | g >> 4; b = b << 3 | b >> 2;
+    *(uint32_t *)at = 0xFF000000u | r << vinfo.red.offset | g << vinfo.green.offset | b << vinfo.blue.offset;
+  }
+}
+// the game's 32-bit pixel (red low) as RGB565
+static inline uint16_t game565(uint32_t c) { return (uint16_t)((c & 0xF8) << 8 | (c & 0xFC00) >> 5 | (c & 0xF80000) >> 19); }
+
 void present(const uint16_t *px) {
   if (!fbMem) return;
-  const int bpp = vinfo.bits_per_pixel;
-  for (int y = 0; y < H; y++) {
-    for (int x = 0; x < W; x++) {
-      uint16_t s = px[y * W + x];
-      uint16_t c = (uint16_t)(s << 8 | s >> 8);   // LovyanGFX keeps it high byte first
-      uint32_t wide = 0;
-      if (bpp == 32) {
-        uint32_t r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
-        r = r << 3 | r >> 2; g = g << 2 | g >> 4; b = b << 3 | b >> 2;
-        wide = 0xFF000000u | r << vinfo.red.offset | g << vinfo.green.offset | b << vinfo.blue.offset;
+  // C-593: the game's box on the screen as held; the canvas is never drawn under it, so it never shows through
+  const bool on = shown.video != nullptr;
+  const int gx0 = shown.x, gy0 = shown.y, gx1 = gx0 + shown.w * gzm, gy1 = gy0 + shown.h * gzm;
+  if (rotate == 0 && vinfo.bits_per_pixel == 16) {   // the screen as the framebuffer has it: a line built once, copied down
+    static std::vector<uint16_t> line;
+    line.resize((size_t)std::max(W * zm, on ? shown.w * gzm : 0));
+    const int across = std::min(W * zm, (int)vinfo.xres - offX);
+    for (int y = 0; y < H; y++) {
+      const uint16_t *src = px + y * W;
+      uint16_t *o = line.data();
+      for (int x = 0; x < W; x++) {
+        const uint16_t c = (uint16_t)(src[x] << 8 | src[x] >> 8);   // LovyanGFX keeps it high byte first
+        for (int d = 0; d < zm; d++) *o++ = c;
       }
-      for (int dy = 0; dy < zoom; dy++)
-        for (int dx = 0; dx < zoom; dx++) {
-          // the point on the screen as held, then turned onto the framebuffer
-          const int sx = x * zoom + dx + offX, sy = y * zoom + dy + offY, sw = W * zoom + 2 * offX, sh = H * zoom + 2 * offY;
-          int fx = sx, fy = sy;
-          switch (rotate) {
-            case 1: fx = sh - 1 - sy; fy = sx; break;
-            case 2: fx = sw - 1 - sx; fy = sh - 1 - sy; break;
-            case 3: fx = sy; fy = sw - 1 - sx; break;
-          }
-          if ((unsigned)fx >= vinfo.xres || (unsigned)fy >= vinfo.yres) continue;
-          uint8_t *at = fbMem + (size_t)(fy + vinfo.yoffset) * finfo.line_length + (size_t)(fx + vinfo.xoffset) * (bpp / 8);
-          if (bpp == 16) *(uint16_t *)at = c;
-          else if (bpp == 32) *(uint32_t *)at = wide;
+      for (int dy = 0; dy < zm; dy++) {
+        const int sy = y * zm + dy + offY;
+        if ((unsigned)sy >= vinfo.yres) continue;
+        uint8_t *row = fbMem + (size_t)(sy + vinfo.yoffset) * finfo.line_length + (size_t)(offX + vinfo.xoffset) * 2;
+        if (on && sy >= gy0 && sy < gy1) {   // the part left of the game, and the part right of it
+          const int l = std::clamp(gx0 - offX, 0, across), r = std::clamp(gx1 - offX, 0, across);
+          if (l > 0) memcpy(row, line.data(), (size_t)l * 2);
+          if (r < across) memcpy(row + (size_t)r * 2, line.data() + r, (size_t)(across - r) * 2);
+        } else memcpy(row, line.data(), (size_t)across * 2);
+      }
+    }
+    if (on) {
+      const int wide = std::min(shown.w * gzm, (int)vinfo.xres - gx0);
+      for (int y = 0; y < shown.h && wide > 0; y++) {
+        const uint32_t *src = shown.video + y * shown.stride;
+        uint16_t *o = line.data();
+        for (int x = 0; x < shown.w; x++) {
+          const uint16_t c = game565(src[x]);
+          for (int d = 0; d < gzm; d++) *o++ = c;
+        }
+        for (int dy = 0; dy < gzm; dy++) {
+          const int sy = gy0 + y * gzm + dy;
+          if ((unsigned)sy >= vinfo.yres) continue;
+          memcpy(fbMem + (size_t)(sy + vinfo.yoffset) * finfo.line_length + (size_t)(gx0 + vinfo.xoffset) * 2, line.data(), (size_t)wide * 2);
+        }
+      }
+    }
+    return;
+  }
+  // a turned screen, or one of 32 bits: point by point
+  for (int y = 0; y < H; y++)
+    for (int x = 0; x < W; x++) {
+      const uint16_t s = px[y * W + x], c = (uint16_t)(s << 8 | s >> 8);
+      for (int dy = 0; dy < zm; dy++)
+        for (int dx = 0; dx < zm; dx++) {
+          const int sx = x * zm + dx + offX, sy = y * zm + dy + offY;
+          if (on && sx >= gx0 && sx < gx1 && sy >= gy0 && sy < gy1) continue;
+          plot(sx, sy, c);
         }
     }
-  }
+  if (on)
+    for (int y = 0; y < shown.h; y++)
+      for (int x = 0; x < shown.w; x++) {
+        const uint16_t c = game565(shown.video[y * shown.stride + x]);
+        for (int dy = 0; dy < gzm; dy++)
+          for (int dx = 0; dx < gzm; dx++) plot(gx0 + x * gzm + dx, gy0 + y * gzm + dy, c);
+      }
 }
 
 static Key keyOf(int code) {

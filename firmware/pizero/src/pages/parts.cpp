@@ -20,6 +20,26 @@ void drawSprite(const Sprite &s, int x, int y, int scale) {
     }
 }
 
+Split split(int side) {
+  Split s;
+  s.px = 4;
+  s.py = 18;
+  if (lay::tall()) {
+    s.pw = hal::W - 8;
+    s.ph = hal::H - 160;   // the words below need 160: 200 of the HackberryPi's 360 is the picture's, a 64 px daemon three times its size
+    s.tx = 6;
+    s.ty = s.py + s.ph + 8;
+    s.cols = lay::cols();
+  } else {
+    s.pw = side;
+    s.ph = side + lay::more();
+    s.tx = side + 12;
+    s.ty = 20;
+    s.cols = (hal::W - s.tx - 8) / 6;
+  }
+  return s;
+}
+
 void drawDen(const HubView &v, int x, int y, int w, int h) {
   const int floorH = h / 4;
   canvas.fillRect(x, y, w, h - floorH, hex(v.denWall, rgb(0x67, 0x62, 0x5a)));
@@ -28,7 +48,8 @@ void drawDen(const HubView &v, int x, int y, int w, int h) {
   if (!v.carrying) return;
   auto s = hub::art(v.artKey);
   if (!s) return;
-  const int scale = (s->w * 2 <= w && s->h * 2 <= h) ? 2 : 1;
+  int scale = 1;   // as big as fits whole: twice in the first canvas's den, up to four times in a bigger one (C-593)
+  for (int n = 2; n <= (h >= 140 ? 4 : 2); n++) if (s->w * n <= w && s->h * n <= h) scale = n;
   const int sx = x + (w - s->w * scale) / 2, sy = y + h - floorH / 2 - s->h * scale;   // standing on the floor
   canvas.fillEllipse(x + w / 2, y + h - floorH / 2, s->w * scale / 3, 3, hex(v.denDeep, rgb(0x3b, 0x38, 0x32)));   // its shadow
   drawSprite(*s, sx, sy < y ? y : sy, scale);
@@ -42,7 +63,10 @@ void drawDen(const HubView &v, int x, int y, int w, int h) {
 void drawPartyMember(const PartyMember &m, const HubView &v, int x, int y, int w, int h) {
   canvas.fillRect(x, y, w, h, rgb(0x22, 0x26, 0x30));
   auto s = hub::art(m.artKey);
-  if (s) drawSprite(*s, x + (w - s->w) / 2, y + (h - s->h) / 2, 1);
+  if (!s) return;
+  int scale = 1;   // C-593: bigger where a bigger canvas gives its picture the room
+  for (int n = 2; n <= (h >= 140 ? 3 : 1); n++) if (s->w * n <= w && s->h * n <= h) scale = n;
+  drawSprite(*s, x + (w - s->w * scale) / 2, y + (h - s->h * scale) / 2, scale);
 }
 
 void drawPips(int x, int y, int have, int due, uint16_t on, uint16_t off) {
@@ -93,7 +117,8 @@ std::string replyWords(const Reply &r, const char *field) {
 
 // C-457: whole words only (ENTER, ESC, TAB, BACKSPACE, and the printed arrows Z C and F X as a pair)
 const char *hint(const char *words) {
-  if (board::KEYBOARD) return words;
+  const bool ownWords = strcmp(board::word(Key::Esc), keyName(Key::Esc)) != 0;   // C-593: the HackberryPi's back key
+  if (board::KEYBOARD && !ownWords) return words;
   static std::string kept[4];
   static int next;
   std::string &out = kept[next++ & 3];
@@ -105,7 +130,7 @@ const char *hint(const char *words) {
   while (i < in.size()) {
     bool done = false;
     if (i == 0 || !isWord(in[i - 1])) {
-      for (auto &f : fixed) {
+      if (!board::KEYBOARD) for (auto &f : fixed) {
         size_t n = strlen(f.from);
         if (in.compare(i, n, f.from) == 0 && (i + n == in.size() || !isWord(in[i + n]))) { out += f.to; i += n; done = true; break; }
       }

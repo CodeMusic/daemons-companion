@@ -3,8 +3,9 @@
 // was built for. Everything else (the game, the save and the hub, the pages, the caps) is the same program on every
 // board; a board adds one file, src/boards/<id>.cpp, and CMake's ZERO_BOARD picks it (docs/PIBOARDS.md).
 //
-// The pages draw a 320x170 canvas (hal::W, hal::H) on every board. A board whose screen is bigger shows it in the
-// middle, the rest dark, until a page is written for the bigger screen.
+// C-593: every board has a canvas of its own size (CANVAS_W, CANVAS_H; hal::W and hal::H while it runs), which the
+// pages fill: the screen itself, or the screen at a whole fraction of its size where its pixels are small. The pages
+// were first drawn for the Cardputer Zero's 320x170 and place what they draw from the canvas's edges (app.h's lay).
 #include <cstdint>
 #include "keys.h"
 
@@ -14,6 +15,9 @@ namespace board {
 extern const char *const ID;       // "cardputer-zero": the start of the name this device gives the hub
 extern const char *const NAME;     // "Cardputer Zero": what the hub shows (DRAFT)
 extern const int SCREEN_W, SCREEN_H;   // the screen as it is held: never smaller than the canvas
+// C-593: the canvas the pages draw, shown a whole number of times over so its pixels stay square and sharp: 320x170 at
+// least. The Cardputer Zero's is its screen; the HackberryPi's 720x720 is a 360x360 canvas twice over.
+extern const int CANVAS_W, CANVAS_H;
 extern const bool KEYBOARD;        // letters to type with (false: a pad, and LINK is done with --pair over SSH)
 
 // The input devices to open before searching /dev/input, tried in turn (nullptr ends the list)

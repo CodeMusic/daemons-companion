@@ -163,22 +163,22 @@ struct Talk : Page {
     canvas.setCursor(6, 20);
     const char *way = hubBusy() || viaHubNow ? "VIA THE MIND" : kit::via() == kit::Via::Mind ? "VIA THE MIND ONLY" : "VIA THE KIT";
     std::string who = v.carrying ? upper(v.nickname.empty() ? v.name : v.nickname) : "THE DAEMON";
-    canvas.print((who + "  " + way + "  KIT " + kit::stateName(k.state)).substr(0, 51).c_str());
+    canvas.print((who + "  " + way + "  KIT " + kit::stateName(k.state)).substr(0, lay::cols()).c_str());
     canvas.drawRect(4, 32, hal::W - 8, 18, holding ? WARN : day);
     canvas.setTextColor(TFT_WHITE);
     canvas.setCursor(8, 37);
-    canvas.print(holding ? "LISTENING... LET GO OF TAB TO SEND" : (word + "_").substr(word.size() > 49 ? word.size() - 49 : 0).c_str());
+    canvas.print(holding ? "LISTENING... LET GO OF TAB TO SEND" : (word + "_").substr((int)word.size() > lay::cols(8) - 2 ? word.size() - (lay::cols(8) - 2) : 0).c_str());
     int y = 56;
     if (!k.heard.empty()) {
       canvas.setTextColor(DIM);
-      y += 11 * wrap("YOU: " + k.heard, 6, y, 51, 2, 11);
+      y += 11 * wrap("YOU: " + k.heard, 6, y, lay::cols(), 2, 11);
     }
     canvas.setTextColor(SOFT);
     if (hubBusy()) { canvas.setCursor(6, y); canvas.print("THE MIND IS THINKING..."); }
     else if (k.state == kit::State::Waking) { canvas.setCursor(6, y); canvas.print("WAKING THE KIT..."); }
-    else if (!k.answer.empty()) wrap(upper(who) + ": " + k.answer, 6, y, 51, 6, 11);
+    else if (!k.answer.empty()) wrap(upper(who) + ": " + k.answer, 6, y, lay::cols(), lay::rows(6, 11), 11);
     else if (k.talking) { canvas.setCursor(6, y); canvas.print("..."); }
-    canvas.setCursor(6, 150);
+    canvas.setCursor(6, lay::foot(150));
     if (pending != Pending::None) {
       canvas.setTextColor(WARN);
       canvas.print(question == kit::Wake::Ask ? "WAKE THE KIT? IT DRAINS THE CELL FASTER. ENTER/A" :
@@ -188,7 +188,7 @@ struct Talk : Page {
     }
     std::string foot = !told.empty() ? upper(told) : !k.why.empty() ? upper(k.why) : !k.by.empty() && !k.answer.empty() ? "ANSWERED BY " + upper(k.by) : "";
     canvas.setTextColor(foot.empty() ? DIM : SOFT);
-    canvas.print(foot.empty() ? hint("ENTER: SAY IT  HOLD TAB: SPEAK  ESC: BACK") : foot.substr(0, 51).c_str());
+    canvas.print(foot.empty() ? hint("ENTER: SAY IT  HOLD TAB: SPEAK  ESC: BACK") : foot.substr(0, lay::cols()).c_str());
   }
 };
 }  // namespace

@@ -48,7 +48,7 @@ struct KitPage : Page {
     }
     if (e.key == Key::R) { kit::refresh(); told = "Asked again."; return; }
     Dir d = dirOf(e.key);
-    if (d == Dir::Down && top + 4 < (int)k.models.size()) top++;
+    if (d == Dir::Down && top + lay::rows(4, 11) < (int)k.models.size()) top++;
     if (d == Dir::Up && top > 0) top--;
   }
   std::chrono::steady_clock::time_point lastDrawn;
@@ -80,27 +80,27 @@ struct KitPage : Page {
       if (k.temp > 0) line += "  " + std::to_string((int)k.temp) + "C";
       line += "  HOTSPOT " + upper(k.hotspot.empty() ? "?" : k.hotspot);
     }
-    canvas.print(line.substr(0, 51).c_str());
+    canvas.print(line.substr(0, lay::cols()).c_str());
     canvas.setCursor(6, 63);
     canvas.setTextColor(DIM);
     if (k.state == kit::State::Awake || k.state == kit::State::Busy)
-      canvas.print(("THINKS " + upper(k.llm) + ", HEARS " + upper(k.stt)).substr(0, 51).c_str());
+      canvas.print(("THINKS " + upper(k.llm) + ", HEARS " + upper(k.stt)).substr(0, lay::cols()).c_str());
     else if (!k.version.empty()) canvas.print(("STACKFLOW " + k.version).c_str());
     canvas.setTextColor(SOFT);
     canvas.setCursor(6, 76);
     canvas.print(("MODELS ON IT: " + std::to_string(k.models.size())).c_str());
-    for (int i = 0; i < 4 && top + i < (int)k.models.size(); i++) {
+    for (int i = 0; i < lay::rows(4, 11) && top + i < (int)k.models.size(); i++) {
       const kit::Model &m = k.models[top + i];
       canvas.setTextColor(DIM);
       canvas.setCursor(6, 88 + i * 11);
-      canvas.print((upper(m.type) + "  " + m.mode).substr(0, 51).c_str());
+      canvas.print((upper(m.type) + "  " + m.mode).substr(0, lay::cols()).c_str());
     }
     if (k.hotspot == "on" && !k.ssid.empty()) {   // to tell a guest
       canvas.setTextColor(SOFT);
-      canvas.setCursor(6, 136);
-      canvas.print(("JOIN " + k.ssid + "  KEY " + k.key).substr(0, 51).c_str());
+      canvas.setCursor(6, lay::foot(136));
+      canvas.print(("JOIN " + k.ssid + "  KEY " + k.key).substr(0, lay::cols()).c_str());
     }
-    canvas.setCursor(6, 150);
+    canvas.setCursor(6, lay::foot(150));
     if (asking) {
       canvas.setTextColor(WARN);
       canvas.print(question == kit::Wake::Ask ? "WAKE THE KIT? IT DRAINS THE CELL FASTER. ENTER" : "LOW CHARGE: THE KIT RESTS. O: OVERRIDE");
@@ -108,7 +108,7 @@ struct KitPage : Page {
     }
     std::string foot = !told.empty() ? upper(told) : !k.why.empty() ? upper(k.why) : "";
     canvas.setTextColor(foot.empty() ? DIM : SOFT);
-    canvas.print(foot.empty() ? hint("ENTER: WAKE/REST  H: HOTSPOT  V: WAY  ESC") : foot.substr(0, 51).c_str());
+    canvas.print(foot.empty() ? hint("ENTER: WAKE/REST  H: HOTSPOT  V: WAY  ESC") : foot.substr(0, lay::cols()).c_str());
   }
 };
 }  // namespace

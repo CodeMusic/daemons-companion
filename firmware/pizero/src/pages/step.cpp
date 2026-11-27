@@ -58,17 +58,17 @@ struct Step : Page {
       canvas.setTextSize(1);
       canvas.setTextColor(SOFT);
       wrap(v.reached ? "Nothing waits: every step is done, or no goal is set. Set one in the companion."
-                     : "The hub is not answering.", 6, 24, 51, 3, 10);
+                     : "The hub is not answering.", 6, 24, lay::cols(), 3, 10);
     } else {
       if (!v.goal.empty()) {
         canvas.setTextSize(1);
         canvas.setTextColor(DIM);
         canvas.setCursor(6, 20);
-        canvas.print(upper(v.goal).substr(0, 51).c_str());
+        canvas.print(upper(v.goal).substr(0, lay::cols()).c_str());
       }
       canvas.setTextSize(2);
       canvas.setTextColor(TFT_WHITE);
-      int rows = wrap(v.stepText, 6, 36, 25, 4, 18);
+      int rows = wrap(v.stepText, 6, 36, (hal::W - 12) / 12, lay::rows(4, 18), 18);   // C-593: as wide and as long as this canvas
       canvas.setTextSize(1);
       if (!v.milestone.empty()) {
         int y = 40 + rows * 18;
@@ -82,8 +82,8 @@ struct Step : Page {
       }
     }
     canvas.setTextColor(answer.empty() ? DIM : SOFT);
-    canvas.setCursor(6, 140);
-    canvas.print(answer.empty() ? hint("ENTER: DONE    ESC: BACK") : upper(answer).substr(0, 51).c_str());
+    canvas.setCursor(6, lay::foot(140));
+    canvas.print(answer.empty() ? hint("ENTER: DONE    ESC: BACK") : upper(answer).substr(0, lay::cols()).c_str());
   }
 };
 }  // namespace

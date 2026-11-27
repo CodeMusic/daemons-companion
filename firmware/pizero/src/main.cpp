@@ -17,6 +17,8 @@
 //   daemons-zero --version             when and from what this program was built, and stop
 //   daemons-zero --apps [--desktop DIR]  say every app, and with --desktop write a launcher entry for each into DIR; stop
 //   daemons-zero --page care           start on a page (home, play, games, link, care, step, party, say)
+//   daemons-zero --canvas 360x360@2    draw as a board with that canvas would, shown that many times over (C-593: for
+//                                      pictures of a board that is not here; this board's own canvas otherwise)
 //   daemons-zero --headless --frames N [--press 300:ENTER,420:L] [--shot out.bmp] [--every 100]
 //                                      run N frames unseen, keys pressed at those frames, a picture at the end
 //                                      (and every 100 frames: out_<frame>.bmp)
@@ -107,7 +109,12 @@ Page *pageFor(PageId id) {
     default: return homePage();
   }
 }
-void go(PageId id) { now = id; switched = true; pageFor(id)->enter(); }
+void go(PageId id) {
+  if (id != PageId::Play) hal::game(nullptr, 0, 0, 0, 0, 0);   // C-593: the game's picture leaves the screen with its page
+  now = id;
+  switched = true;
+  pageFor(id)->enter();
+}
 PageId current() { return now; }
 
 void keepSave() {
@@ -180,7 +187,7 @@ int main(int argc, char **argv) {
   if (argc == 2 && !strcmp(argv[1], "--version")) { printf("%lld %s %s\n", update::built(), update::commit(), board::ID); return 0; }
   update::hop(argc, argv);
   int scale = 3, frames = -1, benchFrames = 0, every = 0;
-  std::string start = "home", shot, makeFrom, makeTestingOf, gameKey, romFrom, hubArg, pairCode;
+  std::string start = "home", shot, makeFrom, makeTestingOf, gameKey, romFrom, hubArg, pairCode, canvasArg;
   bool listGames = false, listCaps = false, kitStatus = false, listApps = false;
   std::string updateWhat;   // C-515: check, take or back
   std::string desktopDir;
@@ -198,6 +205,7 @@ int main(int argc, char **argv) {
     else if (a == "--shot") shot = val();
     else if (a == "--every") every = atoi(val().c_str());
     else if (a == "--page") start = val();
+    else if (a == "--canvas") canvasArg = val();
     else if (a == "--app") {   // C-509: which app this run is
       const AppDef *ap = appNamed(val());
       if (!ap) { fprintf(stderr, "no app by that name: daemons-zero --apps\n"); return 2; }
@@ -254,6 +262,15 @@ int main(int argc, char **argv) {
     } else { fprintf(stderr, "what is %s? (see the top of src/main.cpp)\n", a.c_str()); return 2; }
   }
   if (!hubArg.empty()) setenv("DAEMONS_HUB", hubArg.c_str(), 1);
+  {   // C-593: the canvas is this board's own; --canvas draws as another board's would
+    int cw = board::CANVAS_W, ch = board::CANVAS_H, over = 0;
+    if (!canvasArg.empty() && (sscanf(canvasArg.c_str(), "%dx%d@%d", &cw, &ch, &over) < 2 || cw < 320 || ch < 170)) {
+      fprintf(stderr, "--canvas is WxH, or WxH@N for a screen N times its size: 320x170 at least\n");
+      return 2;
+    }
+    if (canvasArg.empty()) hal::canvasSize(cw, ch, board::SCREEN_W, board::SCREEN_H);
+    else hal::canvasSize(cw, ch, cw * std::max(1, over), ch * std::max(1, over));
+  }
   signal(SIGINT, onSignal);
   signal(SIGTERM, onSignal);
   gameKeysLoad();

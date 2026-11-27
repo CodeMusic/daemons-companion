@@ -11,6 +11,7 @@ namespace board {
 const char *const ID = "daemicom";
 const char *const NAME = "DAEMICOM";   // DRAFT
 const int SCREEN_W = 480, SCREEN_H = 320;
+const int CANVAS_W = 480, CANVAS_H = 320;   // C-593: the whole screen (DRAFT: drawn unseen, not yet on the device)
 const bool KEYBOARD = false;
 const char *const INPUTS[] = { nullptr };   // a SIGIL is found by its gamepad buttons; the touch screen by hal/device.cpp
 

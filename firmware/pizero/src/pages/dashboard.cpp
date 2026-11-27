@@ -163,7 +163,7 @@ struct Dashboard : Page {
     if (dir == Dir::Down && sel + 1 < (int)rows.size()) sel++;
     if (dir == Dir::Up && sel > 0) sel--;
     if (sel < top) top = sel;
-    if (sel >= top + 11) top = sel - 10;
+    if (sel >= top + lay::rows(11, 11)) top = sel - (lay::rows(11, 11) - 1);
     if ((e.key == Key::Enter || e.key == Key::PadA) && sel < (int)rows.size() && !rows[sel].id.empty()) {
       ticketId = rows[sel].id;
       ticketTitle = rows[sel].left;
@@ -200,28 +200,28 @@ struct Dashboard : Page {
       canvas.setTextColor(onPassword ? TFT_WHITE : DIM);
       canvas.setCursor(6, 72); canvas.printf("PASSWORD  %s%s", std::string(password.size(), '*').c_str(), onPassword ? "_" : "");
       canvas.setTextColor(DIM);
-      canvas.setCursor(6, 160);
+      canvas.setCursor(6, lay::foot(160));
       canvas.print(hint("TAB: NEXT   ENTER: SIGN IN   ESC: BACK"));                                             // DRAFT
       return;
     }
     if (!ticketId.empty()) {   // a ticket open
       canvas.setTextColor(TFT_WHITE);
-      wrap(ticketTitle, 4, 18, 52, 2, 10);
+      wrap(ticketTitle, 4, 18, lay::across(), 2, 10);
       canvas.setTextColor(SOFT);
-      wrap(ticketWords.empty() ? "..." : ticketWords, 4, 42, 52, choices.empty() ? 10 : 7, 10);
+      wrap(ticketWords.empty() ? "..." : ticketWords, 4, 42, lay::across(), lay::rows(choices.empty() ? 10 : 7, 10), 10);
       if (!choices.empty()) {
         canvas.setTextColor(answerable ? TFT_WHITE : DIM);
-        canvas.setCursor(4, 116);
+        canvas.setCursor(4, lay::foot(116));
         canvas.print("CHOOSE:");                                                                                 // DRAFT
-        int y = 128;
+        int y = lay::foot(128);
         canvas.fillRect(0, y - 1, hal::W, 11, BAND);
         canvas.setCursor(4, y);
-        canvas.printf("%d/%d  %s", choice + 1, (int)choices.size(), upper(choices[choice]).substr(0, 44).c_str());
+        canvas.printf("%d/%d  %s", choice + 1, (int)choices.size(), upper(choices[choice]).substr(0, lay::across() - 8).c_str());
       }
       canvas.setTextColor(DIM);
-      canvas.setCursor(4, 160);
+      canvas.setCursor(4, lay::foot(160));
       std::string foot = !told.empty() ? upper(told) : answerable ? hint("Z C: CHOICE  ENTER: ANSWER  ESC: BACK") : hint("ESC: BACK");   // DRAFT
-      canvas.print(foot.substr(0, 52).c_str());
+      canvas.print(foot.substr(0, lay::across()).c_str());
       return;
     }
     int x = 4;
@@ -234,14 +234,14 @@ struct Dashboard : Page {
       x += w + 2;
     }
     int y = 31;
-    if (!why.empty()) { canvas.setTextColor(why == "Nothing waits on you." ? GOOD : WARN); wrap(why, 4, y, 52, 4, 10); }
+    if (!why.empty()) { canvas.setTextColor(why == "Nothing waits on you." ? GOOD : WARN); wrap(why, 4, y, lay::across(), 4, 10); }
     else if (rows.empty()) { canvas.setTextColor(DIM); canvas.setCursor(4, y); canvas.print("ASKING EUDAIMONIA..."); }   // DRAFT
-    for (int i = top; i < (int)rows.size() && i < top + 11; i++) {
+    for (int i = top; i < (int)rows.size() && i < top + lay::rows(11, 11); i++) {
       const Row &r = rows[i];
       if (i == sel) canvas.fillRect(0, y - 1, hal::W, 11, rgb(0x2c, 0x28, 0x3a));
       canvas.setTextColor(r.colour);
       canvas.setCursor(4, y);
-      int room4left = 52 - (int)r.right.size() - 1;
+      int room4left = lay::across() - (int)r.right.size() - 1;
       canvas.print(r.left.substr(0, room4left > 8 ? room4left : 8).c_str());
       canvas.setTextColor(i == sel ? TFT_WHITE : DIM);
       canvas.setCursor(hal::W - 4 - 6 * (int)r.right.size(), y);
@@ -249,9 +249,9 @@ struct Dashboard : Page {
       y += 11;
     }
     canvas.setTextColor(DIM);
-    canvas.setCursor(4, 160);
+    canvas.setCursor(4, lay::foot(160));
     std::string foot = !told.empty() ? upper(told) : hint(eudaimonia::signedIn() ? "Z C: ROOM  ENTER: OPEN  S: SIGN OUT  ESC" : "Z C: ROOM  ENTER: OPEN  S: SIGN IN  ESC");   // DRAFT
-    canvas.print(foot.substr(0, 52).c_str());
+    canvas.print(foot.substr(0, lay::across()).c_str());
   }
 };
 }  // namespace

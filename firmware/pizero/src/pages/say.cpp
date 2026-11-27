@@ -70,22 +70,22 @@ struct Say : Page {
                             : "NO DAEMON CARRIED HERE");
     canvas.drawRect(4, 32, hal::W - 8, 30, day);
     canvas.setTextColor(TFT_WHITE);
-    wrap(word + "_", 8, 36, 51, 2, 11);
+    wrap(word + "_", 8, 36, lay::cols(8), 2, 11);
     canvas.setTextColor(day);
     canvas.setCursor(6, 70);
     canvas.print("HEARD");
     int y = 82;
-    for (int i = (int)v.heard.size() - 1; i >= 0 && y < 136; i--, y += 10) {
+    for (int i = (int)v.heard.size() - 1; i >= 0 && y < lay::foot(136); i--, y += 10) {
       const Heard &h = v.heard[i];
       canvas.setTextColor(SOFT);
       canvas.setCursor(6, y);
       std::string line = upper(h.name) + (h.kind == "act" ? " " : ": ") + h.text;
-      canvas.print(line.substr(0, 51).c_str());
+      canvas.print(line.substr(0, lay::cols()).c_str());
     }
     if (v.heard.empty()) { canvas.setTextColor(DIM); canvas.setCursor(6, 82); canvas.print("NOTHING IN THE LAST TEN MINUTES"); }
     canvas.setTextColor(answer.empty() ? DIM : SOFT);
-    canvas.setCursor(6, 150);
-    canvas.print(answer.empty() ? hint("ENTER: SAY IT    ESC: BACK") : upper(answer).substr(0, 51).c_str());
+    canvas.setCursor(6, lay::foot(150));
+    canvas.print(answer.empty() ? hint("ENTER: SAY IT    ESC: BACK") : upper(answer).substr(0, lay::cols()).c_str());
   }
 };
 }  // namespace

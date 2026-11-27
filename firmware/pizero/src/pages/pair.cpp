@@ -63,7 +63,7 @@ struct Pair : Page {
     const uint16_t soft = rgb(0xc8, 0xc8, 0xd0), dim = rgb(0x80, 0x84, 0x90), sel = rgb(0x5b, 0x6b, 0x8c);
     canvas.setTextColor(dim);
     wrap("Show a code on the hub (SETTINGS, on the computer it runs on) and type it here. This device then keeps its "
-         "save in step with the hub's.", 6, 20, 51, 3, 10);   // DRAFT
+         "save in step with the hub's.", 6, 20, lay::cols(), 3, 10);   // DRAFT
     const char *label[2] = { "HUB", "CODE" };   // DRAFT
     for (int i = 0; i < 2; i++) {
       int y = 62 + i * 28;
@@ -73,13 +73,14 @@ struct Pair : Page {
       canvas.drawRect(40, y - 4, hal::W - 46, 16, i == at ? sel : rgb(0x40, 0x44, 0x50));
       canvas.setTextColor(i == at ? TFT_WHITE : soft);
       canvas.setCursor(44, y);
-      std::string shown = field[i].size() > 44 ? "~" + field[i].substr(field[i].size() - 43) : field[i];
+      const size_t fits = (size_t)(hal::W - 54) / 6;   // the letters its box holds: 44 on the first canvas
+      std::string shown = field[i].size() > fits ? "~" + field[i].substr(field[i].size() - (fits - 1)) : field[i];
       canvas.print((shown + (i == at && !done ? "_" : "")).c_str());
     }
     canvas.setTextColor(done ? sel : rgb(0xe0, 0x90, 0x80));
-    if (!answer.empty()) wrap(upper(answer), 6, 122, 51, 2, 10);
+    if (!answer.empty()) wrap(upper(answer), 6, 122, lay::cols(), lay::rows(2, 10), 10);
     canvas.setTextColor(dim);
-    canvas.setCursor(6, 156);
+    canvas.setCursor(6, lay::foot(156));
     canvas.print("TAB: THE OTHER  SYM+H S T R: . : / -");   // DRAFT
   }
 };

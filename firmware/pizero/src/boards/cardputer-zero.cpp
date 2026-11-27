@@ -6,6 +6,7 @@ namespace board {
 const char *const ID = "cardputer-zero";
 const char *const NAME = "Cardputer Zero";   // DRAFT
 const int SCREEN_W = 320, SCREEN_H = 170;
+const int CANVAS_W = 320, CANVAS_H = 170;
 const bool KEYBOARD = true;
 // M5Stack's launcher reads the TCA8418 here; failing it, the search finds the first device with letter keys
 const char *const INPUTS[] = { "/dev/input/by-path/platform-3f804000.i2c-event", nullptr };

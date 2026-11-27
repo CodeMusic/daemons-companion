@@ -147,7 +147,7 @@ struct Engine : Page {
     if (dir == Dir::Down && sel + 1 < (int)rows.size()) { sel++; sure = false; }
     if (dir == Dir::Up && sel > 0) { sel--; sure = false; }
     if (sel < top) top = sel;
-    if (sel >= top + 11) top = sel - 10;
+    if (sel >= top + lay::rows(11, 11)) top = sel - (lay::rows(11, 11) - 1);
     if ((e.key == Key::Enter || e.key == Key::PadA) && sel < (int)rows.size()) {
       const Row &r = rows[sel];
       if (room == 1 && !r.run.empty()) {
@@ -183,21 +183,22 @@ struct Engine : Page {
     }
     if (!reading.empty()) {   // a job's output, as it ended
       canvas.setTextColor(SOFT);
-      wrap(reading.size() > 900 ? reading.substr(reading.size() - 900) : reading, 4, 31, 52, 12, 10);
+      const size_t fits = 900 + (size_t)lay::across() * (lay::more() / 10);   // its end: 900 letters on the first canvas, and a row's more for each row more
+      wrap(reading.size() > fits ? reading.substr(reading.size() - fits) : reading, 4, 31, lay::across(), lay::rows(12, 10), 10);
       canvas.setTextColor(DIM);
-      canvas.setCursor(4, 160);
+      canvas.setCursor(4, lay::foot(160));
       canvas.print(hint("ANY KEY: BACK"));                                                                          // DRAFT
       return;
     }
     int y = 31;
-    if (!why.empty()) { canvas.setTextColor(WARN); wrap(why, 4, y, 52, 4, 10); }
+    if (!why.empty()) { canvas.setTextColor(WARN); wrap(why, 4, y, lay::across(), 4, 10); }
     else if (rows.empty()) { canvas.setTextColor(DIM); canvas.setCursor(4, y); canvas.print(asking.valid() ? "ASKING THE HUB..." : "NOTHING HERE."); }   // DRAFT
-    for (int i = top; i < (int)rows.size() && i < top + 11; i++) {
+    for (int i = top; i < (int)rows.size() && i < top + lay::rows(11, 11); i++) {
       const Row &r = rows[i];
       if (i == sel) canvas.fillRect(0, y - 1, hal::W, 11, rgb(0x2a, 0x2f, 0x3c));
       canvas.setTextColor(r.colour);
       canvas.setCursor(4, y);
-      int room4right = 52 - (int)r.right.size() - 1;
+      int room4right = lay::across() - (int)r.right.size() - 1;
       canvas.print(r.left.substr(0, room4right > 8 ? room4right : 8).c_str());
       canvas.setTextColor(i == sel ? TFT_WHITE : DIM);
       canvas.setCursor(hal::W - 4 - 6 * (int)r.right.size(), y);
@@ -205,9 +206,9 @@ struct Engine : Page {
       y += 11;
     }
     canvas.setTextColor(DIM);
-    canvas.setCursor(4, 160);
+    canvas.setCursor(4, lay::foot(160));
     std::string foot = !told.empty() ? upper(told) : room == 1 ? hint("Z C: ROOM  ENTER: RUN  R: AGAIN  ESC: BACK") : hint("Z C: ROOM  ENTER: READ  R: AGAIN  ESC: BACK");   // DRAFT
-    canvas.print(foot.substr(0, 52).c_str());
+    canvas.print(foot.substr(0, lay::across()).c_str());
   }
 };
 }  // namespace

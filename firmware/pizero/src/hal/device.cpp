@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -38,6 +39,12 @@ static int rotate;              // quarter turns clockwise from our canvas to th
 static int offX, offY;          // C-457: where the canvas sits on a bigger screen (in the middle)
 static int zoom = 1;            // C-468: each canvas pixel this many wide and high -- the most whole steps that fit
 static bool shiftHeld;
+// C-593: a keyboard on USB can be switched off and on while we run (the HackberryPi's was, twice, on its first day).
+// When every input has left, the inputs are looked for again once a second; the keys that were down as it left are
+// let go, so a CTRL held at that moment is not held for ever.
+static uint64_t lookedMs;
+static bool keyDown[(size_t)Key::Count];
+static std::vector<Key> letGo;
 // C-512: a touch screen, when the board has one (the DAEMICOM's XPT2046, the kernel's ads7846): its taps, holds and
 // swipes read as keys (touch.h). Found by what it reports, so any board with one gets it and the rest never notice.
 static int touchFd = -1;
@@ -258,8 +265,19 @@ bool poll(KeyEvent &e) {
     if (touchDown) gestures.report(touchX, touchY, true, nowMs());   // a hold is told while the finger stays still
     if (gestures.next(e)) return true;
   }
-  for (int fd : keyFds) {
-  while (read(fd, &ev, sizeof ev) == (ssize_t)sizeof ev) {
+  if (!letGo.empty()) { e.key = letGo.back(); letGo.pop_back(); e.down = false; e.ch = 0; return true; }
+  if (keyFds.empty() && !headlessMode && nowMs() - lookedMs >= 1000) {
+    lookedMs = nowMs();
+    openInputs();
+    if (!keyFds.empty()) {
+      if (getenv("ZERO_GRAB")) for (int f : keyFds) ioctl(f, EVIOCGRAB, 1);
+      fprintf(stderr, "keys: a keyboard is here again\n");
+    }
+  }
+  for (size_t i = 0; i < keyFds.size(); i++) {
+  const int fd = keyFds[i];
+  ssize_t n;
+  while ((n = read(fd, &ev, sizeof ev)) == (ssize_t)sizeof ev) {
     if (ev.type != EV_KEY || ev.value == 2) continue;   // 2: the key repeating -- every page counts its own
     Key k = keyOf(ev.code);
     const char mark = k == Key::None ? markOf(ev.code, shiftHeld) : 0;
@@ -269,9 +287,22 @@ bool poll(KeyEvent &e) {
     e.key = k;
     e.down = ev.value != 0;
     e.ch = e.down ? (mark ? mark : keyChar(k, shiftHeld)) : 0;
+    keyDown[(size_t)k] = e.down;
     return true;
   }
+  if (n < 0 && errno == ENODEV) {   // it left (switched off, or pulled out)
+    close(fd);
+    keyFds.erase(keyFds.begin() + i);
+    i--;
+    if (keyFds.empty()) {
+      for (size_t k = 0; k < (size_t)Key::Count; k++) if (keyDown[k]) { letGo.push_back((Key)k); keyDown[k] = false; }
+      shiftHeld = false;
+      lookedMs = nowMs();
+      fprintf(stderr, "keys: the keyboard left\n");
+    }
   }
+  }
+  if (!letGo.empty()) { e.key = letGo.back(); letGo.pop_back(); e.down = false; e.ch = 0; return true; }
   return false;
 }
 

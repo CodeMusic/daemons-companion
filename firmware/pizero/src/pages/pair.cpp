@@ -38,7 +38,9 @@ struct Pair : Page {
       return;
     }
     char c = e.ch;
-    if (!c && held[(size_t)Key::Sym]) {   // the symbols an address needs, where Sym is held: . : / -
+    // the symbols an address needs, where Sym is held: . : / -  (C-593: this asked for a key that types nothing, and a
+    // letter always types itself, so Sym had never typed a mark; seen with a test keyboard on the HackberryPi)
+    if (held[(size_t)Key::Sym]) {
       if (e.key == Key::H) c = '.';
       else if (e.key == Key::S) c = ':';
       else if (e.key == Key::T) c = '/';

@@ -389,7 +389,7 @@ const jobsHeard = new Set<(j: JobsNow) => void>();
 let jobsTimer: ReturnType<typeof setTimeout> | null = null, jobsAsking = false, jobsAgain = false;
 export const live = (j: Job) => j.state === "waiting" || j.state === "making";
 const tellJobs = (p: Partial<JobsNow>) => { jobsNow = { ...jobsNow, ...p }; jobsHeard.forEach((f) => f(jobsNow)); };
-/** The JOBS read now; and again every three seconds while a page is watching and one is waiting or being made. */
+/** The JOBS read now; and again while a page is watching: every three seconds while one is waiting or being made, every twelve otherwise. */
 export async function lookAtJobs(): Promise<void> {
   if (jobsTimer) { clearTimeout(jobsTimer); jobsTimer = null; }
   if (jobsAsking) { jobsAgain = true; return; }             // asked before a new job was queued: asked once more after
@@ -400,8 +400,9 @@ export async function lookAtJobs(): Promise<void> {
   } catch (e) { tellJobs(notYet(e) ? { asked: true, missing: true, error: "" } : { asked: true, error: (e as Error).message }); }
   finally { jobsAsking = false; }
   if (jobsAgain) { jobsAgain = false; return lookAtJobs(); }
-  // through the relay each read is a run of it, so away from home they are five times as far apart
-  if (jobsHeard.size && !jobsNow.missing && jobsNow.jobs.some(live)) jobsTimer = setTimeout(lookAtJobs, isAway() ? 15_000 : 3000);
+  // through the relay each read is a run of it, so away from home they are five times as far apart. With nothing in
+  // hand the page still looks now and then: a making asked for on another device (a handheld, the hub's own site) shows too
+  if (jobsHeard.size && !jobsNow.missing) jobsTimer = setTimeout(lookAtJobs, (jobsNow.jobs.some(live) ? 3000 : 12_000) * (isAway() ? 5 : 1));
 }
 /** watch the JOBS while a page shows them; the page is told at once, and whenever they are read again */
 export function onJobs(f: (j: JobsNow) => void) {

@@ -12,6 +12,7 @@ enum class Key : uint8_t {
   Enter, Esc, Tab, Space, Backspace, Shift, Fn, Sym, Ctrl, Alt,
   Up, Down, Left, Right,
   PadA, PadB, PadX, PadY, PadL, PadR, PadStart, PadSelect,   // C-457: a pad's buttons (the GamePi20), as board.h reads them
+  Mark,   // C-593: a mark a keyboard types by itself (. , : / - ' ...): which one is in KeyEvent::ch
   Count
 };
 struct KeyEvent { Key key = Key::None; bool down = false; char ch = 0; };   // ch: what it types (Shift applied), or 0

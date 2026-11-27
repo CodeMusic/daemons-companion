@@ -13,6 +13,7 @@ static const char *NAMES[] = {
   "ENTER", "ESC", "TAB", "SPACE", "BACKSPACE", "SHIFT", "FN", "SYM", "CTRL", "ALT",
   "UP", "DOWN", "LEFT", "RIGHT",
   "BTN A", "BTN B", "BTN X", "BTN Y", "BTN L", "BTN R", "START", "SELECT",
+  "MARK",
 };
 static_assert(sizeof NAMES / sizeof NAMES[0] == (size_t)Key::Count, "a name for every key");
 
@@ -30,7 +31,8 @@ Key keyByName(const std::string &name) {
 }
 char keyChar(Key k, bool shift) {
   if (k >= Key::A && k <= Key::Z) return (char)((shift ? 'A' : 'a') + ((int)k - (int)Key::A));
-  if (k >= Key::N0 && k <= Key::N9) return (char)('0' + ((int)k - (int)Key::N0));
+  // C-593: a digit with Shift held is the mark over it on a keyboard (a BlackBerry's $ key sends Shift and 4)
+  if (k >= Key::N0 && k <= Key::N9) return shift ? ")!@#$%^&*("[(int)k - (int)Key::N0] : (char)('0' + ((int)k - (int)Key::N0));
   if (k == Key::Space) return ' ';
   return 0;
 }

@@ -225,6 +225,26 @@ static Key keyOf(int code) {
   }
 }
 
+// C-593: the marks a keyboard types by itself. No page has a use for them as keys, only as what they type, so they
+// come as Key::Mark with the mark in ch (a BlackBerry's keys send these codes, most of them with Shift, while its
+// alt key is held; before, every one was dropped and an address could not be typed).
+static char markOf(int code, bool shift) {
+  switch (code) {
+    case KEY_MINUS: return shift ? '_' : '-';
+    case KEY_EQUAL: return shift ? '+' : '=';
+    case KEY_LEFTBRACE: return shift ? '{' : '[';
+    case KEY_RIGHTBRACE: return shift ? '}' : ']';
+    case KEY_SEMICOLON: return shift ? ':' : ';';
+    case KEY_APOSTROPHE: return shift ? '"' : '\'';
+    case KEY_GRAVE: return shift ? '~' : '`';
+    case KEY_BACKSLASH: return shift ? '|' : '\\';
+    case KEY_COMMA: return shift ? '<' : ',';
+    case KEY_DOT: return shift ? '>' : '.';
+    case KEY_SLASH: return shift ? '?' : '/';
+    default: return 0;
+  }
+}
+
 bool poll(KeyEvent &e) {
   input_event ev;
   if (gestures.next(e)) return true;
@@ -242,11 +262,13 @@ bool poll(KeyEvent &e) {
   while (read(fd, &ev, sizeof ev) == (ssize_t)sizeof ev) {
     if (ev.type != EV_KEY || ev.value == 2) continue;   // 2: the key repeating -- every page counts its own
     Key k = keyOf(ev.code);
+    const char mark = k == Key::None ? markOf(ev.code, shiftHeld) : 0;
+    if (mark) k = Key::Mark;
     if (k == Key::None) { if (getenv("ZERO_KEYLOG")) fprintf(stderr, "keys: code %d unmapped\n", ev.code); continue; }
     if (k == Key::Shift) shiftHeld = ev.value != 0;
     e.key = k;
     e.down = ev.value != 0;
-    e.ch = e.down ? keyChar(k, shiftHeld) : 0;
+    e.ch = e.down ? (mark ? mark : keyChar(k, shiftHeld)) : 0;
     return true;
   }
   }

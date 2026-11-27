@@ -7,8 +7,22 @@
 // The keyboard sends plain letters, SPACE, ENTER, BACKSPACE, and a tap of two of its top keys ESC and TAB. It has no
 // arrow keys of its own: the maker's keymap puts them on W A S D while a layer key is held. So in the game the pad is
 // W A S D plain (the arrows too, for a keymap that has them), and on a page the arrows are the layer's, or F X Z C as
-// on the Cardputer Zero (keys.cpp's dirOf). Seen on the device: the screen and the keyboard's name; the keys as the
-// game takes them, not yet (DRAFT).
+// on the Cardputer Zero (keys.cpp's dirOf).
+//
+// The chip's own keymap, read from it over Vial on the first one (2026-11-27; docs/PIBOARDS.md has it whole). Plain:
+// the letters, the delete key (BACKSPACE), ENTER, SPACE, the $ key (Shift and 4), the BlackBerry's alt key (SHIFT), its
+// left aA key (CTRL) and its 0 key (ALT). Its top row: the call key (TAB), the menu key (keypad .), the trackpad's
+// press (a mouse button, not read), the back key (keypad /), the end key (the keys' light, nothing sent). With its
+// right aA key held: the digits and marks printed on the keys. NO KEY IS ESC in that map, and ESC is how every page
+// is left -- so the back key goes back (rawKey), and so does the left aA key held with the delete key (forPage), two
+// keys every keymap of this keyboard sends. Seen on the device: the screen, the keyboard held, DAEMONS at boot. A
+// key pressed by a thumb: not yet (DRAFT).
+#if __has_include(<linux/input-event-codes.h>)
+#include <linux/input-event-codes.h>
+#else
+#define KEY_KPDOT 83
+#define KEY_KPSLASH 98
+#endif
 #include "board.h"
 
 namespace board {
@@ -36,10 +50,23 @@ void gameKeyDefaults(Key m[GBA_KEYS][2]) {
   for (int i = 0; i < GBA_KEYS; i++) { m[i][0] = d[i][0]; m[i][1] = d[i][1]; }
 }
 
-bool forPage(KeyEvent &, const bool *, bool) { return true; }   // a keyboard: every key as it is
+// A keyboard: every key as it is, but one. The left aA key (CTRL) held and the delete key pressed is the way back,
+// on a page and in the game: both are in every keymap of this keyboard, where ESC is in none.
+bool forPage(KeyEvent &e, const bool *held, bool) {
+  if (e.key == Key::Backspace && held[(size_t)Key::Ctrl]) { e.key = Key::Esc; e.ch = 0; }
+  return true;
+}
 
 const char *word(Key k) { return keyName(k); }
-Key rawKey(int) { return Key::None; }
+// The two top keys the chip sends as keypad codes: the back key goes back, the menu key is SYM (DRAFT: neither has
+// been pressed yet, and the chip's own program may send something else for a tap; ZERO_KEYLOG=1 prints what comes)
+Key rawKey(int code) {
+  switch (code) {
+    case KEY_KPSLASH: return Key::Esc;
+    case KEY_KPDOT: return Key::Sym;
+    default: return Key::None;
+  }
+}
 const bool CAP_HEADER = false;   // the DPI screen takes nearly every pin: no cap header, no SPI
 const bool RADIOS = false;
 void builtInRadios(caps::Found &) {}

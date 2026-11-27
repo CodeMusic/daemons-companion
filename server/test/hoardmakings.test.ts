@@ -165,14 +165,14 @@ const store = new Store(":memory:", { now: () => Date.now() + skew });
 const H = new Hoard(store, join(tmp, "hub"));
 const drive = mkdtempSync(join(tmp, "drive-"));
 H.setHere({ dir: drive, bytes: 200e6, kind: "extend" });
-const calls = { see: 0, write: [] as { title: string; system: string; user: string }[], speak: [] as { text: string; recipe: string }[], hear: 0,
+const calls = { see: 0, write: [] as { title: string; system: string; user: string; quick?: boolean }[], speak: [] as { text: string; recipe: string }[], hear: 0,
                 ffmpeg: [] as { args: string[]; ins: string[]; outs: string[] }[], music: [] as any[] };
 let gate: Promise<void> | null = null, live = 0, most = 0, seeAnswer: string | null = null;
 const SEEN = '{"tag":"food","faces":0,"description":"A loaf of bread cooling on a wire rack.","colours":"brown, gold, grey","mood":"patient","mouth":{"x":0.5,"y":0.6,"w":0.2}}';
 const makers: Makers = {
   see: async () => { calls.see++; return seeAnswer ?? SEEN; },
-  write: async (title, system, user) => {
-    calls.write.push({ title, system, user });
+  write: async (title, system, user, _most, _signal, quick) => {
+    calls.write.push({ title, system, user, quick });
     if (/its song/.test(title)) return '{"title":"Bread Song","style":"slow folk, guitar","lyrics":"[verse]\\nThe loaf is cooling\\n[chorus]\\nWait for me"}';
     if (/its answer/.test(title)) return '"About an hour, and I was worth it."';
     if (/what .* says/.test(title)) return '{"phrase":"That smells better than a battery."}';
@@ -360,6 +360,7 @@ describe("THE HOARD's makings (C-605)", () => {
     expect(calls.speak).toEqual([]);                                          // nobody speaks
     expect(calls.music[0]).toMatchObject({ song: true, caption: "slow folk", lyrics: expect.stringContaining("The loaf is cooling") });
     expect(calls.write.find((w) => /its song/.test(w.title))!.user).toContain("A loaf of bread cooling on a wire rack.");
+    expect(calls.write.find((w) => /its song/.test(w.title))!.quick).toBe(false);          // the one long piece: the writer's whole thought
     expect(creation(jobOf(j.id, A).result!, A).meta).toMatchObject({ music: "song", song: { title: "Bread Song" } });
     expect(calls.ffmpeg.at(-1)!.args.join(" ")).not.toContain("amix");
     // a song is offered only when no picture has a speaker
@@ -381,6 +382,7 @@ describe("THE HOARD's makings (C-605)", () => {
     expect(ask.system).toContain('a picture called "loaf.jpg"');
     expect(ask.system).toContain("A loaf of bread cooling on a wire rack.");
     expect(ask.user).toBe("How long did you bake?");
+    expect(calls.write.every((w) => w.quick === true)).toBe(true);            // someone is waiting on an answer: the quick thinker
     expect(calls.speak.at(-1)).toEqual({ text: "About an hour, and I was worth it.", recipe: "An older, flour-soft voice, slow and kind." });
     // spoken: the recording is heard first, and is not kept
     reset();

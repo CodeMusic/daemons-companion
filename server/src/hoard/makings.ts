@@ -29,8 +29,8 @@ import { canRead, looksOf, stageOf, MUSIC_PROMPT_MOST, SCENES_MOST, SPOKEN_MOST,
 export type Makers = {
   /** a picture (a JPEG) shown to the house's own seeing model with a question; null when the house has none */
   see: ((jpeg: Uint8Array, prompt: string, signal: AbortSignal) => Promise<string>) | null;
-  /** the house's writer */
-  write: (title: string, system: string, user: string, most: number, signal: AbortSignal) => Promise<string>;
+  /** the house's writer. `quick`: a short answer someone is waiting on -- the quick thinker, not its deepest thought */
+  write: (title: string, system: string, user: string, most: number, signal: AbortSignal, quick?: boolean) => Promise<string>;
   /** a line said in a voice cast by `recipe`: a WAV */
   speak: (text: string, recipe: string, signal: AbortSignal) => Promise<Uint8Array | null>;
   /** what was said in a 16 kHz WAV */
@@ -225,15 +225,17 @@ class Making {
     if (!canRead(f, this.who, this.now())) throw new Error("that file is no longer shared with you");
     return { f, at: await this.H.bring(f.sha, this.work) };
   }
-  private async write(title: string, ask: { system: string; user: string }, most: number): Promise<string> {
-    const t = await this.K.write(title, ask.system, ask.user, most, this.signal);
+  /** every write here is a line or two (a voice cast, a phrase, an answer) with someone watching the job: quick.
+   *  A song's words are the one long piece, and are given the writer's whole thought */
+  private async write(title: string, ask: { system: string; user: string }, most: number, quick = true): Promise<string> {
+    const t = await this.K.write(title, ask.system, ask.user, most, this.signal, quick);
     if (!t?.trim()) throw new Error("the house's mind found no words");
     return t;
   }
   /** asked twice when its first answer cannot be read (a model's JSON slips) */
-  private async read<T>(title: string, ask: { system: string; user: string }, most: number, parse: (t: string) => T): Promise<T> {
-    try { return parse(await this.write(title, ask, most)); } catch (e) { if ((e as Error).message === STOPPED || this.signal.aborted) throw e; }
-    return parse(await this.write(title, ask, most));
+  private async read<T>(title: string, ask: { system: string; user: string }, most: number, parse: (t: string) => T, quick = true): Promise<T> {
+    try { return parse(await this.write(title, ask, most, quick)); } catch (e) { if ((e as Error).message === STOPPED || this.signal.aborted) throw e; }
+    return parse(await this.write(title, ask, most, quick));
   }
   /** a line, or many breaths of one, said in one voice: a WAV */
   private async voice(text: string, recipe: string, from: number, to: number, what: string): Promise<Uint8Array> {
@@ -363,7 +365,7 @@ class Making {
         seen.push({ f, ...(await this.seen(f, at)) });
       }
       this.step("writing the song", 0.42);
-      const song = await this.read(`${this.j.title}: its song`, sequenceSongAsk(seen.map((s) => s.seen.description), a.musicPrompt), 600, readSong);
+      const song = await this.read(`${this.j.title}: its song`, sequenceSongAsk(seen.map((s) => s.seen.description), a.musicPrompt), 600, readSong, false);
       const seconds = Math.max(30, Math.min(150, n * 8)), track = this.path("music");
       this.step("making the song", 0.5);
       await this.K.music!({ song: true, caption: a.musicPrompt || song.style, lyrics: song.lyrics, seconds, to: track }, this.signal);

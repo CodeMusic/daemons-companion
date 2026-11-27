@@ -983,8 +983,8 @@ export function makeServer(cfg: Config, store = new Store(cfg.database), hub = n
       const at = tiinyIn((k) => store.getSetting(k)), model = at ? pickSeer(TALK_HEALTH.tiiny?.models ?? [], store.getSetting("tiiny.see")) : null;
       return at && model ? (jpeg: Uint8Array, prompt: string, signal: AbortSignal) => seeImage(at, model, jpeg, prompt, { schema: SEE_SCHEMA, signal }) : null;
     },
-    write: async (title, system, user, most, signal) => {
-      const l = ledgered({ kind: "hoard", title });
+    write: async (title, system, user, most, signal, quick) => {
+      const l = ledgered({ kind: "hoard", title, quick });   // C-338: someone watches the job -- the quick thinker for a line or two
       const stop = () => l.abort();
       signal.addEventListener("abort", stop, { once: true });
       try { const t = await l.write(system, user, most); l.end(t?.trim() ? "done" : "failed", t?.trim() ? {} : { error: "no words came" }); return t ?? ""; }   // DRAFT

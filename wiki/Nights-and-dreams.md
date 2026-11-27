@@ -57,9 +57,18 @@ music model (about three minutes) and keeps it; the phone fetches it once. **PLA
 last ten; **MAKE ANOTHER** makes a new one; **KEPT FROM OTHER NIGHTS** holds the ones before. A new piece is made when
 its context moves.
 
-**DRIFT DOWN**, for headphones: a slow binaural beat under the music, easing from alpha (10 Hz) to theta (6 Hz) to
-delta (2 Hz) as you fall asleep. Without headphones the music plays alone until they are on. The watch's half -- the
-piece from its card, everything else asleep -- is still to come. Every word is DRAFT.
+**DRIFT DOWN**: a slow beat under the music, easing from alpha to theta to delta as you fall asleep -- or the shape of
+any drift you choose. It reaches whatever is there. With **headphones**, the beat between your ears (best: it needs
+them). With a **PULSETTO**, gentle stimulation of the vagus nerve, stepping with the drift: AUTO takes the drift's own
+level, or one from its beat (gentler as it slows), or FIXED holds yours, never outside the MIN and MAX you set. With a
+**LUMENATE NOVA**, light flashed through closed eyes at the beat, in the drift's pattern or yours (together, drifting,
+one eye), under a ceiling you choose -- 12 Hz unless you raise it, after a warning about flashing light. Without any of
+them, its noise and its pulse still play. The watch's half -- the piece from its card, everything else asleep -- is
+still to come. Every word is DRAFT.
+
+All of it now lives in **THE STUDIO**, at the top of DAEMON › Routines, beside IT SINGS, THE EASEL and **SYNESTHESIA,
+FELT** -- a daemon's three notes (or the week's, or the year's) as colour on the screen, a tone between the ears, and
+the NOVA and PULSETTO at the note's rate. DREAMS keeps a small REVERIE card that opens it.
 
 ## Into the game (ITS DREAMS)
 

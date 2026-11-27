@@ -7,6 +7,10 @@ import { AppState } from "react-native";
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
 import Night from "../modules/daemons-night";
 import { bedSound, binauralStage, carrierOf, driftOf, isochronicSound, machineSound, stageAt, stagesOfFile, type DriftFile, type Stage } from "./binaural";
+// C-591 (the user, 2026-11-26): DRIFT DOWN may be on without headphones now -- the beat between the ears still waits for
+// them, and everything else a drift reaches goes on: its noise bed, its isochronic pulse, THE PULSETTO and THE NOVA
+// (sound/entrain.ts conducts those two from here)
+import { begin as entrainBegin, conduct, end as entrainEnd } from "./entrain";
 
 export const SESSION_S = 30 * 60, FADE_S = 10 * 60;
 const DRIFT_LEVEL = 0.22;                    // under the music, never over it
@@ -17,8 +21,9 @@ const MODE = { playsInSilentMode: true, shouldPlayInBackground: true, interrupti
 export type SleepState = { playing: boolean; id: string | null; startedAt: number; drift: boolean; stage: string | null;
                            driftHeld: string | null;   // why DRIFT DOWN is quiet, if it is (no headphones), DRAFT
                            // C-555: for the spirals in its eyes -- the beat now, falling (-1) or rising (1), and the drift's kind
-                           beat: number | null; trend: -1 | 1; kind: string };
-let state: SleepState = { playing: false, id: null, startedAt: 0, drift: false, stage: null, driftHeld: null, beat: null, trend: -1, kind: "sleep" };
+                           beat: number | null; trend: -1 | 1; kind: string;
+                           title: string };            // C-590: what is playing, for THE STUDIO's NOW PLAYING
+let state: SleepState = { playing: false, id: null, startedAt: 0, drift: false, stage: null, driftHeld: null, beat: null, trend: -1, kind: "sleep", title: "" };
 const heard = new Set<(s: SleepState) => void>();
 const tell = (patch: Partial<SleepState>) => { state = { ...state, ...patch }; heard.forEach((f) => f(state)); };
 export const sleepState = () => state;
@@ -30,6 +35,7 @@ let bedUri = "";
 let machine: DriftFile["machine"] | null = null, iso: NonNullable<DriftFile["audio"]>["isochronic"] | null = null;
 let isoPlayer: AudioPlayer | null = null, isoUri = "";
 let carrier = 0, stageUri = "", stages: Stage[] = driftOf();   // C-386: the night's beats, placed by the day it began
+let driftFile: DriftFile | null = null;                        // C-591: the drift playing, for its devices' cues
 
 // headphones now: true, false, or null where this build cannot tell (then the listener's word is taken)
 export const headphones = (): boolean | null => { try { return Night?.headphones ? Night.headphones() : null; } catch { return null; } };
@@ -50,7 +56,7 @@ function step() {
   }
   if (state.drift) {
     const ears = headphones();
-    if (ears === false) { if (drift?.playing) drift.pause(); if (!state.driftHeld) tell({ driftHeld: "Quiet until headphones are in." }); }   // DRAFT
+    if (ears === false) { if (drift?.playing) drift.pause(); if (!state.driftHeld) tell({ driftHeld: "The beat between the ears waits for headphones; the rest goes on." }); }   // DRAFT
     else {
       const st = stageAt(s, stages);
       const uri = machine ? machineSound(st.carrier ?? carrier, st.beat, machine) : binauralStage(st.carrier ?? carrier, st.beat);
@@ -62,6 +68,7 @@ function step() {
     }
     // C-553: the isochronic pulse at the stage's exact beat -- heard on a speaker too
     const sti = stageAt(s, stages);
+    conduct(s, sti.exact ?? sti.beat, v);   // C-591: THE PULSETTO and THE NOVA, where they are linked and allowed
     if (!iso) { if (isoPlayer?.playing) isoPlayer.pause(); isoUri = ""; }
     else {
       const u = isochronicSound(iso.toneHz ?? sti.carrier ?? carrier, sti.exact ?? sti.beat, iso.voice ?? (machine ? "glitch" : "tone"));
@@ -94,9 +101,11 @@ export async function playSleep(o: { id: string; uri: string; title: string; key
   music.play();
   carrier = carrierOf(o.keyscale); stageUri = ""; bedUri = ""; isoUri = "";
   machine = o.driftFile?.machine ?? null; iso = o.driftFile?.audio?.isochronic ?? null;   // C-553
+  driftFile = o.driftFile ?? null;
+  if (o.drift) entrainBegin(driftFile); else entrainEnd();   // C-591
   stages = o.driftFile ? stagesOfFile(o.driftFile, carrier) : driftOf(new Date());
   if (!stages.length) stages = driftOf(new Date());
-  tell({ playing: true, id: o.id, startedAt: Date.now(), drift: o.drift, stage: null, driftHeld: null, beat: null, trend: -1, kind: o.driftFile?.kind ?? "sleep" });
+  tell({ playing: true, id: o.id, startedAt: Date.now(), drift: o.drift, stage: null, driftHeld: null, beat: null, trend: -1, kind: o.driftFile?.kind ?? "sleep", title: o.title });
   if (tick) clearInterval(tick);
   tick = setInterval(step, 5000);
   step();
@@ -123,6 +132,7 @@ export const canSample = () => !!music && typeof (music as { setAudioSamplingEna
 
 export function setDrift(on: boolean) {
   tell({ drift: on, driftHeld: null, stage: on ? state.stage : null });
+  if (on && state.playing) entrainBegin(driftFile); else if (!on) entrainEnd();   // C-591
   if (!on && drift) { drift.pause(); stageUri = ""; }
   if (!on && bed) { bed.pause(); bedUri = ""; }
   if (!on && isoPlayer) { isoPlayer.pause(); isoUri = ""; }
@@ -132,6 +142,7 @@ export function setDrift(on: boolean) {
 export function stopSleep() {
   if (tick) { clearInterval(tick); tick = null; }
   music?.pause(); drift?.pause(); bed?.pause(); isoPlayer?.pause(); stageUri = ""; bedUri = ""; isoUri = "";
+  entrainEnd();   // C-591: the PULSETTO's session ended, the NOVA dark
   try { music?.clearLockScreenControls(); } catch { /* none set */ }
   tell({ playing: false, id: null, stage: null, driftHeld: null, beat: null });
 }

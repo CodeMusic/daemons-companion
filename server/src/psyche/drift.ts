@@ -55,6 +55,10 @@ export type DriftFile = {
             isochronic?: { level?: number; voice?: "tone" | "glitch"; toneHz?: number } };
   // C-553: a daemon's drift -- square waves, glitches, a wavering beat (shared/tones.ts); played on the daemon's side
   side?: "you" | "daemon";
+  // C-591: PulseEntrain's two devices, as its files carry them -- the light's cap and brightness, the stimulation's base
+  // (psyche/entrain.ts reads them; each scene may also carry intensity, flash, flashHz, brightness and biphotic)
+  nova?: { mode?: string; maxHz?: number; brightness?: number } | null;
+  pulsetto?: { enabled?: boolean; follow?: string; intensity?: number; intensityClamp?: [number, number] } | null;
   generation?: Record<string, unknown>;   // where it came from (PulseEntrain, DAEMONS, or a mind, C-554)
   machine?: { wave?: "square" | "sine"; glitch?: { perSec: number; level?: number };
               waver?: { what: "beat" | "carrier" | "both"; deltaHz: number; periodSec: number } | null };

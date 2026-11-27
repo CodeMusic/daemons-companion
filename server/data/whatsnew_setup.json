@@ -18,18 +18,18 @@
   },
   "C-334": {
    "title": "SLEEP SOUNDS",
-   "where": "DAEMON › DREAMS › SLEEP SOUNDS",
+   "where": "DAEMON › Routines › THE STUDIO › REVERIE (or DREAMS › REVERIE)",
    "needs": [
     "the hub",
     "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
-    "headphones, for DRIFT DOWN"
+    "headphones, for the beat between the ears (best, not needed)"
    ],
    "steps": [
     "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
     "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
-    "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
+    "Open DAEMON › Routines › THE STUDIO › REVERIE. It asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
     "It plays for thirty minutes and fades over the last ten.",
-    "DRIFT DOWN needs headphones: put them on first. On a speaker it waits, and the music plays alone."
+    "DRIFT DOWN is best with headphones: the beat between the ears needs them. Without, its noise and its pulse still play, and a PULSETTO or a NOVA still follows it."
    ],
    "wiki": "Nights-and-dreams",
    "draft": true
@@ -304,6 +304,24 @@
     "Pair once with the code from KEYS. Only a paired key opens it from outside; Tailscale is not needed."
    ],
    "wiki": "The-hub-and-its-AI",
+   "draft": true
+  },
+  "C-591": {
+   "title": "THE PULSETTO AND THE NOVA",
+   "where": "DAEMON › Routines › THE STUDIO › REVERIE › WHERE THE DRIFT GOES",
+   "needs": [
+    "the phone app (not the site)",
+    "Bluetooth on",
+    "a PULSETTO, a LUMENATE NOVA, or both"
+   ],
+   "steps": [
+    "Turn the device on and keep it near the phone.",
+    "In WHERE THE DRIFT GOES, tap LINK THE PULSETTO or LINK THE NOVA. The phone finds it by its name and remembers it.",
+    "The NOVA flashes light: read its warning first. Do not use it if you or your family have had seizures or epilepsy, or if flashing light gives you migraines. It never flashes faster than the ceiling you choose (12 Hz unless you raise it).",
+    "The PULSETTO: choose AUTO (the drift's own level, or one from its beat) or FIXED, and its MIN and MAX. It is a wellness device, not medicine; STOP IT NOW ends it at any time.",
+    "Turn DRIFT DOWN on and PLAY: each linked device follows the drift until the night fades. SYNESTHESIA in THE STUDIO uses them too."
+   ],
+   "wiki": "Nights-and-dreams",
    "draft": true
   }
  }

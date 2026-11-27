@@ -10,7 +10,8 @@ import { Text, XStack, YStack } from "tamagui";
 import { api, TOKEN } from "../platform/net";
 import { adoptOld, coverUri, thumbUri, exportFile, keep, letGo, mine, mineSet, onMine, type Creation, type Kept } from "../platform/creations";
 import { driftOf, stageAt } from "../sound/binaural";
-import { canSample, FADE_S, headphones, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../sound/sleepSession";
+import { canSample, FADE_S, onSleep, onSpectrum, playSleep, SESSION_S, setDrift, sleepState, stopSleep } from "../sound/sleepSession";
+import { OutputChips } from "./Devices";   // C-591: where the drift goes
 import { canSampleSong, onSong, onSongSpectrum, playSong, songState, stopSong } from "../sound/song";   // C-362
 import { Action, Card, CareKey, Eyebrow, Segments, Small, whenSaid } from "../shared/ui/ui";
 import { Synesthesia } from "../../server/src/psyche/synesthesia";
@@ -107,8 +108,7 @@ export function SleepPlayer({ k, ink, onBack }: { k: Kept; ink: string; onBack: 
   useEffect(() => { if (!mineNow) return; const t = setInterval(() => tickle((n) => n + 1), 2000); return () => clearInterval(t); }, [mineNow]);
   const s = mineNow ? (Date.now() - now.startedAt) / 1000 : 0, stage = stageAtS(s);
   const play = async () => {
-    setError("");
-    if (drift && headphones() === false) setError("DRIFT DOWN waits for headphones: the music plays alone until then.");   // DRAFT
+    setError("");   // C-591: DRIFT DOWN no longer waits for headphones -- only its beat between the ears does
     await playSleep({ id: k.id, uri: k.local["phone.m4a"], title: k.title, keyscale: String(k.meta.keyscale ?? ""), drift });
   };
   const toggleDrift = () => { const on = !drift; setDriftOn(on); if (mineNow) setDrift(on); };
@@ -138,8 +138,9 @@ export function SleepPlayer({ k, ink, onBack }: { k: Kept; ink: string; onBack: 
           {mineNow ? <Action label="STOP" ink={ink} onPress={stopSleep} /> : <Action label="PLAY 30 MINUTES" ink={ink} onPress={play} />}
         </XStack>
         <XStack marginTop={8}><CareKey label={drift ? "DRIFT DOWN · ON" : "DRIFT DOWN"} ink={ink} lit={drift} onPress={toggleDrift} /></XStack>
-        {mineNow && now.drift ? <Small>{now.driftHeld ?? `DRIFT DOWN: ${stage.word}, ${stage.beat} Hz`}</Small> : null}
-        <Small>{`Beats ${driftOf().map((d) => d.beat).join(" → ")} Hz tonight between the ears (headphones), on a ${k.meta.carrierHz} Hz carrier in ${k.meta.keyscale}, ${k.meta.bpm} beats a minute.`}</Small>
+        {mineNow && now.drift ? <Small>{`DRIFT DOWN: ${stage.word}, ${stage.beat} Hz.${now.driftHeld ? ` ${now.driftHeld}` : ""}`}</Small> : null}
+        {drift ? <OutputChips /> : null}
+        <Small>{`Beats ${driftOf().map((d) => d.beat).join(" → ")} Hz tonight -- between the ears with headphones, and through a PULSETTO or a NOVA if one is linked -- on a ${k.meta.carrierHz} Hz carrier in ${k.meta.keyscale}, ${k.meta.bpm} beats a minute.`}</Small>
       </Card>
       <Card>
         <Eyebrow>{"MADE"}</Eyebrow>

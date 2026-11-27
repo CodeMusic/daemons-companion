@@ -1182,18 +1182,18 @@
      ],
      "setup": {
       "title": "SLEEP SOUNDS",
-      "where": "DAEMON › DREAMS › SLEEP SOUNDS",
+      "where": "DAEMON › Routines › THE STUDIO › REVERIE (or DREAMS › REVERIE)",
       "needs": [
        "the hub",
        "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
-       "headphones, for DRIFT DOWN"
+       "headphones, for the beat between the ears (best, not needed)"
       ],
       "steps": [
        "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
        "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
-       "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
+       "Open DAEMON › Routines › THE STUDIO › REVERIE. It asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
        "It plays for thirty minutes and fades over the last ten.",
-       "DRIFT DOWN needs headphones: put them on first. On a speaker it waits, and the music plays alone."
+       "DRIFT DOWN is best with headphones: the beat between the ears needs them. Without, its noise and its pulse still play, and a PULSETTO or a NOVA still follows it."
       ],
       "wiki": "Nights-and-dreams",
       "draft": true
@@ -1603,18 +1603,18 @@
      ],
      "setup": {
       "title": "SLEEP SOUNDS",
-      "where": "DAEMON › DREAMS › SLEEP SOUNDS",
+      "where": "DAEMON › Routines › THE STUDIO › REVERIE (or DREAMS › REVERIE)",
       "needs": [
        "the hub",
        "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
-       "headphones, for DRIFT DOWN"
+       "headphones, for the beat between the ears (best, not needed)"
       ],
       "steps": [
        "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
        "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
-       "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
+       "Open DAEMON › Routines › THE STUDIO › REVERIE. It asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
        "It plays for thirty minutes and fades over the last ten.",
-       "DRIFT DOWN needs headphones: put them on first. On a speaker it waits, and the music plays alone."
+       "DRIFT DOWN is best with headphones: the beat between the ears needs them. Without, its noise and its pulse still play, and a PULSETTO or a NOVA still follows it."
       ],
       "wiki": "Nights-and-dreams",
       "draft": true
@@ -1692,18 +1692,18 @@
      ],
      "setup": {
       "title": "SLEEP SOUNDS",
-      "where": "DAEMON › DREAMS › SLEEP SOUNDS",
+      "where": "DAEMON › Routines › THE STUDIO › REVERIE (or DREAMS › REVERIE)",
       "needs": [
        "the hub",
        "the local cloud's music maker (seer/bindSeer.sh, port 4002)",
-       "headphones, for DRIFT DOWN"
+       "headphones, for the beat between the ears (best, not needed)"
       ],
       "steps": [
        "The pieces are made by ACE-Step on the local cloud, the always-on machine beside the hub that runs LiteLLM. On that machine, from a clone of daemons-companion, run seer/bindSeer.sh and say yes to sleep sounds (the first time, it downloads about 19 GB). It answers on port 4002 and turns away anyone without a key.",
        "The hub finds it beside THE TIINY: SETTINGS › WHO ANSWERS WHEN YOU TALK › THE TIINY, its address on port 4000 and its key. The hub knocks on port 4002 of the same machine with the same key (the hub's sleep.url setting names another door).",
-       "Open DAEMON › DREAMS. SLEEP SOUNDS asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
+       "Open DAEMON › Routines › THE STUDIO › REVERIE. It asks for tonight's piece, made from your daemon's day; the first takes a few minutes, and then it is kept on the phone.",
        "It plays for thirty minutes and fades over the last ten.",
-       "DRIFT DOWN needs headphones: put them on first. On a speaker it waits, and the music plays alone."
+       "DRIFT DOWN is best with headphones: the beat between the ears needs them. Without, its noise and its pulse still play, and a PULSETTO or a NOVA still follows it."
       ],
       "wiki": "Nights-and-dreams",
       "draft": true

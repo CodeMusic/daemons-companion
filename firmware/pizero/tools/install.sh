@@ -51,7 +51,9 @@ deb=$(tools/make_deb.sh)
 board=$(cat ~/.config/daemons/board 2>/dev/null || echo cardputer-zero)
 setup=""
 # a board with no launcher is made ready once (its screen, buttons, sound, and DAEMONS at boot): tools/boards/<board>.sh
+# (C-593: a board whose config.txt needed no line of ours says it is ready in ~/.config/daemons/ready-<board> instead)
 [[ $board != cardputer-zero && -x tools/boards/$board.sh ]] && ! grep -q "DAEMONS $board\|DAEMONS GamePi20" /boot/firmware/config.txt /boot/config.txt 2>/dev/null \
+  && [[ ! -e ~/.config/daemons/ready-$board ]] \
   && setup="sudo ~/daemons-zero/src/tools/boards/$board.sh && "
 if sudo -n true 2>/dev/null; then
   sudo -n dpkg -i "$deb" && echo "installed"

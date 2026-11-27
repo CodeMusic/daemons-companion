@@ -37,6 +37,7 @@ the game's, and **SELECT and START held together** go back to HOME. A page's hin
 | **GamePi20** (Waveshare) | `gamepi20` | Zero 2 W (a first Zero or Zero W runs the companion; the game at full speed is unlikely) | 2-inch 320x240 ST7789VW on SPI0 | d-pad, A B X Y, START, SELECT, L, R on GPIO | a speaker on PWM (GPIO 18) | `daemons@<user>.service` at boot |
 | **uConsole** (ClockworkPi; C-514) | `uconsole` | CM4 (to confirm) | 5-inch 1280x720 IPS on DSI (a 720x1280 panel, turned; the canvas four times its size) | its own keyboard (a USB HID: keys, a trackball, a joystick), d-pad, A B X Y, SELECT, START | PWM to two speakers and the jack; a microphone through the jack | the desktop, or `daemons@<user>.service` with `boot` |
 | **DAEMICOM** (C-512; a Pi 5, DRAFT) | `daemicom` | Pi 5, booting from its SSD | 3.5-inch 480x320 ILI9486 on SPI0 (`piscreen`), XPT2046 **touch** | touch (a tap ENTER, a hold ESC, a swipe an arrow); a SIGIL read as a pad | the Pi's own, to a speaker; a USB microphone | `daemons@<user>.service` at boot, the desktop kept on HDMI |
+| **HackberryPi** (ZitaoTech; C-593) | `hackberry` | Zero 2 W | 4-inch 720x720 on DPI (`vc4-kms-dpi-hyperpixel4sq`); the canvas twice its size | a BlackBerry keyboard (Q10, Q20 or 9900) and its trackpad, one USB HID | none of its own: the HDMI's, or Bluetooth | `daemons` from its console, or `daemons@<user>.service` with `boot` |
 
 ### The GamePi20
 
@@ -132,13 +133,49 @@ console as a whole -- THE THRESHOLD, the SHEWSTONE modes (DUET, SPLIT, MIRROR, O
 
 **Setting one up**: `BOARD=daemicom tools/install.sh <user>@<its name>`, the lines it prints, and a reboot.
 
+### The HackberryPi (C-593)
+
+ZitaoTech's HackberryPi Zero: a Raspberry Pi Zero 2 W in the body of a BlackBerry, the first board with a square screen.
+From the maker's pages (github.com/ZitaoTech/Hackberry-Pi_Zero: Screen, Keyboard, I2C-Port) and `tools/probe.sh` on the
+first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the 9900 keyboard):
+
+- **The screen**: 720x720 on DPI, turned on by one line, `dtoverlay=vc4-kms-dpi-hyperpixel4sq`. One framebuffer
+  (`vc4drmfb`, 16 bits), so it is fb0. DPI takes nearly every pin: no SPI, no cap header, and **I2C must stay off**
+  (`dtparam=i2c_arm=on` leaves the screen black, the maker warns); a STEMMA port on GPIO 10 and 11 is the one bus left.
+  The kernel can only turn the backlight on or off; its brightness is a button on the top edge. The canvas is shown twice
+  its size, 640x340, in the middle -- on a square screen nearly half stays dark, so this is the board that most wants a
+  page of its own: the game three times its size is 720x480, the full width, with 720x240 left under it for the
+  companion (proposed, not built).
+- **The keys**: the keyboard and trackpad have a chip of their own (Vial firmware) and reach the Pi as one USB device,
+  `ZitaoTech HackberryPi9900`: a keyboard, a mouse (the trackpad; not read), and two control devices. A red switch on
+  the side sends them to the Pi or out of the lower USB-C to another computer, and a red button beside it powers the
+  USB hub: without it there are no keys. The maker's keymap sends letters, SPACE, ENTER and BACKSPACE plain, ESC and TAB
+  by a tap of two top keys, numbers and marks while one layer key is held, and **the arrows on W A S D while a second
+  is held**. So the game's keys (DRAFT) are the pad on W A S D, A `l`, B `k`, START enter, SELECT space, L `q`, R `p`
+  (`~/.config/daemons/keys.conf` changes any); on a page the arrows are the layer's, or F X Z C as on the Cardputer Zero.
+- **The sound**: none of its own -- no speaker, no microphone, no jack; ALSA lists only the HDMI. Bluetooth is there
+  (a headset or a speaker: to come).
+- **The cells**: two Nokia BL-5C, swapped one at a time without stopping (5 hours on the command line by the maker's
+  count). Nothing the kernel reads: the bar shows no percentage.
+- **It has a console of its own**: a login on its screen reads the same keyboard and draws on the same framebuffer.
+  `tools/boards/hackberry.sh` writes `daemons`, a command that takes the keys while DAEMONS runs and hides the console's
+  cursor; LEAVE on HOME gives both back. With `boot`, DAEMONS starts at boot on a console of its own (the eighth), and
+  the first console is shown again when it stops. THE THRESHOLD's DEPART (C-564) is this done inside the program.
+- **Seen on the device** (2026-11-27): the overlay, the framebuffer, the keyboard's name and its port. **Not yet**
+  (DRAFT): the program on its screen, the game's keys under the thumbs, `daemons` and `boot`.
+
+**Setting one up**: Raspberry Pi OS Lite (64-bit) on a microSD with Raspberry Pi Imager (hostname, user, Wi-Fi, SSH) and
+the screen's line in `config.txt`; then `BOARD=hackberry tools/install.sh <user>@<its name>`, which builds on the device,
+installs, and writes `daemons`. `sudo ~/daemons-zero/src/tools/boards/hackberry.sh <user> boot` starts it at boot.
+`tools/install.sh <user>@<its name> probe` first, to read what it has.
+
 **What the two handhelds' setups share** is `tools/boards/common.sh`: the buttons as one gpio-keys device from twelve pins
 (`pad_buttons`), our lines in config.txt between two marks (`config_lines`), and DAEMONS at boot (`start_at_boot`). A
 board's own script is then only its pins and its screen.
 
 ## Adding a board
 
-1. `src/boards/<id>.cpp`, from the nearest of the five (a pad board calls `boards/pad.cpp`): its `ID` (the start of the name it gives the hub), `NAME`, screen,
+1. `src/boards/<id>.cpp`, from the nearest of the six (a pad board calls `boards/pad.cpp`): its `ID` (the start of the name it gives the hub), `NAME`, screen,
    `KEYBOARD`, `INPUTS` (every one that opens is read), the game's keys, `forPage`, `word`, `rawKey` (codes of its own,
    or none), `CAP_HEADER` (the Cardputer's EXT header: only the Zero), `RADIOS` and `builtInRadios` (C-514).
 2. If it has no launcher: `tools/boards/<id>.sh`, its pins and screen, using `common.sh` for the rest.

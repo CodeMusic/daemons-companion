@@ -148,6 +148,7 @@ struct Games : Page {
     std::lock_guard<std::mutex> l(lock);
     const uint16_t accent = rgb(0x5b, 0x6b, 0x8c), dim = rgb(0x80, 0x84, 0x90), soft = rgb(0xc8, 0xc8, 0xd0);
     canvas.fillScreen(rgb(0x18, 0x1c, 0x24));
+    denUnder(hub::view(), accent);   // C-593: on a tall canvas the daemon is under the words, as on PLAY
     drawBand("GAMES", accent);   // DRAFT
     canvas.setFont(&fonts::Font0);
     canvas.setTextSize(1);

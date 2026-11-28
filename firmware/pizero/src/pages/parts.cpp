@@ -1,6 +1,7 @@
 // C-381: the shared drawing.
 #include "pages/parts.h"
 
+#include <algorithm>
 #include <cstring>
 #include "board.h"
 
@@ -58,6 +59,49 @@ void drawDen(const HubView &v, int x, int y, int w, int h) {
     canvas.setCursor(x + w - 18, y + 6);
     canvas.print("z Z");
   }
+}
+
+int lay::under = 0;
+
+int drawStrip(const HubView &v, int y0, uint16_t day) {
+  const int h = hal::H - y0;
+  canvas.fillRect(0, y0, hal::W, h, rgb(0x10, 0x12, 0x18));
+  canvas.fillRect(0, y0, hal::W, 3, day);
+  int right = hal::W - 6;
+  if (v.reached && v.carrying && h >= 60) {
+    const int dw = std::min(112, h - 12);
+    right = hal::W - 6 - dw;
+    drawDen(v, right, y0 + 8, dw, h - 14);
+    right -= 8;
+  }
+  return right;
+}
+
+void denUnder(const HubView &v, uint16_t day) {
+  lay::under = 0;
+  if (!lay::tall() || !v.reached || !v.carrying) return;
+  lay::under = 120;   // the HackberryPi's 360 less the 240 the game has on PLAY
+  const uint16_t soft = rgb(0xc8, 0xc8, 0xd0), dim = rgb(0x80, 0x84, 0x90);
+  const int y0 = hal::H - lay::under, right = drawStrip(v, y0, day), cols = (right - 6) / 6;
+  canvas.setFont(&fonts::Font0);
+  canvas.setTextSize(1);
+  canvas.setTextColor(TFT_WHITE);
+  canvas.setCursor(6, y0 + 9);
+  canvas.print(upper(v.nickname.empty() ? v.name : v.nickname).substr(0, 16).c_str());
+  canvas.setTextColor(dim);
+  canvas.printf("  LV %d", v.level);
+  canvas.setTextColor(day);
+  canvas.setCursor(6, y0 + 22);
+  canvas.print(upper(v.tired == "asleep" ? "asleep" : v.tired == "drowsy" ? "drowsy" : v.word).substr(0, cols).c_str());
+  if (!v.cue.empty()) { canvas.setTextColor(soft); wrap(v.cue, 6, y0 + 40, cols, 4, 10); }
+  const int cy = hal::H - 18;   // the day's care, level with the den's floor
+  canvas.setTextColor(dim);
+  canvas.setCursor(6, cy);
+  canvas.print("FED");
+  drawPips(30, cy, v.fedToday, v.fedDue, day, dim);
+  canvas.setCursor(100, cy);
+  canvas.print("WATER");
+  drawPips(136, cy, v.wateredToday, v.wateredDue, day, dim);
 }
 
 void drawPartyMember(const PartyMember &m, const HubView &v, int x, int y, int w, int h) {

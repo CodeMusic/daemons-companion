@@ -35,7 +35,11 @@ so they stay square and sharp (C-468).
 The pages were first drawn for 320x170 and are still drawn so there, pixel for pixel. On another canvas they place what
 they draw from its edges (`src/app.h`'s `lay`): more letters across, the rows that fit, the last lines at the bottom
 edge. A page with a picture (HOME, CARE, PARTY) puts it beside its words on a wide canvas and across the top on a tall
-one (300 high or more), the daemon as big as fits whole. PLAY shows the game as many whole times as fit the screen;
+one (300 high or more), the daemon as big as fits whole. A page of words (STEP, SAY, TALK, LINK, GAMES) on a tall
+canvas, with a daemon carried, keeps its words to the top and has the daemon's strip under them, 120 high, where PLAY
+has its own under the game (`denUnder`, `src/pages/parts.h`): the daemon in its den on the right, and beside it its
+name, how it is, what it is doing and the day's care; with no daemon carried the page has its whole height. PLAY
+shows the game as many whole times as fit the screen;
 where that is bigger than the canvas shows things (the HackberryPi: a canvas pixel is two of the screen's, a pixel of
 the game three), the hardware layer draws the game's picture over the canvas itself (`hal::game`). A new board needs
 only its two numbers. `daemons-zero --canvas 360x360@2` draws as another board would, for pictures of one that is not
@@ -164,7 +168,9 @@ first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the
   The kernel can only turn the backlight on or off; its brightness is a button on the top edge. **Its canvas is
   360x360, shown twice over: the whole square** (C-593; it was 640x340 in the middle, nearly half the screen dark, until
   the user saw it). HOME and CARE have the den across the top, 352x200, the daemon three times its size in it, and the
-  words under it; the other pages have more rows. **The game is three times its size, 720x480, across the top**, drawn
+  words under it; the lists have more rows; and **a page of words (STEP, SAY, TALK, LINK, GAMES) has the daemon under
+  it**, in the strip PLAY has under the game, so the daemon stays where it was from page to page (the user,
+  2026-11-27). **The game is three times its size, 720x480, across the top**, drawn
   straight onto the screen, and under it a strip of 240 with the daemon in its den, the hour, the save's mark, and the
   game's keys as this keyboard has them (MOVE W A S D, A L, B K, START ENTER, SELECT SPACE, L Q, R P, MENU the back
   key): a keyboard's keys are not a pad's, so they are said. DRAFT words.
@@ -226,7 +232,9 @@ first one (2026-11-27: Raspberry Pi OS Lite, Debian 12, 64-bit, kernel 6.12, the
   screen's is (`ZERO_ROTATE=2`), whole. The folder was removed after: no game is kept on it.
 - **Not yet** (DRAFT): a key pressed by a thumb (what the menu and back keys really send; how the arrows' layer is
   reached); the glass itself seen (the framebuffer was read); the player's own ROM made into the game on the device;
-  HOME with a daemon carried (it is not linked to a hub); `daemons` typed at its console and LEAVE pressed on HOME;
+  HOME with a daemon carried (it is not linked to a hub), and so the daemon under the pages of words, which shows
+  only with one carried (drawn on a Mac through a hub that changes nothing; the handheld was off the network that
+  evening); `daemons` typed at its console and LEAVE pressed on HOME;
   sound by Bluetooth; a line on HOME when no keyboard is found (C-595).
 
 **Setting one up**: Raspberry Pi OS Lite (64-bit) on a microSD with Raspberry Pi Imager (hostname, user, Wi-Fi, SSH) and

@@ -20,6 +20,16 @@ struct Split {
 Split split(int side);   // side: the picture's side on the first canvas (104; CARE's is 120)
 void drawDen(const HubView &v, int x, int y, int w, int h);                  // the den's wall and floor, the daemon on it
 void drawPartyMember(const PartyMember &m, const HubView &v, int x, int y, int w, int h);
+// C-593: the strip from y0 to the foot of a tall canvas, as PLAY has under the game -- its ground, a line in the day's
+// colour, and the daemon carried in its den on the right. Answers the x the words on its left may reach.
+int drawStrip(const HubView &v, int y0, uint16_t day);
+// A page of words on a tall canvas, with a daemon carried (STEP, SAY, TALK, LINK, GAMES; the user, 2026-11-27): the
+// words keep to the top, as high as the game is on PLAY, and the daemon is under them where PLAY has it -- so it
+// stays where it was from page to page -- with its name, how it is, what it is doing and the day's care beside it.
+// Called in draw() once the page is filled and before a line is placed: every line the page counts from its foot
+// (lay::foot, lay::rows) is above the strip from then on. Without a daemon, or on a wide canvas, it draws nothing
+// and the page has its whole height.
+void denUnder(const HubView &v, uint16_t day);
 void drawPips(int x, int y, int have, int due, uint16_t on, uint16_t off);  // ● for each given, ○ for each still due
 
 // A row of choices; Z C (or the arrows) move along it, scrolled so the chosen one shows

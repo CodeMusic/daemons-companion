@@ -32,7 +32,8 @@ void keepSave();                                // the game's save into its own 
 // 320x170, and on that canvas each of these gives the number the page had: a bigger canvas gets more letters across,
 // more rows, and its last lines at its own bottom edge.
 namespace lay {
-inline int more() { return hal::H - 170; }                         // the height this canvas has over the first
+extern int under;                                                  // the height the daemon's strip takes from the foot of the page in front (denUnder; 0 on most)
+inline int more() { return hal::H - 170 - under; }                 // the height this page has over the first canvas's
 inline int cols(int x = 6) { return (hal::W - x - 6) / 6; }        // Font0 letters from x to the right margin: 51 from 6
 inline int across() { return (hal::W - 8) / 6; }                   // a whole line, edge to edge: 52
 inline int foot(int y) { return y + more(); }                      // a line counted from the bottom: the first canvas's y, here

@@ -111,6 +111,7 @@ Page *pageFor(PageId id) {
 }
 void go(PageId id) {
   if (id != PageId::Play) hal::game(nullptr, 0, 0, 0, 0, 0);   // C-593: the game's picture leaves the screen with its page
+  lay::under = 0;                                               // and the daemon's strip with its own (a page that has one says so as it is drawn)
   now = id;
   switched = true;
   pageFor(id)->enter();

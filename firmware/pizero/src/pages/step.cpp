@@ -52,6 +52,7 @@ struct Step : Page {
     HubView v = hub::view();
     const uint16_t day = hex(v.menu, rgb(0x5b, 0x6b, 0x8c));
     canvas.fillScreen(rgb(0x18, 0x1c, 0x24));
+    denUnder(v, day);   // C-593: on a tall canvas the daemon is under the words, as on PLAY
     drawBand("THE NEXT STEP", day);
     canvas.setFont(&fonts::Font0);
     if (v.stepId < 0) {

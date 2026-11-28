@@ -189,15 +189,7 @@ struct Play : Page {
   void under(const Box &g, const HubView &v, uint16_t day, uint16_t dim) {
     const uint16_t soft = rgb(0xc8, 0xc8, 0xd0);
     const int y0 = g.y + g.h, h = hal::H - y0;
-    canvas.fillRect(0, y0, hal::W, h, rgb(0x10, 0x12, 0x18));
-    canvas.fillRect(0, y0, hal::W, 3, day);
-    int right = hal::W - 6;
-    if (v.reached && v.carrying && h >= 60) {
-      const int dw = std::min(112, h - 12);
-      right = hal::W - 6 - dw;
-      drawDen(v, right, y0 + 8, dw, h - 14);
-      right -= 8;
-    }
+    const int right = drawStrip(v, y0, day);   // its ground, and the den (the pages of words have the same under them)
     int y = y0 + 9;
     if (v.reached && v.carrying) {
       canvas.setTextColor(TFT_WHITE);
